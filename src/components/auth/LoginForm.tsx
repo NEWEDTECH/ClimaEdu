@@ -25,8 +25,7 @@ export function LoginForm() {
       // Get the current URL to use as the redirect URL, but use the auth/confirm page
       const redirectUrl = `${window.location.origin}/auth/confirm`;
       
-      // Store the email in localStorage for the authentication flow
-      window.localStorage.setItem('emailForSignIn', email);
+      localStorage.setItem('emailForSignIn', email);
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`Email saved to localStorage from LoginForm: ${email}`);
