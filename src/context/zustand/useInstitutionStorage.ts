@@ -3,27 +3,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// Chaves para localStorage
-const LAST_INSTITUTION_KEY = 'last-institution-id';
+const LAST_INSTITUTION_KEY = 'institution-storage';
 
-// Funções utilitárias para localStorage
 const saveLastInstitutionId = (institutionId: string): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(LAST_INSTITUTION_KEY, institutionId);
-  }
+  localStorage.setItem(LAST_INSTITUTION_KEY, institutionId);
 };
 
 const getLastInstitutionId = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(LAST_INSTITUTION_KEY);
-  }
-  return null;
+  return localStorage.getItem(LAST_INSTITUTION_KEY);
 };
 
 const removeLastInstitutionId = (): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem(LAST_INSTITUTION_KEY);
-  }
+  return;
 };
 
 type InstitutionStorageState = {
@@ -66,7 +57,6 @@ export const useInstitutionStorage = create<InstitutionStorageState>()(
     }),
     {
       name: 'institution-storage',
-      partialize: (state) => ({ lastInstitutionId: state.lastInstitutionId }),
     }
   )
 );
