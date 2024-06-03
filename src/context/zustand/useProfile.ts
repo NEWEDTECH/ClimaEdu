@@ -2,9 +2,8 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Institution } from '../../_core/modules/institution/core/entities/Institution';
 
-type UserRole = 'student' | 'tutor' | 'admin' | null;
+type UserRole = 'STUDENT' | 'TUTOR' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'CONTENT_MANAGER' | 'SUPER_ADMIN' | null;
 
 type Courses = Array<{
   id: string;
@@ -16,48 +15,78 @@ type Courses = Array<{
   updatedAt: Date;
 }>;
 
-// Tipo para representar uma instituição com a role do usuário nela
-type InstitutionWithRole = {
-  institution: Institution;
-  userRole: UserRole;
+type InfoUser = {
+  id: string;
+  name: string;
+  currentRole: UserRole;
+  currentIdInstitution: string;
+};
+
+type InstitutionInfo = {
+  idInstitution: string;
+  nameInstitution: string;
+  urlImage?: string;
+  roleInstitution: UserRole;
+};
+
+type InfoInstitutions = {
+  institutions: InstitutionInfo;
 };
 
 type ProfileState = {
-  id: string;
-  role: UserRole;
-  institution: Institution;
-  institutions: Institution[];
-  institutionsWithRoles: InstitutionWithRole[];
+  infoUser: InfoUser;
+  infoInstitutions: InfoInstitutions;
+  infoInstitutionsRole: InstitutionInfo[];
   courses: Courses;
-  setRole: (role: UserRole) => void;
-  setId: (id: string) => void;
-  setInstitution: (institution: Institution) => void;
-  setInstitutions: (institutions: Institution[]) => void;
-  setInstitutionsWithRoles: (institutionsWithRoles: InstitutionWithRole[]) => void;
+  setInfoUser: (infoUser: InfoUser) => void;
+  setInfoInstitutions: (infoInstitutions: InfoInstitutions) => void;
+  setInfoInstitutionsRole: (infoInstitutionsRole: InstitutionInfo[]) => void;
   setCourses: (courses: Courses) => void;
   getUserRoleInInstitution: (institutionId: string) => UserRole;
+  updateCurrentInstitution: (institutionId: string) => void;
 };
 
 export const useProfile = create<ProfileState>()(
   persist(
     (set, get) => ({
-      id: '',
-      role: null,
-      institution: {} as Institution,
-      institutions: [],
-      institutionsWithRoles: [],
+      infoUser: {
+        id: '',
+        name: '',
+        currentRole: null,
+        currentIdInstitution: '',
+      },
+      infoInstitutions: {
+        institutions: {
+          idInstitution: '',
+          nameInstitution: '',
+          urlImage: '',
+          roleInstitution: null
+        }
+      },
+      infoInstitutionsRole: [],
       courses: [],
-      setRole: (role) => set({ role }),
-      setId: (id) => set({ id }),
-      setInstitution: (institution) => set({ institution }),
-      setInstitutions: (institutions) => set({ institutions }),
-      setInstitutionsWithRoles: (institutionsWithRoles) => set({ institutionsWithRoles }),
+      setInfoUser: (infoUser) => set({ infoUser }),
+      setInfoInstitutions: (infoInstitutions) => set({ infoInstitutions }),
+      setInfoInstitutionsRole: (infoInstitutionsRole) => set({ infoInstitutionsRole }),
       setCourses: (courses) => set({ courses }),
       getUserRoleInInstitution: (institutionId: string) => {
-        const institutionWithRole = get().institutionsWithRoles.find(
-          (item) => item.institution.id === institutionId
-        );
-        return institutionWithRole?.userRole || null;
+        const institution = get().infoInstitutions.institutions;
+        if (institution.idInstitution === institutionId) {
+          return institution.roleInstitution;
+        }
+        return null;
+      },
+      updateCurrentInstitution: (institutionId: string) => {
+        const institution = get().infoInstitutions.institutions;
+        if (institution.idInstitution === institutionId) {
+          set({
+            infoUser: {
+              ...get().infoUser,
+              currentIdInstitution: institutionId,
+              currentRole: institution.roleInstitution,
+            },
+          });
+        }
       },
     }),
     {
@@ -66,5 +95,4 @@ export const useProfile = create<ProfileState>()(
   )
 );
 
-// Exportar o tipo para uso em outros componentes
-export type { InstitutionWithRole };
+export type { InfoUser, InstitutionInfo, InfoInstitutions };
