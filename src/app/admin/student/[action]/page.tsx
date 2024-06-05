@@ -371,7 +371,8 @@ export default function StudentEnrollmentPage() {
               // Use the EnrollInCourseUseCase to create a new enrollment
               await enrollInCourseUseCase.execute({
                 userId: studentData.id,
-                courseId: courseId
+                courseId: courseId,
+                institutionId: selectedInstitutionId
               })
             }
           }
@@ -419,10 +420,12 @@ export default function StudentEnrollmentPage() {
         )
 
         // Enroll student in all selected courses
+
         const enrollmentPromises = selectedCourseIds.map(courseId =>
           enrollInCourseUseCase.execute({
             userId: selectedStudentId,
-            courseId: courseId
+            courseId: courseId,
+            institutionId: selectedInstitutionId
           })
         )
 
