@@ -14,29 +14,78 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
+import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
+import { useProfile } from '@/context/zustand/useProfile'
 import { ArrowLeftIcon } from 'lucide-react'
 
-// Define the form schema with Zod
+
+const allowedRoles = [
+  UserRole.STUDENT,
+  UserRole.TUTOR,
+  UserRole.LOCAL_ADMIN,
+  UserRole.CONTENT_MANAGER,
+] as const;
+
+const roleLabels: Partial<Record<UserRole, string>> = {
+  [UserRole.SYSTEM_ADMIN]: 'Administrador do Sistema',
+  [UserRole.LOCAL_ADMIN]: 'Administrador',
+  [UserRole.CONTENT_MANAGER]: 'Gestor de Conteúdo',
+  [UserRole.TUTOR]: 'Tutor',
+  [UserRole.STUDENT]: 'Estudante',
+};
+
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Nome deve ter pelo menos 2 caracteres' }),
   email: z.string().email({ message: 'Email inválido' }),
   //password: z.string().min(6, { message: 'Senha deve ter pelo menos 6 caracteres' }),
   //confirmPassword: z.string(),
-  role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.LOCAL_ADMIN, UserRole.CONTENT_MANAGER])
+  role: z.enum(allowedRoles)
 })//.refine((data) => data.password === data.confirmPassword, {
-  //message: "As senhas não coincidem",
-  //path: ["confirmPassword"],
+//message: "As senhas não coincidem",
+//path: ["confirmPassword"],
 //});
 
-// Define the form values type
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateUserPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [success, setSuccess] = useState<boolean>(false)
+  const { infoUser } = useProfile()
+
+  const currentUserRole: UserRole = UserRole.SUPER_ADMIN;
+
+  const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
+    switch (creatorRole) {
+      case UserRole.SUPER_ADMIN:
+        return [
+          UserRole.SYSTEM_ADMIN,
+          UserRole.LOCAL_ADMIN,
+          UserRole.CONTENT_MANAGER,
+          UserRole.TUTOR,
+          UserRole.STUDENT,
+        ];
+      case UserRole.SYSTEM_ADMIN:
+        return [
+          UserRole.LOCAL_ADMIN,
+          UserRole.CONTENT_MANAGER,
+          UserRole.TUTOR,
+          UserRole.STUDENT,
+        ];
+      case UserRole.LOCAL_ADMIN:
+        return [
+          UserRole.CONTENT_MANAGER,
+          UserRole.TUTOR,
+          UserRole.STUDENT,
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const allowedRoles = getAllowedRolesToCreate(currentUserRole);
 
   const {
     register,
@@ -57,24 +106,36 @@ export default function CreateUserPage() {
   const onSubmit = async (data: FormValues) => {
     setError(null)
     setIsSubmitting(true)
-    
-    try {
 
+    try {
+      // Criar o usuário
       const createUserUseCase = container.get<CreateUserUseCase>(
         Register.user.useCase.CreateUserUseCase
       )
-      
-      await createUserUseCase.execute({
+
+      const createUserResult = await createUserUseCase.execute({
         name: data.name,
         email: data.email,
         password: '',
         type: data.role
       })
-      
+
+
+      if (infoUser.currentIdInstitution && createUserResult.user) {
+        const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+          Register.institution.useCase.AssociateUserToInstitutionUseCase
+        )
+
+        await associateUserUseCase.execute({
+          userId: createUserResult.user.id,
+          institutionId: infoUser.currentIdInstitution,
+          userRole: data.role
+        })
+      }
+
       setSuccess(true)
-      
       reset()
-      
+
     } catch (err) {
       console.error('Error creating user:', err)
       setError(err instanceof Error ? err.message : 'Falha ao criar usuário. Por favor, tente novamente.')
@@ -104,7 +165,7 @@ export default function CreateUserPage() {
                 Preencha os dados para criar um novo usuário no sistema
               </CardDescription>
             </CardHeader>
-            
+
             <FormSection onSubmit={handleSubmit(onSubmit)} error={error}>
               <CardContent className="space-y-4">
                 {success && (
@@ -112,7 +173,7 @@ export default function CreateUserPage() {
                     Usuário criado com sucesso!
                   </div>
                 )}
-                
+
                 <div className="space-y-2">
                   <label htmlFor="name" className="block text-sm font-medium">
                     Nome Completo
@@ -128,7 +189,7 @@ export default function CreateUserPage() {
                     <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-medium">
                     Email
@@ -145,7 +206,7 @@ export default function CreateUserPage() {
                     <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
                   )}
                 </div>
-                
+
                 {/*<div className="space-y-2">
                   <label htmlFor="password" className="block text-sm font-medium">
                     Senha
@@ -189,14 +250,15 @@ export default function CreateUserPage() {
                     {...register('role')}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
-                    <option value={UserRole.LOCAL_ADMIN}>Administrador</option>
-                    <option value={UserRole.CONTENT_MANAGER}>Gestor de Conteúdo</option>
-                    <option value={UserRole.TUTOR}>Tutor</option>
-                    <option value={UserRole.STUDENT}>Estudante</option>
+                    {allowedRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {roleLabels[role]}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </CardContent>
-              
+
               <CardFooter className="flex justify-end gap-2">
                 <Button
                   type="button"
