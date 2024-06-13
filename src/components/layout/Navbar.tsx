@@ -13,10 +13,12 @@ type DropdownItem = {
   href: string;
 };
 
+type UserRole = 'STUDENT' | 'TUTOR' | 'CONTENT_MANAGER' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'SUPER_ADMIN';
+
 type DropdownSection = {
   title: string;
   items: DropdownItem[];
-  role: string;
+  role: UserRole | UserRole[];
 };
 
 const studentItems: DropdownItem[] = [
@@ -37,6 +39,7 @@ const teacherItems: DropdownItem[] = [
 const adminItems: DropdownItem[] = [
   { label: 'Instituições', href: '/admin/institution' },
   { label: 'Dashboard', href: '/admin/dashboard' },
+  { label: 'Podcast', href: '/admin/podcast' },
   { label: 'Alunos', href: '/admin/student' },
   { label: 'Professores', href: '/admin/tutor' },
   { label: 'Cursos', href: '/admin/courses' },
@@ -46,15 +49,15 @@ const adminItems: DropdownItem[] = [
 ];
 
 const sections: DropdownSection[] = [
-  { title: 'Área do Aluno', items: studentItems, role: 'student' },
-  { title: 'Área do Tutor', items: teacherItems, role: 'tutor' },
-  { title: 'Área do Admin', items: adminItems, role: 'admin' }
+  { title: 'Área do Aluno', items: studentItems, role: 'STUDENT' },
+  { title: 'Área do Tutor', items: teacherItems, role: ['TUTOR', 'CONTENT_MANAGER'] },
+  { title: 'Área do Admin', items: adminItems, role: ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'] }
 ];
 
 
 export function Navbar() {
 
-  const { role } = useProfile();
+  const { infoUser, infoInstitutions } = useProfile();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -63,7 +66,10 @@ export function Navbar() {
 
       <div className="flex items-center">
         <Link href="/" className="text-xl font-bold">
-          EAD Platform
+          <img
+            //src={infoInstitutions.institutions[0]?.urlImage}
+            alt="Logo da instituição"
+          />
         </Link>
       </div>
 
@@ -71,10 +77,10 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center space-x-4">
           {sections.map((section) => {
-            if (section.role === role) {
+            if (section.role.includes(infoUser.currentRole!)) {
               return (
                 <div
-                  key={section.title} 
+                  key={section.title}
                   className={cn(
                     "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
                   )}
@@ -127,7 +133,7 @@ export function Navbar() {
             </div>
 
             {sections.map((section) => {
-              if (section.role === role) {
+              if (section.role.includes(infoUser.currentRole!)) {
                 return (
                   <div key={section.title} className="py-2">
                     <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
