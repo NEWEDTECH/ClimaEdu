@@ -1,0 +1,105 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { container } from '@/shared/container/container';
+import { Register } from '@/shared/container/symbols';
+import { CreateUserUseCase, UserType } from '@/modules/user';
+import { CreateContentUseCase, ContentType } from '@/modules/content';
+
+export function UserModule() {
+  const [isReady, setIsReady] = useState(false);
+  
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
+  
+  const handleCreateUser = async () => {
+    try {
+      const createUserUseCase = container.get<CreateUserUseCase>(
+        Register.user.useCase.CreateUserUseCase
+      );
+
+      const result = await createUserUseCase.execute({
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+        type: UserType.STUDENT,
+      });
+
+      alert(`User created successfully! ID: ${result.user.id}`);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert(`Error creating user: ${(error as Error).message}`);
+    }
+  };
+  
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <h3 className="text-lg font-medium mb-2">User Module</h3>
+      <ul className="list-disc list-inside text-sm space-y-1">
+        <li>Entities: User</li>
+        <li>Use Cases: CreateUserUseCase</li>
+        <li>Repositories: UserRepository</li>
+        <li>Implementations: FirebaseUserRepository</li>
+      </ul>
+      {isReady && (
+        <button
+          onClick={handleCreateUser}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        >
+          Test User Creation
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function ContentModule() {
+  const [isReady, setIsReady] = useState(false);
+  
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
+  
+  const handleCreateContent = async () => {
+    try {
+      const createContentUseCase = container.get<CreateContentUseCase>(
+        Register.content.useCase.CreateContentUseCase
+      );
+
+      const result = await createContentUseCase.execute({
+        title: 'Test Content',
+        description: 'This is a test content created to demonstrate the system architecture.',
+        type: ContentType.TEXT,
+        url: 'https://example.com/test-content',
+        categories: ['test', 'demonstration'],
+        authorId: 'test-author',
+      });
+
+      alert(`Content created successfully! ID: ${result.content.id}`);
+    } catch (error) {
+      console.error('Error creating content:', error);
+      alert(`Error creating content: ${(error as Error).message}`);
+    }
+  };
+  
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <h3 className="text-lg font-medium mb-2">Content Module</h3>
+      <ul className="list-disc list-inside text-sm space-y-1">
+        <li>Entities: Content</li>
+        <li>Use Cases: CreateContentUseCase</li>
+        <li>Repositories: ContentRepository</li>
+        <li>Implementations: FirebaseContentRepository</li>
+      </ul>
+      {isReady && (
+        <button
+          onClick={handleCreateContent}
+          className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+        >
+          Test Content Creation
+        </button>
+      )}
+    </div>
+  );
+}
