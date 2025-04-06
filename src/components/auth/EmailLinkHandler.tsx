@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { container } from '@/shared/container/container';
-import { Register } from '@/shared/container/symbols';
-import { SignInWithEmailLinkUseCase } from '@/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
-import type { AuthService } from '@/modules/auth/infrastructure/services/AuthService';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
+import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 
 export function EmailLinkHandler() {
   const router = useRouter();

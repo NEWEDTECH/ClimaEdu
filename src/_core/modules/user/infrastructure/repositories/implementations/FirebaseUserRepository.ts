@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
-import { firestore } from '@/shared/firebase/firebase-client';
+import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { User, UserType } from '../../../core/entities/User';
 import type { UserRepository } from '../UserRepository';
 

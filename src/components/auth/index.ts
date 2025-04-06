@@ -1,8 +1,7 @@
-// Export all auth components for easier imports
-export * from './AuthStatus';
-export * from './EmailLinkHandler';
-export * from './LoginForm';
-export * from './ProtectedRoute';
-export * from './ProtectedContent';
-export * from './EmulatorAuthLinks';
-export * from './EmulatorStatus';
+export { AuthStatus } from './AuthStatus';
+export { EmailLinkHandler } from './EmailLinkHandler';
+export { EmulatorAuthLinks } from './EmulatorAuthLinks';
+export { EmulatorStatus } from './EmulatorStatus';
+export { LoginForm } from './LoginForm';
+export { ProtectedContent } from './ProtectedContent';
+export { ProtectedRoute } from './ProtectedRoute';

@@ -1,56 +1,43 @@
 # Active Context
 
-## Current Situation
+## Directory Structure Change
 
-The project is in development with the base structure implemented.
+The project structure has been updated. The `modules` and `shared` directories have been moved from `/src` to `/src/_core`. This means all import paths need to be updated to reflect this change.
 
-Completed activities:
-- Definition of the general system architecture based on Clean Architecture and SOLID.
-- Definition of the Container Pattern for dependency injection with InversifyJS.
-- Definition of the technology stack (Next.js 15, React 19, TailwindCSS, shadcn/ui, Firebase, TypeScript).
-- Creation of the Memory Bank for the Cline assistant.
-- Definition of the modular structure for the main domains: user, content, enrollment, assessment, forum, certificate, and report.
-- Initial configuration of the development environment (Next.js 15 + TailwindCSS + Firebase SDK).
-- Configuration of the Dependency Injection Container (Inversify) in the frontend.
-- Implementation of the first modules:
-  - `user`: entities, repositories, and creation use case.
-  - `content`: entities, repositories, and creation use case.
-- Implementation of repository interfaces and their Firebase implementations.
-- Creation of an initial page demonstrating the system architecture.
+## Import Path Updates
 
----
+All imports from the core modules and shared code should use the following paths:
 
-## Ongoing Activities
+- Core modules: `@/_core/modules/...`
+- Shared code: `@/_core/shared/...`
 
-- Implementation of additional use cases:
-  - User authentication (`AuthenticateUserUseCase`).
-  - Content listing (`ListContentsUseCase`).
-- Development of UI components with shadcn/ui.
-- Implementation of pages for user registration and login.
-- Implementation of pages for content upload and viewing.
+For example:
+```typescript
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
+import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
+```
 
----
+## Current Issues
 
-## Priorities
+There are TypeScript errors in the project related to the import paths. The errors are showing that there are issues with the paths in the `@core` directory, but we've moved the files to `_core`. All import paths in the project need to be updated to reflect this change.
 
-1. Implement complete authentication with Firebase Authentication.
-2. Develop interface for content upload with Firebase Storage.
-3. Create pages for viewing content by category.
-4. Implement enrollment system to associate students with content.
-5. Develop dashboard for administrators.
+## Authentication System
 
----
+The authentication system has been implemented with the following features:
 
-## Current Restrictions
+1. **Email Link Authentication**:
+   - Users can sign in with a magic link sent to their email
+   - In development mode, the links are displayed on the login page
+   - The authentication process happens on a dedicated page at `/auth/confirm`
 
-- Only standard user authentication via Firebase (Google, Email/Password).
-- Initially without support for custom domains or whitelabel until the second phase of the schedule.
-- Need to configure Firebase environment variables before using the system.
+2. **Firebase Emulator Support**:
+   - Special handling for the Firebase emulator's limitations
+   - Fake user IDs are generated for authentication in development mode
+   - Authentication state is persisted in localStorage
 
----
-
-## Important Notes
-
-- The project is guided by Memory Bank and custom `.clinerules`.
-- All new or refactored code must strictly follow the architecture conventions and patterns defined in the Memory Bank.
-- To test the system, it is necessary to configure the environment variables in the `.env.local` file with Firebase credentials.
+3. **Singleton Pattern for AuthService**:
+   - Ensures only one instance of the service exists throughout the application
+   - Maintains authentication state across different components
+   - Provides methods for checking authentication status and user ID

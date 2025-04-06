@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { container } from '@/shared/container/container';
-import { Register } from '@/shared/container/symbols';
-import type { AuthService } from '@/modules/auth/infrastructure/services/AuthService';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

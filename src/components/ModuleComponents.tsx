@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { container } from '@/shared/container/container';
-import { Register } from '@/shared/container/symbols';
-import { CreateUserUseCase, UserType } from '@/modules/user';
-import { CreateContentUseCase, ContentType } from '@/modules/content';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import { CreateUserUseCase, UserType } from '@/_core/modules/user';
+import { CreateContentUseCase, ContentType } from '@/_core/modules/content';
 
 export function UserModule() {
   const [isReady, setIsReady] = useState(false);

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { container } from '@/shared/container/container';
-import { Register } from '@/shared/container/symbols';
-import { SendSignInLinkUseCase } from '@/modules/auth/core/use-cases/send-sign-in-link/send-sign-in-link.use-case';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import { SendSignInLinkUseCase } from '@/_core/modules/auth/core/use-cases/send-sign-in-link/send-sign-in-link.use-case';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');

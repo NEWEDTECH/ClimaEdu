@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import type { ContentRepository } from '../../../infrastructure/repositories/ContentRepository';
-import { Register } from '@/shared/container/symbols';
+import { Register } from '@/_core/shared/container/symbols';
 import { CreateContentInput } from './create-content.input';
 import { CreateContentOutput } from './create-content.output';
 

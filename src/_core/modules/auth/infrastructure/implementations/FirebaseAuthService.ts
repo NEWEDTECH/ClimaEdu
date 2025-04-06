@@ -7,7 +7,7 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import { AuthService } from '../services/AuthService';
-import { auth } from '@/shared/firebase/firebase-client';
+import { auth } from '@/_core/shared/firebase/firebase-client';
 
 /**
  * Firebase implementation of the AuthService

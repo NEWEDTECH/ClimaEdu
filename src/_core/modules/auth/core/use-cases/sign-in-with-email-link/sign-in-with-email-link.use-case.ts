@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import type { AuthService } from '../../../infrastructure/services/AuthService';
 import { SignInWithEmailLinkInput } from './sign-in-with-email-link.input';
 import { SignInWithEmailLinkOutput } from './sign-in-with-email-link.output';
-import { Register } from '@/shared/container/symbols';
+import { Register } from '@/_core/shared/container/symbols';
 
 /**
  * Use case for signing in with an email link

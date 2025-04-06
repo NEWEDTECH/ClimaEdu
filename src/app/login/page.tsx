@@ -2,19 +2,19 @@ import { LoginForm, EmulatorAuthLinks, EmulatorStatus } from '@/components/auth'
 
 export default function LoginPage() {
   return (
-    <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold text-center mb-8">ClimaEdu</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center p-8">
+      <header className="mb-12 text-center">
+        <h1 className="text-4xl font-bold mb-4">ClimaEdu</h1>
+        <p className="text-xl text-gray-600 dark:text-gray-300">
+          Sign in to your account
+        </p>
+      </header>
+
+      <LoginForm />
       
-      <div className="grid grid-cols-1 gap-8">
-        {/* Login form for sending the sign-in link */}
-        <LoginForm />
-        
-        {/* Check if the Firebase emulator is running */}
-        <EmulatorStatus />
-        
-        {/* Display emulator auth links in development mode */}
-        <EmulatorAuthLinks />
-      </div>
+      {/* Only shown in development mode with emulator */}
+      <EmulatorAuthLinks />
+      <EmulatorStatus />
     </div>
   );
 }

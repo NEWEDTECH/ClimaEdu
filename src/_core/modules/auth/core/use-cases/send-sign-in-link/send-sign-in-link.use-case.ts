@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import type { AuthService } from '../../../infrastructure/services/AuthService';
 import { SendSignInLinkInput } from './send-sign-in-link.input';
 import { SendSignInLinkOutput } from './send-sign-in-link.output';
-import { Register } from '@/shared/container/symbols';
+import { Register } from '@/_core/shared/container/symbols';
 
 /**
  * Use case for sending a sign-in link to the user's email
