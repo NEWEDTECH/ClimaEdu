@@ -22,6 +22,17 @@ export const ContentSymbols = {
   },
 };
 
+// Auth module symbols
+export const AuthSymbols = {
+  services: {
+    AuthService: Symbol.for('AuthService'),
+  },
+  useCases: {
+    SendSignInLinkUseCase: Symbol.for('SendSignInLinkUseCase'),
+    SignInWithEmailLinkUseCase: Symbol.for('SignInWithEmailLinkUseCase'),
+  },
+};
+
 // Register object to simplify imports
 export const Register = {
   user: {
@@ -31,5 +42,9 @@ export const Register = {
   content: {
     repository: ContentSymbols.repositories,
     useCase: ContentSymbols.useCases,
+  },
+  auth: {
+    service: AuthSymbols.services,
+    useCase: AuthSymbols.useCases,
   },
 };
