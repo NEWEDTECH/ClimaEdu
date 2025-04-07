@@ -3,6 +3,7 @@ import type { UserRepository } from '../../../infrastructure/repositories/UserRe
 import { Register } from '@/_core/shared/container/symbols';
 import { CreateUserInput } from './create-user.input';
 import { CreateUserOutput } from './create-user.output';
+import { Email } from '../../entities/Email';
 
 /**
  * Use case for creating a user
@@ -27,11 +28,15 @@ export class CreateUserUseCase {
       throw new Error('User with this email already exists');
     }
 
+    // Create email value object
+    const email = Email.create(input.email);
+
     // Create user
     const user = await this.userRepository.create({
       name: input.name,
-      email: input.email,
+      email: email,
       role: input.type,
+      institutionId: input.institutionId || 'default-institution', // Provide a default or require it in the input
     });
 
     return { user };

@@ -8,4 +8,5 @@ export interface CreateUserInput {
   email: string;
   password: string;
   type: UserRole;
+  institutionId?: string; // Make it optional for backward compatibility
 }

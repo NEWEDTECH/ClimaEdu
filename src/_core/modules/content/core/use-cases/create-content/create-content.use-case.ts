@@ -23,12 +23,10 @@ export class CreateContentUseCase {
   async execute(input: CreateContentInput): Promise<CreateContentOutput> {
     // Create content
     const content = await this.contentRepository.create({
+      lessonId: input.lessonId,
       title: input.title,
-      description: input.description,
       type: input.type,
       url: input.url,
-      categories: input.categories,
-      authorId: input.authorId,
     });
 
     return { content };

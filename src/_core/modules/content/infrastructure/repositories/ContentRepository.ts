@@ -1,4 +1,15 @@
-import { Content, ContentType } from '../../core/entities/Content';
+import { Content } from '../../core/entities/Content';
+import { ContentType } from '../../core/entities/ContentType';
+
+/**
+ * Data transfer object for creating content
+ */
+export interface CreateContentDTO {
+  lessonId: string;
+  type: ContentType;
+  title: string;
+  url: string;
+}
 
 /**
  * Interface for the Content repository
@@ -7,10 +18,10 @@ import { Content, ContentType } from '../../core/entities/Content';
 export interface ContentRepository {
   /**
    * Create new content
-   * @param content Content data without id
+   * @param contentData Content data for creation
    * @returns Created content with id
    */
-  create(content: Omit<Content, 'id' | 'createdAt' | 'updatedAt'>): Promise<Content>;
+  create(contentData: CreateContentDTO): Promise<Content>;
 
   /**
    * Find content by id

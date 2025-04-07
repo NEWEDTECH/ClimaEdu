@@ -1,13 +1,11 @@
-import { ContentType } from '../../entities/Content';
+import { ContentType } from "../../entities/ContentType";
 
 /**
  * Input data for creating content
  */
 export interface CreateContentInput {
+  lessonId: string;
   title: string;
-  description: string;
   type: ContentType;
   url: string;
-  categories: string[];
-  authorId: string;
 }

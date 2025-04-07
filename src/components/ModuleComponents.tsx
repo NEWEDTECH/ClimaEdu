@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import { CreateUserUseCase, UserRole } from '@/_core/modules/user';
-import { CreateContentUseCase, ContentType } from '@/_core/modules/content';
+import { CreateContentUseCase } from '@/_core/modules/content';
+import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 
 export function UserModule() {
   const [isReady, setIsReady] = useState(false);
@@ -24,6 +25,7 @@ export function UserModule() {
         email: 'test@example.com',
         password: 'password123',
         type: UserRole.STUDENT,
+        institutionId: 'test-institution-id',
       });
 
       alert(`User created successfully! ID: ${result.user.id}`);
@@ -68,12 +70,10 @@ export function ContentModule() {
       );
 
       const result = await createContentUseCase.execute({
+        lessonId: 'test-lesson-id',
         title: 'Test Content',
-        description: 'This is a test content created to demonstrate the system architecture.',
-        type: ContentType.TEXT,
+        type: ContentType.PDF,
         url: 'https://example.com/test-content',
-        categories: ['test', 'demonstration'],
-        authorId: 'test-author',
       });
 
       alert(`Content created successfully! ID: ${result.content.id}`);

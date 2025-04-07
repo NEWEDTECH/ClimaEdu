@@ -1,8 +1,9 @@
 import { injectable } from 'inversify';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, UpdateData } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
-import { Content, ContentType } from '../../../core/entities/Content';
-import type { ContentRepository } from '../ContentRepository';
+import { Content } from '../../../core/entities/Content';
+import { ContentType } from '../../../core/entities/ContentType';
+import type { ContentRepository, CreateContentDTO } from '../ContentRepository';
 
 /**
  * Firebase implementation of the ContentRepository
@@ -12,24 +13,55 @@ export class FirebaseContentRepository implements ContentRepository {
   private readonly collectionName = 'contents';
 
   /**
+   * Private adapter method to convert Firestore document data to a Content entity
+   * @param data Firestore document data
+   * @returns Content entity
+   */
+  private mapToEntity(data: DocumentData): Content {
+    return Content.create({
+      id: data.id,
+      lessonId: data.lessonId,
+      type: data.type,
+      title: data.title,
+      url: data.url
+    });
+  }
+
+  /**
    * Create new content
-   * @param content Content data without id
+   * @param contentData Content data for creation
    * @returns Created content with id
    */
-  async create(content: Omit<Content, 'id' | 'createdAt' | 'updatedAt'>): Promise<Content> {
+  async create(contentData: CreateContentDTO): Promise<Content> {
     const contentsRef = collection(firestore, this.collectionName);
     const newContentRef = doc(contentsRef);
     const id = newContentRef.id;
     
-    const createdAt = new Date();
-    const newContent: Content = {
+    // Create a new Content entity
+    const newContent = Content.create({
       id,
-      ...content,
-      createdAt,
-      updatedAt: createdAt,
+      lessonId: contentData.lessonId,
+      type: contentData.type,
+      title: contentData.title,
+      url: contentData.url
+    });
+    
+    // Convert to a plain object for Firestore
+    const contentDataForFirestore: {
+      id: string;
+      lessonId: string;
+      type: ContentType;
+      title: string;
+      url: string;
+    } = {
+      id,
+      lessonId: contentData.lessonId,
+      type: contentData.type,
+      title: contentData.title,
+      url: contentData.url
     };
 
-    await setDoc(newContentRef, newContent);
+    await setDoc(newContentRef, contentDataForFirestore);
     return newContent;
   }
 
@@ -46,16 +78,17 @@ export class FirebaseContentRepository implements ContentRepository {
       return null;
     }
 
-    return contentDoc.data() as Content;
+    const data = contentDoc.data();
+    return this.mapToEntity({ id, ...data });
   }
 
   /**
    * Update content
    * @param id Content id
-   * @param content Content data to update
+   * @param contentData Content data to update
    * @returns Updated content
    */
-  async update(id: string, content: Partial<Omit<Content, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Content> {
+  async update(id: string, contentData: Partial<Omit<Content, 'id'>>): Promise<Content> {
     const contentRef = doc(firestore, this.collectionName, id);
     const currentContent = await this.findById(id);
 
@@ -63,14 +96,33 @@ export class FirebaseContentRepository implements ContentRepository {
       throw new Error(`Content with id ${id} not found`);
     }
 
-    const updatedContent = {
-      ...currentContent,
-      ...content,
-      updatedAt: new Date(),
-    };
+    // Prepare the update data for Firestore
+    const updateData = {} as UpdateData<DocumentData>;
 
-    await updateDoc(contentRef, updatedContent);
-    return updatedContent;
+    // Add fields to update in Firestore
+    if (contentData.title !== undefined) {
+      updateData.title = contentData.title;
+    }
+
+    if (contentData.url !== undefined) {
+      updateData.url = contentData.url;
+    }
+
+    if (contentData.type !== undefined) {
+      updateData.type = contentData.type;
+    }
+
+    // Update the document in Firestore
+    await updateDoc(contentRef, updateData);
+
+    // Create and return the updated content entity without making another database query
+    return Content.create({
+      id: currentContent.id,
+      lessonId: currentContent.lessonId,
+      title: contentData.title !== undefined ? contentData.title : currentContent.title,
+      url: contentData.url !== undefined ? contentData.url : currentContent.url,
+      type: contentData.type !== undefined ? contentData.type : currentContent.type
+    });
   }
 
   /**
@@ -100,7 +152,10 @@ export class FirebaseContentRepository implements ContentRepository {
     const q = query(contentsRef, where('type', '==', type));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => doc.data() as Content);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
   }
 
   /**
@@ -113,7 +168,10 @@ export class FirebaseContentRepository implements ContentRepository {
     const q = query(contentsRef, where('authorId', '==', authorId));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => doc.data() as Content);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
   }
 
   /**
@@ -126,7 +184,10 @@ export class FirebaseContentRepository implements ContentRepository {
     const q = query(contentsRef, where('categories', 'array-contains', category));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => doc.data() as Content);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
   }
 
   /**
@@ -144,10 +205,13 @@ export class FirebaseContentRepository implements ContentRepository {
     const termLowerCase = term.toLowerCase();
     
     return querySnapshot.docs
-      .map(doc => doc.data() as Content)
-      .filter(content => 
-        content.title.toLowerCase().includes(termLowerCase) || 
-        content.description.toLowerCase().includes(termLowerCase)
-      );
+      .filter(doc => {
+        const data = doc.data();
+        return data.title.toLowerCase().includes(termLowerCase);
+      })
+      .map(doc => {
+        const data = doc.data();
+        return this.mapToEntity({ id: doc.id, ...data });
+      });
   }
 }
