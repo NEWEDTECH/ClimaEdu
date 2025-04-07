@@ -17,6 +17,16 @@
   - TypeScript (strict mode)
   - InversifyJS for dependency injection
 
+- **Domain Model Implemented**:
+  - User: User entity, Email and Profile value objects, UserRole enum
+  - Content: Course, Module, Lesson, Content, Activity, Questionnaire, Question entities
+  - Assessment: QuestionSubmission and QuestionnaireSubmission entities
+  - Enrollment: Enrollment entity and EnrollmentStatus enum
+  - Institution: Institution entity and InstitutionSettings value object
+  - Certificate: Certificate entity
+  - Badge: Badge and StudentBadge entities, BadgeCriteriaType enum
+  - Report: Various report entities for different personas (Student, Tutor, Admin, Institution)
+
 - **Initial modules implemented**:  
   - User: entities, repositories, and creation use case.
   - Content: entities, repositories, and creation use case.
@@ -46,15 +56,30 @@
    - Develop content viewing by category.
 
 3. **Enrollment module implementation**:
-   - Create entities and repositories.
    - Implement use cases for student enrollment.
    - Develop interface for enrollment management.
 
-4. **Dashboard development**:
+4. **Assessment module implementation**:
+   - Implement use cases for questionnaire submission.
+   - Create interface for taking quizzes and viewing results.
+
+5. **Certificate generation**:
+   - Implement use cases for certificate issuance.
+   - Create certificate templates and generation logic.
+
+6. **Badge system implementation**:
+   - Implement use cases for badge awarding.
+   - Create interface for viewing earned badges.
+
+7. **Reporting system**:
+   - Implement use cases for generating reports.
+   - Create dashboards for different personas.
+
+8. **Dashboard development**:
    - Create views for administrators.
    - Implement reports and metrics.
 
-5. **Testing and refinements**:
+9. **Testing and refinements**:
    - Implement unit tests.
    - Refine the user interface.
    - Optimize performance.

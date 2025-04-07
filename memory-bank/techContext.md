@@ -69,7 +69,7 @@
   No part of the code should ignore type errors (`any`, `@ts-ignore` should be avoided).
 
 - **Modular Architecture**:  
-  Each domain (user, content, enrollment, assessment, forum, certificate, report) has its own folder organization.
+  Each domain (user, content, enrollment, institution, certificate, badge, report) has its own folder organization.
 
 - **Clean Code**:  
   Rigorous application of Clean Architecture, SOLID, and Object Calisthenics.

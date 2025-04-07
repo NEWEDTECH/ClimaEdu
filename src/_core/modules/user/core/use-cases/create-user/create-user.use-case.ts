@@ -31,7 +31,7 @@ export class CreateUserUseCase {
     const user = await this.userRepository.create({
       name: input.name,
       email: input.email,
-      type: input.type,
+      role: input.type,
     });
 
     return { user };

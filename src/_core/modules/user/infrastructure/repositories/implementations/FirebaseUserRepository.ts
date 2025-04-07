@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
-import { User, UserType } from '../../../core/entities/User';
+import { User, UserRole } from '../../../core/entities/User';
 import type { UserRepository } from '../UserRepository';
 
 /**
@@ -112,7 +112,7 @@ export class FirebaseUserRepository implements UserRepository {
    * @param type User type
    * @returns List of users
    */
-  async listByType(type: UserType): Promise<User[]> {
+  async listByType(type: UserRole): Promise<User[]> {
     const usersRef = collection(firestore, this.collectionName);
     const q = query(usersRef, where('type', '==', type));
     const querySnapshot = await getDocs(q);

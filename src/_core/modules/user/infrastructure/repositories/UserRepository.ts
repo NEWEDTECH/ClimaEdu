@@ -1,4 +1,4 @@
-import { User, UserType } from '../../core/entities/User';
+import { User, UserRole } from '../../core/entities/User';
 
 /**
  * Interface for the User repository
@@ -46,5 +46,5 @@ export interface UserRepository {
    * @param type User type
    * @returns List of users
    */
-  listByType(type: UserType): Promise<User[]>;
+  listByType(type: UserRole): Promise<User[]>;
 }

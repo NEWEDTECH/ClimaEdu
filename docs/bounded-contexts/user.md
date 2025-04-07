@@ -1,0 +1,54 @@
+# Bounded Context: User
+
+## Context Explanation
+
+The **User** bounded context manages the identities of all participants in the platform.  
+It handles students, tutors, and administrators across different institutions.
+
+Each user is associated with a single institution and has a specific role that defines their permissions within the system.  
+Users may also have a personal profile that contains public information such as biography, avatar, and professional links.
+
+The context ensures identity management, role assignment, and integration with other parts of the platform like courses, enrollments, reports, and certificates.
+
+Hierarchy of data:
+
+```plaintext
+Institution
+  └── User
+       ├── Profile (optional)
+       ├── Role
+       └── Email
+```
+
+---
+
+## Entities and Responsibilities
+
+| Entity        | Responsibility |
+|:--------------|:----------------|
+| **User**      | Represents a person who accesses the platform, with personal information and a defined role. |
+| **Profile**   | Contains optional public information about the user, such as bio and social media links. |
+| **Email**     | A value object that encapsulates email validation and normalization. |
+| **UserRole**  | Enum that defines the access level of the user (Student, Tutor, Administrator). |
+
+---
+
+## Key Attributes (Functional Description)
+
+- **User.name**: Full name used for identification and display across the platform.
+- **User.role**: Defines the type of access the user has (student, tutor, administrator).
+- **User.institutionId**: Links the user to a specific institution, ensuring tenant isolation.
+- **Profile.bio**: A short description allowing users to present themselves.
+- **Profile.avatarUrl**: URL to an image used as the user's profile picture.
+- **Profile.linkedinUrl**: Public link to the user's LinkedIn profile.
+- **Email.value**: Ensures that user emails are correctly formatted and stored consistently.
+
+---
+
+## Business Rules
+
+- Every User must belong to exactly one Institution.
+- Every User must have a Role assigned at the time of creation.
+- A User may optionally have a Profile with additional information.
+- Email addresses must be validated and normalized before being associated with a User.
+- Roles define access permissions and visibility throughout the system.

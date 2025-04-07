@@ -21,8 +21,6 @@ import type { AuthService } from '@/_core/modules/auth/infrastructure/services/A
 
 ## Current Issues
 
-There are TypeScript errors in the project related to the import paths. The errors are showing that there are issues with the paths in the `@core` directory, but we've moved the files to `_core`. All import paths in the project need to be updated to reflect this change.
-
 ## Authentication System
 
 The authentication system has been implemented with the following features:

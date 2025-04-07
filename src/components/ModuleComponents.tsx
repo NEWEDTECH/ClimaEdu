@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
-import { CreateUserUseCase, UserType } from '@/_core/modules/user';
+import { CreateUserUseCase, UserRole } from '@/_core/modules/user';
 import { CreateContentUseCase, ContentType } from '@/_core/modules/content';
 
 export function UserModule() {
@@ -23,7 +23,7 @@ export function UserModule() {
         name: 'Test User',
         email: 'test@example.com',
         password: 'password123',
-        type: UserType.STUDENT,
+        type: UserRole.STUDENT,
       });
 
       alert(`User created successfully! ID: ${result.user.id}`);

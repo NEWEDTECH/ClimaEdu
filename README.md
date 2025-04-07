@@ -8,22 +8,23 @@ The project follows Clean Architecture principles with a modular structure:
 
 ```
 src/
-  modules/
-    user/
-      core/
-        entities/
-        use-cases/
-      infrastructure/
-        repositories/
-        implementations/
-      index.ts
-    content/
-      (similar structure)
-    auth/
-      (similar structure)
-  shared/
-    firebase/
-    container/
+  _core/
+    modules/
+      user/
+        core/
+          entities/
+          use-cases/
+        infrastructure/
+          repositories/
+          implementations/
+        index.ts
+      content/
+        (similar structure)
+      auth/
+        (similar structure)
+    shared/
+      firebase/
+      container/
   components/
   app/
 ```
