@@ -5,3 +5,4 @@ export { EmulatorStatus } from './EmulatorStatus';
 export { LoginForm } from './LoginForm';
 export { ProtectedContent } from './ProtectedContent';
 export { ProtectedRoute } from './ProtectedRoute';
+export { RoleSelectionModal } from './RoleSelectionModal';
