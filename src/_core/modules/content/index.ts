@@ -8,6 +8,8 @@ export * from './core/entities/Lesson';
 export * from './core/entities/Activity';
 export * from './core/entities/Questionnaire';
 export * from './core/entities/Question';
+export * from './core/entities/QuestionnaireSubmission';
+export * from './core/entities/QuestionSubmission';
 
 // Re-export use cases
 export * from './core/use-cases/create-content/create-content.use-case';
@@ -46,6 +48,12 @@ export * from './core/use-cases/delete-question/delete-question.output';
 export * from './core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.use-case';
 export * from './core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.input';
 export * from './core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.output';
+export * from './core/use-cases/submit-questionnaire/submit-questionnaire.use-case';
+export * from './core/use-cases/submit-questionnaire/submit-questionnaire.input';
+export * from './core/use-cases/submit-questionnaire/submit-questionnaire.output';
+export * from './core/use-cases/retry-questionnaire/retry-questionnaire.use-case';
+export * from './core/use-cases/retry-questionnaire/retry-questionnaire.input';
+export * from './core/use-cases/retry-questionnaire/retry-questionnaire.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
@@ -55,6 +63,7 @@ export * from './infrastructure/repositories/ModuleRepository';
 export * from './infrastructure/repositories/LessonRepository';
 export * from './infrastructure/repositories/ActivityRepository';
 export * from './infrastructure/repositories/QuestionnaireRepository';
+export * from './infrastructure/repositories/QuestionnaireSubmissionRepository';
 
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseContentRepository';

@@ -6,6 +6,7 @@ export const repositories = {
   LessonRepository: Symbol.for('LessonRepository'),
   ActivityRepository: Symbol.for('ActivityRepository'),
   QuestionnaireRepository: Symbol.for('QuestionnaireRepository'),
+  QuestionnaireSubmissionRepository: Symbol.for('QuestionnaireSubmissionRepository'),
 };
 
 export const useCases = {
@@ -22,6 +23,8 @@ export const useCases = {
   UpdateQuestionUseCase: Symbol.for('UpdateQuestionUseCase'),
   DeleteQuestionUseCase: Symbol.for('DeleteQuestionUseCase'),
   ListQuestionsOfQuestionnaireUseCase: Symbol.for('ListQuestionsOfQuestionnaireUseCase'),
+  SubmitQuestionnaireUseCase: Symbol.for('SubmitQuestionnaireUseCase'),
+  RetryQuestionnaireUseCase: Symbol.for('RetryQuestionnaireUseCase'),
 };
 
 // Export all symbols for this module

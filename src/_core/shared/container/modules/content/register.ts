@@ -13,6 +13,8 @@ import type { LessonRepository } from '@/_core/modules/content/infrastructure/re
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
@@ -26,6 +28,8 @@ import { AddQuestionToQuestionnaireUseCase } from '@/_core/modules/content/core/
 import { UpdateQuestionUseCase } from '@/_core/modules/content/core/use-cases/update-question/update-question.use-case';
 import { DeleteQuestionUseCase } from '@/_core/modules/content/core/use-cases/delete-question/delete-question.use-case';
 import { ListQuestionsOfQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.use-case';
+import { SubmitQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/submit-questionnaire/submit-questionnaire.use-case';
+import { RetryQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/retry-questionnaire/retry-questionnaire.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -59,5 +63,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.UpdateQuestionUseCase).to(UpdateQuestionUseCase);
   container.bind(useCases.DeleteQuestionUseCase).to(DeleteQuestionUseCase);
   container.bind(useCases.ListQuestionsOfQuestionnaireUseCase).to(ListQuestionsOfQuestionnaireUseCase);
+  container.bind(useCases.SubmitQuestionnaireUseCase).to(SubmitQuestionnaireUseCase);
+  container.bind(useCases.RetryQuestionnaireUseCase).to(RetryQuestionnaireUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }
