@@ -13,3 +13,6 @@ export type { UpdateInstitutionSettingsOutput } from './core/use-cases/update-in
 
 // Export repository interfaces
 export type { InstitutionRepository } from './infrastructure/repositories/InstitutionRepository';
+
+// Export repository implementations
+export { FirebaseInstitutionRepository } from './infrastructure/repositories/implementations/FirebaseInstitutionRepository';
