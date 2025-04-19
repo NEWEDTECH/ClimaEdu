@@ -3,6 +3,11 @@ import { Register } from './symbols';
 
 // Import repositories and use cases
 
+// Institution module imports
+// import type { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
+// import { FirebaseInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/implementations/FirebaseInstitutionRepository';
+import { CreateInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/create-institution/create-institution.use-case';
+
 // User module imports
 import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { FirebaseUserRepository } from '@/_core/modules/user/infrastructure/repositories/implementations/FirebaseUserRepository';
@@ -22,6 +27,10 @@ import { SendSignInLinkUseCase } from '@/_core/modules/auth/core/use-cases/send-
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 
 export function registerDependencies() {
+  // Register Institution module dependencies
+  // container.bind<InstitutionRepository>(Register.institution.repository.InstitutionRepository).to(FirebaseInstitutionRepository);
+  container.bind(Register.institution.useCase.CreateInstitutionUseCase).to(CreateInstitutionUseCase);
+
   // Register User module dependencies
   container.bind<UserRepository>(Register.user.repository.UserRepository).to(FirebaseUserRepository);
   container.bind(Register.user.useCase.CreateUserUseCase).to(CreateUserUseCase);

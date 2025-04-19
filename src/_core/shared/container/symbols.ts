@@ -1,5 +1,15 @@
 // Symbol registry for dependency injection
 
+// Institution module symbols
+export const InstitutionSymbols = {
+  repositories: {
+    InstitutionRepository: Symbol.for('InstitutionRepository'),
+  },
+  useCases: {
+    CreateInstitutionUseCase: Symbol.for('CreateInstitutionUseCase'),
+  },
+};
+
 // User module symbols
 export const UserSymbols = {
   repositories: {
@@ -46,5 +56,9 @@ export const Register = {
   auth: {
     service: AuthSymbols.services,
     useCase: AuthSymbols.useCases,
+  },
+  institution: {
+    repository: InstitutionSymbols.repositories,
+    useCase: InstitutionSymbols.useCases,
   },
 };
