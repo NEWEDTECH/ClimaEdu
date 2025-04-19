@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { registerDependencies } from '../../_core/shared/container/containerRegister';
+import { registerDependencies } from '../../_core/shared/container';
 
 /**
  * Provider component to initialize the Inversify container

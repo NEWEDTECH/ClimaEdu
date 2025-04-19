@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import type { UserRepository } from '../../../infrastructure/repositories/UserRepository';
-import { Register } from '@/_core/shared/container/symbols';
+import { Register } from '@/_core/shared/container';
 import { CreateUserInput } from './create-user.input';
 import { CreateUserOutput } from './create-user.output';
 import { Email } from '../../entities/Email';

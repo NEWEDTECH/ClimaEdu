@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import type { InstitutionRepository } from '../../../infrastructure/repositories/InstitutionRepository';
-import { Register } from '@/_core/shared/container/symbols';
+import { Register } from '@/_core/shared/container';
 import { UpdateInstitutionSettingsInput } from './update-institution-settings.input';
 import { UpdateInstitutionSettingsOutput } from './update-institution-settings.output';
 import { InstitutionSettings } from '../../entities/InstitutionSettings';

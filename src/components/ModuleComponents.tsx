@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { container } from '@/_core/shared/container/container';
-import { Register } from '@/_core/shared/container/symbols';
+import { container, Register } from '@/_core/shared/container';
 import { CreateUserUseCase, UserRole } from '@/_core/modules/user';
 import { CreateContentUseCase } from '@/_core/modules/content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
