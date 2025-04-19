@@ -110,3 +110,22 @@ Institution
 - If title is provided, it cannot be empty
 - If description is provided, it cannot be empty
 - Only specified fields are updated; other fields retain their current values
+
+### CreateModuleUseCase
+
+**Purpose**: Creates a new module within a course.
+
+**Inputs**:
+- `courseId`: The ID of the course that the module belongs to
+- `title`: The title of the module
+- `order`: The position of the module within the course
+
+**Process**:
+1. Verifies that the course exists
+2. Creates a new Module entity with the provided data
+3. Returns the created Module
+
+**Business Rules**:
+- Course must exist
+- Module title cannot be empty
+- Module order must be a non-negative number

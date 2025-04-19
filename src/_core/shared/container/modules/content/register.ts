@@ -5,10 +5,13 @@ import { repositories, useCases } from './symbols';
 import type { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
+import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/create-module/create-module.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -20,10 +23,13 @@ export function registerContentModule(container: Container): void {
   container.bind<ContentRepository>(repositories.ContentRepository).to(FirebaseContentRepository);
   // TODO: Implement and register FirebaseCourseRepository
   // container.bind<CourseRepository>(repositories.CourseRepository).to(FirebaseCourseRepository);
+  // TODO: Implement and register FirebaseModuleRepository
+  // container.bind<ModuleRepository>(repositories.ModuleRepository).to(FirebaseModuleRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);
   container.bind(useCases.CreateCourseUseCase).to(CreateCourseUseCase);
   container.bind(useCases.UpdateCourseUseCase).to(UpdateCourseUseCase);
+  container.bind(useCases.CreateModuleUseCase).to(CreateModuleUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }
