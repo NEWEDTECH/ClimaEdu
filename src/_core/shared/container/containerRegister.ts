@@ -7,6 +7,7 @@ import { Register } from './symbols';
 // import type { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 // import { FirebaseInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/implementations/FirebaseInstitutionRepository';
 import { CreateInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/create-institution/create-institution.use-case';
+import { UpdateInstitutionSettingsUseCase } from '@/_core/modules/institution/core/use-cases/update-institution-settings/update-institution-settings.use-case';
 
 // User module imports
 import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
@@ -30,6 +31,7 @@ export function registerDependencies() {
   // Register Institution module dependencies
   // container.bind<InstitutionRepository>(Register.institution.repository.InstitutionRepository).to(FirebaseInstitutionRepository);
   container.bind(Register.institution.useCase.CreateInstitutionUseCase).to(CreateInstitutionUseCase);
+  container.bind(Register.institution.useCase.UpdateInstitutionSettingsUseCase).to(UpdateInstitutionSettingsUseCase);
 
   // Register User module dependencies
   container.bind<UserRepository>(Register.user.repository.UserRepository).to(FirebaseUserRepository);

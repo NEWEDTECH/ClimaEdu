@@ -7,6 +7,7 @@ export const InstitutionSymbols = {
   },
   useCases: {
     CreateInstitutionUseCase: Symbol.for('CreateInstitutionUseCase'),
+    UpdateInstitutionSettingsUseCase: Symbol.for('UpdateInstitutionSettingsUseCase'),
   },
 };
 
