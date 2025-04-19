@@ -202,3 +202,49 @@ import { container, Register } from '@/_core/shared/container';
 // Module imports
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
+```
+
+## Prefixed IDs Convention
+
+The project uses a standardized ID prefixing convention to improve code readability, debugging, and data integrity. This pattern ensures that entity IDs are immediately recognizable and helps prevent confusion between different entity types.
+
+### Key Principles
+
+1. **ID Format**:
+   - All entity IDs follow the format: `<prefix>_<uniqueId>`
+   - Example: `usr_abc123`, `crs_xyz987`
+
+2. **Entity-Specific Prefixes**:
+   - Each entity type has a designated prefix (3-5 letters)
+   - Examples: `usr_` for User, `crs_` for Course, `mod_` for Module
+
+3. **Relationship References**:
+   - When referencing other entities, use their prefixed IDs
+   - Example: `enrollment.userId = 'usr_abc123'`
+
+4. **ID Generation**:
+   - Repositories provide methods to generate prefixed IDs
+   - Example: `const id = await repository.generateId();`
+
+### Benefits
+
+- **Visual Identification**: Immediate recognition of entity types in code and databases
+- **Error Prevention**: Reduces the risk of using the wrong ID type in relationships
+- **Debugging**: Makes logs and database queries more readable
+- **Data Integrity**: Helps maintain proper relationships between entities
+
+### Implementation
+
+```typescript
+// Example of ID generation function
+function generateId(prefix: string): string {
+  const uniqueId = crypto.randomUUID().replace(/-/g, '').substring(0, 10);
+  return `${prefix}_${uniqueId}`;
+}
+
+// Entity-specific ID generators
+export const generateUserId = () => generateId('usr');
+export const generateCourseId = () => generateId('crs');
+```
+
+For a complete list of entity prefixes and more details, refer to the `docs/id-convention.md` document.
