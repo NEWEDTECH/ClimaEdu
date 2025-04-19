@@ -15,4 +15,5 @@ export * from './infrastructure/repositories/BadgeRepository';
 export * from './infrastructure/repositories/StudentBadgeRepository';
 
 // Re-export repository implementations
-// TODO: Implement and export repository implementations
+export * from './infrastructure/repositories/implementations/FirebaseBadgeRepository';
+export * from './infrastructure/repositories/implementations/FirebaseStudentBadgeRepository';

@@ -16,4 +16,4 @@ export * from './core/use-cases/cancel-enrollment/cancel-enrollment.output';
 export * from './infrastructure/repositories/EnrollmentRepository';
 
 // Re-export repository implementations
-// TODO: Implement and export FirebaseEnrollmentRepository
+export * from './infrastructure/repositories/implementations/FirebaseEnrollmentRepository';
