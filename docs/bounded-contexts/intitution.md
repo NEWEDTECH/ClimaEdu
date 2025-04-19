@@ -54,3 +54,53 @@ Institution
 - Institutions can customize visual elements such as logos and colors to match their branding.
 - Institutions may optionally configure a custom domain for their users' access.
 - Institution settings can be updated at any time without affecting historical user data.
+
+---
+
+## Use Cases
+
+### CreateInstitutionUseCase
+
+**Purpose**: Creates a new institution with basic configuration.
+
+**Inputs**:
+- `name`: The name of the institution
+- `domain`: The domain for the institution (must be unique)
+- `settings` (optional): Visual customization settings
+  - `logoUrl` (optional): URL to the institution's logo
+  - `primaryColor` (optional): Primary branding color
+  - `secondaryColor` (optional): Secondary branding color
+
+**Process**:
+1. Validates that no institution exists with the provided domain
+2. Creates InstitutionSettings value object if settings are provided
+3. Creates a new Institution entity with the provided data
+4. Returns the created Institution
+
+**Business Rules**:
+- Institution domain must be unique across the system
+- Domain must follow valid domain format
+- Institution name cannot be empty
+
+### UpdateInstitutionSettingsUseCase
+
+**Purpose**: Updates the visual customization settings for an existing institution.
+
+**Inputs**:
+- `institutionId`: The ID of the institution to update
+- `settings`: The settings to update
+  - `logoUrl` (optional): URL to the institution's logo
+  - `primaryColor` (optional): Primary branding color
+  - `secondaryColor` (optional): Secondary branding color
+
+**Process**:
+1. Finds the institution by ID
+2. Creates a new InstitutionSettings value object with updated values
+   (preserving existing values for any settings not explicitly provided)
+3. Updates the institution with the new settings
+4. Returns the updated Institution
+
+**Business Rules**:
+- Institution must exist
+- Only specified settings are updated; other settings retain their current values
+- Settings are immutable; updates create a new settings object
