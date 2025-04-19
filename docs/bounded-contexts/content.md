@@ -129,3 +129,28 @@ Institution
 - Course must exist
 - Module title cannot be empty
 - Module order must be a non-negative number
+
+### CreateLessonUseCase
+
+**Purpose**: Creates a new lesson within a module.
+
+**Inputs**:
+- `moduleId`: The ID of the module that the lesson belongs to
+- `title`: The title of the lesson
+- `order` (optional): The position of the lesson within the module
+
+**Process**:
+1. Verifies that the module exists
+2. If order is provided:
+   - Reorders existing lessons to make room for the new one
+   - Creates the lesson at the specified position
+3. If order is not provided:
+   - Counts existing lessons in the module
+   - Creates the lesson at the end of the sequence
+4. Returns the created Lesson
+
+**Business Rules**:
+- Module must exist
+- Lesson title cannot be empty
+- If order is provided, it must be a non-negative number
+- When a lesson is inserted at a specific position, other lessons are automatically reordered
