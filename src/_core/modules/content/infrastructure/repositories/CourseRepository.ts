@@ -29,12 +29,11 @@ export interface CourseRepository {
   findById(id: string): Promise<Course | null>;
 
   /**
-   * Update a course
-   * @param id Course id
-   * @param course Course data to update
-   * @returns Updated course
+   * Save a course
+   * @param course Course to save
+   * @returns Saved course
    */
-  update(id: string, course: Partial<Omit<Course, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Course>;
+  save(course: Course): Promise<Course>;
 
   /**
    * Delete a course

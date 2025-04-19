@@ -28,23 +28,17 @@ export class UpdateCourseUseCase {
       throw new Error(`Course with ID ${input.id} not found`);
     }
 
-    // Prepare update data
-    const updateData: Partial<{
-      title: string;
-      description: string;
-    }> = {};
-
-    // Only include fields that are provided in the input
+    // Update the course using entity methods
     if (input.title !== undefined) {
-      updateData.title = input.title;
+      course.updateTitle(input.title);
     }
 
     if (input.description !== undefined) {
-      updateData.description = input.description;
+      course.updateDescription(input.description);
     }
 
-    // Update the course
-    const updatedCourse = await this.courseRepository.update(input.id, updateData);
+    // Save the updated course
+    const updatedCourse = await this.courseRepository.save(course);
 
     return { course: updatedCourse };
   }

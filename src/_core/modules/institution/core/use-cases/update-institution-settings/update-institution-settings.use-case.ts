@@ -37,11 +37,11 @@ export class UpdateInstitutionSettingsUseCase {
       secondaryColor: input.settings.secondaryColor ?? currentSettings.secondaryColor
     });
 
-    // Update the institution with new settings
-    const updatedInstitution = await this.institutionRepository.update(
-      input.institutionId,
-      { settings: newSettings }
-    );
+    // Update the institution with new settings using entity method
+    institution.updateSettings(newSettings);
+
+    // Save the updated institution
+    const updatedInstitution = await this.institutionRepository.save(institution);
 
     return { institution: updatedInstitution };
   }

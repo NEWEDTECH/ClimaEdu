@@ -40,12 +40,11 @@ export interface InstitutionRepository {
   findByDomain(domain: string): Promise<Institution | null>;
 
   /**
-   * Update an institution
-   * @param id Institution id
-   * @param institution Institution data to update
-   * @returns Updated institution
+   * Save an institution
+   * @param institution Institution to save
+   * @returns Saved institution
    */
-  update(id: string, institution: Partial<Omit<Institution, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Institution>;
+  save(institution: Institution): Promise<Institution>;
 
   /**
    * Delete an institution

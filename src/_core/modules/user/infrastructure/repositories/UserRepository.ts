@@ -40,12 +40,11 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
 
   /**
-   * Update a user
-   * @param id User id
-   * @param user User data to update
-   * @returns Updated user
+   * Save a user
+   * @param user User to save
+   * @returns Saved user
    */
-  update(id: string, user: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User>;
+  save(user: User): Promise<User>;
 
   /**
    * Delete a user

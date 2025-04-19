@@ -29,12 +29,11 @@ export interface ModuleRepository {
   findById(id: string): Promise<Module | null>;
 
   /**
-   * Update a module
-   * @param id Module id
-   * @param module Module data to update
-   * @returns Updated module
+   * Save a module
+   * @param module Module to save
+   * @returns Saved module
    */
-  update(id: string, module: Partial<Omit<Module, 'id' | 'courseId' | 'lessons'>>): Promise<Module>;
+  save(module: Module): Promise<Module>;
 
   /**
    * Delete a module
