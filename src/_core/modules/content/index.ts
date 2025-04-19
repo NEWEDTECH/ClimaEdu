@@ -67,3 +67,9 @@ export * from './infrastructure/repositories/QuestionnaireSubmissionRepository';
 
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseContentRepository';
+export * from './infrastructure/repositories/implementations/FirebaseCourseRepository';
+export * from './infrastructure/repositories/implementations/FirebaseModuleRepository';
+export * from './infrastructure/repositories/implementations/FirebaseLessonRepository';
+export * from './infrastructure/repositories/implementations/FirebaseActivityRepository';
+export * from './infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
+export * from './infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';

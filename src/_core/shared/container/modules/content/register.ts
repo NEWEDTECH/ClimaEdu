@@ -3,19 +3,19 @@ import { repositories, useCases } from './symbols';
 
 // Import implementations
 import type { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
+import { FirebaseCourseRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseRepository';
+import { FirebaseModuleRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseModuleRepository';
+import { FirebaseLessonRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonRepository';
+import { FirebaseActivityRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseActivityRepository';
+import { FirebaseQuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
+import { FirebaseQuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
@@ -39,16 +39,12 @@ import { RetryQuestionnaireUseCase } from '@/_core/modules/content/core/use-case
 export function registerContentModule(container: Container): void {
   // Register repositories
   container.bind<ContentRepository>(repositories.ContentRepository).to(FirebaseContentRepository);
-  // TODO: Implement and register FirebaseCourseRepository
-  // container.bind<CourseRepository>(repositories.CourseRepository).to(FirebaseCourseRepository);
-  // TODO: Implement and register FirebaseModuleRepository
-  // container.bind<ModuleRepository>(repositories.ModuleRepository).to(FirebaseModuleRepository);
-  // TODO: Implement and register FirebaseLessonRepository
-  // container.bind<LessonRepository>(repositories.LessonRepository).to(FirebaseLessonRepository);
-  // TODO: Implement and register FirebaseActivityRepository
-  // container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
-  // TODO: Implement and register FirebaseQuestionnaireRepository
-  // container.bind<QuestionnaireRepository>(repositories.QuestionnaireRepository).to(FirebaseQuestionnaireRepository);
+  container.bind<CourseRepository>(repositories.CourseRepository).to(FirebaseCourseRepository);
+  container.bind<ModuleRepository>(repositories.ModuleRepository).to(FirebaseModuleRepository);
+  container.bind<LessonRepository>(repositories.LessonRepository).to(FirebaseLessonRepository);
+  container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
+  container.bind<QuestionnaireRepository>(repositories.QuestionnaireRepository).to(FirebaseQuestionnaireRepository);
+  container.bind<QuestionnaireSubmissionRepository>(repositories.QuestionnaireSubmissionRepository).to(FirebaseQuestionnaireSubmissionRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);
