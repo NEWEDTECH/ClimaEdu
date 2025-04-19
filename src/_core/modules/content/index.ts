@@ -2,15 +2,20 @@
 
 // Re-export entities
 export * from './core/entities/Content';
+export * from './core/entities/Course';
 
 // Re-export use cases
 export * from './core/use-cases/create-content/create-content.use-case';
 export * from './core/use-cases/create-content/create-content.input';
 export * from './core/use-cases/create-content/create-content.output';
+export * from './core/use-cases/create-course/create-course.use-case';
+export * from './core/use-cases/create-course/create-course.input';
+export * from './core/use-cases/create-course/create-course.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
 export * from './infrastructure/repositories/ContentRepository';
+export * from './infrastructure/repositories/CourseRepository';
 
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseContentRepository';

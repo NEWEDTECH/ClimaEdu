@@ -68,3 +68,25 @@ Institution
 - Each **QuestionnaireSubmission** records an attempt with calculated score and pass/fail status.
 - Students may be allowed multiple attempts on a **Questionnaire**, depending on institutional or course rules.
 - Certificates can only be issued if the student passes the required Questionnaires with the minimum score defined.
+
+---
+
+## Use Cases
+
+### CreateCourseUseCase
+
+**Purpose**: Creates a new course with basic information.
+
+**Inputs**:
+- `institutionId`: The ID of the institution that owns the course
+- `title`: The title of the course
+- `description`: A detailed description of the course
+
+**Process**:
+1. Creates a new Course entity with the provided data
+2. Returns the created Course
+
+**Business Rules**:
+- Course title cannot be empty
+- Course description cannot be empty
+- Institution ID must be valid
