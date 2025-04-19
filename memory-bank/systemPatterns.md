@@ -16,6 +16,49 @@ The shared code is located in `src/_core/shared/`.
 
 React components on the frontend do not interact directly with the UseCases. Instead, they resolve UseCases via a Dependency Injection Container (Inversify) using Symbols. This pattern ensures low coupling and high testability.
 
+### Modular Container Structure
+
+The Dependency Injection container is organized in a modular structure that mirrors the application's module structure:
+
+- **Container Directory Structure**:
+  ```
+  src/_core/shared/container/
+  ├── container.ts                 # Main container instance
+  ├── symbols.ts                   # Main symbols file (imports and re-exports module symbols)
+  ├── containerRegister.ts         # Main registration file (uses module-specific registrations)
+  ├── index.ts                     # Exports everything from the container directory
+  └── modules/                     # Module-specific container files
+      ├── institution/             # Institution module container files
+      │   ├── symbols.ts           # Institution-specific symbols
+      │   └── register.ts          # Institution-specific registrations
+      ├── user/                    # User module container files
+      │   ├── symbols.ts           # User-specific symbols
+      │   └── register.ts          # User-specific registrations
+      ├── content/                 # Content module container files
+      │   ├── symbols.ts           # Content-specific symbols
+      │   └── register.ts          # Content-specific registrations
+      └── auth/                    # Auth module container files
+          ├── symbols.ts           # Auth-specific symbols
+          └── register.ts          # Auth-specific registrations
+  ```
+
+- **Import Pattern**:
+  Instead of importing directly from individual container files, components and use cases should import from the container index:
+  ```typescript
+  // Old pattern
+  import { container } from '@/_core/shared/container/container';
+  import { Register } from '@/_core/shared/container/symbols';
+  
+  // New pattern
+  import { container, Register } from '@/_core/shared/container';
+  ```
+
+This modular structure provides several advantages:
+1. **Maintainability**: Each module's container code is isolated, making it easier to understand and maintain
+2. **Scalability**: New modules can be added without modifying existing files
+3. **Organization**: The container structure mirrors the module structure, making it intuitive to navigate
+4. **Encapsulation**: Each module's container code is encapsulated, reducing the risk of conflicts
+
 ## Authentication Flow
 
 The application uses Firebase Authentication with email link (passwordless) authentication:
@@ -77,7 +120,9 @@ All imports from the core modules and shared code should use the following paths
 
 For example:
 ```typescript
-import { container } from '@/_core/shared/container/container';
-import { Register } from '@/_core/shared/container/symbols';
+// Container imports (preferred pattern)
+import { container, Register } from '@/_core/shared/container';
+
+// Module imports
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
