@@ -4,6 +4,7 @@ import type { ModuleRepository } from '../../../infrastructure/repositories/Modu
 import { Register } from '@/_core/shared/container';
 import { CreateLessonInput } from './create-lesson.input';
 import { CreateLessonOutput } from './create-lesson.output';
+import { Lesson } from '../../entities/Lesson';
 
 /**
  * Use case for creating a lesson
@@ -47,13 +48,18 @@ export class CreateLessonUseCase {
       lessonOrder = lessonCount;
     }
 
-    // Create lesson
-    const createdLesson = await this.lessonRepository.create({
+    // Generate ID and create lesson entity
+    const id = await this.lessonRepository.generateId();
+    const lessonEntity = Lesson.create({
+      id,
       moduleId: input.moduleId,
       title: input.title,
       order: lessonOrder,
     });
 
-    return { lesson: createdLesson };
+    // Save the lesson
+    const savedLesson = await this.lessonRepository.save(lessonEntity);
+
+    return { lesson: savedLesson };
   }
 }

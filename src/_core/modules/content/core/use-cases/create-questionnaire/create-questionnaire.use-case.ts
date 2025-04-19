@@ -4,6 +4,7 @@ import type { LessonRepository } from '../../../infrastructure/repositories/Less
 import { Register } from '@/_core/shared/container';
 import { CreateQuestionnaireInput } from './create-questionnaire.input';
 import { CreateQuestionnaireOutput } from './create-questionnaire.output';
+import { Questionnaire } from '../../entities/Questionnaire';
 
 /**
  * Use case for creating a questionnaire for a lesson
@@ -38,23 +39,28 @@ export class CreateQuestionnaireUseCase {
       throw new Error(`Lesson with ID ${input.lessonId} already has a questionnaire`);
     }
 
-    // Create questionnaire
-    const createdQuestionnaire = await this.questionnaireRepository.create({
+    // Generate ID and create questionnaire entity
+    const id = await this.questionnaireRepository.generateId();
+    const questionnaire = Questionnaire.create({
+      id,
       lessonId: input.lessonId,
       title: input.title,
       maxAttempts: input.maxAttempts,
       passingScore: input.passingScore,
     });
 
+    // Save the questionnaire
+    const savedQuestionnaire = await this.questionnaireRepository.save(questionnaire);
+
     // Attach questionnaire to lesson
-    existingLesson.attachQuestionnaire(createdQuestionnaire);
+    existingLesson.attachQuestionnaire(savedQuestionnaire);
 
     // Save the updated lesson
     const updatedLesson = await this.lessonRepository.save(existingLesson);
 
     // Return both the created questionnaire and the updated lesson
     return {
-      questionnaire: createdQuestionnaire,
+      questionnaire: savedQuestionnaire,
       lesson: updatedLesson,
     };
   }

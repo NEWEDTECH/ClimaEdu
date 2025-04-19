@@ -1,25 +1,15 @@
 import { Course } from '../../core/entities/Course';
 
 /**
- * Data transfer object for creating a course
- */
-export interface CreateCourseDTO {
-  institutionId: string;
-  title: string;
-  description: string;
-}
-
-/**
  * Interface for the Course repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface CourseRepository {
   /**
-   * Create a new course
-   * @param courseData Course data for creation
-   * @returns Created course with id
+   * Generate a new unique ID for a course
+   * @returns A unique ID
    */
-  create(courseData: CreateCourseDTO): Promise<Course>;
+  generateId(): Promise<string>;
 
   /**
    * Find a course by id

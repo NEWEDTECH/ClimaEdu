@@ -1,26 +1,15 @@
 import { Activity } from '../../core/entities/Activity';
 
 /**
- * Data transfer object for creating an activity
- */
-export interface CreateActivityDTO {
-  lessonId: string;
-  description: string;
-  instructions: string;
-  resourceUrl?: string;
-}
-
-/**
  * Interface for the Activity repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface ActivityRepository {
   /**
-   * Create a new activity
-   * @param activityData Activity data for creation
-   * @returns Created activity
+   * Generate a new unique ID for an activity
+   * @returns A unique ID
    */
-  create(activityData: CreateActivityDTO): Promise<Activity>;
+  generateId(): Promise<string>;
 
   /**
    * Find an activity by lesson ID
@@ -30,12 +19,11 @@ export interface ActivityRepository {
   findByLessonId(lessonId: string): Promise<Activity | null>;
 
   /**
-   * Update an activity
-   * @param lessonId Lesson ID
-   * @param activity Activity data to update
-   * @returns Updated activity
+   * Save an activity
+   * @param activity Activity to save
+   * @returns Saved activity
    */
-  update(lessonId: string, activity: Partial<Activity>): Promise<Activity>;
+  save(activity: Activity): Promise<Activity>;
 
   /**
    * Delete an activity

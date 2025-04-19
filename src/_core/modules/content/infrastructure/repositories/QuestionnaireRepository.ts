@@ -1,26 +1,15 @@
 import { Questionnaire } from '../../core/entities/Questionnaire';
 
 /**
- * Data transfer object for creating a questionnaire
- */
-export interface CreateQuestionnaireDTO {
-  lessonId: string;
-  title: string;
-  maxAttempts?: number;
-  passingScore?: number;
-}
-
-/**
  * Interface for the Questionnaire repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface QuestionnaireRepository {
   /**
-   * Create a new questionnaire
-   * @param questionnaireData Questionnaire data for creation
-   * @returns Created questionnaire with id
+   * Generate a new unique ID for a questionnaire
+   * @returns A unique ID
    */
-  create(questionnaireData: CreateQuestionnaireDTO): Promise<Questionnaire>;
+  generateId(): Promise<string>;
 
   /**
    * Find a questionnaire by id

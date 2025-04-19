@@ -1,25 +1,15 @@
 import { Lesson } from '../../core/entities/Lesson';
 
 /**
- * Data transfer object for creating a lesson
- */
-export interface CreateLessonDTO {
-  moduleId: string;
-  title: string;
-  order: number;
-}
-
-/**
  * Interface for the Lesson repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface LessonRepository {
   /**
-   * Create a new lesson
-   * @param lessonData Lesson data for creation
-   * @returns Created lesson with id
+   * Generate a new unique ID for a lesson
+   * @returns A unique ID
    */
-  create(lessonData: CreateLessonDTO): Promise<Lesson>;
+  generateId(): Promise<string>;
 
   /**
    * Find a lesson by id

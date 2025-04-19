@@ -12,4 +12,4 @@ export type { UpdateInstitutionSettingsInput } from './core/use-cases/update-ins
 export type { UpdateInstitutionSettingsOutput } from './core/use-cases/update-institution-settings/update-institution-settings.output';
 
 // Export repository interfaces
-export type { InstitutionRepository, CreateInstitutionDTO } from './infrastructure/repositories/InstitutionRepository';
+export type { InstitutionRepository } from './infrastructure/repositories/InstitutionRepository';

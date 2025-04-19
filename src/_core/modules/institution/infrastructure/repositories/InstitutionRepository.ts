@@ -1,29 +1,15 @@
 import { Institution } from '../../core/entities/Institution';
 
 /**
- * Data transfer object for creating an institution
- */
-export interface CreateInstitutionDTO {
-  name: string;
-  domain: string;
-  settings?: {
-    logoUrl?: string;
-    primaryColor?: string;
-    secondaryColor?: string;
-  };
-}
-
-/**
  * Interface for the Institution repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface InstitutionRepository {
   /**
-   * Create a new institution
-   * @param institutionData Institution data for creation
-   * @returns Created institution with id
+   * Generate a new unique ID for an institution
+   * @returns A unique ID
    */
-  create(institutionData: CreateInstitutionDTO): Promise<Institution>;
+  generateId(): Promise<string>;
 
   /**
    * Find an institution by id

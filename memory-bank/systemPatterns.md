@@ -147,6 +147,46 @@ In Clean Architecture, entities are the core of the system and should encapsulat
 
 This pattern is a fundamental aspect of Clean Architecture and ensures that domain logic remains in the entities, where it belongs, while infrastructure concerns like persistence are properly separated.
 
+## Entity Creation Pattern
+
+In Clean Architecture, the creation of entities should be handled by the domain layer, not by repositories. This pattern ensures that entities are always created in a valid state and that business rules are enforced during creation.
+
+### Key Principles
+
+1. **Repositories Generate IDs**:
+   - Repositories provide a `generateId()` method to create unique IDs
+   - This allows the domain layer to create entities with valid IDs
+   - Example: `const id = await repository.generateId();`
+
+2. **Entities Create Themselves**:
+   - Entities have a static `create()` method that enforces business rules
+   - This method validates input and returns a new entity instance
+   - Example: `const entity = Entity.create({ id, ...otherProps });`
+
+3. **Repositories Save Entities**:
+   - Repositories provide a `save()` method to persist entities
+   - They don't have a `create()` method that would bypass entity validation
+   - Example: `await repository.save(entity);`
+
+4. **Correct Flow in Use Cases**:
+   ```typescript
+   // Correct pattern
+   const id = await repository.generateId();
+   const entity = Entity.create({ id, ...otherProps });
+   const savedEntity = await repository.save(entity);
+   
+   // Incorrect pattern
+   const entity = await repository.create({ ...props }); // Repository shouldn't create entities
+   ```
+
+5. **Benefits**:
+   - **Validation**: Business rules are enforced during entity creation
+   - **Encapsulation**: Creation logic stays in the domain layer
+   - **Consistency**: Entities are always created in a valid state
+   - **Testability**: Creation logic can be tested in isolation
+
+This pattern complements the Entity Self-Modification Pattern and ensures that the entire lifecycle of an entity (creation, modification, persistence) is handled according to Clean Architecture principles.
+
 ## Import Paths
 
 All imports from the core modules and shared code should use the following paths:

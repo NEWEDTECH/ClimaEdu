@@ -1,25 +1,15 @@
 import { Module } from '../../core/entities/Module';
 
 /**
- * Data transfer object for creating a module
- */
-export interface CreateModuleDTO {
-  courseId: string;
-  title: string;
-  order: number;
-}
-
-/**
  * Interface for the Module repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface ModuleRepository {
   /**
-   * Create a new module
-   * @param moduleData Module data for creation
-   * @returns Created module with id
+   * Generate a new unique ID for a module
+   * @returns A unique ID
    */
-  create(moduleData: CreateModuleDTO): Promise<Module>;
+  generateId(): Promise<string>;
 
   /**
    * Find a module by id

@@ -4,6 +4,7 @@ import type { CourseRepository } from '../../../infrastructure/repositories/Cour
 import { Register } from '@/_core/shared/container';
 import { CreateModuleInput } from './create-module.input';
 import { CreateModuleOutput } from './create-module.output';
+import { Module } from '../../entities/Module';
 
 /**
  * Use case for creating a module
@@ -32,13 +33,18 @@ export class CreateModuleUseCase {
       throw new Error(`Course with ID ${input.courseId} not found`);
     }
 
-    // Create module
-    const createdModule = await this.moduleRepository.create({
+    // Generate ID and create module entity
+    const id = await this.moduleRepository.generateId();
+    const moduleEntity = Module.create({
+      id,
       courseId: input.courseId,
       title: input.title,
       order: input.order,
     });
 
-    return { module: createdModule };
+    // Save the module
+    const savedModule = await this.moduleRepository.save(moduleEntity);
+
+    return { module: savedModule };
   }
 }

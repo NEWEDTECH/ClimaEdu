@@ -4,6 +4,7 @@ import type { LessonRepository } from '../../../infrastructure/repositories/Less
 import { Register } from '@/_core/shared/container';
 import { CreateActivityInput } from './create-activity.input';
 import { CreateActivityOutput } from './create-activity.output';
+import { Activity } from '../../entities/Activity';
 
 /**
  * Use case for creating an activity for a lesson
@@ -38,23 +39,28 @@ export class CreateActivityUseCase {
       throw new Error(`Lesson with ID ${input.lessonId} already has an activity`);
     }
 
-    // Persist the activity
-    const createdActivity = await this.activityRepository.create({
+    // Generate ID and create activity entity
+    const id = await this.activityRepository.generateId();
+    const activity = Activity.create({
+      id,
       lessonId: input.lessonId,
       description: input.description,
       instructions: input.instructions,
       resourceUrl: input.resourceUrl,
     });
 
+    // Save the activity
+    const savedActivity = await this.activityRepository.save(activity);
+
     // Attach activity to lesson in memory
-    existingLesson.attachActivity(createdActivity);
+    existingLesson.attachActivity(savedActivity);
 
     // Persist the updated lesson with the activity
     const updatedLesson = await this.lessonRepository.save(existingLesson);
 
     // Return both the created activity and the updated lesson
     return {
-      activity: createdActivity,
+      activity: savedActivity,
       lesson: updatedLesson,
     };
   }

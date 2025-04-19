@@ -3,6 +3,7 @@ import type { CourseRepository } from '../../../infrastructure/repositories/Cour
 import { Register } from '@/_core/shared/container';
 import { CreateCourseInput } from './create-course.input';
 import { CreateCourseOutput } from './create-course.output';
+import { Course } from '../../entities/Course';
 
 /**
  * Use case for creating a course
@@ -21,13 +22,18 @@ export class CreateCourseUseCase {
    * @returns Output data
    */
   async execute(input: CreateCourseInput): Promise<CreateCourseOutput> {
-    // Create course
-    const course = await this.courseRepository.create({
+    // Generate ID and create course entity
+    const id = await this.courseRepository.generateId();
+    const course = Course.create({
+      id,
       institutionId: input.institutionId,
       title: input.title,
       description: input.description,
     });
 
-    return { course };
+    // Save the course
+    const savedCourse = await this.courseRepository.save(course);
+
+    return { course: savedCourse };
   }
 }
