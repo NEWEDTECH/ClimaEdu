@@ -11,6 +11,8 @@ import type { ModuleRepository } from '@/_core/modules/content/infrastructure/re
 import type { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
@@ -19,6 +21,7 @@ import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/crea
 import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
 import { AddContentToLessonUseCase } from '@/_core/modules/content/core/use-cases/add-content-to-lesson/add-content-to-lesson.use-case';
 import { CreateActivityUseCase } from '@/_core/modules/content/core/use-cases/create-activity/create-activity.use-case';
+import { CreateQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/create-questionnaire/create-questionnaire.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -36,6 +39,8 @@ export function registerContentModule(container: Container): void {
   // container.bind<LessonRepository>(repositories.LessonRepository).to(FirebaseLessonRepository);
   // TODO: Implement and register FirebaseActivityRepository
   // container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
+  // TODO: Implement and register FirebaseQuestionnaireRepository
+  // container.bind<QuestionnaireRepository>(repositories.QuestionnaireRepository).to(FirebaseQuestionnaireRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);
@@ -45,5 +50,6 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.CreateLessonUseCase).to(CreateLessonUseCase);
   container.bind(useCases.AddContentToLessonUseCase).to(AddContentToLessonUseCase);
   container.bind(useCases.CreateActivityUseCase).to(CreateActivityUseCase);
+  container.bind(useCases.CreateQuestionnaireUseCase).to(CreateQuestionnaireUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

@@ -5,6 +5,7 @@ export const repositories = {
   ModuleRepository: Symbol.for('ModuleRepository'),
   LessonRepository: Symbol.for('LessonRepository'),
   ActivityRepository: Symbol.for('ActivityRepository'),
+  QuestionnaireRepository: Symbol.for('QuestionnaireRepository'),
 };
 
 export const useCases = {
@@ -16,6 +17,7 @@ export const useCases = {
   CreateLessonUseCase: Symbol.for('CreateLessonUseCase'),
   AddContentToLessonUseCase: Symbol.for('AddContentToLessonUseCase'),
   CreateActivityUseCase: Symbol.for('CreateActivityUseCase'),
+  CreateQuestionnaireUseCase: Symbol.for('CreateQuestionnaireUseCase'),
 };
 
 // Export all symbols for this module

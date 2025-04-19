@@ -29,6 +29,9 @@ export * from './core/use-cases/add-content-to-lesson/add-content-to-lesson.outp
 export * from './core/use-cases/create-activity/create-activity.use-case';
 export * from './core/use-cases/create-activity/create-activity.input';
 export * from './core/use-cases/create-activity/create-activity.output';
+export * from './core/use-cases/create-questionnaire/create-questionnaire.use-case';
+export * from './core/use-cases/create-questionnaire/create-questionnaire.input';
+export * from './core/use-cases/create-questionnaire/create-questionnaire.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
@@ -37,6 +40,7 @@ export * from './infrastructure/repositories/CourseRepository';
 export * from './infrastructure/repositories/ModuleRepository';
 export * from './infrastructure/repositories/LessonRepository';
 export * from './infrastructure/repositories/ActivityRepository';
+export * from './infrastructure/repositories/QuestionnaireRepository';
 
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseContentRepository';

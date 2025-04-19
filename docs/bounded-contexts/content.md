@@ -201,3 +201,28 @@ Institution
 - A lesson can have at most one activity
 - Activity description cannot be empty
 - Activity instructions cannot be empty
+
+### CreateQuestionnaireUseCase
+
+**Purpose**: Creates a questionnaire for a lesson.
+
+**Inputs**:
+- `lessonId`: The ID of the lesson to add the questionnaire to
+- `title`: The title of the questionnaire
+- `maxAttempts` (optional): Maximum number of attempts allowed (defaults to 3)
+- `passingScore` (optional): Score required to pass the questionnaire (defaults to 70)
+
+**Process**:
+1. Verifies that the lesson exists
+2. Checks if the lesson already has a questionnaire (only one questionnaire per lesson is allowed)
+3. Creates a new Questionnaire entity with the provided data
+4. Attaches the questionnaire to the lesson in memory using the entity's method
+5. Persists the complete lesson entity
+6. Returns both the created questionnaire and the updated lesson
+
+**Business Rules**:
+- Lesson must exist
+- A lesson can have at most one questionnaire
+- Questionnaire title cannot be empty
+- Maximum attempts must be at least 1
+- Passing score must be between 0 and 100
