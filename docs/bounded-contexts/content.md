@@ -307,3 +307,51 @@ Institution
 
 **Business Rules**:
 - Questionnaire must exist
+
+### SubmitQuestionnaireUseCase
+
+**Purpose**: Allows a student to submit answers to a questionnaire and receive a score.
+
+**Inputs**:
+- `questionnaireId`: The ID of the questionnaire being submitted
+- `userId`: The ID of the student submitting the questionnaire
+- `institutionId`: The ID of the institution context
+- `answers`: Array of answers, each containing:
+  - `questionId`: The ID of the question being answered
+  - `selectedOptionIndex`: The index of the option selected by the student
+
+**Process**:
+1. Verifies that the questionnaire exists
+2. Counts the number of previous attempts by the user
+3. Checks if the user has exceeded the maximum number of attempts
+4. Creates question submissions for each answer
+5. Calculates the score based on correct answers
+6. Determines if the user passed based on the questionnaire's passing score
+7. Creates and saves a questionnaire submission record
+8. Returns the submission with score and pass/fail status
+
+**Business Rules**:
+- Questionnaire must exist
+- User cannot exceed the maximum number of attempts defined for the questionnaire
+- All questions in the questionnaire must be answered
+- Score is calculated as the percentage of correct answers
+- Pass/fail status is determined by comparing the score to the questionnaire's passing score
+
+### RetryQuestionnaireUseCase
+
+**Purpose**: Checks if a student can retry a questionnaire and provides attempt information.
+
+**Inputs**:
+- `questionnaireId`: The ID of the questionnaire to check
+- `userId`: The ID of the student
+
+**Process**:
+1. Verifies that the questionnaire exists
+2. Counts the number of previous attempts by the user
+3. Calculates the number of attempts remaining
+4. Determines if the user can retry the questionnaire
+
+**Business Rules**:
+- Questionnaire must exist
+- The number of attempts remaining is calculated as (max attempts - current attempts)
+- A user can retry if they have at least one attempt remaining
