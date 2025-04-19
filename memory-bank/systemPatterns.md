@@ -111,6 +111,42 @@ The application includes special handling for the Firebase emulator:
    - Authentication state is persisted in localStorage to maintain it across page reloads
    - Special handling for the emulator's limitations with email link authentication
 
+## Entity Self-Modification Pattern
+
+In Clean Architecture, entities are the core of the system and should encapsulate both data and behavior. This pattern enforces that entities should modify their own state, and repositories should only be responsible for persistence.
+
+### Key Principles
+
+1. **Entities Modify Their Own State**:
+   - Entities should have methods like `addContent()`, `attachActivity()`, or `updateTitle()` that modify their internal state
+   - These methods encapsulate business rules and validation logic
+   - Example: `lesson.addContent(content)` instead of having this logic in a repository or use case
+
+2. **Repositories Focus on Persistence Only**:
+   - Repositories should not contain domain logic or know how to modify entities
+   - Their responsibility is limited to storing and retrieving entities
+   - Use a generic `save()` method instead of specific methods like `attachActivity()` or `addContent()`
+
+3. **Correct Flow in Use Cases**:
+   ```typescript
+   // Correct pattern
+   const entity = await repository.findById(id);
+   entity.updateSomething(newValue); // Entity modifies its own state
+   await repository.save(entity);    // Repository persists the complete entity
+   
+   // Incorrect pattern
+   const entity = await repository.findById(id);
+   await repository.updateSomething(id, newValue); // Repository shouldn't modify entities
+   ```
+
+4. **Benefits**:
+   - **Encapsulation**: Business rules stay with the entity
+   - **Single Responsibility**: Repositories only handle persistence
+   - **Maintainability**: Changes to business rules only affect entities
+   - **Testability**: Easier to test business logic in isolation
+
+This pattern is a fundamental aspect of Clean Architecture and ensures that domain logic remains in the entities, where it belongs, while infrastructure concerns like persistence are properly separated.
+
 ## Import Paths
 
 All imports from the core modules and shared code should use the following paths:
