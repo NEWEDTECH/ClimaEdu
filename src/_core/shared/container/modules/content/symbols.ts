@@ -8,6 +8,7 @@ export const useCases = {
   CreateContentUseCase: Symbol.for('CreateContentUseCase'),
   ListContentsUseCase: Symbol.for('ListContentsUseCase'),
   CreateCourseUseCase: Symbol.for('CreateCourseUseCase'),
+  UpdateCourseUseCase: Symbol.for('UpdateCourseUseCase'),
 };
 
 // Export all symbols for this module

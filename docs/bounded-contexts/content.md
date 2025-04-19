@@ -90,3 +90,23 @@ Institution
 - Course title cannot be empty
 - Course description cannot be empty
 - Institution ID must be valid
+
+### UpdateCourseUseCase
+
+**Purpose**: Updates an existing course's information.
+
+**Inputs**:
+- `id`: The ID of the course to update
+- `title` (optional): The new title for the course
+- `description` (optional): The new description for the course
+
+**Process**:
+1. Finds the course by ID
+2. Updates only the fields that are provided in the input
+3. Returns the updated Course
+
+**Business Rules**:
+- Course must exist
+- If title is provided, it cannot be empty
+- If description is provided, it cannot be empty
+- Only specified fields are updated; other fields retain their current values

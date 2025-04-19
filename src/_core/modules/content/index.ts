@@ -11,6 +11,9 @@ export * from './core/use-cases/create-content/create-content.output';
 export * from './core/use-cases/create-course/create-course.use-case';
 export * from './core/use-cases/create-course/create-course.input';
 export * from './core/use-cases/create-course/create-course.output';
+export * from './core/use-cases/update-course/update-course.use-case';
+export * from './core/use-cases/update-course/update-course.input';
+export * from './core/use-cases/update-course/update-course.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
