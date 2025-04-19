@@ -13,6 +13,7 @@ export const useCases = {
   UpdateCourseUseCase: Symbol.for('UpdateCourseUseCase'),
   CreateModuleUseCase: Symbol.for('CreateModuleUseCase'),
   CreateLessonUseCase: Symbol.for('CreateLessonUseCase'),
+  AddContentToLessonUseCase: Symbol.for('AddContentToLessonUseCase'),
 };
 
 // Export all symbols for this module

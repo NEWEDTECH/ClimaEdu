@@ -15,6 +15,7 @@ import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/crea
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
 import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/create-module/create-module.use-case';
 import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
+import { AddContentToLessonUseCase } from '@/_core/modules/content/core/use-cases/add-content-to-lesson/add-content-to-lesson.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -37,5 +38,6 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.UpdateCourseUseCase).to(UpdateCourseUseCase);
   container.bind(useCases.CreateModuleUseCase).to(CreateModuleUseCase);
   container.bind(useCases.CreateLessonUseCase).to(CreateLessonUseCase);
+  container.bind(useCases.AddContentToLessonUseCase).to(AddContentToLessonUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

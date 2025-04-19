@@ -154,3 +154,26 @@ Institution
 - Lesson title cannot be empty
 - If order is provided, it must be a non-negative number
 - When a lesson is inserted at a specific position, other lessons are automatically reordered
+
+### AddContentToLessonUseCase
+
+**Purpose**: Adds educational content to an existing lesson.
+
+**Inputs**:
+- `lessonId`: The ID of the lesson to add content to
+- `type`: The type of content (VIDEO, PDF, PODCAST)
+- `title`: The title of the content
+- `url`: The URL where the content is stored
+
+**Process**:
+1. Verifies that the lesson exists
+2. Creates a new Content entity with the provided data
+3. Adds the content to the lesson in memory
+4. Persists the updated lesson to the database
+5. Returns both the created content and the updated lesson
+
+**Business Rules**:
+- Lesson must exist
+- Content title cannot be empty
+- Content URL cannot be empty
+- Content type must be one of the predefined types (VIDEO, PDF, PODCAST)

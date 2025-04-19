@@ -22,6 +22,9 @@ export * from './core/use-cases/create-module/create-module.output';
 export * from './core/use-cases/create-lesson/create-lesson.use-case';
 export * from './core/use-cases/create-lesson/create-lesson.input';
 export * from './core/use-cases/create-lesson/create-lesson.output';
+export * from './core/use-cases/add-content-to-lesson/add-content-to-lesson.use-case';
+export * from './core/use-cases/add-content-to-lesson/add-content-to-lesson.input';
+export * from './core/use-cases/add-content-to-lesson/add-content-to-lesson.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
