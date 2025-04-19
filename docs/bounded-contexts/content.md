@@ -168,8 +168,8 @@ Institution
 **Process**:
 1. Verifies that the lesson exists
 2. Creates a new Content entity with the provided data
-3. Adds the content to the lesson in memory
-4. Persists the updated lesson to the database
+3. Adds the content to the lesson in memory using the entity's method
+4. Persists the complete lesson entity
 5. Returns both the created content and the updated lesson
 
 **Business Rules**:
@@ -177,3 +177,27 @@ Institution
 - Content title cannot be empty
 - Content URL cannot be empty
 - Content type must be one of the predefined types (VIDEO, PDF, PODCAST)
+
+### CreateActivityUseCase
+
+**Purpose**: Creates an activity for a lesson.
+
+**Inputs**:
+- `lessonId`: The ID of the lesson to add the activity to
+- `description`: A description of the activity
+- `instructions`: Detailed instructions for completing the activity
+- `resourceUrl` (optional): URL to any resources needed for the activity
+
+**Process**:
+1. Verifies that the lesson exists
+2. Checks if the lesson already has an activity (only one activity per lesson is allowed)
+3. Creates a new Activity entity with the provided data
+4. Attaches the activity to the lesson in memory using the entity's method
+5. Persists the complete lesson entity
+6. Returns both the created activity and the updated lesson
+
+**Business Rules**:
+- Lesson must exist
+- A lesson can have at most one activity
+- Activity description cannot be empty
+- Activity instructions cannot be empty

@@ -40,14 +40,11 @@ export class AddContentToLessonUseCase {
       url: input.url,
     });
 
-    // Add content to lesson
+    // Add content to lesson in memory
     existingLesson.addContent(createdContent);
 
-    // Persist the updated lesson
-    const updatedLesson = await this.lessonRepository.update(input.lessonId, {
-      // We don't need to pass any properties here because the lesson entity
-      // has already been updated in memory with the new content
-    });
+    // Persist the updated lesson with the content
+    const updatedLesson = await this.lessonRepository.save(existingLesson);
 
     // Return both the created content and the updated lesson
     return {

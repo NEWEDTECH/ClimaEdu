@@ -29,12 +29,11 @@ export interface LessonRepository {
   findById(id: string): Promise<Lesson | null>;
 
   /**
-   * Update a lesson
-   * @param id Lesson id
-   * @param lesson Lesson data to update
-   * @returns Updated lesson
+   * Save a lesson
+   * @param lesson Lesson to save
+   * @returns Saved lesson
    */
-  update(id: string, lesson: Partial<Omit<Lesson, 'id' | 'moduleId' | 'contents' | 'activity' | 'questionnaire'>>): Promise<Lesson>;
+  save(lesson: Lesson): Promise<Lesson>;
 
   /**
    * Delete a lesson
