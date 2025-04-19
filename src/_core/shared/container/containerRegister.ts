@@ -5,6 +5,7 @@ import { registerInstitutionModule } from './modules/institution/register';
 import { registerUserModule } from './modules/user/register';
 import { registerContentModule } from './modules/content/register';
 import { registerAuthModule } from './modules/auth/register';
+import { registerEnrollmentModule } from './modules/enrollment/register';
 
 /**
  * Register all dependencies in the container
@@ -15,4 +16,5 @@ export function registerDependencies(): void {
   registerUserModule(container);
   registerContentModule(container);
   registerAuthModule(container);
+  registerEnrollmentModule(container);
 }
