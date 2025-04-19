@@ -6,9 +6,10 @@ import { UserSymbols } from './modules/user/symbols';
 import { ContentSymbols } from './modules/content/symbols';
 import { AuthSymbols } from './modules/auth/symbols';
 import { EnrollmentSymbols } from './modules/enrollment/symbols';
+import { BadgeSymbols } from './modules/badge/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -31,5 +32,9 @@ export const Register = {
   enrollment: {
     repository: EnrollmentSymbols.repositories,
     useCase: EnrollmentSymbols.useCases,
+  },
+  badge: {
+    repository: BadgeSymbols.repositories,
+    useCase: BadgeSymbols.useCases,
   },
 };
