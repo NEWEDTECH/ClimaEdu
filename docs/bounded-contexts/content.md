@@ -226,3 +226,84 @@ Institution
 - Questionnaire title cannot be empty
 - Maximum attempts must be at least 1
 - Passing score must be between 0 and 100
+
+### AddQuestionToQuestionnaireUseCase
+
+**Purpose**: Adds a new question to an existing questionnaire.
+
+**Inputs**:
+- `questionnaireId`: The ID of the questionnaire to add the question to
+- `questionText`: The text of the question
+- `options`: Array of options for the question
+- `correctAnswerIndex`: Index of the correct answer in the options array
+
+**Process**:
+1. Verifies that the questionnaire exists
+2. Creates a new Question entity with the provided data
+3. Adds the question to the questionnaire using the entity's method
+4. Persists the updated questionnaire
+5. Returns the updated questionnaire and the created question
+
+**Business Rules**:
+- Questionnaire must exist
+- Question text cannot be empty
+- Question must have at least 2 options
+- Correct answer index must be valid
+
+### UpdateQuestionUseCase
+
+**Purpose**: Updates an existing question in a questionnaire.
+
+**Inputs**:
+- `questionnaireId`: The ID of the questionnaire that contains the question
+- `questionId`: The ID of the question to update
+- `questionText` (optional): The new text for the question
+- `options` (optional): New array of options for the question
+- `correctAnswerIndex` (optional): New index of the correct answer
+
+**Process**:
+1. Verifies that the questionnaire exists
+2. Uses the questionnaire's findQuestionById method to find the question
+3. Updates the provided fields using the entity's methods
+4. Persists the updated questionnaire
+5. Returns the updated questionnaire and question
+
+**Business Rules**:
+- Questionnaire must exist
+- Question must exist in the questionnaire (enforced by the entity)
+- If updating question text, it cannot be empty (enforced by the entity)
+- If updating options, there must be at least 2 options (enforced by the entity)
+- If updating correct answer index, it must be valid (enforced by the entity)
+
+### DeleteQuestionUseCase
+
+**Purpose**: Removes a question from a questionnaire.
+
+**Inputs**:
+- `questionnaireId`: The ID of the questionnaire that contains the question
+- `questionId`: The ID of the question to delete
+
+**Process**:
+1. Verifies that the questionnaire exists
+2. Uses the questionnaire's removeQuestion method to remove the question
+3. Persists the updated questionnaire
+4. Returns the updated questionnaire
+
+**Business Rules**:
+- Questionnaire must exist
+- Question must exist in the questionnaire (enforced by the entity)
+
+### ListQuestionsOfQuestionnaireUseCase
+
+**Purpose**: Lists all questions in a questionnaire.
+
+**Inputs**:
+- `questionnaireId`: The ID of the questionnaire to list questions from
+
+**Process**:
+1. Verifies that the questionnaire exists
+2. Uses the questionnaire's listQuestions method to get all questions
+3. Returns the list of questions and the questionnaire
+
+**Business Rules**:
+- Questionnaire must exist

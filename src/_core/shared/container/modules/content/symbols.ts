@@ -18,6 +18,10 @@ export const useCases = {
   AddContentToLessonUseCase: Symbol.for('AddContentToLessonUseCase'),
   CreateActivityUseCase: Symbol.for('CreateActivityUseCase'),
   CreateQuestionnaireUseCase: Symbol.for('CreateQuestionnaireUseCase'),
+  AddQuestionToQuestionnaireUseCase: Symbol.for('AddQuestionToQuestionnaireUseCase'),
+  UpdateQuestionUseCase: Symbol.for('UpdateQuestionUseCase'),
+  DeleteQuestionUseCase: Symbol.for('DeleteQuestionUseCase'),
+  ListQuestionsOfQuestionnaireUseCase: Symbol.for('ListQuestionsOfQuestionnaireUseCase'),
 };
 
 // Export all symbols for this module

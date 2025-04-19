@@ -22,6 +22,10 @@ import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/crea
 import { AddContentToLessonUseCase } from '@/_core/modules/content/core/use-cases/add-content-to-lesson/add-content-to-lesson.use-case';
 import { CreateActivityUseCase } from '@/_core/modules/content/core/use-cases/create-activity/create-activity.use-case';
 import { CreateQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/create-questionnaire/create-questionnaire.use-case';
+import { AddQuestionToQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/add-question-to-questionnaire/add-question-to-questionnaire.use-case';
+import { UpdateQuestionUseCase } from '@/_core/modules/content/core/use-cases/update-question/update-question.use-case';
+import { DeleteQuestionUseCase } from '@/_core/modules/content/core/use-cases/delete-question/delete-question.use-case';
+import { ListQuestionsOfQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -51,5 +55,9 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.AddContentToLessonUseCase).to(AddContentToLessonUseCase);
   container.bind(useCases.CreateActivityUseCase).to(CreateActivityUseCase);
   container.bind(useCases.CreateQuestionnaireUseCase).to(CreateQuestionnaireUseCase);
+  container.bind(useCases.AddQuestionToQuestionnaireUseCase).to(AddQuestionToQuestionnaireUseCase);
+  container.bind(useCases.UpdateQuestionUseCase).to(UpdateQuestionUseCase);
+  container.bind(useCases.DeleteQuestionUseCase).to(DeleteQuestionUseCase);
+  container.bind(useCases.ListQuestionsOfQuestionnaireUseCase).to(ListQuestionsOfQuestionnaireUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

@@ -6,6 +6,8 @@ export * from './core/entities/Course';
 export * from './core/entities/Module';
 export * from './core/entities/Lesson';
 export * from './core/entities/Activity';
+export * from './core/entities/Questionnaire';
+export * from './core/entities/Question';
 
 // Re-export use cases
 export * from './core/use-cases/create-content/create-content.use-case';
@@ -32,6 +34,18 @@ export * from './core/use-cases/create-activity/create-activity.output';
 export * from './core/use-cases/create-questionnaire/create-questionnaire.use-case';
 export * from './core/use-cases/create-questionnaire/create-questionnaire.input';
 export * from './core/use-cases/create-questionnaire/create-questionnaire.output';
+export * from './core/use-cases/add-question-to-questionnaire/add-question-to-questionnaire.use-case';
+export * from './core/use-cases/add-question-to-questionnaire/add-question-to-questionnaire.input';
+export * from './core/use-cases/add-question-to-questionnaire/add-question-to-questionnaire.output';
+export * from './core/use-cases/update-question/update-question.use-case';
+export * from './core/use-cases/update-question/update-question.input';
+export * from './core/use-cases/update-question/update-question.output';
+export * from './core/use-cases/delete-question/delete-question.use-case';
+export * from './core/use-cases/delete-question/delete-question.input';
+export * from './core/use-cases/delete-question/delete-question.output';
+export * from './core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.use-case';
+export * from './core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.input';
+export * from './core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces

@@ -67,6 +67,44 @@ export class Questionnaire {
   }
 
   /**
+   * Removes a question from the questionnaire
+   * @param questionId The ID of the question to remove
+   * @returns true if the question was found and removed, false otherwise
+   * @throws Error if the question is not found
+   */
+  public removeQuestion(questionId: string): boolean {
+    const questionIndex = this.questions.findIndex(q => q.id === questionId);
+    if (questionIndex === -1) {
+      throw new Error(`Question with ID ${questionId} not found in questionnaire`);
+    }
+    
+    this.questions = this.questions.filter(q => q.id !== questionId);
+    return true;
+  }
+
+  /**
+   * Lists all questions in the questionnaire
+   * @returns Array of questions
+   */
+  public listQuestions(): Question[] {
+    return this.questions;
+  }
+
+  /**
+   * Finds a question by ID
+   * @param questionId The ID of the question to find
+   * @returns The question if found
+   * @throws Error if the question is not found
+   */
+  public findQuestionById(questionId: string): Question {
+    const question = this.questions.find(q => q.id === questionId);
+    if (!question) {
+      throw new Error(`Question with ID ${questionId} not found in questionnaire`);
+    }
+    return question;
+  }
+
+  /**
    * Updates the questionnaire title
    * @param newTitle The new title
    * @throws Error if the new title is empty
