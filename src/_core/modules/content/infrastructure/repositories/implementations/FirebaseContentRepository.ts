@@ -1,9 +1,10 @@
 import { injectable } from 'inversify';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, UpdateData } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Content } from '../../../core/entities/Content';
 import { ContentType } from '../../../core/entities/ContentType';
-import type { ContentRepository, CreateContentDTO } from '../ContentRepository';
+import type { ContentRepository } from '../ContentRepository';
+import { nanoid } from 'nanoid';
 
 /**
  * Firebase implementation of the ContentRepository
@@ -11,6 +12,16 @@ import type { ContentRepository, CreateContentDTO } from '../ContentRepository';
 @injectable()
 export class FirebaseContentRepository implements ContentRepository {
   private readonly collectionName = 'contents';
+  private readonly idPrefix = 'cnt_';
+
+  /**
+   * Generate a new unique ID for content
+   * @returns A unique ID with the content prefix
+   */
+  async generateId(): Promise<string> {
+    // Generate a unique ID with the content prefix
+    return `${this.idPrefix}${nanoid(10)}`;
+  }
 
   /**
    * Private adapter method to convert Firestore document data to a Content entity
@@ -25,44 +36,6 @@ export class FirebaseContentRepository implements ContentRepository {
       title: data.title,
       url: data.url
     });
-  }
-
-  /**
-   * Create new content
-   * @param contentData Content data for creation
-   * @returns Created content with id
-   */
-  async create(contentData: CreateContentDTO): Promise<Content> {
-    const contentsRef = collection(firestore, this.collectionName);
-    const newContentRef = doc(contentsRef);
-    const id = newContentRef.id;
-    
-    // Create a new Content entity
-    const newContent = Content.create({
-      id,
-      lessonId: contentData.lessonId,
-      type: contentData.type,
-      title: contentData.title,
-      url: contentData.url
-    });
-    
-    // Convert to a plain object for Firestore
-    const contentDataForFirestore: {
-      id: string;
-      lessonId: string;
-      type: ContentType;
-      title: string;
-      url: string;
-    } = {
-      id,
-      lessonId: contentData.lessonId,
-      type: contentData.type,
-      title: contentData.title,
-      url: contentData.url
-    };
-
-    await setDoc(newContentRef, contentDataForFirestore);
-    return newContent;
   }
 
   /**
@@ -83,46 +56,34 @@ export class FirebaseContentRepository implements ContentRepository {
   }
 
   /**
-   * Update content
-   * @param id Content id
-   * @param contentData Content data to update
-   * @returns Updated content
+   * Save content
+   * @param content Content to save
+   * @returns Saved content
    */
-  async update(id: string, contentData: Partial<Omit<Content, 'id'>>): Promise<Content> {
-    const contentRef = doc(firestore, this.collectionName, id);
-    const currentContent = await this.findById(id);
+  async save(content: Content): Promise<Content> {
+    const contentRef = doc(firestore, this.collectionName, content.id);
+    
+    // Prepare the content data for Firestore
+    const contentData = {
+      id: content.id,
+      lessonId: content.lessonId,
+      type: content.type,
+      title: content.title,
+      url: content.url
+    };
 
-    if (!currentContent) {
-      throw new Error(`Content with id ${id} not found`);
+    // Check if the content already exists
+    const contentDoc = await getDoc(contentRef);
+    
+    if (contentDoc.exists()) {
+      // Update existing content
+      await updateDoc(contentRef, contentData);
+    } else {
+      // Create new content
+      await setDoc(contentRef, contentData);
     }
 
-    // Prepare the update data for Firestore
-    const updateData = {} as UpdateData<DocumentData>;
-
-    // Add fields to update in Firestore
-    if (contentData.title !== undefined) {
-      updateData.title = contentData.title;
-    }
-
-    if (contentData.url !== undefined) {
-      updateData.url = contentData.url;
-    }
-
-    if (contentData.type !== undefined) {
-      updateData.type = contentData.type;
-    }
-
-    // Update the document in Firestore
-    await updateDoc(contentRef, updateData);
-
-    // Create and return the updated content entity without making another database query
-    return Content.create({
-      id: currentContent.id,
-      lessonId: currentContent.lessonId,
-      title: contentData.title !== undefined ? contentData.title : currentContent.title,
-      url: contentData.url !== undefined ? contentData.url : currentContent.url,
-      type: contentData.type !== undefined ? contentData.type : currentContent.type
-    });
+    return content;
   }
 
   /**

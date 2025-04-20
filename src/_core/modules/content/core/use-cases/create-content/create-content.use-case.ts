@@ -3,6 +3,7 @@ import type { ContentRepository } from '../../../infrastructure/repositories/Con
 import { Register } from '@/_core/shared/container/symbols';
 import { CreateContentInput } from './create-content.input';
 import { CreateContentOutput } from './create-content.output';
+import { Content } from '../../../core/entities/Content';
 
 /**
  * Use case for creating content
@@ -21,14 +22,21 @@ export class CreateContentUseCase {
    * @returns Output data
    */
   async execute(input: CreateContentInput): Promise<CreateContentOutput> {
-    // Create content
-    const content = await this.contentRepository.create({
+    // Generate a new ID
+    const id = await this.contentRepository.generateId();
+    
+    // Create content entity
+    const content = Content.create({
+      id,
       lessonId: input.lessonId,
       title: input.title,
       type: input.type,
       url: input.url,
     });
 
-    return { content };
+    // Save content
+    const savedContent = await this.contentRepository.save(content);
+
+    return { content: savedContent };
   }
 }

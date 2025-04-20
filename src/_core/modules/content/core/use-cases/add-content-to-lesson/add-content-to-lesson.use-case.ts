@@ -4,6 +4,7 @@ import type { LessonRepository } from '../../../infrastructure/repositories/Less
 import { Register } from '@/_core/shared/container';
 import { AddContentToLessonInput } from './add-content-to-lesson.input';
 import { AddContentToLessonOutput } from './add-content-to-lesson.output';
+import { Content } from '../../../core/entities/Content';
 
 /**
  * Use case for adding content to a lesson
@@ -32,23 +33,30 @@ export class AddContentToLessonUseCase {
       throw new Error(`Lesson with ID ${input.lessonId} not found`);
     }
 
-    // Create content
-    const createdContent = await this.contentRepository.create({
+    // Generate a new ID for content
+    const contentId = await this.contentRepository.generateId();
+    
+    // Create content entity
+    const content = Content.create({
+      id: contentId,
       lessonId: input.lessonId,
       type: input.type,
       title: input.title,
       url: input.url,
     });
 
+    // Save content
+    const savedContent = await this.contentRepository.save(content);
+
     // Add content to lesson in memory
-    existingLesson.addContent(createdContent);
+    existingLesson.addContent(savedContent);
 
     // Persist the updated lesson with the content
     const updatedLesson = await this.lessonRepository.save(existingLesson);
 
     // Return both the created content and the updated lesson
     return {
-      content: createdContent,
+      content: savedContent,
       lesson: updatedLesson,
     };
   }
