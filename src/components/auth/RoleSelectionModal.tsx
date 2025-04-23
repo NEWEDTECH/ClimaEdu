@@ -11,12 +11,12 @@ interface RoleSelectionModalProps {
 
 export function RoleSelectionModal({ isOpen, onClose }: RoleSelectionModalProps) {
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<'student' | 'tutor' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'student' | 'tutor' | 'admin' | null>(null);
   const { setRole } = useProfile();
 
   if (!isOpen) return null;
 
-  const handleRoleSelection = (role: 'student' | 'tutor') => {
+  const handleRoleSelection = (role: 'student' | 'tutor' | 'admin') => {
     setSelectedRole(role);
     
     setRole(role);
@@ -35,7 +35,7 @@ export function RoleSelectionModal({ isOpen, onClose }: RoleSelectionModalProps)
         
         <div className="grid grid-cols-2 gap-4">
           <button
-            onClick={() => handleRoleSelection('student')}
+            onClick={() => handleRoleSelection('admin')}
             className={`p-6 rounded-lg border-2 flex flex-col items-center justify-center transition-all ${
               selectedRole === 'student'
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'

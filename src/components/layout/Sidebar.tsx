@@ -22,6 +22,7 @@ const studentItems: DropdownItem[] = [
   { label: 'Questionários', href: '/student/questionnaire' },
   { label: 'Conquistas', href: '/student/achievements' },
   { label: 'Certificados', href: '/student/certificates' },
+  { label: 'Configurações', href: '/student/settings' },
 ];
 
 const teacherItems: DropdownItem[] = [

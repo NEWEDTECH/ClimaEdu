@@ -6,7 +6,6 @@ import { ProfileSelect } from '@/components/profile';
 import { Button } from '@/components/ui/button/button';
 import { IoMdMenu } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
-import { Dropdown, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/select'
 import { cn } from '@/lib/utils';
 import { useProfile } from '@/context/zustand/useProfile';
 
@@ -25,7 +24,8 @@ const studentItems: DropdownItem[] = [
   { label: 'Conteúdos', href: '/student/contents' },
   { label: 'Atividades', href: '/student/activities' },
   { label: 'Discussões', href: '/student/forum' },
-  { label: 'Questionários', href: '/student/questionnaire' }
+  { label: 'Questionários', href: '/student/questionnaire' },
+  { label: 'Configurações', href: '/student/settings' }
 ];
 
 const teacherItems: DropdownItem[] = [
@@ -36,10 +36,11 @@ const teacherItems: DropdownItem[] = [
 
 const adminItems: DropdownItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
-  { label: 'Usuários', href: '/admin/usuarios' },
-  { label: 'Cursos', href: '/admin/cursos' },
-  { label: 'Relatórios', href: '/admin/relatorios' },
-  { label: 'Configurações', href: '/admin/configuracoes' },
+  { label: 'Alunos', href: '/admin/student' },
+  { label: 'Professores', href: '/admin/tutor' },
+  { label: 'Cursos', href: '/admin/courses' },
+  { label: 'Relatórios', href: '/admin/reports' },
+  { label: 'Configurações', href: '/admin/settings' },
 ];
 
 const sections: DropdownSection[] = [
@@ -53,10 +54,11 @@ type NavbarProps = {
 }
 
 
-export function Navbar({ userName = 'Usuário' }: NavbarProps) {
+export function Navbar() {
 
   const { role } = useProfile();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  console.log(role)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   return (
     <nav className="h-16 border-b border-gray-200 dark:border-gray-800 px-4 flex items-center justify-between bg-gray-50 dark:bg-gray-950 shadow-sm">
@@ -73,36 +75,21 @@ export function Navbar({ userName = 'Usuário' }: NavbarProps) {
           {sections.map((section) => {
             if (section.role === role) {
               return (
-                <Dropdown key={section.title}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
-                  )
-                  }>
-                  <span>{section.title}</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 ml-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                  <DropdownMenuContent>
-                    {section.items.map((item) => (
-                      <DropdownMenuItem key={item.label} asChild>
-                        <Link href={item.href}>
-                          {item.label}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </Dropdown>
+                <div className={cn(
+                  "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
+                )}>
+
+                  {section.items.map(item => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className='px-3 py-2 rounded-md bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+                    >
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+
+                </div>
               )
             }
           }
@@ -132,7 +119,7 @@ export function Navbar({ userName = 'Usuário' }: NavbarProps) {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50">
+        <div className="md:hidden absolute top-16 left-0 right-0 h-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50">
           <div className="px-4 py-2">
             <div className="flex items-center gap-4">
               <ProfileSelect
@@ -140,25 +127,29 @@ export function Navbar({ userName = 'Usuário' }: NavbarProps) {
               />
             </div>
 
-            {sections.map((section) => (
-              <div key={section.title} className="py-2">
-                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                  {section.title}
-                </h3>
-                <div className="space-y-1">
-                  {section.items.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
+            {sections.map((section) => {
+              if (section.role === role) {
+                return (
+                  <div key={section.title} className="py-2">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                      {section.title}
+                    </h3>
+                    <div className="space-y-1">
+                      {section.items.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+            })}
           </div>
         </div>
       )}

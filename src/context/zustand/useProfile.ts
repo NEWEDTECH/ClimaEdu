@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type UserRole = 'student' | 'tutor' | null;
+type UserRole = 'student' | 'tutor' | 'admin' |null;
 
 interface ProfileState {
   role: UserRole;

@@ -7,6 +7,7 @@ import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
 import { cn } from "@/lib/utils";
+import { useProfile } from '@/context/zustand/useProfile';
 
 import { Dropdown, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/select'
 import { ProfileDropdownOptions } from './index'
@@ -22,14 +23,14 @@ export interface ProfileSelectProps {
 const OPTIONS_PROFILE: OptionsProfileProps[] = [
   { label: 'Certificados', href: '/student/certificates', icon: <PiCertificate /> },
   { label: 'Conquistas', href: '/student/achievements', icon: <FiAward /> },
-  { label: 'Configurações', href: '/settings', icon: <FiSettings /> }
+  { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> }
 ];
 
-export function ProfileSelect({
-  avatarUrl,
-}: ProfileSelectProps) {
+export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
+
+  const { role } = useProfile();
   const router = useRouter();
-  
+
   return (
     <Dropdown className={cn(
       "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
