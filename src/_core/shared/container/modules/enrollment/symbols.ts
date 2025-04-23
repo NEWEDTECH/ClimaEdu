@@ -6,6 +6,7 @@ export const repositories = {
 export const useCases = {
   EnrollInCourseUseCase: Symbol.for('EnrollInCourseUseCase'),
   CancelEnrollmentUseCase: Symbol.for('CancelEnrollmentUseCase'),
+  ListEnrollmentsUseCase: Symbol.for('ListEnrollmentsUseCase'),
 };
 
 // Export all symbols for this module

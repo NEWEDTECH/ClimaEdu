@@ -41,6 +41,16 @@ Institution
 
 ---
 
+## Use Cases
+
+| Use Case | Description |
+|:---------|:------------|
+| **EnrollInCourse** | Enrolls a user in a specific course, creating a new enrollment record with ENROLLED status. |
+| **CancelEnrollment** | Cancels an existing enrollment, changing its status to CANCELLED. |
+| **ListEnrollments** | Retrieves a list of enrollments based on filters like user ID, course ID, and enrollment status. |
+
+---
+
 ## Business Rules
 
 - A User must have an **active Enrollment** to access Lessons and Content of a Course.
