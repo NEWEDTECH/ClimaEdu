@@ -88,6 +88,29 @@ Documentado com o nível de detalhes que garante total entendimento para qualque
 
 ---
 
+## Use Cases
+
+### ViewEarnedBadgesUseCase
+
+**Purpose**: Retrieves all badges earned by a student with detailed information.
+
+**Inputs**:
+- `userId`: The ID of the student whose badges are being viewed
+- `institutionId`: The ID of the institution context
+
+**Process**:
+1. Verifies that the user exists
+2. Retrieves all badges earned by the user with their details
+3. Calculates statistics such as total badges earned and recently earned badges
+4. Returns the list of earned badges with their details and statistics
+
+**Business Rules**:
+- User must exist
+- Recently earned badges are those awarded within the last 7 days
+- Each earned badge includes both the StudentBadge record and the Badge details
+
+---
+
 # 🏁 **Resumo**
 
 Você agora tem a documentação de TODOS os seus **Bounded Contexts**:

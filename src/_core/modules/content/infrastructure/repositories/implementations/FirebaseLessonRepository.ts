@@ -1,0 +1,171 @@
+import { injectable } from 'inversify';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, writeBatch } from 'firebase/firestore';
+import { firestore } from '@/_core/shared/firebase/firebase-client';
+import { Lesson } from '../../../core/entities/Lesson';
+import type { LessonRepository } from '../LessonRepository';
+import { nanoid } from 'nanoid';
+
+/**
+ * Firebase implementation of the LessonRepository
+ */
+@injectable()
+export class FirebaseLessonRepository implements LessonRepository {
+  private readonly collectionName = 'lessons';
+  private readonly idPrefix = 'les_';
+
+  /**
+   * Generate a new unique ID for a lesson
+   * @returns A unique ID with the lesson prefix
+   */
+  async generateId(): Promise<string> {
+    // Generate a unique ID with the lesson prefix
+    return `${this.idPrefix}${nanoid(10)}`;
+  }
+
+  /**
+   * Private adapter method to convert Firestore document data to a Lesson entity
+   * @param data Firestore document data
+   * @returns Lesson entity
+   */
+  private mapToEntity(data: DocumentData): Lesson {
+    // Create and return a Lesson entity
+    return Lesson.create({
+      id: data.id,
+      moduleId: data.moduleId,
+      title: data.title,
+      order: data.order,
+      contents: data.contents || [],
+      activity: data.activity,
+      questionnaire: data.questionnaire
+    });
+  }
+
+  /**
+   * Find a lesson by id
+   * @param id Lesson id
+   * @returns Lesson or null if not found
+   */
+  async findById(id: string): Promise<Lesson | null> {
+    const lessonRef = doc(firestore, this.collectionName, id);
+    const lessonDoc = await getDoc(lessonRef);
+
+    if (!lessonDoc.exists()) {
+      return null;
+    }
+
+    const data = lessonDoc.data();
+    return this.mapToEntity({ id, ...data });
+  }
+
+  /**
+   * Save a lesson
+   * @param lesson Lesson to save
+   * @returns Saved lesson
+   */
+  async save(lesson: Lesson): Promise<Lesson> {
+    const lessonRef = doc(firestore, this.collectionName, lesson.id);
+    
+    // Prepare the lesson data for Firestore
+    const lessonData = {
+      id: lesson.id,
+      moduleId: lesson.moduleId,
+      title: lesson.title,
+      order: lesson.order,
+      contents: lesson.contents,
+      activity: lesson.activity,
+      questionnaire: lesson.questionnaire
+    };
+
+    // Check if the lesson already exists
+    const lessonDoc = await getDoc(lessonRef);
+    
+    if (lessonDoc.exists()) {
+      // Update existing lesson
+      await updateDoc(lessonRef, lessonData);
+    } else {
+      // Create new lesson
+      await setDoc(lessonRef, lessonData);
+    }
+
+    return lesson;
+  }
+
+  /**
+   * Delete a lesson
+   * @param id Lesson id
+   * @returns true if deleted, false if not found
+   */
+  async delete(id: string): Promise<boolean> {
+    const lessonRef = doc(firestore, this.collectionName, id);
+    const lessonDoc = await getDoc(lessonRef);
+
+    if (!lessonDoc.exists()) {
+      return false;
+    }
+
+    await deleteDoc(lessonRef);
+    return true;
+  }
+
+  /**
+   * List lessons by module
+   * @param moduleId Module id
+   * @returns List of lessons
+   */
+  async listByModule(moduleId: string): Promise<Lesson[]> {
+    const lessonsRef = collection(firestore, this.collectionName);
+    const q = query(lessonsRef, where('moduleId', '==', moduleId));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
+  }
+
+  /**
+   * Count lessons in a module
+   * @param moduleId Module id
+   * @returns Number of lessons in the module
+   */
+  async countByModule(moduleId: string): Promise<number> {
+    const lessonsRef = collection(firestore, this.collectionName);
+    const q = query(lessonsRef, where('moduleId', '==', moduleId));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.size;
+  }
+
+  /**
+   * Reorder lessons in a module
+   * This is used when inserting a new lesson at a specific position
+   * @param moduleId Module id
+   * @param startOrder The order from which to start reordering
+   * @returns true if successful
+   */
+  async reorderLessons(moduleId: string, startOrder: number): Promise<boolean> {
+    const lessonsRef = collection(firestore, this.collectionName);
+    const q = query(
+      lessonsRef,
+      where('moduleId', '==', moduleId),
+      where('order', '>=', startOrder)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return true; // No lessons to reorder
+    }
+
+    const batch = writeBatch(firestore);
+
+    // Increment the order of all lessons with order >= startOrder
+    querySnapshot.docs.forEach(docSnapshot => {
+      const lessonRef = doc(firestore, this.collectionName, docSnapshot.id);
+      const currentOrder = docSnapshot.data().order;
+      batch.update(lessonRef, { order: currentOrder + 1 });
+    });
+
+    await batch.commit();
+    return true;
+  }
+}

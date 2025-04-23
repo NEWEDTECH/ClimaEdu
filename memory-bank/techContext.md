@@ -56,7 +56,9 @@
   Configured to maintain clean and formatted code standards.
 
 - **Composition via DI Container**:  
-  All UseCases and Repositories are resolved in the Frontend by the `container` (Inversify) through Symbols.
+  All UseCases and Repositories are resolved in the Frontend by the `container` (Inversify) through Symbols.  
+  The container is organized in a modular structure that mirrors the application's module structure, with module-specific symbols and registrations.  
+  Import container components using the consolidated import: `import { container, Register } from '@/_core/shared/container';`
 
 - **Memory Bank and Cline**:  
   The platform is built with support for Cline, using Memory Bank and custom project rules.
