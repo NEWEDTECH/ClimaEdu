@@ -16,6 +16,49 @@ The shared code is located in `src/_core/shared/`.
 
 React components on the frontend do not interact directly with the UseCases. Instead, they resolve UseCases via a Dependency Injection Container (Inversify) using Symbols. This pattern ensures low coupling and high testability.
 
+### Modular Container Structure
+
+The Dependency Injection container is organized in a modular structure that mirrors the application's module structure:
+
+- **Container Directory Structure**:
+  ```
+  src/_core/shared/container/
+  ├── container.ts                 # Main container instance
+  ├── symbols.ts                   # Main symbols file (imports and re-exports module symbols)
+  ├── containerRegister.ts         # Main registration file (uses module-specific registrations)
+  ├── index.ts                     # Exports everything from the container directory
+  └── modules/                     # Module-specific container files
+      ├── institution/             # Institution module container files
+      │   ├── symbols.ts           # Institution-specific symbols
+      │   └── register.ts          # Institution-specific registrations
+      ├── user/                    # User module container files
+      │   ├── symbols.ts           # User-specific symbols
+      │   └── register.ts          # User-specific registrations
+      ├── content/                 # Content module container files
+      │   ├── symbols.ts           # Content-specific symbols
+      │   └── register.ts          # Content-specific registrations
+      └── auth/                    # Auth module container files
+          ├── symbols.ts           # Auth-specific symbols
+          └── register.ts          # Auth-specific registrations
+  ```
+
+- **Import Pattern**:
+  Instead of importing directly from individual container files, components and use cases should import from the container index:
+  ```typescript
+  // Old pattern
+  import { container } from '@/_core/shared/container/container';
+  import { Register } from '@/_core/shared/container/symbols';
+  
+  // New pattern
+  import { container, Register } from '@/_core/shared/container';
+  ```
+
+This modular structure provides several advantages:
+1. **Maintainability**: Each module's container code is isolated, making it easier to understand and maintain
+2. **Scalability**: New modules can be added without modifying existing files
+3. **Organization**: The container structure mirrors the module structure, making it intuitive to navigate
+4. **Encapsulation**: Each module's container code is encapsulated, reducing the risk of conflicts
+
 ## Authentication Flow
 
 The application uses Firebase Authentication with email link (passwordless) authentication:
@@ -68,6 +111,82 @@ The application includes special handling for the Firebase emulator:
    - Authentication state is persisted in localStorage to maintain it across page reloads
    - Special handling for the emulator's limitations with email link authentication
 
+## Entity Self-Modification Pattern
+
+In Clean Architecture, entities are the core of the system and should encapsulate both data and behavior. This pattern enforces that entities should modify their own state, and repositories should only be responsible for persistence.
+
+### Key Principles
+
+1. **Entities Modify Their Own State**:
+   - Entities should have methods like `addContent()`, `attachActivity()`, or `updateTitle()` that modify their internal state
+   - These methods encapsulate business rules and validation logic
+   - Example: `lesson.addContent(content)` instead of having this logic in a repository or use case
+
+2. **Repositories Focus on Persistence Only**:
+   - Repositories should not contain domain logic or know how to modify entities
+   - Their responsibility is limited to storing and retrieving entities
+   - Use a generic `save()` method instead of specific methods like `attachActivity()` or `addContent()`
+
+3. **Correct Flow in Use Cases**:
+   ```typescript
+   // Correct pattern
+   const entity = await repository.findById(id);
+   entity.updateSomething(newValue); // Entity modifies its own state
+   await repository.save(entity);    // Repository persists the complete entity
+   
+   // Incorrect pattern
+   const entity = await repository.findById(id);
+   await repository.updateSomething(id, newValue); // Repository shouldn't modify entities
+   ```
+
+4. **Benefits**:
+   - **Encapsulation**: Business rules stay with the entity
+   - **Single Responsibility**: Repositories only handle persistence
+   - **Maintainability**: Changes to business rules only affect entities
+   - **Testability**: Easier to test business logic in isolation
+
+This pattern is a fundamental aspect of Clean Architecture and ensures that domain logic remains in the entities, where it belongs, while infrastructure concerns like persistence are properly separated.
+
+## Entity Creation Pattern
+
+In Clean Architecture, the creation of entities should be handled by the domain layer, not by repositories. This pattern ensures that entities are always created in a valid state and that business rules are enforced during creation.
+
+### Key Principles
+
+1. **Repositories Generate IDs**:
+   - Repositories provide a `generateId()` method to create unique IDs
+   - This allows the domain layer to create entities with valid IDs
+   - Example: `const id = await repository.generateId();`
+
+2. **Entities Create Themselves**:
+   - Entities have a static `create()` method that enforces business rules
+   - This method validates input and returns a new entity instance
+   - Example: `const entity = Entity.create({ id, ...otherProps });`
+
+3. **Repositories Save Entities**:
+   - Repositories provide a `save()` method to persist entities
+   - They don't have a `create()` method that would bypass entity validation
+   - Example: `await repository.save(entity);`
+
+4. **Correct Flow in Use Cases**:
+   ```typescript
+   // Correct pattern
+   const id = await repository.generateId();
+   const entity = Entity.create({ id, ...otherProps });
+   const savedEntity = await repository.save(entity);
+   
+   // Incorrect pattern
+   const entity = await repository.create({ ...props }); // Repository shouldn't create entities
+   ```
+
+5. **Benefits**:
+   - **Validation**: Business rules are enforced during entity creation
+   - **Encapsulation**: Creation logic stays in the domain layer
+   - **Consistency**: Entities are always created in a valid state
+   - **Testability**: Creation logic can be tested in isolation
+
+This pattern complements the Entity Self-Modification Pattern and ensures that the entire lifecycle of an entity (creation, modification, persistence) is handled according to Clean Architecture principles.
+
 ## Import Paths
 
 All imports from the core modules and shared code should use the following paths:
@@ -77,7 +196,55 @@ All imports from the core modules and shared code should use the following paths
 
 For example:
 ```typescript
-import { container } from '@/_core/shared/container/container';
-import { Register } from '@/_core/shared/container/symbols';
+// Container imports (preferred pattern)
+import { container, Register } from '@/_core/shared/container';
+
+// Module imports
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
+```
+
+## Prefixed IDs Convention
+
+The project uses a standardized ID prefixing convention to improve code readability, debugging, and data integrity. This pattern ensures that entity IDs are immediately recognizable and helps prevent confusion between different entity types.
+
+### Key Principles
+
+1. **ID Format**:
+   - All entity IDs follow the format: `<prefix>_<uniqueId>`
+   - Example: `usr_abc123`, `crs_xyz987`
+
+2. **Entity-Specific Prefixes**:
+   - Each entity type has a designated prefix (3-5 letters)
+   - Examples: `usr_` for User, `crs_` for Course, `mod_` for Module
+
+3. **Relationship References**:
+   - When referencing other entities, use their prefixed IDs
+   - Example: `enrollment.userId = 'usr_abc123'`
+
+4. **ID Generation**:
+   - Repositories provide methods to generate prefixed IDs
+   - Example: `const id = await repository.generateId();`
+
+### Benefits
+
+- **Visual Identification**: Immediate recognition of entity types in code and databases
+- **Error Prevention**: Reduces the risk of using the wrong ID type in relationships
+- **Debugging**: Makes logs and database queries more readable
+- **Data Integrity**: Helps maintain proper relationships between entities
+
+### Implementation
+
+```typescript
+// Example of ID generation function
+function generateId(prefix: string): string {
+  const uniqueId = crypto.randomUUID().replace(/-/g, '').substring(0, 10);
+  return `${prefix}_${uniqueId}`;
+}
+
+// Entity-specific ID generators
+export const generateUserId = () => generateId('usr');
+export const generateCourseId = () => generateId('crs');
+```
+
+For a complete list of entity prefixes and more details, refer to the `docs/id-convention.md` document.

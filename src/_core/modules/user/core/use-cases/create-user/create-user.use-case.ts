@@ -1,9 +1,10 @@
 import { injectable, inject } from 'inversify';
 import type { UserRepository } from '../../../infrastructure/repositories/UserRepository';
-import { Register } from '@/_core/shared/container/symbols';
+import { Register } from '@/_core/shared/container';
 import { CreateUserInput } from './create-user.input';
 import { CreateUserOutput } from './create-user.output';
 import { Email } from '../../entities/Email';
+import { User } from '../../entities/User';
 
 /**
  * Use case for creating a user
@@ -28,17 +29,24 @@ export class CreateUserUseCase {
       throw new Error('User with this email already exists');
     }
 
+    // Generate a new ID
+    const id = await this.userRepository.generateId();
+    
     // Create email value object
     const email = Email.create(input.email);
 
-    // Create user
-    const user = await this.userRepository.create({
+    // Create user entity
+    const user = User.create({
+      id,
       name: input.name,
       email: email,
       role: input.type,
       institutionId: input.institutionId || 'default-institution', // Provide a default or require it in the input
     });
 
-    return { user };
+    // Save user
+    const savedUser = await this.userRepository.save(user);
+
+    return { user: savedUser };
   }
 }

@@ -2,26 +2,15 @@ import { Content } from '../../core/entities/Content';
 import { ContentType } from '../../core/entities/ContentType';
 
 /**
- * Data transfer object for creating content
- */
-export interface CreateContentDTO {
-  lessonId: string;
-  type: ContentType;
-  title: string;
-  url: string;
-}
-
-/**
  * Interface for the Content repository
  * Following Clean Architecture principles, this is an interface that will be implemented by infrastructure
  */
 export interface ContentRepository {
   /**
-   * Create new content
-   * @param contentData Content data for creation
-   * @returns Created content with id
+   * Generate a new unique ID for content
+   * @returns A unique ID
    */
-  create(contentData: CreateContentDTO): Promise<Content>;
+  generateId(): Promise<string>;
 
   /**
    * Find content by id
@@ -31,12 +20,11 @@ export interface ContentRepository {
   findById(id: string): Promise<Content | null>;
 
   /**
-   * Update content
-   * @param id Content id
-   * @param content Content data to update
-   * @returns Updated content
+   * Save content
+   * @param content Content to save
+   * @returns Saved content
    */
-  update(id: string, content: Partial<Omit<Content, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Content>;
+  save(content: Content): Promise<Content>;
 
   /**
    * Delete content

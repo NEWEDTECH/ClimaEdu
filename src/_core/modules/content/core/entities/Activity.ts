@@ -4,6 +4,8 @@
  */
 export class Activity {
   private constructor(
+    readonly id: string,
+    readonly lessonId: string,
     public description: string,
     public instructions: string,
     public resourceUrl?: string
@@ -16,6 +18,8 @@ export class Activity {
    * @throws Error if validation fails
    */
   public static create(params: {
+    id: string;
+    lessonId: string;
     description: string;
     instructions: string;
     resourceUrl?: string;
@@ -29,6 +33,8 @@ export class Activity {
     }
 
     return new Activity(
+      params.id,
+      params.lessonId,
       params.description,
       params.instructions,
       params.resourceUrl

@@ -1,0 +1,121 @@
+import { injectable } from 'inversify';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData } from 'firebase/firestore';
+import { firestore } from '@/_core/shared/firebase/firebase-client';
+import { Module } from '../../../core/entities/Module';
+import type { ModuleRepository } from '../ModuleRepository';
+import { nanoid } from 'nanoid';
+
+/**
+ * Firebase implementation of the ModuleRepository
+ */
+@injectable()
+export class FirebaseModuleRepository implements ModuleRepository {
+  private readonly collectionName = 'modules';
+  private readonly idPrefix = 'mod_';
+
+  /**
+   * Generate a new unique ID for a module
+   * @returns A unique ID with the module prefix
+   */
+  async generateId(): Promise<string> {
+    // Generate a unique ID with the module prefix
+    return `${this.idPrefix}${nanoid(10)}`;
+  }
+
+  /**
+   * Private adapter method to convert Firestore document data to a Module entity
+   * @param data Firestore document data
+   * @returns Module entity
+   */
+  private mapToEntity(data: DocumentData): Module {
+    // Create and return a Module entity
+    return Module.create({
+      id: data.id,
+      courseId: data.courseId,
+      title: data.title,
+      order: data.order,
+      lessons: data.lessons || []
+    });
+  }
+
+  /**
+   * Find a module by id
+   * @param id Module id
+   * @returns Module or null if not found
+   */
+  async findById(id: string): Promise<Module | null> {
+    const moduleRef = doc(firestore, this.collectionName, id);
+    const moduleDoc = await getDoc(moduleRef);
+
+    if (!moduleDoc.exists()) {
+      return null;
+    }
+
+    const data = moduleDoc.data();
+    return this.mapToEntity({ id, ...data });
+  }
+
+  /**
+   * Save a module
+   * @param module Module to save
+   * @returns Saved module
+   */
+  async save(module: Module): Promise<Module> {
+    const moduleRef = doc(firestore, this.collectionName, module.id);
+    
+    // Prepare the module data for Firestore
+    const moduleData = {
+      id: module.id,
+      courseId: module.courseId,
+      title: module.title,
+      order: module.order,
+      lessons: module.lessons
+    };
+
+    // Check if the module already exists
+    const moduleDoc = await getDoc(moduleRef);
+    
+    if (moduleDoc.exists()) {
+      // Update existing module
+      await updateDoc(moduleRef, moduleData);
+    } else {
+      // Create new module
+      await setDoc(moduleRef, moduleData);
+    }
+
+    return module;
+  }
+
+  /**
+   * Delete a module
+   * @param id Module id
+   * @returns true if deleted, false if not found
+   */
+  async delete(id: string): Promise<boolean> {
+    const moduleRef = doc(firestore, this.collectionName, id);
+    const moduleDoc = await getDoc(moduleRef);
+
+    if (!moduleDoc.exists()) {
+      return false;
+    }
+
+    await deleteDoc(moduleRef);
+    return true;
+  }
+
+  /**
+   * List modules by course
+   * @param courseId Course id
+   * @returns List of modules
+   */
+  async listByCourse(courseId: string): Promise<Module[]> {
+    const modulesRef = collection(firestore, this.collectionName);
+    const q = query(modulesRef, where('courseId', '==', courseId));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
+  }
+}

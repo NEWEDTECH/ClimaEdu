@@ -1,17 +1,4 @@
 import { User, UserRole } from '../../core/entities/User';
-import { Email } from '../../core/entities/Email';
-import { Profile } from '../../core/entities/Profile';
-
-/**
- * Data transfer object for creating a user
- */
-export interface CreateUserDTO {
-  name: string;
-  email: Email;
-  role: UserRole;
-  institutionId: string;
-  profile?: Profile;
-}
 
 /**
  * Interface for the User repository
@@ -19,11 +6,10 @@ export interface CreateUserDTO {
  */
 export interface UserRepository {
   /**
-   * Create a new user
-   * @param userData User data for creation
-   * @returns Created user with id
+   * Generate a new unique ID for a user
+   * @returns A unique ID
    */
-  create(userData: CreateUserDTO): Promise<User>;
+  generateId(): Promise<string>;
 
   /**
    * Find a user by id
@@ -40,12 +26,11 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
 
   /**
-   * Update a user
-   * @param id User id
-   * @param user User data to update
-   * @returns Updated user
+   * Save a user
+   * @param user User to save
+   * @returns Saved user
    */
-  update(id: string, user: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User>;
+  save(user: User): Promise<User>;
 
   /**
    * Delete a user
