@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "emulators": "firebase emulators:start",
+    "emulators": "tsc --watch & firebase emulators:start --import=./firebasedata --export-on-exit",
     "dev:emulators": "concurrently \"npm run emulators\" \"npm run dev\""
   },
   "dependencies": {
