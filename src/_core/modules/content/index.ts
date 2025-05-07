@@ -3,6 +3,7 @@
 // Re-export entities
 export * from './core/entities/Content';
 export * from './core/entities/Course';
+export * from './core/entities/CourseTutor';
 export * from './core/entities/Module';
 export * from './core/entities/Lesson';
 export * from './core/entities/Activity';
@@ -54,11 +55,15 @@ export * from './core/use-cases/submit-questionnaire/submit-questionnaire.output
 export * from './core/use-cases/retry-questionnaire/retry-questionnaire.use-case';
 export * from './core/use-cases/retry-questionnaire/retry-questionnaire.input';
 export * from './core/use-cases/retry-questionnaire/retry-questionnaire.output';
+export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
+export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-course.input';
+export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-course.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
 export * from './infrastructure/repositories/ContentRepository';
 export * from './infrastructure/repositories/CourseRepository';
+export * from './infrastructure/repositories/CourseTutorRepository';
 export * from './infrastructure/repositories/ModuleRepository';
 export * from './infrastructure/repositories/LessonRepository';
 export * from './infrastructure/repositories/ActivityRepository';
@@ -68,6 +73,7 @@ export * from './infrastructure/repositories/QuestionnaireSubmissionRepository';
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseContentRepository';
 export * from './infrastructure/repositories/implementations/FirebaseCourseRepository';
+export * from './infrastructure/repositories/implementations/FirebaseCourseTutorRepository';
 export * from './infrastructure/repositories/implementations/FirebaseModuleRepository';
 export * from './infrastructure/repositories/implementations/FirebaseLessonRepository';
 export * from './infrastructure/repositories/implementations/FirebaseActivityRepository';

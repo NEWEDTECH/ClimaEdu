@@ -4,6 +4,7 @@ import { repositories, useCases } from './symbols';
 // Import implementations
 import type { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
 import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+import type { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
 import type { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import type { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
@@ -11,6 +12,7 @@ import type { QuestionnaireRepository } from '@/_core/modules/content/infrastruc
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { FirebaseCourseRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseRepository';
+import { FirebaseCourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseTutorRepository';
 import { FirebaseModuleRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseModuleRepository';
 import { FirebaseLessonRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonRepository';
 import { FirebaseActivityRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseActivityRepository';
@@ -30,6 +32,7 @@ import { DeleteQuestionUseCase } from '@/_core/modules/content/core/use-cases/de
 import { ListQuestionsOfQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.use-case';
 import { SubmitQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/submit-questionnaire/submit-questionnaire.use-case';
 import { RetryQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/retry-questionnaire/retry-questionnaire.use-case';
+import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -40,6 +43,7 @@ export function registerContentModule(container: Container): void {
   // Register repositories
   container.bind<ContentRepository>(repositories.ContentRepository).to(FirebaseContentRepository);
   container.bind<CourseRepository>(repositories.CourseRepository).to(FirebaseCourseRepository);
+  container.bind<CourseTutorRepository>(repositories.CourseTutorRepository).to(FirebaseCourseTutorRepository);
   container.bind<ModuleRepository>(repositories.ModuleRepository).to(FirebaseModuleRepository);
   container.bind<LessonRepository>(repositories.LessonRepository).to(FirebaseLessonRepository);
   container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
@@ -61,5 +65,6 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.ListQuestionsOfQuestionnaireUseCase).to(ListQuestionsOfQuestionnaireUseCase);
   container.bind(useCases.SubmitQuestionnaireUseCase).to(SubmitQuestionnaireUseCase);
   container.bind(useCases.RetryQuestionnaireUseCase).to(RetryQuestionnaireUseCase);
+  container.bind(useCases.AssociateTutorToCourseUseCase).to(AssociateTutorToCourseUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

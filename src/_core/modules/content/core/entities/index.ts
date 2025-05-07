@@ -5,6 +5,7 @@ export * from './Activity';
 export * from './Content';
 export * from './ContentType';
 export * from './Course';
+export * from './CourseTutor';
 export * from './Lesson';
 export * from './Module';
 export * from './Question';
