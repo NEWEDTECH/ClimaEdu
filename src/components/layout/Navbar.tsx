@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ProfileSelect } from '@/components/profile';
-import { Button } from '@/components/ui/button/button';
 import { IoMdMenu } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
 import { cn } from '@/lib/utils';
@@ -35,10 +34,11 @@ const teacherItems: DropdownItem[] = [
 ];
 
 const adminItems: DropdownItem[] = [
+  { label: 'Instituições', href: '/admin/institution' },
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Alunos', href: '/admin/student' },
   { label: 'Professores', href: '/admin/tutor' },
-  { label: 'Cursos', href: '/admin/courses' },
+  { label: 'Cursos', href: '/courses' },
   { label: 'Relatórios', href: '/admin/reports' },
   { label: 'Configurações', href: '/admin/settings' },
 ];
@@ -49,15 +49,11 @@ const sections: DropdownSection[] = [
   { title: 'Área do Admin', items: adminItems, role: 'admin' }
 ];
 
-type NavbarProps = {
-  userName?: string;
-}
-
 
 export function Navbar() {
 
   const { role } = useProfile();
-  console.log(role)
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   return (
@@ -75,10 +71,12 @@ export function Navbar() {
           {sections.map((section) => {
             if (section.role === role) {
               return (
-                <div className={cn(
-                  "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
-                )}>
-
+                <div
+                  key={section.title} 
+                  className={cn(
+                    "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
+                  )}
+                >
                   {section.items.map(item => (
                     <Link
                       key={item.label}
@@ -88,12 +86,11 @@ export function Navbar() {
                       <span>{item.label}</span>
                     </Link>
                   ))}
-
                 </div>
-              )
+              );
             }
-          }
-          )}
+          })}
+
         </div>
 
         <div className="hidden md:flex items-center gap-4">
