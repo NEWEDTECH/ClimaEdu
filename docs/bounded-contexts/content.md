@@ -49,6 +49,7 @@ Institution
 - **Course.title**: Name displayed to students, identifying the learning path.
 - **Course.institutionId**: The institution that owns the course.
 - **Course.coverImageUrl**: URL of the cover image that visually represents the course in the user interface.
+- **Module.coverImageUrl**: URL of the cover image that visually represents the module in the user interface.
 - **CourseTutor.userId**: The ID of the tutor associated with the course.
 - **CourseTutor.courseId**: The ID of the course the tutor is associated with.
 - **Module.order**: Numeric position of a Module within a Course for structured progression.
