@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -29,9 +29,11 @@ const mockStudentData: Record<string, StudentData> = {
   '5': { id: '5', name: 'Juliana Lima', email: 'juliana.lima@example.com', phone: '(51) 98765-4321', address: 'Rua das Palmeiras, 654', birthDate: '1999-12-05', documentId: '321.654.987-00' },
 }
 
-export default function EditStudentPage({ params }: { params: { id: string } }) {
+export default function EditStudentPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const { id } = params
+
+  const resolvedParams = 'then' in params ? use(params) : params
+  const { id } = resolvedParams
   
   const [formData, setFormData] = useState({
     name: '',

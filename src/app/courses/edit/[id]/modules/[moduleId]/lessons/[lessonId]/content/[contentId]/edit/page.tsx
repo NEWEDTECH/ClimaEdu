@@ -16,7 +16,6 @@ import { ContentRepository } from '@/_core/modules/content/infrastructure/reposi
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
-import { Content } from '@/_core/modules/content/core/entities/Content'
 
 interface ContentFormData {
   id: string;
@@ -83,15 +82,15 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         
         setLessonTitle(lesson.title)
         
-        const module = await moduleRepository.findById(moduleId)
+        const moduleData = await moduleRepository.findById(moduleId)
         
-        if (!module) {
+        if (!moduleData) {
           setError('Módulo não encontrado')
           setIsLoading(false)
           return
         }
         
-        setModuleName(module.title)
+        setModuleName(moduleData.title)
         
         setFormData({
           id: content.id,

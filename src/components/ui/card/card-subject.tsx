@@ -14,7 +14,6 @@ interface CardSubjectProps {
 
 export function CardSubject({
   title,
-  description,
   href,
   imageUrl = "/vercel.svg",
   isBlocked = false,
@@ -29,7 +28,7 @@ export function CardSubject({
             <div className="relative h-full w-full opacity-60">
               <Image 
                 src={imageUrl} 
-                alt={title}
+                alt={title || "Course thumbnail image"}
                 fill
                 style={{ objectFit: "cover" }}
               />

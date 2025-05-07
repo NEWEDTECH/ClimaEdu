@@ -218,7 +218,7 @@ export default function ReportsPage() {
                   <CardHeader>
                     <CardTitle>Progress Over Time</CardTitle>
                     <CardDescription>
-                      Student's course completion progress
+                      Students course completion progress
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -370,7 +370,7 @@ export default function ReportsPage() {
                     <div>
                       <h3 className="font-medium">Engagement Opportunities</h3>
                       <p className="text-sm text-muted-foreground">
-                        25% of students haven't participated in discussion forums
+                        25% of students havent participated in discussion forums
                       </p>
                       <Progress value={75} className="h-2 mt-2" />
                     </div>
@@ -378,7 +378,7 @@ export default function ReportsPage() {
                     <div>
                       <h3 className="font-medium">At-Risk Students</h3>
                       <p className="text-sm text-muted-foreground">
-                        5 students haven't logged in for more than 2 weeks
+                        5 students havent logged in for more than 2 weeks
                       </p>
                       <div className="flex justify-end mt-2">
                         <Button variant="outline" size="sm">

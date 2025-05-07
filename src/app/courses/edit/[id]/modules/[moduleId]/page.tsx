@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { FormSection } from '@/components/form'
@@ -40,7 +40,7 @@ const NAME_COLUMNS = [
   'Ações'
 ]
 
-export default function TutorEditModulePage({ params }: { params: Promise<{ id: string, moduleId: string }> | { id: string, moduleId: string } }) {
+export default function TutorEditModulePage({ params }: { params: Promise<{ id: string, moduleId: string }>}) {
   const router = useRouter()
 
   const resolvedParams = 'then' in params ? use(params) : params
@@ -60,68 +60,68 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState<number>(0)
 
-  const fetchModuleData = async () => {
-    try {
-      setIsLoading(true)
-
-      const moduleRepository = container.get<ModuleRepository>(
-        Register.content.repository.ModuleRepository
-      )
-
-      const courseRepository = container.get<CourseRepository>(
-        Register.content.repository.CourseRepository
-      )
-
-      const module = await moduleRepository.findById(moduleId)
-
-      if (!module) {
-        setError('Módulo não encontrado')
-        setIsLoading(false)
-        return
-      }
-
-      const course = await courseRepository.findById(courseId)
-
-      if (!course) {
-        setError('Curso não encontrado')
-        setIsLoading(false)
-        return
-      }
-
-      setCourseName(course.title)
-
-      const lessonRepository = container.get<LessonRepository>(
-        Register.content.repository.LessonRepository
-      )
-
-      const lessons = await lessonRepository.listByModule(moduleId)
-
-      const lessonsData: LessonData[] = lessons.map(lesson => ({
-        id: lesson.id,
-        title: lesson.title,
-        order: lesson.order,
-        contentsCount: lesson.contents.length
-      }))
-
-      lessonsData.sort((a, b) => a.order - b.order)
-
-      setFormData({
-        id: module.id,
-        title: module.title,
-        courseId: module.courseId,
-        order: module.order,
-        lessons: lessonsData
-      })
-
-      setIsLoading(false)
-    } catch (error) {
-      console.error('Error fetching module data:', error)
-      setError('Falha ao carregar dados do módulo')
-      setIsLoading(false)
-    }
-  }
-
   useEffect(() => {
+    const fetchModuleData = async () => {
+      try {
+        setIsLoading(true)
+
+        const moduleRepository = container.get<ModuleRepository>(
+          Register.content.repository.ModuleRepository
+        )
+
+        const courseRepository = container.get<CourseRepository>(
+          Register.content.repository.CourseRepository
+        )
+
+        const moduleData = await moduleRepository.findById(moduleId)
+
+        if (!moduleData) {
+          setError('Módulo não encontrado')
+          setIsLoading(false)
+          return
+        }
+
+        const course = await courseRepository.findById(courseId)
+
+        if (!course) {
+          setError('Curso não encontrado')
+          setIsLoading(false)
+          return
+        }
+
+        setCourseName(course.title)
+
+        const lessonRepository = container.get<LessonRepository>(
+          Register.content.repository.LessonRepository
+        )
+
+        const lessons = await lessonRepository.listByModule(moduleId)
+
+        const lessonsData: LessonData[] = lessons.map(lesson => ({
+          id: lesson.id,
+          title: lesson.title,
+          order: lesson.order,
+          contentsCount: lesson.contents.length
+        }))
+
+        lessonsData.sort((a, b) => a.order - b.order)
+
+        setFormData({
+          id: moduleData.id,
+          title: moduleData.title,
+          courseId: moduleData.courseId,
+          order: moduleData.order,
+          lessons: lessonsData
+        })
+
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Error fetching module data:', error)
+        setError('Falha ao carregar dados do módulo')
+        setIsLoading(false)
+      }
+    }
+
     fetchModuleData()
   }, [courseId, moduleId, refreshKey])
 
@@ -151,17 +151,17 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
         Register.content.repository.ModuleRepository
       )
 
-      const module = await moduleRepository.findById(moduleId)
+      const moduleData = await moduleRepository.findById(moduleId)
 
-      if (!module) {
+      if (!moduleData) {
         throw new Error('Módulo não encontrado')
       }
 
-      module.updateTitle(formData.title)
+      moduleData.updateTitle(formData.title)
 
-      await moduleRepository.save(module)
+      await moduleRepository.save(moduleData)
 
-      router.push(`/tutor/courses/edit/${courseId}`)
+      router.push(`/courses/edit/${courseId}`)
     } catch (error) {
       console.error('Erro ao atualizar módulo:', error)
       alert(`Falha ao atualizar módulo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -189,7 +189,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/tutor/courses/edit/${courseId}`}>
+                <Link href={`/courses/edit/${courseId}`}>
                   <Button>Voltar para o Curso</Button>
                 </Link>
               </CardContent>
@@ -209,7 +209,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
               <h1 className="text-3xl font-bold">Editar Módulo</h1>
               <p className="text-gray-500">Curso: {courseName}</p>
             </div>
-            <Link href={`/tutor/courses/edit/${courseId}`}>
+            <Link href={`/courses/edit/${courseId}`}>
               <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Curso</Button>
             </Link>
           </div>

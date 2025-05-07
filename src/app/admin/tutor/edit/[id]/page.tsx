@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -75,9 +75,11 @@ const mockTutorData: Record<string, TutorData> = {
   },
 }
 
-export default function EditTutorPage({ params }: { params: { id: string } }) {
+export default function EditTutorPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const { id } = params
+
+  const resolvedParams = 'then' in params ? use(params) : params
+  const { id } = resolvedParams
   
   const [formData, setFormData] = useState<TutorData>({
     id: '',

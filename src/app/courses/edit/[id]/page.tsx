@@ -3,9 +3,8 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/button'
-import { InputText } from '@/components/input'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { ModuleForm } from '@/components/courses'
@@ -13,10 +12,9 @@ import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case'
-import { Course } from '@/_core/modules/content/core/entities/Course'
 
-// Define course data type for the UI
-interface CourseFormData {
+
+type CourseFormData = {
   id: string;
   title: string;
   description: string;
@@ -37,7 +35,7 @@ interface CourseFormData {
 }
 
 
-export default function TutorEditCoursePage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+export default function TutorEditCoursePage({ params }: { params: Promise<{ id: string }>}) {
   const router = useRouter()
 
   const resolvedParams = 'then' in params ? use(params) : params
@@ -59,8 +57,8 @@ export default function TutorEditCoursePage({ params }: { params: Promise<{ id: 
     enrolledStudents: 0,
     status: 'active'
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -110,10 +108,6 @@ export default function TutorEditCoursePage({ params }: { params: Promise<{ id: 
     fetchCourseData()
   }, [id])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,7 +119,7 @@ export default function TutorEditCoursePage({ params }: { params: Promise<{ id: 
         Register.content.useCase.UpdateCourseUseCase
       )
       
-      const result = await updateCourseUseCase.execute({
+      await updateCourseUseCase.execute({
         id: formData.id,
         title: formData.title,
         description: formData.description

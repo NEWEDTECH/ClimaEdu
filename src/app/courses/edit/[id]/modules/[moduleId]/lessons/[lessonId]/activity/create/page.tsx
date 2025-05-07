@@ -22,9 +22,9 @@ type FormData = {
   resourceUrl: string;
 }
 
-export default function CreateActivityPage({ params }: any) {
+export default function CreateActivityPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter();
-  const unwrappedParams = React.use(params) as any;
+  const unwrappedParams = use(params);
   const { id: courseId, moduleId, lessonId } = unwrappedParams;
   
   const [formData, setFormData] = useState<FormData>({
@@ -67,14 +67,14 @@ export default function CreateActivityPage({ params }: any) {
         
         setLessonTitle(lesson.title);
         
-        const module = await moduleRepository.findById(moduleId);
-        if (!module) {
+        const moduleData = await moduleRepository.findById(moduleId);
+        if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
         
-        setModuleName(module.title);
+        setModuleName(moduleData.title);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -100,7 +100,14 @@ export default function CreateActivityPage({ params }: any) {
         Register.content.useCase.CreateActivityUseCase
       );
       
-      const params: any = {
+      interface ActivityParams {
+        lessonId: string;
+        description: string;
+        instructions: string;
+        resourceUrl?: string;
+      }
+      
+      const params: ActivityParams = {
         lessonId,
         description: formData.description,
         instructions: formData.instructions,
@@ -210,7 +217,7 @@ export default function CreateActivityPage({ params }: any) {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      URL de Recurso (opcional)
+                      URL de Recurso
                     </label>
                     <InputText
                       id="resourceUrl"

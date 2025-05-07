@@ -83,12 +83,20 @@ export class FirebaseQuestionnaireRepository implements QuestionnaireRepository 
   async save(questionnaire: Questionnaire): Promise<Questionnaire> {
     const questionnaireRef = doc(firestore, this.collectionName, questionnaire.id);
     
+    // Convert Question objects to plain objects
+    const questionsData = questionnaire.questions.map(question => ({
+      id: question.id,
+      questionText: question.questionText,
+      options: question.options,
+      correctAnswerIndex: question.correctAnswerIndex
+    }));
+    
     // Prepare the questionnaire data for Firestore
     const questionnaireData = {
       id: questionnaire.id,
       lessonId: questionnaire.lessonId,
       title: questionnaire.title,
-      questions: questionnaire.questions,
+      questions: questionsData,
       maxAttempts: questionnaire.maxAttempts,
       passingScore: questionnaire.passingScore
     };

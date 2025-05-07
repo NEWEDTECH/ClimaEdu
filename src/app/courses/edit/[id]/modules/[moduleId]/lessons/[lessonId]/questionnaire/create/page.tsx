@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card/card';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
@@ -81,14 +81,14 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
         
         setLessonTitle(lesson.title);
         
-        const module = await moduleRepository.findById(moduleId);
-        if (!module) {
+        const moduleData = await moduleRepository.findById(moduleId);
+        if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
         
-        setModuleName(module.title);
+        setModuleName(moduleData.title);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);

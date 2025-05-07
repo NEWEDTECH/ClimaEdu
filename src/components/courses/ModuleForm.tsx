@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
@@ -28,11 +28,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchModules();
-  }, [courseId]);
-
-  const fetchModules = async () => {
+  const fetchModules = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -58,10 +54,13 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
       setError('Falha ao carregar módulos');
       setIsLoading(false);
     }
-  };
+  }, [courseId]);
 
-  const handleCreateModule = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchModules();
+  }, [fetchModules]);
+
+  const handleCreateModule = async () => {
 
     if (!newModuleTitle.trim()) {
       alert('O título do módulo não pode estar vazio');
@@ -160,11 +159,9 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
               <div className="flex justify-end">
                 <Button
                   type="button"
+                  onClick={handleCreateModule}
                   disabled={isCreatingModule}
                   className="text-xs px-3 py-1"
-                  onClick={() => {
-                    handleCreateModule(new Event('click') as any);
-                  }}
                 >
                   {isCreatingModule ? 'Criando...' : 'Criar Módulo'}
                 </Button>

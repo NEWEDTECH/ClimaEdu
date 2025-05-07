@@ -153,9 +153,12 @@ export default function InstitutionPage() {
             primaryColor: fetchedInstitution.settings.primaryColor || '',
             secondaryColor: fetchedInstitution.settings.secondaryColor || '',
           });
-        } catch (err) {
+        } catch (err: unknown) {
           console.error('Error fetching institution:', err);
-          setError('Falha ao carregar instituição. Por favor, tente novamente.');
+          const errorMessage = err instanceof Error 
+            ? `Falha ao carregar instituição: ${err.message}` 
+            : 'Falha ao carregar instituição. Por favor, tente novamente.';
+          setError(errorMessage);
         } finally {
           setLoading(false);
         }
@@ -247,9 +250,10 @@ export default function InstitutionPage() {
       }
 
       router.push('/admin/institution');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} institution:`, err);
-      setError(err.message || `Falha ao ${isEditMode ? 'atualizar' : 'criar'} instituição. Por favor, tente novamente.`);
+      const errorMessage = err instanceof Error ? err.message : `Falha ao ${isEditMode ? 'atualizar' : 'criar'} instituição. Por favor, tente novamente.`;
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

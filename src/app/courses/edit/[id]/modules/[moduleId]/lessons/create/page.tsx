@@ -20,7 +20,7 @@ interface LessonFormData {
   order?: number;
 }
 
-export default function CreateLessonPage({ params }: { params: Promise<{ id: string, moduleId: string }> | { id: string, moduleId: string } }) {
+export default function CreateLessonPage({ params }: { params: Promise<{ id: string, moduleId: string }> }) {
   const router = useRouter()
 
   const resolvedParams = 'then' in params ? use(params) : params
@@ -44,15 +44,15 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
           Register.content.repository.ModuleRepository
         )
 
-        const module = await moduleRepository.findById(moduleId)
+        const moduleData = await moduleRepository.findById(moduleId)
 
-        if (!module) {
+        if (!moduleData) {
           setError('Módulo não encontrado')
           setIsLoading(false)
           return
         }
 
-        setModuleName(module.title)
+        setModuleName(moduleData.title)
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching module data:', error)
@@ -105,9 +105,9 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
         title: formData.title,
         order: lessonOrder,
         contents: [],
-        // @ts-ignore - We're explicitly setting activity and questionnaire to null
+        // @ts-expect-error - We're explicitly setting activity and questionnaire to null
         activity: null,
-        // @ts-ignore - We're explicitly setting activity and questionnaire to null
+        // @ts-expect-error - We're explicitly setting activity and questionnaire to null
         questionnaire: null
       })
 

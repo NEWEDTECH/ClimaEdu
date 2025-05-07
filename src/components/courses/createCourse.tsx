@@ -87,7 +87,7 @@ export default function CreateCoursePage() {
         Register.content.useCase.CreateCourseUseCase
       )
 
-      const result = await createCourseUseCase.execute({
+      await createCourseUseCase.execute({
         institutionId: formData.institutionId,
         title: formData.title,
         description: formData.description

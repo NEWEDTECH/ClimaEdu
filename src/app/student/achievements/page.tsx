@@ -92,7 +92,6 @@ const mockBadges = [
 ];
 
 const awardedBadges = mockBadges.filter(badge => badge.isAwarded);
-const inProgressBadges = mockBadges.filter(badge => !badge.isAwarded);
 
 export default function ConquistasPage() {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);

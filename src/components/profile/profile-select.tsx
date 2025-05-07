@@ -1,13 +1,11 @@
 "use client";
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
 import { cn } from "@/lib/utils";
-import { useProfile } from '@/context/zustand/useProfile';
 
 import { Dropdown, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/select'
 import { ProfileDropdownOptions } from './index'
@@ -27,9 +25,6 @@ const OPTIONS_PROFILE: OptionsProfileProps[] = [
 ];
 
 export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
-
-  const { role } = useProfile();
-  const router = useRouter();
 
   return (
     <Dropdown className={cn(

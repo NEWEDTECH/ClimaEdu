@@ -91,14 +91,14 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         
         setLessonTitle(lesson.title);
         
-        const module = await moduleRepository.findById(moduleId);
-        if (!module) {
+        const moduleData = await moduleRepository.findById(moduleId);
+        if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
         
-        setModuleName(module.title);
+        setModuleName(moduleData.title);
 
         const result = await listQuestionsUseCase.execute({
           questionnaireId

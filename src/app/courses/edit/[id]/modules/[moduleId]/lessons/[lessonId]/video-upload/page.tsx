@@ -59,14 +59,14 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         
         setLessonTitle(lesson.title);
         
-        const module = await moduleRepository.findById(moduleId);
-        if (!module) {
+        const moduleData = await moduleRepository.findById(moduleId);
+        if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
         
-        setModuleName(module.title);
+        setModuleName(moduleData.title);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -177,7 +177,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       
       const updatedContents = [...currentContents, contentData];
       
-      // @ts-ignore - We're manually setting the contents array
+      // @ts-expect-error - We're manually setting the contents array
       lesson.contents = updatedContents;
       
       await lessonRepository.save(lesson);

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button/button'
-import { InputText } from '@/components/ui/input/input-text/InputText'
+import { Button } from '@/components/button'
+import { InputText } from '@/components/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
@@ -13,7 +13,6 @@ import { Register } from '@/_core/shared/container'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
-import { useProfile } from '@/context/zustand/useProfile';
 
 type CourseWithUIProps = {
   id: string
@@ -33,9 +32,6 @@ export default function TutorCoursesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-
-  const { role } = useProfile();
-
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -140,6 +136,7 @@ export default function TutorCoursesPage() {
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
                   <InputText
+                    id="search-courses"
                     type="text"
                     placeholder="Buscar por título, descrição ou instrutor..."
                     value={searchTerm}
@@ -216,7 +213,7 @@ export default function TutorCoursesPage() {
 
                           <div className="pt-4 flex justify-end">
                             <Link href={`/courses/edit/${course.id}`}>
-                              <Button variant="outline" size="sm">Editar</Button>
+                              <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                             </Link>
                           </div>
                         </div>

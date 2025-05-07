@@ -57,7 +57,7 @@ type QuestionData = {
   correctAnswerIndex: number;
 }
 
-export default function EditLessonPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> | { id: string, moduleId: string, lessonId: string } }) {
+export default function EditLessonPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter()
 
   const resolvedParams = 'then' in params ? use(params) : params
@@ -107,15 +107,15 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           return
         }
         
-        const module = await moduleRepository.findById(moduleId)
+        const moduleData = await moduleRepository.findById(moduleId)
         
-        if (!module) {
+        if (!moduleData) {
           setError('Módulo não encontrado')
           setIsLoading(false)
           return
         }
         
-        setModuleName(module.title)
+        setModuleName(moduleData.title)
         
         const contentsData: ContentData[] = lesson.contents.map(content => ({
           id: content.id,
@@ -433,7 +433,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {formData.contents.map((content, index) => (
+                        {formData.contents.map((content) => (
                           <div 
                             key={content.id} 
                             className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
