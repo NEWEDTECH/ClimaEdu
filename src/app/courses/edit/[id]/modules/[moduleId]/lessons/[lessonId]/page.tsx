@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/button'
 import { FormSection } from '@/components/form'
 import { InputText } from '@/components/input'
@@ -19,8 +19,7 @@ import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 import { Content } from '@/_core/modules/content/core/entities/Content'
 
-// Define lesson data type for the UI
-interface LessonFormData {
+type LessonFormData = {
   id: string;
   title: string;
   moduleId: string;
@@ -30,24 +29,21 @@ interface LessonFormData {
   questionnaire?: QuestionnaireData;
 }
 
-// Define content data type for the UI
-interface ContentData {
+type ContentData = {
   id: string;
   title: string;
   type: ContentType;
   url: string;
 }
 
-// Define activity data type for the UI
-interface ActivityData {
+type ActivityData = {
   id: string;
   description: string;
   instructions: string;
   resourceUrl?: string;
 }
 
-// Define questionnaire data type for the UI
-interface QuestionnaireData {
+type QuestionnaireData = {
   id: string;
   title: string;
   maxAttempts: number;
@@ -55,8 +51,7 @@ interface QuestionnaireData {
   questions: QuestionData[];
 }
 
-// Define question data type for the UI
-interface QuestionData {
+type QuestionData = {
   id: string;
   questionText: string;
   options: string[];
@@ -65,7 +60,7 @@ interface QuestionData {
 
 export default function EditLessonPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> | { id: string, moduleId: string, lessonId: string } }) {
   const router = useRouter()
-  // Use React.use() to unwrap params if it's a Promise
+
   const resolvedParams = 'then' in params ? use(params) : params
   const { id: courseId, moduleId, lessonId } = resolvedParams
   
@@ -77,9 +72,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     contents: []
   })
   
-  const [moduleName, setModuleName] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [moduleName, setModuleName] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   
   useEffect(() => {
@@ -87,7 +82,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       try {
         setIsLoading(true)
         
-        // Get the repositories from the container
+
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         )
@@ -104,18 +99,15 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           Register.content.repository.QuestionnaireRepository
         )
         
-        // Fetch the lesson by ID
-        const lesson = await lessonRepository.findById(lessonId)
 
-        console.log("Lesson from repository:", lesson)
-        
+        const lesson = await lessonRepository.findById(lessonId)
+ 
         if (!lesson) {
           setError('Lição não encontrada')
           setIsLoading(false)
           return
         }
         
-        // Fetch the module to get its name
         const module = await moduleRepository.findById(moduleId)
         
         if (!module) {
@@ -126,7 +118,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         
         setModuleName(module.title)
         
-        // Map contents to UI data
         const contentsData: ContentData[] = lesson.contents.map(content => ({
           id: content.id,
           title: content.title,
@@ -134,11 +125,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           url: content.url
         }))
         
-        // Check for activity in the activity repository
+
         const activity = await activityRepository.findByLessonId(lessonId)
-        console.log("Activity from repository:", activity)
-        
-        // Map activity data if it exists
+
         let activityData: ActivityData | undefined = undefined;
         if (lesson.activity) {
           activityData = {
@@ -148,7 +137,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             resourceUrl: lesson.activity.resourceUrl
           };
         } else if (activity) {
-          // Use activity from repository if not in lesson
+
           activityData = {
             id: activity.id,
             description: activity.description,
@@ -157,11 +146,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           };
         }
         
-        // Check for questionnaire in the questionnaire repository
         const questionnaire = await questionnaireRepository.findByLessonId(lessonId)
-        console.log("Questionnaire from repository:", questionnaire)
-        
-        // Map questionnaire data if it exists
+
         let questionnaireData: QuestionnaireData | undefined = undefined;
         if (lesson.questionnaire) {
           questionnaireData = {
@@ -177,7 +163,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             }))
           };
         } else if (questionnaire) {
-          // Use questionnaire from repository if not in lesson
+
           questionnaireData = {
             id: questionnaire.id,
             title: questionnaire.title,
@@ -192,7 +178,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           };
         }
         
-        // Map Lesson entity to form data
         setFormData({
           id: lesson.id,
           title: lesson.title,
@@ -224,7 +209,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     setIsSubmitting(true)
     
     try {
-      // Get the repositories from the container
+
       const lessonRepository = container.get<LessonRepository>(
         Register.content.repository.LessonRepository
       )
@@ -237,37 +222,29 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         Register.content.repository.QuestionnaireRepository
       )
       
-      // Fetch the current lesson
+
       const lesson = await lessonRepository.findById(lessonId)
       
       if (!lesson) {
         throw new Error('Lição não encontrada')
       }
       
-      // Update the lesson title
       lesson.updateTitle(formData.title)
       
-      // Check for activity in the activity repository
       const activity = await activityRepository.findByLessonId(lessonId)
       if (activity && !lesson.activity) {
-        // Attach activity to lesson if it exists in repository but not in lesson
+
         lesson.attachActivity(activity)
       }
       
-      // Check for questionnaire in the questionnaire repository
       const questionnaire = await questionnaireRepository.findByLessonId(lessonId)
       if (questionnaire && !lesson.questionnaire) {
-        // Attach questionnaire to lesson if it exists in repository but not in lesson
         lesson.attachQuestionnaire(questionnaire)
       }
       
-      // Save the updated lesson
       await lessonRepository.save(lesson)
       
-      console.log('Lição atualizada com sucesso')
-      
-      // Redirect back to the module edit page
-      router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}`)
+      router.push(`/courses/edit/${courseId}/modules/${moduleId}`)
     } catch (error) {
       console.error('Erro ao atualizar lição:', error)
       alert(`Falha ao atualizar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -381,7 +358,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}`}>
+                <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
               <Button>Voltar para o Módulo</Button>
                 </Link>
               </CardContent>
@@ -401,7 +378,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <h1 className="text-3xl font-bold">Editar Lição</h1>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
-            <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}`}>
+            <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
               <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Módulo</Button>
             </Link>
           </div>
@@ -435,13 +412,13 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <div className="flex justify-between items-center">
                       <CardTitle>Conteúdos da Lição</CardTitle>
                       <div className="flex gap-2">
-                        <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/video-upload`}>
+                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/video-upload`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
                         </Link>
-                        <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/activity/create`}>
+                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/activity/create`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Atividade</Button>
                         </Link>
-                        <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
+                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
                           <Button className="text-xs px-3 py-1">Adicionar Questionário</Button>
                         </Link>
                       </div>
@@ -477,7 +454,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
+                                <Link href={`courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                   <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                 </Link>
                               </div>
@@ -556,7 +533,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-center">
                         <CardTitle>Questionário</CardTitle>
-                        <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
+                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Gerenciar Perguntas</Button>
                         </Link>
                       </div>
@@ -607,29 +584,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                   </Card>
                 )}
 
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
-                  <h3 className="text-sm font-medium mb-2">Informações do Sistema</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">ID da Lição</p>
-                      <p className="text-sm font-mono">{formData.id}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">ID do Módulo</p>
-                      <p className="text-sm font-mono">{formData.moduleId}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Ordem</p>
-                      <p className="text-sm">{formData.order + 1}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Número de Conteúdos</p>
-                      <p className="text-sm">{formData.contents.length}</p>
-                    </div>
-                  </div>
-                </div>
                 <div className="flex justify-end gap-2 my-4">
-                  <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}`}>
+                  <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
                     <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
                   </Link>
                   <Button type="submit" disabled={isSubmitting}>
