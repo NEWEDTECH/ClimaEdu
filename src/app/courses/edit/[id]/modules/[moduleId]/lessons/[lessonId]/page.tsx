@@ -17,7 +17,6 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository'
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
-import { Content } from '@/_core/modules/content/core/entities/Content'
 
 type LessonFormData = {
   id: string;
@@ -454,7 +453,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Link href={`courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
+                                <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                   <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                 </Link>
                               </div>
