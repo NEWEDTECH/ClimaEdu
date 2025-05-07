@@ -54,6 +54,7 @@ export class CreateLessonUseCase {
       id,
       moduleId: input.moduleId,
       title: input.title,
+      coverImageUrl: input.coverImageUrl,
       order: lessonOrder,
     });
 
