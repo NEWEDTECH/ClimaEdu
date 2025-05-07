@@ -4,7 +4,8 @@ import {
   isSignInWithEmailLink, 
   signInWithEmailLink,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  createUserWithEmailAndPassword
 } from 'firebase/auth';
 import { AuthService } from '../services/AuthService';
 import { auth } from '@/_core/shared/firebase/firebase-client';
@@ -270,5 +271,21 @@ export class FirebaseAuthService implements AuthService {
     }
     
     return this.currentUserId !== null;
+  }
+
+  /**
+   * Create a user with email and password in Firebase Authentication
+   * @param email User email
+   * @param password User password
+   * @returns Promise with user ID if successful
+   */
+  async createUserWithEmailAndPassword(email: string, password: string): Promise<string> {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      return userCredential.user.uid;
+    } catch (error) {
+      console.error('Error creating user with email and password:', error);
+      throw error;
+    }
   }
 }

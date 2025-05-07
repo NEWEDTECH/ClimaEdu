@@ -43,4 +43,12 @@ export interface AuthService {
    * @returns boolean
    */
   isAuthenticated(): boolean;
+  
+  /**
+   * Create a user with email and password in Firebase Authentication
+   * @param email User email
+   * @param password User password
+   * @returns Promise with user ID if successful
+   */
+  createUserWithEmailAndPassword(email: string, password: string): Promise<string>;
 }

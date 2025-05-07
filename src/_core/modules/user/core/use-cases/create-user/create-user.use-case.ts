@@ -1,5 +1,6 @@
 import { injectable, inject } from 'inversify';
 import type { UserRepository } from '../../../infrastructure/repositories/UserRepository';
+import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 import { Register } from '@/_core/shared/container';
 import { CreateUserInput } from './create-user.input';
 import { CreateUserOutput } from './create-user.output';
@@ -14,7 +15,10 @@ import { User } from '../../entities/User';
 export class CreateUserUseCase {
   constructor(
     @inject(Register.user.repository.UserRepository)
-    private userRepository: UserRepository
+    private userRepository: UserRepository,
+    
+    @inject(Register.auth.service.AuthService)
+    private authService: AuthService
   ) {}
 
   /**
@@ -29,8 +33,14 @@ export class CreateUserUseCase {
       throw new Error('User with this email already exists');
     }
 
-    // Generate a new ID
-    const id = await this.userRepository.generateId();
+    // Create user in Firebase Authentication
+    const authUserId = await this.authService.createUserWithEmailAndPassword(
+      input.email,
+      input.password
+    );
+    
+    // Use the Firebase Auth ID as the user ID
+    const id = authUserId;
     
     // Create email value object
     const email = Email.create(input.email);
@@ -44,7 +54,7 @@ export class CreateUserUseCase {
       institutionId: input.institutionId || 'default-institution', // Provide a default or require it in the input
     });
 
-    // Save user
+    // Save user to Firestore
     const savedUser = await this.userRepository.save(user);
 
     return { user: savedUser };
