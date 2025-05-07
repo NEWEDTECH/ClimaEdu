@@ -1,73 +1,127 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button/button'
-import { InputText } from '@/components/ui/input/input-text/InputText'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
+import { LoadingSpinner } from '@/components/loader'
+import { Button } from '@/components/button'
+import { InputText } from '@/components/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { container } from '@/_core/shared/container'
+import { Register } from '@/_core/shared/container'
+import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
+import { InstitutionRepository } from '@/_core/modules/institution'
+import { Institution } from '@/_core/modules/institution'
 
-// Mock data for courses
-const mockCourses = [
-  { 
-    id: '1', 
-    name: 'Web Development', 
-    description: 'Learn HTML, CSS, and JavaScript', 
-    instructor: 'João Silva', 
-    duration: '12 weeks',
-    enrolledStudents: 28,
-    status: 'active'
-  },
-  { 
-    id: '2', 
-    name: 'Data Science', 
-    description: 'Introduction to data analysis and visualization', 
-    instructor: 'Maria Oliveira', 
-    duration: '10 weeks',
-    enrolledStudents: 35,
-    status: 'active'
-  },
-  { 
-    id: '3', 
-    name: 'UX Design', 
-    description: 'User experience principles and practices', 
-    instructor: 'Carlos Santos', 
-    duration: '8 weeks',
-    enrolledStudents: 22,
-    status: 'inactive'
-  },
-  { 
-    id: '4', 
-    name: 'Mobile Development', 
-    description: 'Build native mobile applications', 
-    instructor: 'Ana Costa', 
-    duration: '14 weeks',
-    enrolledStudents: 18,
-    status: 'active'
-  },
-  { 
-    id: '5', 
-    name: 'Artificial Intelligence', 
-    description: 'Introduction to AI and machine learning', 
-    instructor: 'Pedro Lima', 
-    duration: '16 weeks',
-    enrolledStudents: 30,
-    status: 'active'
-  },
+
+type CourseWithUIProps = {
+  id: string
+  title: string
+  description: string
+  instructor?: string
+  duration?: string
+  enrolledStudents?: number
+  status: 'active' | 'inactive'
+}
+
+const NAME_COLUMNS = [
+  'Nome',
+  'Descrição',
+  'Instrutor',
+  'Duração',
+  'Estudantes',
+  'Status',
+  'Ação'
 ]
 
 export default function CoursesPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [courses, setCourses] = useState<CourseWithUIProps[]>([])
+  const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
   
-  // Filter courses based on search term and status
-  const filteredCourses = mockCourses.filter(course => {
+
+  useEffect(() => {
+    const fetchInstitutions = async () => {
+      try {
+        setLoading(true)
+
+        const institutionRepository = container.get<InstitutionRepository>(
+          Register.institution.repository.InstitutionRepository
+        )
+        
+        const institutionsList = await institutionRepository.list()
+        
+        const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
+          id: institution.id,
+          name: institution.name
+        }))
+        
+        setInstitutions(institutionsForDropdown)
+        
+        if (institutionsForDropdown.length > 0) {
+          setSelectedInstitutionId(institutionsForDropdown[0].id)
+        }
+        
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching institutions:', err)
+        setError('Failed to load institutions. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchInstitutions()
+  }, [])
+  
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!selectedInstitutionId) return
+      
+      try {
+        setLoading(true)
+
+        const courseRepository = container.get<CourseRepository>(
+          Register.content.repository.CourseRepository
+        )
+        
+        const coursesList = await courseRepository.listByInstitution(selectedInstitutionId)
+        
+        const coursesWithUIProps: CourseWithUIProps[] = coursesList.map(course => ({
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          instructor: 'Not specified', 
+          duration: 'Not specified',
+          enrolledStudents: 0,
+          status: 'active' 
+        }))
+        
+        setCourses(coursesWithUIProps)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching courses:', err)
+        setError('Failed to load courses. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchCourses()
+  }, [selectedInstitutionId])
+  
+  const filteredCourses = courses.filter(course => {
     const matchesSearch = 
-      course.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+      (course.instructor && course.instructor.toLowerCase().includes(searchTerm.toLowerCase()))
     
     const matchesStatus = statusFilter === 'all' || course.status === statusFilter
     
@@ -79,89 +133,115 @@ export default function CoursesPage() {
       <DashboardLayout>
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Course Management</h1>
-            <Link href="/admin/courses/create">
-              <Button>Add New Course</Button>
+            <h1 className="text-3xl font-bold">Cursos Existentes</h1>
+            <Link href="/admin/courses/create-edit">
+              <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">Criar novo curso</Button>
             </Link>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Courses</CardTitle>
+              <CardTitle>Cursos</CardTitle>
               <CardDescription>
-                Manage all courses in your educational platform
+                Gerencie todos os cursos em sua plataforma educacional
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
                   <InputText
+                    id="search"
                     type="text"
-                    placeholder="Search by name, description or instructor..."
+                    placeholder="Pesquise por nome, descrição ou instrutor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"
                   />
                 </div>
+                
+                <div className="flex-1">
+                  <select
+                    value={selectedInstitutionId}
+                    onChange={(e) => setSelectedInstitutionId(e.target.value)}
+                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                  >
+                    <option value="">Selecione uma instituição</option>
+                    {institutions.map(institution => (
+                      <option key={institution.id} value={institution.id}>
+                        {institution.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
                 <div>
                   <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
                     <TabsList>
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="active">Active</TabsTrigger>
-                      <TabsTrigger value="inactive">Inactive</TabsTrigger>
+                      <TabsTrigger value="all">Todos</TabsTrigger>
+                      <TabsTrigger value="active">Ativos</TabsTrigger>
+                      <TabsTrigger value="inactive">Inativos</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">Name</th>
-                      <th className="text-left py-3 px-4">Description</th>
-                      <th className="text-left py-3 px-4">Instructor</th>
-                      <th className="text-left py-3 px-4">Duration</th>
-                      <th className="text-left py-3 px-4">Students</th>
-                      <th className="text-left py-3 px-4">Status</th>
-                      <th className="text-right py-3 px-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCourses.map((course) => (
-                      <tr key={course.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
-                        <td className="py-3 px-4">{course.name}</td>
-                        <td className="py-3 px-4 max-w-xs truncate">{course.description}</td>
-                        <td className="py-3 px-4">{course.instructor}</td>
-                        <td className="py-3 px-4">{course.duration}</td>
-                        <td className="py-3 px-4">{course.enrolledStudents}</td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                            course.status === 'active' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          }`}>
-                            {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <Link href={`/admin/courses/edit/${course.id}`}>
-                              <Button variant="outline" size="sm">Edit</Button>
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
+          {loading && (
+            <LoadingSpinner />
+          )}
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <strong className="font-bold">Erro!</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    {NAME_COLUMNS.map(item => (
+                      <th className="text-left py-3 px-4" key={item}>{item}</th>
                     ))}
-                  </tbody>
-                </table>
-                
-                {filteredCourses.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No courses found matching your search criteria.
-                  </div>
-                )}
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCourses.map((course) => (
+                    <tr key={course.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
+                      <td className="py-3 px-4">{course.title}</td>
+                      <td className="py-3 px-4 max-w-xs truncate">{course.description}</td>
+                      <td className="py-3 px-4">{course.instructor}</td>
+                      <td className="py-3 px-4">{course.duration}</td>
+                      <td className="py-3 px-4 text-center">{course.enrolledStudents}</td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs ${
+                          course.status === 'active' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex  gap-2">
+                          <Link href={`/admin/courses/create-edit/${course.id}`}>
+                            <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Edit</Button>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {filteredCourses.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  Nenhum curso encontrado 
+                </div>
+              )}
+            </div>
+          )}
             </CardContent>
           </Card>
         </div>
