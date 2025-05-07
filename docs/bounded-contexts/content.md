@@ -15,6 +15,7 @@ Hierarchy of data:
 ```plaintext
 Institution
   └── Course
+       ├── CourseTutor
        └── Module
             └── Lesson
                  ├── Content
@@ -31,6 +32,7 @@ Institution
 | Entity                  | Responsibility |
 |:-------------------------|:----------------|
 | **Course**               | Represents a complete learning path, grouping multiple Modules. |
+| **CourseTutor**          | Represents the association between a tutor and a course. |
 | **Module**               | Logical grouping of Lessons within a Course. |
 | **Lesson**               | Individual unit of study containing content, and optionally, assessments. |
 | **Content**              | Educational material attached to a Lesson (Video, PDF, Podcast). |
@@ -45,6 +47,9 @@ Institution
 ## Key Attributes (Functional Description)
 
 - **Course.title**: Name displayed to students, identifying the learning path.
+- **Course.institutionId**: The institution that owns the course.
+- **CourseTutor.userId**: The ID of the tutor associated with the course.
+- **CourseTutor.courseId**: The ID of the course the tutor is associated with.
 - **Module.order**: Numeric position of a Module within a Course for structured progression.
 - **Lesson.title**: Title of the learning unit inside a Module.
 - **Content.type**: Type of material (Video, PDF, Podcast) provided in the Lesson.
@@ -68,6 +73,7 @@ Institution
 - Each **QuestionnaireSubmission** records an attempt with calculated score and pass/fail status.
 - Students may be allowed multiple attempts on a **Questionnaire**, depending on institutional or course rules.
 - Certificates can only be issued if the student passes the required Questionnaires with the minimum score defined.
+- Only users with the **TUTOR** role can be associated with a course as a tutor.
 
 ---
 
@@ -110,6 +116,28 @@ Institution
 - If title is provided, it cannot be empty
 - If description is provided, it cannot be empty
 - Only specified fields are updated; other fields retain their current values
+
+### AssociateTutorToCourseUseCase
+
+**Purpose**: Associates a tutor with a course, creating a relationship between them.
+
+**Inputs**:
+- `userId`: The ID of the user to associate as a tutor
+- `courseId`: The ID of the course to associate the tutor with
+
+**Process**:
+1. Verifies that the user exists
+2. Verifies that the user has the TUTOR role
+3. Verifies that the course exists
+4. Checks if the association already exists
+5. If the association doesn't exist, creates a new CourseTutor entity
+6. Returns the CourseTutor entity
+
+**Business Rules**:
+- User must exist
+- User must have the TUTOR role, this use case does not change the user's role
+- Course must exist
+- If the association already exists, the existing association is returned
 
 ### CreateModuleUseCase
 
