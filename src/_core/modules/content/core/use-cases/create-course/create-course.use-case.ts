@@ -29,6 +29,7 @@ export class CreateCourseUseCase {
       institutionId: input.institutionId,
       title: input.title,
       description: input.description,
+      coverImageUrl: input.coverImageUrl,
     });
 
     // Save the course

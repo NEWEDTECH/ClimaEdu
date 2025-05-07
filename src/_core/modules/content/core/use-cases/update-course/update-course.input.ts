@@ -5,4 +5,5 @@ export interface UpdateCourseInput {
   id: string;
   title?: string;
   description?: string;
+  coverImageUrl?: string;
 }

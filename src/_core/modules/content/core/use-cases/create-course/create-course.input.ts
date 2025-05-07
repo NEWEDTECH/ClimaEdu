@@ -5,4 +5,5 @@ export interface CreateCourseInput {
   institutionId: string;
   title: string;
   description: string;
+  coverImageUrl?: string;
 }
