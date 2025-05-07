@@ -5,6 +5,7 @@ import { container, Register } from '@/_core/shared/container';
 import { CreateUserUseCase, UserRole } from '@/_core/modules/user';
 import { CreateContentUseCase } from '@/_core/modules/content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
+import { AssociateAdministratorUseCase } from '@/_core/modules/institution';
 
 export function UserModule() {
   const [isReady, setIsReady] = useState(false);
@@ -24,7 +25,6 @@ export function UserModule() {
         email: 'test@example.com',
         password: 'password123',
         type: UserRole.STUDENT,
-        institutionId: 'test-institution-id',
       });
 
       alert(`User created successfully! ID: ${result.user.id}`);
@@ -49,6 +49,52 @@ export function UserModule() {
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
           Test User Creation
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function InstitutionModule() {
+  const [isReady, setIsReady] = useState(false);
+  
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
+  
+  const handleAssociateAdministrator = async () => {
+    try {
+      const associateAdministratorUseCase = container.get<AssociateAdministratorUseCase>(
+        Register.institution.useCase.AssociateAdministratorUseCase
+      );
+
+      const result = await associateAdministratorUseCase.execute({
+        userId: 'user-id', // Replace with an actual user ID
+        institutionId: 'institution-id', // Replace with an actual institution ID
+      });
+
+      alert(`Administrator associated successfully! Association ID: ${result.userInstitution.id}`);
+    } catch (error) {
+      console.error('Error associating administrator:', error);
+      alert(`Error associating administrator: ${(error as Error).message}`);
+    }
+  };
+  
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <h3 className="text-lg font-medium mb-2">Institution Module</h3>
+      <ul className="list-disc list-inside text-sm space-y-1">
+        <li>Entities: Institution, UserInstitution</li>
+        <li>Use Cases: AssociateAdministratorUseCase</li>
+        <li>Repositories: InstitutionRepository, UserInstitutionRepository</li>
+        <li>Implementations: FirebaseInstitutionRepository, FirebaseUserInstitutionRepository</li>
+      </ul>
+      {isReady && (
+        <button
+          onClick={handleAssociateAdministrator}
+          className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+        >
+          Test Administrator Association
         </button>
       )}
     </div>

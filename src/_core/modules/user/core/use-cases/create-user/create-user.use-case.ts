@@ -50,8 +50,7 @@ export class CreateUserUseCase {
       id,
       name: input.name,
       email: email,
-      role: input.type,
-      institutionId: input.institutionId || 'default-institution', // Provide a default or require it in the input
+      role: input.type
     });
 
     // Save user to Firestore

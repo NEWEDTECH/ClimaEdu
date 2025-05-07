@@ -59,7 +59,6 @@ export class FirebaseUserRepository implements UserRepository {
     // Create and return a User entity
     return User.create({
       id: data.id,
-      institutionId: data.institutionId,
       name: data.name,
       email,
       role: data.role,
@@ -116,7 +115,6 @@ export class FirebaseUserRepository implements UserRepository {
     // Prepare the user data for Firestore
     const userData: {
       id: string;
-      institutionId: string;
       name: string;
       email: { value: string };
       role: UserRole;
@@ -129,7 +127,6 @@ export class FirebaseUserRepository implements UserRepository {
       } | null;
     } = {
       id: user.id,
-      institutionId: user.institutionId,
       name: user.name,
       email: { value: user.email.value },
       role: user.role,
