@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button/button'
 import { InputText } from '@/components/ui/input/input-text/InputText'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { container } from '@/_core/shared/container'
@@ -13,12 +13,9 @@ import { Register } from '@/_core/shared/container'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
-import { Course } from '@/_core/modules/content/core/entities/Course'
 import { useProfile } from '@/context/zustand/useProfile';
-import CreateCoursePage from '@/components/courses/createCourse'
 
-// Interface to represent course data with additional UI properties
-interface CourseWithUIProps {
+type CourseWithUIProps = {
   id: string
   title: string
   description: string
@@ -32,26 +29,25 @@ export default function TutorCoursesPage() {
   const [courses, setCourses] = useState<CourseWithUIProps[]>([])
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   const { role } = useProfile();
 
-  // Fetch institutions
+
   useEffect(() => {
     const fetchInstitutions = async () => {
       try {
         setLoading(true)
-        // Get the repository from the container
+
         const institutionRepository = container.get<InstitutionRepository>(
           Register.institution.repository.InstitutionRepository
         )
 
         const institutionsList = await institutionRepository.list()
 
-        // Map to a simpler format
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
           name: institution.name
@@ -59,7 +55,6 @@ export default function TutorCoursesPage() {
 
         setInstitutions(institutionsForDropdown)
 
-        // If there's at least one institution, set it as the default and fetch its courses
         if (institutionsForDropdown.length > 0) {
           setSelectedInstitutionId(institutionsForDropdown[0].id)
         }
@@ -76,31 +71,28 @@ export default function TutorCoursesPage() {
     fetchInstitutions()
   }, [])
 
-  // Fetch courses when selected institution changes
+
   useEffect(() => {
     const fetchCourses = async () => {
       if (!selectedInstitutionId) return
 
       try {
         setLoading(true)
-        // Get the repository from the container
+
         const courseRepository = container.get<CourseRepository>(
           Register.content.repository.CourseRepository
         )
 
-        console.log('Fetching courses for institution:', selectedInstitutionId)
         const coursesList = await courseRepository.listByInstitution(selectedInstitutionId)
-        console.log('Courses fetched:', coursesList)
 
-        // Map Course entities to CourseWithUIProps
         const coursesWithUIProps: CourseWithUIProps[] = coursesList.map(course => ({
           id: course.id,
           title: course.title,
           description: course.description,
-          instructor: 'Not specified', // These fields would come from related entities in a real app
+          instructor: 'Not specified',
           duration: 'Not specified',
           enrolledStudents: 0,
-          status: 'active' // Default status, in a real app this might be a property of the Course entity
+          status: 'active' 
         }))
 
         setCourses(coursesWithUIProps)
@@ -116,7 +108,7 @@ export default function TutorCoursesPage() {
     fetchCourses()
   }, [selectedInstitutionId])
 
-  // Filter courses based on search term and status
+
   const filteredCourses = courses.filter(course => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
