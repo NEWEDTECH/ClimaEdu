@@ -27,6 +27,7 @@ export const useCases = {
   SubmitQuestionnaireUseCase: Symbol.for('SubmitQuestionnaireUseCase'),
   RetryQuestionnaireUseCase: Symbol.for('RetryQuestionnaireUseCase'),
   AssociateTutorToCourseUseCase: Symbol.for('AssociateTutorToCourseUseCase'),
+  ListTutorCoursesUseCase: Symbol.for('ListTutorCoursesUseCase'),
 };
 
 // Export all symbols for this module

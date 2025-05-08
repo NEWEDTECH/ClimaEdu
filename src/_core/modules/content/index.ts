@@ -58,6 +58,9 @@ export * from './core/use-cases/retry-questionnaire/retry-questionnaire.output';
 export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-course.input';
 export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-course.output';
+export * from './core/use-cases/list-tutor-courses/list-tutor-courses.use-case';
+export * from './core/use-cases/list-tutor-courses/list-tutor-courses.input';
+export * from './core/use-cases/list-tutor-courses/list-tutor-courses.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces

@@ -386,3 +386,25 @@ Institution
 - Questionnaire must exist
 - The number of attempts remaining is calculated as (max attempts - current attempts)
 - A user can retry if they have at least one attempt remaining
+
+### ListTutorCoursesUseCase
+
+**Purpose**: Retrieves a list of courses where a user is a tutor within a specific institution.
+
+**Inputs**:
+- `userId`: The ID of the user (tutor) to list courses for
+- `institutionId`: The ID of the institution to filter courses by
+
+**Process**:
+1. Verifies that the user exists
+2. Verifies that the user has the TUTOR role
+3. Finds all course-tutor associations for the user
+4. For each association, retrieves the corresponding course details
+5. Filters courses to include only those belonging to the specified institution
+6. Returns a list of courses
+
+**Business Rules**:
+- User must exist
+- User must have the TUTOR role
+- If the user is not associated with any courses, an empty list is returned
+- Only courses belonging to the specified institution are included in the results
