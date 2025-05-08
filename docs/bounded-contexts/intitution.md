@@ -155,3 +155,21 @@ Institution
 - The user's role is automatically updated to ADMINISTRATOR if it wasn't already
 - A user can only be associated with one institution
 - If the association already exists, the existing association is returned
+
+### ListUserInstitutionsUseCase
+
+**Purpose**: Retrieves a list of institutions that a user belongs to.
+
+**Inputs**:
+- `userId`: The ID of the user to list institutions for
+
+**Process**:
+1. Verifies that the user exists
+2. Finds all user-institution associations for the user
+3. For each association, retrieves the corresponding institution details
+4. Returns a list of institutions
+
+**Business Rules**:
+- User must exist
+- If the user is not associated with any institutions, an empty list is returned
+- Only active and valid institutions are included in the results

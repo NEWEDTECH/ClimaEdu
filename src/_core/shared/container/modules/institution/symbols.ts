@@ -9,6 +9,7 @@ export const useCases = {
   UpdateInstitutionSettingsUseCase: Symbol.for('UpdateInstitutionSettingsUseCase'),
   AssociateUserToInstitutionUseCase: Symbol.for('AssociateUserToInstitutionUseCase'),
   AssociateAdministratorUseCase: Symbol.for('AssociateAdministratorUseCase'),
+  ListUserInstitutionsUseCase: Symbol.for('ListUserInstitutionsUseCase'),
 };
 
 // Export all symbols for this module

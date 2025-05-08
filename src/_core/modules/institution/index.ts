@@ -17,6 +17,9 @@ export type { AssociateUserToInstitutionOutput } from './core/use-cases/associat
 export { AssociateAdministratorUseCase } from './core/use-cases/associate-administrator/associate-administrator.use-case';
 export type { AssociateAdministratorInput } from './core/use-cases/associate-administrator/associate-administrator.input';
 export type { AssociateAdministratorOutput } from './core/use-cases/associate-administrator/associate-administrator.output';
+export { ListUserInstitutionsUseCase } from './core/use-cases/list-user-institutions/list-user-institutions.use-case';
+export type { ListUserInstitutionsInput } from './core/use-cases/list-user-institutions/list-user-institutions.input';
+export type { ListUserInstitutionsOutput } from './core/use-cases/list-user-institutions/list-user-institutions.output';
 
 // Export repository interfaces
 export type { InstitutionRepository } from './infrastructure/repositories/InstitutionRepository';

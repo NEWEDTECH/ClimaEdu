@@ -6,6 +6,7 @@ import { CreateInstitutionUseCase } from '@/_core/modules/institution/core/use-c
 import { UpdateInstitutionSettingsUseCase } from '@/_core/modules/institution/core/use-cases/update-institution-settings/update-institution-settings.use-case';
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case';
 import { AssociateAdministratorUseCase } from '@/_core/modules/institution/core/use-cases/associate-administrator/associate-administrator.use-case';
+import { ListUserInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-user-institutions/list-user-institutions.use-case';
 import type { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import type { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository';
 import { FirebaseInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/implementations/FirebaseInstitutionRepository';
@@ -25,4 +26,5 @@ export function registerInstitutionModule(container: Container): void {
   container.bind(useCases.UpdateInstitutionSettingsUseCase).to(UpdateInstitutionSettingsUseCase);
   container.bind(useCases.AssociateUserToInstitutionUseCase).to(AssociateUserToInstitutionUseCase);
   container.bind(useCases.AssociateAdministratorUseCase).to(AssociateAdministratorUseCase);
+  container.bind(useCases.ListUserInstitutionsUseCase).to(ListUserInstitutionsUseCase);
 }
