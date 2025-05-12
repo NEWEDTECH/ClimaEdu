@@ -189,7 +189,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/admin/admin/courses/edit/${courseId}`}>
+                <Link href={`/admin/courses/edit/${courseId}`}>
                   <Button>Voltar para o Curso</Button>
                 </Link>
               </CardContent>

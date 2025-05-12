@@ -212,7 +212,7 @@ export default function TutorCoursesPage() {
                           </div>
 
                           <div className="pt-4 flex justify-end">
-                            <Link href={`/courses/edit/${course.id}`}>
+                            <Link href={`/tutor/courses/edit/${course.id}`}>
                               <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                             </Link>
                           </div>
