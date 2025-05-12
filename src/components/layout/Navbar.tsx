@@ -30,6 +30,7 @@ const studentItems: DropdownItem[] = [
 const teacherItems: DropdownItem[] = [
   { label: 'Acompanhamento', href: '/tutor/follow-up' },
   { label: 'Relatórios', href: '/tutor/reports' },
+  { label: 'Cursos', href: '/tutor/courses' },
   { label: 'Gestão de Conteúdos', href: '/tutor/video-upload' },
 ];
 
@@ -38,8 +39,9 @@ const adminItems: DropdownItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Alunos', href: '/admin/student' },
   { label: 'Professores', href: '/admin/tutor' },
-  { label: 'Cursos', href: '/courses' },
+  { label: 'Cursos', href: '/admin/courses' },
   { label: 'Relatórios', href: '/admin/reports' },
+  { label: 'Criar Usuário', href: '/admin/create-user' },
   { label: 'Configurações', href: '/admin/settings' },
 ];
 
