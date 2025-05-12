@@ -191,7 +191,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Link href={`/courses/edit/${courseId}/modules/${module.id}`}>
+                    <Link href={`/admin/courses/edit/${courseId}/modules/${module.id}`}>
                       <Button className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100">Editar</Button>
                     </Link>
                   </div>
