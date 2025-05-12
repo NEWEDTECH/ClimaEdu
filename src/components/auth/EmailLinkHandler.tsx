@@ -6,14 +6,18 @@ import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
-import { RoleSelectionModal } from './RoleSelectionModal';
+import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
+import { useProfile } from '@/context/zustand/useProfile';
+import { User } from '../../_core/modules/user/core/entities/User';
 
 export function EmailLinkHandler() {
   const router = useRouter();
+  const { setRole, setId } = useProfile();
+  const [userId, setUserId] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [status, setStatus] = useState<'checking' | 'success' | 'error'>('checking');
   const [message, setMessage] = useState<string>('Verifying your sign-in link...');
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
-  const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
 
   useEffect(() => {
     const handleEmailLink = async () => {
@@ -90,6 +94,10 @@ export function EmailLinkHandler() {
             });
 
             if (result.success) {
+              // Store both the user ID and email for later use
+              setUserId(result.userId)
+              setUserEmail(email) // Store the email used for sign-in
+              console.log('Sign-in successful, user ID:', result.userId, 'email:', email)
               setStatus('success');
               setMessage('You have been successfully signed in!');
               setDebugInfo(prev => `${prev}\nAuthentication successful. User ID: ${result.userId}`);
@@ -131,9 +139,9 @@ export function EmailLinkHandler() {
   }, [router]);
 
   // Function to manually trigger the redirect to home
-  const goToHome = () => {
-    // Get the auth service from the container
+  const goToHome = async () => {
     try {
+      // Get the auth service from the container
       const authService = container.get<AuthService>(Register.auth.service.AuthService);
 
       // Check if the user is authenticated
@@ -143,24 +151,88 @@ export function EmailLinkHandler() {
       console.log('Authentication state before redirect:', isAuthenticated);
       console.log('Current user ID before redirect:', currentUserId);
 
+      if (isAuthenticated && currentUserId) {
+        try {
+          // Log the user ID for debugging
+          console.log('User ID from getCurrentUserId:');
+          
+          // Get the user repository from the container
+          const userRepository = container.get<UserRepository>(Register.user.repository.UserRepository);
+          
+          // Try to fetch the user data by ID first
+          let user: User | null = null;
+          
+          if (userId) {
+            console.log('Looking up user by ID:', userId);
+            user = await userRepository.findById(userId);
+          }
+          
+          // If user not found by ID and we have an email, try to find by email
+          if (!user && userEmail) {
+            console.log('User not found by ID, looking up by email:', userEmail);
+            user = await userRepository.findByEmail(userEmail);
+            
+            if (user) {
+              console.log('User found by email, ID:', user.id);
+              // Update the userId state with the correct ID from the database
+              setUserId(user.id);
+              // Save the user ID in the profile state
+              setId(user.id);
+            }
+          }
+          
+          if (user) {
+            console.log('User found in database with role:', user.role);
+            // Save the user ID in the profile state
+            setId(user.id);
+            
+            // Map the UserRole enum to the expected string type
+            let userRoleString: 'student' | 'tutor' | 'admin' | null = null;
+            
+            switch (user.role) {
+              case 'STUDENT':
+                userRoleString = 'student';
+                break;
+              case 'TUTOR':
+                userRoleString = 'tutor';
+                break;
+              case 'ADMINISTRATOR':
+                userRoleString = 'admin';
+                break;
+            }
+            
+            if (userRoleString) {
+              setRole(userRoleString);
+            }
+
+          } else {
+            console.log('User not found in database, defaulting to student role');
+            setRole('admin');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          console.log('Error fetching user role, defaulting to student');
+        }
+      } else {
+        console.log('User not authenticated or no user ID');
+        setRole(null);
+      }
+      
       // Redirect to the home page
-      //router.push('/');
-      setShowRoleModal(true)
+      router.push('/');
     } catch (error) {
       console.error('Error checking authentication before redirect:', error);
-      //router.push('/');
-      setShowRoleModal(true)
+      
+      // If there's an error, we still need to redirect but won't set a role
+      setRole(null);
+      
+      // Redirect to the home page
+      router.push('/');
     }
   };
 
   return (
-    <>
-      <RoleSelectionModal
-        isOpen={showRoleModal}
-        onClose={() => setShowRoleModal(false)}
-      />
-
-      <div className="w-full max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div className="w-full max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <div className="text-center">
           {status === 'checking' && (
             <div className="animate-pulse">
@@ -240,6 +312,5 @@ export function EmailLinkHandler() {
           )}
         </div>
       </div>
-    </>
   );
 }
