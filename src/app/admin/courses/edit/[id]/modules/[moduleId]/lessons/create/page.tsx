@@ -113,7 +113,7 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
 
       await lessonRepository.save(lesson)
 
-      router.push(`/courses/edit/${courseId}/modules/${moduleId}`)
+      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}`)
     } catch (error) {
       console.error('Erro ao criar lição:', error)
       alert(`Falha ao criar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -143,7 +143,7 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
+                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
                   <Button>Voltar para o Módulo</Button>
                 </Link>
               </CardContent>
@@ -163,7 +163,7 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
               <h1 className="text-3xl font-bold">Criar Nova Lição</h1>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
-            <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
+            <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
               <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Módulo</Button>
             </Link>
           </div>

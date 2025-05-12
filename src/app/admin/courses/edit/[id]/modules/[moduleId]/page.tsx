@@ -161,7 +161,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
 
       await moduleRepository.save(moduleData)
 
-      router.push(`/courses/edit/${courseId}`)
+      router.push(`/admin/courses/edit/${courseId}`)
     } catch (error) {
       console.error('Erro ao atualizar módulo:', error)
       alert(`Falha ao atualizar módulo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -189,7 +189,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/courses/edit/${courseId}`}>
+                <Link href={`/admin/admin/courses/edit/${courseId}`}>
                   <Button>Voltar para o Curso</Button>
                 </Link>
               </CardContent>
@@ -209,7 +209,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
               <h1 className="text-3xl font-bold">Editar Módulo</h1>
               <p className="text-gray-500">Curso: {courseName}</p>
             </div>
-            <Link href={`/courses/edit/${courseId}`}>
+            <Link href={`/admin/courses/edit/${courseId}`}>
               <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Curso</Button>
             </Link>
           </div>
@@ -243,7 +243,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
                     <div className="flex justify-between items-center">
                       <CardTitle>Lições do Módulo</CardTitle>
                       <div className="flex gap-2">
-                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/create`}>
+                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/create`}>
                           <Button className="text-xs px-3 py-1">Adicionar Lição</Button>
                         </Link>
                       </div>
@@ -279,7 +279,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
                                   {lesson.contentsCount} {lesson.contentsCount === 1 ? 'conteúdo' : 'conteúdos'}
                                 </td>
                                 <td className="px-4 py-3 text-left">
-                                  <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lesson.id}`}>
+                                  <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lesson.id}`}>
                                     <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                   </Link>
                                 </td>

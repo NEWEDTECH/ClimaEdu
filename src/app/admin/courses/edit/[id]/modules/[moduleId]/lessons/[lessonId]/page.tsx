@@ -357,7 +357,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
+                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
               <Button>Voltar para o Módulo</Button>
                 </Link>
               </CardContent>
@@ -377,7 +377,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <h1 className="text-3xl font-bold">Editar Lição</h1>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
-            <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
+            <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
               <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Módulo</Button>
             </Link>
           </div>
@@ -411,13 +411,13 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <div className="flex justify-between items-center">
                       <CardTitle>Conteúdos da Lição</CardTitle>
                       <div className="flex gap-2">
-                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/video-upload`}>
+                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/video-upload`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
                         </Link>
-                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/activity/create`}>
+                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/activity/create`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Atividade</Button>
                         </Link>
-                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
+                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
                           <Button className="text-xs px-3 py-1">Adicionar Questionário</Button>
                         </Link>
                       </div>
@@ -453,7 +453,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
+                                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                   <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                 </Link>
                               </div>
@@ -532,7 +532,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-center">
                         <CardTitle>Questionário</CardTitle>
-                        <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
+                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Gerenciar Perguntas</Button>
                         </Link>
                       </div>
@@ -584,7 +584,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                 )}
 
                 <div className="flex justify-end gap-2 my-4">
-                  <Link href={`/courses/edit/${courseId}/modules/${moduleId}`}>
+                  <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
                     <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
                   </Link>
                   <Button type="submit" disabled={isSubmitting}>

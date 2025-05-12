@@ -1,43 +1,41 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
 import { Button } from '@/components/button';
+import { InputMedia } from '@/components/ui/input/input-media/InputMedia';
 import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
 import { LoadingSpinner } from '@/components/loader';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
-import { CreateActivityUseCase } from '@/_core/modules/content/core/use-cases/create-activity/create-activity.use-case';
+import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
+import { Content } from '@/_core/modules/content/core/entities/Content';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
+import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
+import { storage } from '@/_core/shared/firebase/firebase-client';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
-type FormData = {
-  description: string;
-  instructions: string;
-  resourceUrl: string;
-}
-
-export default function CreateActivityPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
+export default function VideoUploadPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }>}) {
   const router = useRouter();
   const unwrappedParams = use(params);
   const { id: courseId, moduleId, lessonId } = unwrappedParams;
   
-  const [formData, setFormData] = useState<FormData>({
-    description: '',
-    instructions: '',
-    resourceUrl: '',
-  });
-  
+  const [title, setTitle] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadComplete, setUploadComplete] = useState<boolean>(false);
+  const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState<string>('');
   const [moduleName, setModuleName] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,12 +53,6 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
           setError('Lição não encontrada');
-          setIsLoading(false);
-          return;
-        }
-        
-        if (lesson.activity) {
-          setError('Esta lição já possui uma atividade');
           setIsLoading(false);
           return;
         }
@@ -86,45 +78,122 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
     fetchData();
   }, [lessonId, moduleId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const uploadVideoToFirebase = (
+    file: File,
+    onProgress: (progress: number) => void,
+    onComplete: () => void
+  ) => {
+    setIsUploading(true);
+    
+    const storageRef = ref(storage, `videos/${courseId}/${moduleId}/${lessonId}/${Date.now()}_${file.name}`);
+    
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+    
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        onProgress(progress);
+      },
+      (error) => {
+        console.error('Error uploading video:', error);
+        setIsUploading(false);
+        alert('Falha ao fazer upload do vídeo. Por favor, tente novamente.');
+      },
+      async () => {
+
+        try {
+
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setVideoUrl(downloadURL);
+          setIsUploading(false);
+          setUploadComplete(true);
+          onComplete();
+        } catch (error) {
+          console.error('Error getting download URL:', error);
+          setIsUploading(false);
+          alert('Falha ao obter URL do vídeo. Por favor, tente novamente.');
+        }
+      }
+    );
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    if (!title.trim()) {
+      alert('O título do vídeo não pode estar vazio');
+      return;
+    }
+    
+    if (!videoUrl) {
+      alert('Por favor, faça upload de um vídeo');
+      return;
+    }
+    
+    setIsSaving(true);
     
     try {
-      const createActivityUseCase = container.get<CreateActivityUseCase>(
-        Register.content.useCase.CreateActivityUseCase
+
+      const contentRepository = container.get<ContentRepository>(
+        Register.content.repository.ContentRepository
       );
       
-      interface ActivityParams {
-        lessonId: string;
-        description: string;
-        instructions: string;
-        resourceUrl?: string;
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      );
+      
+
+      const contentId = await contentRepository.generateId();
+      
+      const content = Content.create({
+        id: contentId,
+        lessonId: lessonId,
+        type: ContentType.VIDEO,
+        title,
+        url: videoUrl
+      });
+      
+
+      const savedContent = await contentRepository.save(content);
+
+      const lesson = await lessonRepository.findById(lessonId);
+      
+      if (!lesson) {
+        throw new Error('Lição não encontrada');
       }
       
-      const params: ActivityParams = {
-        lessonId,
-        description: formData.description,
-        instructions: formData.instructions,
+      const contentData = {
+        id: savedContent.id,
+        lessonId: savedContent.lessonId,
+        type: savedContent.type,
+        title: savedContent.title,
+        url: savedContent.url
       };
       
-      if (formData.resourceUrl.trim() !== '') {
-        params.resourceUrl = formData.resourceUrl;
-      }
+      const currentContents = lesson.contents || [];
       
-      await createActivityUseCase.execute(params);
+      const updatedContents = [...currentContents, contentData];
       
-      router.push(`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      // @ts-expect-error - We're manually setting the contents array
+      lesson.contents = updatedContents;
+      
+      await lessonRepository.save(lesson);
+      
+      console.log('Vídeo adicionado com sucesso à lição');
+      
+      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
     } catch (error) {
-      console.error('Erro ao criar atividade:', error);
-      alert(`Falha ao criar atividade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-      setIsSubmitting(false);
+      console.error('Erro ao adicionar vídeo:', error);
+      alert(`Falha ao adicionar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
+  };
+
+
+  const handleCancel = () => {
+    router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
   };
 
   if (isLoading) {
@@ -146,7 +215,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>
@@ -162,9 +231,9 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Criar Atividade</h1>
+            <h1 className="text-2xl font-bold mb-2">Upload de Vídeo Aula</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
-              Adicionar atividade à lição: <span className="font-medium">{lessonTitle}</span>
+              Adicionar vídeo à lição: <span className="font-medium">{lessonTitle}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Módulo: <span className="font-medium">{moduleName}</span>
@@ -173,79 +242,69 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
 
           <Card>
             <CardHeader>
-              <CardTitle>Nova Atividade</CardTitle>
-              <CardDescription>
-                Crie uma atividade para os alunos realizarem após estudarem o conteúdo da lição
-              </CardDescription>
+              <CardTitle>Novo Vídeo</CardTitle>
             </CardHeader>
             <CardContent>
-              <FormSection onSubmit={handleSubmit} error={null} className="space-y-6">
+              <FormSection onSubmit={handleSubmit} className="space-y-6" error={error}>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Descrição da Atividade
+                      Título da Vídeo Aula
                     </label>
                     <InputText
-                      id="description"
-                      placeholder="Digite uma descrição clara da atividade"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
+                      id="video-title"
+                      placeholder="Digite o título da vídeo aula"
+                      value={title}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                       required
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Uma breve descrição do que os alunos devem fazer
-                    </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Instruções Detalhadas
+                      Descrição
                     </label>
                     <textarea
-                      className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[150px]"
-                      placeholder="Forneça instruções detalhadas sobre como realizar a atividade"
-                      name="instructions"
-                      value={formData.instructions}
-                      onChange={handleChange}
-                      required
+                      className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[100px]"
+                      placeholder="Digite uma descrição para a vídeo aula"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Explique passo a passo o que os alunos devem fazer, critérios de avaliação, etc.
-                    </p>
                   </div>
 
-                  <div>
+                  <div className='flex flex-col items-center'>
                     <label className="block text-sm font-medium mb-1">
-                      URL de Recurso
+                      Vídeo
                     </label>
-                    <InputText
-                      id="resourceUrl"
-                      placeholder="https://exemplo.com/recurso"
-                      name="resourceUrl"
-                      value={formData.resourceUrl}
-                      onChange={handleChange}
-                    />
+                    <div className="max-w-xl">
+                      <InputMedia
+                        aspect="16:9"
+                        allowedExtensions="mp4,webm,mov"
+                        maxFileSizeMB={500}
+                        maxDurationSeconds={3600} // 1 hour max
+                        initialImageSrc={videoUrl}
+                        uploadFunction={uploadVideoToFirebase}
+                      />
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Link para um recurso externo que pode ajudar na realização da atividade
+                      Formatos aceitos: MP4, WebM, MOV. Tamanho máximo: 500MB. Duração máxima: 1 hora.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Link href={`/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
-                    <Button
-                      type="button"
-                      className="bg-transparent border-gray-300 text-gray-700 hover:bg-gray-100"
-                    >
-                      Cancelar
-                    </Button>
-                  </Link>
+                  <Button
+                    type="button"
+                    className="border bg-white hover:bg-gray-100"
+                    onClick={handleCancel}
+                  >
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isUploading || !uploadComplete || isSaving}
                   >
-                    {isSubmitting ? 'Salvando...' : 'Criar Atividade'}
+                    {isUploading ? 'Enviando...' : isSaving ? 'Salvando...' : 'Salvar Vídeo Aula'}
                   </Button>
                 </div>
               </FormSection>
@@ -254,7 +313,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Dicas para Criar Atividades Eficazes</CardTitle>
+              <CardTitle>Dicas para Vídeo Aulas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -271,14 +330,20 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                       />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-medium">Seja Claro e Específico</p>
+                    <p className="font-medium">Qualidade de Vídeo</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Forneça instruções claras e objetivas para evitar confusão.
+                      Grave em boa resolução (pelo menos 720p) e em um ambiente bem iluminado.
                     </p>
                   </div>
                 </div>
@@ -296,14 +361,14 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                       />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-medium">Defina Critérios de Avaliação</p>
+                    <p className="font-medium">Áudio Claro</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Explique como a atividade será avaliada para que os alunos saibam o que é esperado.
+                      Use um microfone de qualidade e grave em um ambiente silencioso.
                     </p>
                   </div>
                 </div>
@@ -321,14 +386,14 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-medium">Estabeleça Prazos Razoáveis</p>
+                    <p className="font-medium">Duração Ideal</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Defina um prazo adequado para a conclusão da atividade.
+                      Mantenha os vídeos entre 5-15 minutos para melhor engajamento dos alunos.
                     </p>
                   </div>
                 </div>
@@ -346,14 +411,14 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                       />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-medium">Conecte com o Conteúdo</p>
+                    <p className="font-medium">Estrutura Clara</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Certifique-se de que a atividade reforce o aprendizado do conteúdo da lição.
+                      Comece com uma introdução, desenvolva o conteúdo principal e termine com um resumo.
                     </p>
                   </div>
                 </div>
