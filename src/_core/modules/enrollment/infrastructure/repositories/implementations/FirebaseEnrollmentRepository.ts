@@ -99,14 +99,17 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
     const enrollmentRef = doc(firestore, this.collectionName, enrollment.id);
     
     // Prepare the enrollment data for Firestore
-    const enrollmentData = {
+    const enrollmentData: Record<string, string | Date | EnrollmentStatus | undefined> = {
       id: enrollment.id,
       userId: enrollment.userId,
       courseId: enrollment.courseId,
       status: enrollment.status,
-      enrolledAt: enrollment.enrolledAt,
-      completedAt: enrollment.completedAt
+      enrolledAt: enrollment.enrolledAt
     };
+  
+    if (enrollment.completedAt !== undefined) {
+      enrollmentData.completedAt = enrollment.completedAt;
+    }
 
     // Check if the enrollment already exists
     const enrollmentDoc = await getDoc(enrollmentRef);
