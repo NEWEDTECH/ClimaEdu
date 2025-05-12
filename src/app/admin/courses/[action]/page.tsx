@@ -10,12 +10,18 @@ import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
+import { Tooltip } from '@/components/tooltip';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
 import { InstitutionRepository } from '@/_core/modules/institution';
+import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
+import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
+import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
+import { User, UserRole } from '@/_core/modules/user/core/entities/User';
+import { X } from 'lucide-react';
 
 type FieldOption = {
   value: string;
@@ -54,17 +60,13 @@ type FormData = {
   category: string;
   level: string;
   status?: string;
+  coverImageUrl: string;
   enrolledStudents?: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
 const additionalFieldsConfig: Record<string, FieldConfig> = {
-  instructor: {
-    type: 'text',
-    label: 'Instrutor',
-    placeholder: 'Adicione um nome ao instrutor'
-  },
   category: {
     type: 'text',
     label: 'Categoria',
@@ -97,8 +99,11 @@ const additionalFieldsConfig: Record<string, FieldConfig> = {
 export default function CoursePage() {
   const router = useRouter();
   const params = useParams();
-  const courseId = params.id as string;
-  const isEditMode = !!courseId;
+  
+
+  const id = params.id as string;
+  const isEditMode = !!id;
+  const courseId = id || '';
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -109,6 +114,7 @@ export default function CoursePage() {
     category: '',
     level: 'beginner',
     status: 'active',
+    coverImageUrl: '',
     enrolledStudents: 0
   });
 
@@ -116,12 +122,20 @@ export default function CoursePage() {
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [tutors, setTutors] = useState<User[]>([]);
+  const [filteredTutors, setFilteredTutors] = useState<User[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [selectedTutors, setSelectedTutors] = useState<Array<{id: string, email: string}>>([]);
+  const [originalTutors, setOriginalTutors] = useState<Array<{id: string, email: string}>>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
+        // Fetch institutions
         const institutionRepository = container.get<InstitutionRepository>(
           Register.institution.repository.InstitutionRepository
         );
@@ -134,8 +148,18 @@ export default function CoursePage() {
         }));
 
         setInstitutions(institutionsForDropdown);
+        
+        const userRepository = container.get<UserRepository>(
+          Register.user.repository.UserRepository
+        );
+        
+        const tutorUsers = await userRepository.listByType(UserRole.TUTOR);
+        console.log(tutorUsers)
+        setTutors(tutorUsers);
+        setFilteredTutors(tutorUsers);
 
         if (isEditMode && courseId) {
+          // Fetch course data
           const courseRepository = container.get<CourseRepository>(
             Register.content.repository.CourseRepository
           );
@@ -153,15 +177,38 @@ export default function CoursePage() {
               category: 'General',
               level: 'beginner',
               status: 'active',
+              coverImageUrl: course.coverImageUrl || '',
               enrolledStudents: 0,
               createdAt: course.createdAt instanceof Date ? course.createdAt.toISOString() : String(course.createdAt),
               updatedAt: course.updatedAt instanceof Date ? course.updatedAt.toISOString() : String(course.updatedAt)
             });
+            
+            // Fetch tutors associated with this course
+            const courseTutorRepository = container.get<CourseTutorRepository>(
+              Register.content.repository.CourseTutorRepository
+            );
+            
+            // Get all course-tutor associations for this course
+            const courseTutors = await courseTutorRepository.findByCourseId(courseId);
+            
+            // For each association, fetch the user details
+            const tutorPromises = courseTutors.map(async (courseTutor) => {
+              const user = await userRepository.findById(courseTutor.userId);
+              if (user && user.role === UserRole.TUTOR) {
+                return { id: user.id, email: user.email.value };
+              }
+              return null;
+            });
+            
+            const tutors = (await Promise.all(tutorPromises))
+              .filter((tutor): tutor is {id: string, email: string} => tutor !== null);
+            
+            setSelectedTutors(tutors);
+            setOriginalTutors(tutors);
           } else {
             setError('Curso não encontrado');
           }
         } else if (institutionsForDropdown.length > 0) {
-
           setFormData(prev => ({ ...prev, institutionId: institutionsForDropdown[0].id }));
         }
 
@@ -176,6 +223,19 @@ export default function CoursePage() {
 
     fetchData();
   }, [isEditMode, courseId]);
+  
+  // Filter tutors based on search term
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredTutors(tutors);
+    } else {
+      const filtered = tutors.filter(tutor => 
+        tutor.email.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tutor.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredTutors(filtered);
+    }
+  }, [searchTerm, tutors]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -187,8 +247,10 @@ export default function CoursePage() {
     setIsSubmitting(true);
 
     try {
+      let newCourseId = '';
+      
       if (isEditMode && formData.id) {
-
+        // Update course
         const updateCourseUseCase = container.get<UpdateCourseUseCase>(
           Register.content.useCase.UpdateCourseUseCase
         );
@@ -196,19 +258,99 @@ export default function CoursePage() {
         await updateCourseUseCase.execute({
           id: formData.id,
           title: formData.title,
-          description: formData.description
+          description: formData.description,
+          coverImageUrl: formData.coverImageUrl
         });
+        
+        newCourseId = formData.id;
       } else {
-
+        // Create course
         const createCourseUseCase = container.get<CreateCourseUseCase>(
           Register.content.useCase.CreateCourseUseCase
         );
 
-        await createCourseUseCase.execute({
+        const result = await createCourseUseCase.execute({
           institutionId: formData.institutionId,
           title: formData.title,
-          description: formData.description
+          description: formData.description,
+          coverImageUrl: formData.coverImageUrl
         });
+        
+        newCourseId = result.course.id;
+      }
+      
+      // Handle tutor associations
+      if (isEditMode) {
+        const courseTutorRepository = container.get<CourseTutorRepository>(
+          Register.content.repository.CourseTutorRepository
+        );
+        
+        const associateTutorToCourseUseCase = container.get<AssociateTutorToCourseUseCase>(
+          Register.content.useCase.AssociateTutorToCourseUseCase
+        );
+        
+        // Find tutors to remove (in original list but not in new list)
+        const tutorsToRemove = originalTutors.filter(
+          original => !selectedTutors.some(selected => selected.id === original.id)
+        );
+        
+        // Find tutors to add (in new list but not in original list)
+        const tutorsToAdd = selectedTutors.filter(
+          selected => !originalTutors.some(original => original.id === selected.id)
+        );
+        
+        // Remove tutors
+        for (const tutorToRemove of tutorsToRemove) {
+          try {
+            // Find the course-tutor association
+            const association = await courseTutorRepository.findByUserAndCourse(
+              tutorToRemove.id, 
+              newCourseId
+            );
+            
+            if (association) {
+              // Delete the association
+              await courseTutorRepository.delete(association.id);
+              console.log(`Removed tutor ${tutorToRemove.email} from course`);
+            }
+          } catch (removeErr) {
+            console.error(`Error removing tutor ${tutorToRemove.email}:`, removeErr);
+            // Continue even if removal fails
+          }
+        }
+        
+        // Add new tutors
+        for (const tutorToAdd of tutorsToAdd) {
+          try {
+            await associateTutorToCourseUseCase.execute({
+              userId: tutorToAdd.id,
+              courseId: newCourseId
+            });
+            console.log(`Added tutor ${tutorToAdd.email} to course`);
+          } catch (addErr) {
+            console.error(`Error associating tutor ${tutorToAdd.email}:`, addErr);
+            // Continue even if association fails
+          }
+        }
+      } else if (selectedTutors.length > 0) {
+        // For new courses, add all selected tutors
+        const associateTutorToCourseUseCase = container.get<AssociateTutorToCourseUseCase>(
+          Register.content.useCase.AssociateTutorToCourseUseCase
+        );
+        
+        // Add each selected tutor
+        for (const tutorToAdd of selectedTutors) {
+          try {
+            await associateTutorToCourseUseCase.execute({
+              userId: tutorToAdd.id,
+              courseId: newCourseId
+            });
+            console.log(`Added tutor ${tutorToAdd.email} to course`);
+          } catch (associateErr) {
+            console.error(`Error associating tutor ${tutorToAdd.email}:`, associateErr);
+            // Continue even if association fails
+          }
+        }
       }
 
       router.push('/admin/courses');
@@ -221,7 +363,6 @@ export default function CoursePage() {
   };
 
   const renderFormField = (name: string, config: FieldConfig): ReactNode => {
-
     if (!(name in formData)) return null;
 
     const commonProps = {
@@ -362,6 +503,94 @@ export default function CoursePage() {
                   required: true,
                   rows: 4
                 })}
+                
+                {/* Instructor/Tutor selection */}
+                <div className="space-y-2">
+                  <label htmlFor="tutorSearch" className="block text-sm font-medium text-gray-700 mt-4">
+                    Instrutor
+                  </label>
+                  
+                  <div className="flex flex-wrap mb-2">
+                    {selectedTutors.map((tutor) => (
+                      <div key={tutor.id} className="relative">
+                        <Tooltip label={tutor.email} />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Only update the UI, backend changes will be made on save
+                            setSelectedTutors(prev => 
+                              prev.filter(t => t.id !== tutor.id)
+                            );
+                          }}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                          aria-label="Remover tutor"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="relative">
+                    <InputText
+                      id="tutorSearch"
+                      type="text"
+                      placeholder="Buscar instrutor por email"
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      className="mb-2"
+                    />
+                    
+                    {showDropdown && searchTerm.trim() !== '' && filteredTutors.length > 0 && (
+                      <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredTutors
+                          .filter(tutor => !selectedTutors.some(selected => selected.id === tutor.id))
+                          .map((tutor) => (
+                            <div
+                              key={tutor.id}
+                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                              onClick={() => {
+                                setSelectedTutors(prev => [
+                                  ...prev, 
+                                  { id: tutor.id, email: tutor.email.value }
+                                ]);
+                                setSearchTerm('');
+                                setShowDropdown(false);
+                              }}
+                            >
+                              <div className="font-medium">{tutor.name}</div>
+                              <div className="text-sm text-gray-500">{tutor.email.value}</div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-gray-500 text-xs">
+                    Busque e selecione instrutores para este curso
+                  </p>
+                </div>
+
+                {/* Cover Image URL Field */}
+                <div className="space-y-2">
+                  <label htmlFor="coverImageUrl" className="text-sm font-medium">
+                    URL da Imagem <span className="text-red-500">*</span>
+                  </label>
+                  <InputText
+                    id="coverImageUrl"
+                    name="coverImageUrl"
+                    value={formData.coverImageUrl}
+                    onChange={handleChange}
+                    placeholder="https://exemplo.com/imagem.jpg"
+                    required
+                  />
+                  <p className="text-gray-500 text-xs">
+                    Adicione uma URL para a imagem de capa do curso (obrigatório)
+                  </p>
+                </div>
 
                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
                   <h3 className="text-sm font-medium mb-2">Informações Adicionais</h3>
@@ -369,7 +598,6 @@ export default function CoursePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.entries(additionalFieldsConfig)
                       .filter(([fieldName]) => {
-
                         if (fieldName === 'status') return isEditMode;
                         return true;
                       })

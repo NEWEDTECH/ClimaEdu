@@ -12,15 +12,17 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
+import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository'
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
+import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 
 
 type CourseWithUIProps = {
   id: string
   title: string
   description: string
-  instructor?: string
+  instructorDisplay?: string
   duration?: string
   enrolledStudents?: number
   status: 'active' | 'inactive'
@@ -94,15 +96,52 @@ export default function CoursesPage() {
         
         const coursesList = await courseRepository.listByInstitution(selectedInstitutionId)
         
-        const coursesWithUIProps: CourseWithUIProps[] = coursesList.map(course => ({
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          instructor: 'Not specified', 
-          duration: 'Not specified',
-          enrolledStudents: 0,
-          status: 'active' 
-        }))
+        // Get course tutors
+        const courseTutorRepository = container.get<CourseTutorRepository>(
+          Register.content.repository.CourseTutorRepository
+        )
+        
+        const userRepository = container.get<UserRepository>(
+          Register.user.repository.UserRepository
+        )
+        
+        // Create an array of promises to fetch tutors for each course
+        const coursesWithTutorsPromises = coursesList.map(async (course) => {
+          // Get all tutor associations for this course
+          const tutorAssociations = await courseTutorRepository.findByCourseId(course.id)
+          
+          // Get user details for each tutor
+          const tutorPromises = tutorAssociations.map(async (association) => {
+            const user = await userRepository.findById(association.userId)
+            return user ? { id: user.id, email: user.email.value } : null
+          })
+          
+          // Wait for all tutor details to be fetched
+          const tutors = (await Promise.all(tutorPromises)).filter(tutor => tutor !== null)
+          
+          // Determine what to display for instructors
+          let instructorDisplay = 'Sem instrutor'
+          if (tutors.length === 1) {
+            // If there's only one tutor, display their email
+            instructorDisplay = tutors[0]?.email || 'Sem instrutor'
+          } else if (tutors.length > 1) {
+            // If there are multiple tutors, display the count
+            instructorDisplay = `${tutors.length} instrutores`
+          }
+          
+          return {
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            instructorDisplay,
+            duration: 'Not specified',
+            enrolledStudents: 0,
+            status: 'active' as 'active' | 'inactive'
+          }
+        })
+        
+        // Wait for all courses with tutors to be processed
+        const coursesWithUIProps = await Promise.all(coursesWithTutorsPromises)
         
         setCourses(coursesWithUIProps)
         setError(null)
@@ -121,7 +160,7 @@ export default function CoursesPage() {
     const matchesSearch = 
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (course.instructor && course.instructor.toLowerCase().includes(searchTerm.toLowerCase()))
+      (course.instructorDisplay && course.instructorDisplay.toLowerCase().includes(searchTerm.toLowerCase()))
     
     const matchesStatus = statusFilter === 'all' || course.status === statusFilter
     
@@ -211,7 +250,7 @@ export default function CoursesPage() {
                     <tr key={course.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
                       <td className="py-3 px-4">{course.title}</td>
                       <td className="py-3 px-4 max-w-xs truncate">{course.description}</td>
-                      <td className="py-3 px-4">{course.instructor}</td>
+                      <td className="py-3 px-4">{course.instructorDisplay}</td>
                       <td className="py-3 px-4">{course.duration}</td>
                       <td className="py-3 px-4 text-center">{course.enrolledStudents}</td>
                       <td className="py-3 px-4">
@@ -225,8 +264,11 @@ export default function CoursesPage() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex  gap-2">
+                        <Link href={`/admin/courses/edit/${course.id}`}>
+                            <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Módulos</Button>
+                          </Link>
                           <Link href={`/admin/courses/create-edit/${course.id}`}>
-                            <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Edit</Button>
+                            <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Editar</Button>
                           </Link>
                         </div>
                       </td>
