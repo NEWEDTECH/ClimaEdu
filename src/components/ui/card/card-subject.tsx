@@ -1,6 +1,5 @@
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Card } from "./card";
 
 interface CardSubjectProps {
@@ -26,10 +25,10 @@ export function CardSubject({
         <div className="absolute inset-0 bg-black">
           {imageUrl && (
             <div className="relative h-full w-full opacity-60">
-              <Image 
+              <img 
                 src={imageUrl} 
                 alt={title || "Course thumbnail image"}
-                fill
+                //fill
                 style={{ objectFit: "cover" }}
               />
             </div>
