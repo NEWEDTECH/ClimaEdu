@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ProtectedContent } from '@/components/auth';
 import { DashboardLayout } from '@/components/layout';
-import { CardSubject, mockSubjects } from '@/components/ui/card';
+import { CardSubject } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -11,9 +11,12 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel';
+import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.use-case';
+import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus';
 
 
 type CourseDisplayData = {
@@ -25,42 +28,70 @@ type CourseDisplayData = {
 }
 
 export default function Home() {
+  const { id } = useProfile();
   const [courses, setCourses] = useState<CourseDisplayData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchUserEnrolledCourses = async () => {
       try {
         setIsLoading(true);
+
+        const currentUserId = id;
+        console.log('Current user ID from profile state:', currentUserId);
+
+        if (!currentUserId) {
+          setIsLoading(false);
+          return;
+        }
+
+        const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
+          Register.enrollment.useCase.ListEnrollmentsUseCase
+        );
+
+        const enrollmentsResult = await listEnrollmentsUseCase.execute({
+          userId: currentUserId,
+          status: EnrollmentStatus.ENROLLED
+        });
+
+        if (enrollmentsResult.enrollments.length === 0) {
+          setCourses([]);
+          setIsLoading(false);
+          return;
+        }
 
         const courseRepository = container.get<CourseRepository>(
           Register.content.repository.CourseRepository
         );
 
-        const institutionId = 'ins_REKG0wdpIc';
+        const enrolledCourses: CourseDisplayData[] = [];
 
-        const fetchedCourses = await courseRepository.listByInstitution(institutionId);
+        for (const enrollment of enrollmentsResult.enrollments) {
+          const course = await courseRepository.findById(enrollment.courseId);
 
-        const mappedCourses: CourseDisplayData[] = fetchedCourses.map(course => ({
-          id: course.id,
-          title: course.title,
-          href: `/student/courses/${course.id}`,
-          imageUrl: '/vercel.svg',
-          isBlocked: false 
-        }));
+          if (course) {
+            enrolledCourses.push({
+              id: course.id,
+              title: course.title,
+              href: `/student/courses/${course.id}`,
+              imageUrl: course.coverImageUrl!,
+              isBlocked: false
+            });
+          }
+        }
 
-        setCourses(mappedCourses);
+        setCourses(enrolledCourses);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching courses:', error);
-        setError('Failed to load courses');
+        console.error('Error fetching enrolled courses:', error);
+        setError('Failed to load your courses');
         setIsLoading(false);
       }
     };
 
-    fetchCourses();
-  }, []);
+    fetchUserEnrolledCourses();
+  }, [id]); // Add id to the dependency array so it runs when id changes
 
   return (
     <ProtectedContent>
@@ -72,65 +103,51 @@ export default function Home() {
               <p className="text-red-500 text-center">{error}</p>
             )}
             {isLoading && (
-              <p className="text-center">Carregando cursos...</p>
+              <p className="text-center">Carregando seus cursos...</p>
             )}
           </div>
 
-          {/* Featured Courses Carousel */}
+          {/* User's Enrolled Courses Carousel */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">Cursos Disponíveis</h2>
+            <h2 className="text-2xl font-semibold mb-6">Seus Cursos</h2>
+            {courses.length === 0 && !isLoading && !error && (
+              <p className="text-center text-gray-500">Você não está matriculado em nenhum curso ainda.</p>
+            )}
             {
-              courses.length > 1 ? (
-                <Carousel className="w-full">
-                  <CarouselContent>
-                    {courses.slice(0, 5).map((course) => (
-                      <CarouselItem key={course.id} className="md:basis-1/2 lg:basis-1/3">
-                        <CardSubject
-                          title={course.title}
-                          href={course.href}
-                          imageUrl={course.imageUrl}
-                          isBlocked={course.isBlocked}
-                        />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-2" />
-                  <CarouselNext className="right-2" />
-                </Carousel>
-              ) : (
-                <CardSubject
-                className='w-[800px]'
-                  title={courses[0]?.title}
-                  href={'teste'}
-                  imageUrl={courses[0]?.imageUrl}
-                  isBlocked={courses[0]?.isBlocked}
-                />
+              courses.length > 0 && (
+                courses.length > 1 ? (
+                  <Carousel className="w-full">
+                    <CarouselContent>
+                      {courses.map((course) => (
+                        <CarouselItem key={course.id} className="md:basis-1/2 lg:basis-1/3">
+                          <CardSubject
+                            title={course.title}
+                            href={course.href}
+                            imageUrl={course.imageUrl}
+                            isBlocked={course.isBlocked}
+                          />
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </Carousel>
+                ) : (
+                  <CardSubject
+                    className='w-[800px]'
+                    title={courses[0].title}
+                    href={courses[0].href || '#'}
+                    imageUrl={courses[0].imageUrl}
+                    isBlocked={courses[0].isBlocked}
+                  />
+                )
               )
             }
 
 
           </div>
 
-          {/* All Courses */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">Todos os Cursos</h2>
-            <Carousel className="w-full">
-              <CarouselContent>
-                {mockSubjects.map((course) => (
-                  <CarouselItem key={course.id} className="md:basis-1/2 lg:basis-1/3">
-                    <CardSubject
-                      title={course.title}
-                      href={course.href}
-                      imageUrl={course.imageUrl}
-                      isBlocked={course.isBlocked}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
-          </div>
+
         </div>
       </DashboardLayout>
     </ProtectedContent>
