@@ -6,6 +6,6 @@ import { UserRole } from '../../entities/User';
 export interface CreateUserInput {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   type: UserRole;
 }

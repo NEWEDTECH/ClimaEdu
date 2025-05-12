@@ -1,4 +1,5 @@
 import { injectable, inject } from 'inversify';
+import { nanoid } from 'nanoid';
 import type { UserRepository } from '../../../infrastructure/repositories/UserRepository';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 import { Register } from '@/_core/shared/container';
@@ -36,7 +37,7 @@ export class CreateUserUseCase {
     // Create user in Firebase Authentication
     const authUserId = await this.authService.createUserWithEmailAndPassword(
       input.email,
-      input.password
+      input.password || nanoid(8)
     );
     
     // Use the Firebase Auth ID as the user ID
