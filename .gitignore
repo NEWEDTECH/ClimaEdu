@@ -45,3 +45,6 @@ next-env.d.ts
 # local firebase files
 /firebasedata
 firebase-export-*/
+
+# local files
+/status-report
