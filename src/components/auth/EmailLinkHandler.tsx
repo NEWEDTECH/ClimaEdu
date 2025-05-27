@@ -176,17 +176,15 @@ export function EmailLinkHandler() {
               console.log('User found by email, ID:', user.id);
               // Update the userId state with the correct ID from the database
               setUserId(user.id);
-              // Save the user ID in the profile state
+
               setId(user.id);
             }
           }
-          
+
           if (user) {
             console.log('User found in database with role:', user.role);
-            // Save the user ID in the profile state
             setId(user.id);
             
-            // Map the UserRole enum to the expected string type
             let userRoleString: 'student' | 'tutor' | 'admin' | null = null;
             
             switch (user.role) {

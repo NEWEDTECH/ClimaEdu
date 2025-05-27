@@ -405,7 +405,6 @@ export default function StudentEnrollmentPage() {
       }
 
       if (!isEditingStudent && selectedCourseIds.length === 0) {
-        console.log('kdjawkjdalw')
         setError('Por favor, selecione pelo menos um curso')
         return
       }
