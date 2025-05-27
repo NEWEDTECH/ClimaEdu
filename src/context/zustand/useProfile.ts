@@ -6,7 +6,15 @@ import { Institution } from '../../_core/modules/institution/core/entities/Insti
 
 type UserRole = 'student' | 'tutor' | 'admin' | null;
 
-type Courses = any;
+type Courses = Array<{
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  institutionId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}>;
 
 // Tipo para representar uma instituição com a role do usuário nela
 type InstitutionWithRole = {

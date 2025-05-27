@@ -16,7 +16,6 @@ import { AddQuestionToQuestionnaireUseCase } from '@/_core/modules/content/core/
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
-import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 
 type QuestionFormData = {
   questionText: string;

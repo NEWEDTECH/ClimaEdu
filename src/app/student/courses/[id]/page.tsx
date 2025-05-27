@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ProtectedContent } from '@/components/auth';
 import { DashboardLayout } from '@/components/layout';
@@ -121,7 +121,7 @@ const ModuleDropdown = ({
 export default function CoursePage() {
     const params = useParams();
     const router = useRouter();
-    const { id: userId, institution } = useProfile();
+    const { id: userId } = useProfile();
     const courseId = typeof params?.id === 'string' ? params.id : '';
 
     const [course, setCourse] = useState<Course | null>(null);
@@ -135,8 +135,39 @@ export default function CoursePage() {
     const [activeTab, setActiveTab] = useState<string>('content');
     const [showingEndAlert, setShowingEndAlert] = useState<boolean>(false);
 
+    // Function to load lesson questionnaire
+    const loadLessonQuestionnaire = useCallback(async (lessonId: string) => {
+        try {
+            const questionnaireRepository = container.get<QuestionnaireRepository>(
+                Register.content.repository.QuestionnaireRepository
+            );
+
+            const questionnaire = await questionnaireRepository.findByLessonId(lessonId);
+            setActiveQuestionnaire(questionnaire);
+
+            // Get attempt count if user is logged in and questionnaire exists
+            if (questionnaire && userId && course) {
+                const submissionRepository = container.get<QuestionnaireSubmissionRepository>(
+                    Register.content.repository.QuestionnaireSubmissionRepository
+                );
+
+                const attempts = await submissionRepository.countAttempts(
+                    questionnaire.id,
+                    userId
+                );
+                setAttemptCount(attempts);
+            } else {
+                setAttemptCount(0);
+            }
+        } catch (error) {
+            console.error('Error loading lesson questionnaire:', error);
+            setActiveQuestionnaire(null);
+            setAttemptCount(0);
+        }
+    }, [userId, course]);
+
     // Function to load lesson content
-    const loadLessonContent = async (lessonId: string) => {
+    const loadLessonContent = useCallback(async (lessonId: string) => {
         try {
             // Reset the end alert state for new video
             setShowingEndAlert(false);
@@ -171,38 +202,7 @@ export default function CoursePage() {
         } catch (error) {
             console.error('Error loading lesson content:', error);
         }
-    };
-
-    // Function to load lesson questionnaire
-    const loadLessonQuestionnaire = async (lessonId: string) => {
-        try {
-            const questionnaireRepository = container.get<QuestionnaireRepository>(
-                Register.content.repository.QuestionnaireRepository
-            );
-
-            const questionnaire = await questionnaireRepository.findByLessonId(lessonId);
-            setActiveQuestionnaire(questionnaire);
-
-            // Get attempt count if user is logged in and questionnaire exists
-            if (questionnaire && userId && course) {
-                const submissionRepository = container.get<QuestionnaireSubmissionRepository>(
-                    Register.content.repository.QuestionnaireSubmissionRepository
-                );
-
-                const attempts = await submissionRepository.countAttempts(
-                    questionnaire.id,
-                    userId
-                );
-                setAttemptCount(attempts);
-            } else {
-                setAttemptCount(0);
-            }
-        } catch (error) {
-            console.error('Error loading lesson questionnaire:', error);
-            setActiveQuestionnaire(null);
-            setAttemptCount(0);
-        }
-    };
+    }, [loadLessonQuestionnaire]);
 
     const handleLessonSelect = async (lessonId: string) => {
         setActiveLesson(lessonId);
@@ -218,8 +218,8 @@ export default function CoursePage() {
         let currentLessonIndex = -1;
         
         for (let i = 0; i < modules.length; i++) {
-            const module = modules[i];
-            const lessonIndex = module.lessons.findIndex(lesson => lesson.id === activeLesson);
+            const currentModuleData = modules[i];
+            const lessonIndex = currentModuleData.lessons.findIndex(lesson => lesson.id === activeLesson);
             
             if (lessonIndex !== -1) {
                 currentModuleIndex = i;
@@ -279,23 +279,23 @@ export default function CoursePage() {
 
                 // For each module, fetch its lessons
                 const modulesWithLessons = await Promise.all(
-                    modulesData.map(async (module) => {
+                    modulesData.map(async (moduleData) => {
                         const lessonRepository = container.get<LessonRepository>(
                             Register.content.repository.LessonRepository
                         );
 
-                        const lessons = await lessonRepository.listByModule(module.id);
+                        const lessons = await lessonRepository.listByModule(moduleData.id);
 
                         // Sort lessons by order
                         lessons.sort((a, b) => a.order - b.order);
 
                         // Create a new module with the lessons
                         return Module.create({
-                            id: module.id,
-                            courseId: module.courseId,
-                            title: module.title,
-                            coverImageUrl: module.coverImageUrl || undefined,
-                            order: module.order,
+                            id: moduleData.id,
+                            courseId: moduleData.courseId,
+                            title: moduleData.title,
+                            coverImageUrl: moduleData.coverImageUrl || undefined,
+                            order: moduleData.order,
                             lessons: lessons
                         });
                     })
@@ -321,7 +321,7 @@ export default function CoursePage() {
         };
 
         fetchCourseData();
-    }, [courseId]);
+    }, [courseId, loadLessonContent]);
 
     return (
         <ProtectedContent>

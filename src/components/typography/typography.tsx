@@ -1,3 +1,4 @@
+import React from "react"
 import { cn } from "@/lib/utils"
 
 interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
@@ -5,7 +6,7 @@ interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function Typography({ variant = "p", className, ...props }: TypographyProps) {
-  const Component = variant as any
+  const Component = variant as React.ElementType
   const baseClasses = {
     h1: "scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl",
     h2: "scroll-m-20 text-3xl font-semibold tracking-tight",

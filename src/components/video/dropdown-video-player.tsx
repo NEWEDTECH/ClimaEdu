@@ -64,7 +64,7 @@ export function DropdownVideoPlayer({
   );
 
   return (
-    <DropdownModal content={videoContent} id={`video-${videoUrl}`}>
+    <DropdownModal content={videoContent}>
       {children}
     </DropdownModal>
   );

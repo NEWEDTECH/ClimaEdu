@@ -1,20 +1,15 @@
 import React, { useState } from "react";
 
-interface DropdownModalProps {
+type DropdownModalProps = {
   children: React.ReactNode;
   content: React.ReactNode;
-  id?: string;
 }
 
 export function DropdownModal({
   children,
-  content,
-  id: propId,
+  content
 }: DropdownModalProps) {
-  // Generate a unique ID if not provided
-  const [id] = useState(() => propId || `modal-${Math.random().toString(36).substr(2, 9)}`);
-  
-  // Modal state
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   // Handle click event

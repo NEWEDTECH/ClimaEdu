@@ -23,7 +23,6 @@ export function UserInstitutionsList() {
     setInstitution, 
     setInstitutionsWithRoles,
     institutions,
-    institutionsWithRoles,
     getUserRoleInInstitution 
   } = useProfile();
   const { getLastInstitutionId, setLastInstitutionId } = useInstitutionStorage();

@@ -14,6 +14,7 @@ import { OptionsProfileProps } from '@/types/profile'
 import { ButtonLogout } from '@/components/logout'
 import { useProfile } from '@/context/zustand/useProfile';
 import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
+import { Institution } from '@/_core/modules/institution/core/entities/Institution';
 
 export interface ProfileSelectProps {
   avatarUrl?: string;
@@ -32,7 +33,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
   const { setLastInstitutionId } = useInstitutionStorage();
   const isAdmin = role === 'admin';
 
-  const handleInstitutionChange = (inst: any) => {
+  const handleInstitutionChange = (inst: Institution) => {
     setInstitution(inst);
     setLastInstitutionId(inst.id);
   };

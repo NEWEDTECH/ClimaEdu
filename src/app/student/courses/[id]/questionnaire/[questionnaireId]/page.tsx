@@ -14,9 +14,8 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Question } from '@/_core/modules/content/core/entities/Question';
 import { Course } from '@/_core/modules/content/core/entities/Course';
 import { useProfile } from '@/context/zustand/useProfile';
-import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 
-interface QuestionAnswer {
+type QuestionAnswer = {
   questionId: string;
   selectedOptionIndex: number | null;
 }
@@ -24,8 +23,7 @@ interface QuestionAnswer {
 export default function QuestionnairePage() {
   const params = useParams();
   const router = useRouter();
-  const { id: userId, institution } = useProfile();
-  const { lastInstitutionId } = useInstitutionStorage();
+  const { id: userId } = useProfile();
   
   const courseId = typeof params?.id === 'string' ? params.id : '';
   const questionnaireId = typeof params?.questionnaireId === 'string' ? params.questionnaireId : '';
@@ -36,7 +34,7 @@ export default function QuestionnairePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [startTime] = useState<Date>(new Date());
+
   const [attemptCount, setAttemptCount] = useState<number>(0);
 
   // Load course and questionnaire data
@@ -151,6 +149,8 @@ export default function QuestionnairePage() {
           selectedOptionIndex: answer.selectedOptionIndex!
         }))
       });
+
+      console.log(result)
 
       router.push(`/student/courses/${courseId}`);
 
