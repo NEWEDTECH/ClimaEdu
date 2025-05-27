@@ -10,6 +10,7 @@ import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { DropdownVideoPlayer } from '@/components/video'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -203,6 +204,58 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleDeleteQuestionnaire = async () => {
+    if (!formData.questionnaire) return
+    
+    if (!confirm('Tem certeza que deseja excluir este questionário? Esta ação não pode ser desfeita.')) {
+      return
+    }
+    
+    try {
+      setIsSubmitting(true)
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      const questionnaireRepository = container.get<QuestionnaireRepository>(
+        Register.content.repository.QuestionnaireRepository
+      )
+      
+      const lesson = await lessonRepository.findById(lessonId)
+      
+      if (!lesson) {
+        throw new Error('Lição não encontrada')
+      }
+      
+      // Delete the questionnaire
+      const deleted = await questionnaireRepository.delete(formData.questionnaire.id)
+      
+      if (!deleted) {
+        throw new Error('Não foi possível excluir o questionário')
+      }
+      
+      // Remove the questionnaire reference from the lesson
+      lesson.questionnaire = undefined
+      
+      // Save the updated lesson
+      await lessonRepository.save(lesson)
+      
+      // Update the UI state
+      setFormData(prev => ({
+        ...prev,
+        questionnaire: undefined
+      }))
+      
+      alert('Questionário excluído com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir questionário:', error)
+      alert(`Falha ao excluir questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -243,7 +296,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       
       await lessonRepository.save(lesson)
       
-      router.push(`/courses/edit/${courseId}/modules/${moduleId}`)
+      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}`)
     } catch (error) {
       console.error('Erro ao atualizar lição:', error)
       alert(`Falha ao atualizar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -444,15 +497,40 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                                   {getContentTypeIcon(content.type)}
                                 </div>
                                 <div>
-                                  <h3 className="font-medium">
-                                    {content.title}
-                                  </h3>
+                                  {content.type === ContentType.VIDEO ? (
+                                    <DropdownVideoPlayer
+                                      videoUrl={content.url}
+                                      videoTitle={content.title}
+                                      autoPlay={false}
+                                      showControls={true}
+                                    >
+                                      <h3 className="font-medium cursor-pointer hover:text-blue-600 transition-colors">
+                                        {content.title}
+                                      </h3>
+                                    </DropdownVideoPlayer>
+                                  ) : (
+                                    <h3 className="font-medium">
+                                      {content.title}
+                                    </h3>
+                                  )}
                                   <p className="text-xs text-gray-500">
                                     {getContentTypeLabel(content.type)}
                                   </p>
                                 </div>
                               </div>
                               <div className="flex gap-2">
+                                {content.type === ContentType.VIDEO && (
+                                  <DropdownVideoPlayer
+                                    videoUrl={content.url}
+                                    videoTitle={content.title}
+                                    autoPlay={false}
+                                    showControls={true}
+                                  >
+                                    <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">
+                                      Assistir
+                                    </Button>
+                                  </DropdownVideoPlayer>
+                                )}
                                 <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                   <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                 </Link>
@@ -532,9 +610,18 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-center">
                         <CardTitle>Questionário</CardTitle>
-                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
-                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Gerenciar Perguntas</Button>
-                        </Link>
+                        <div className='flex justify-end gap-2'>
+                          <Button 
+                            className="border text-xs px-3 py-1 bg-red-500 text-white"
+                            onClick={handleDeleteQuestionnaire}
+                            disabled={isSubmitting}
+                          >
+                            {isSubmitting ? 'Excluindo...' : 'Excluir'}
+                          </Button>
+                          <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
+                            <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
+                          </Link>
+                        </div>
                       </div>
                       <CardDescription>
                         Questionário para avaliar o conhecimento dos alunos

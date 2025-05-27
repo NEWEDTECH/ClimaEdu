@@ -14,13 +14,25 @@ export function DropdownModal({
   // Generate a unique ID if not provided
   const [id] = useState(() => propId || `modal-${Math.random().toString(36).substr(2, 9)}`);
   
-  // Use the modal context
-  const [openModal, setOpenmodal] = useState<any>(false)
+  // Modal state
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   // Handle click event
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    openModal(id, content);
+    setIsOpen(true);
+  };
+
+  // Handle close modal
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  // Handle backdrop click
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
   };
 
   // Create a wrapper component that handles the click event
@@ -35,5 +47,41 @@ export function DropdownModal({
     );
   };
 
-  return <ClickableWrapper>{children}</ClickableWrapper>;
+  return (
+    <>
+      <ClickableWrapper>{children}</ClickableWrapper>
+      
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={handleBackdropClick}
+        >
+          <div className="relative bg-white rounded-lg shadow-lg max-w-4xl max-h-[90vh] overflow-auto">
+            <button
+              onClick={handleClose}
+              className="absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-700 bg-white rounded-full p-2 shadow-md"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <div className="p-6">
+              {content}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
