@@ -91,7 +91,7 @@ export default function Home() {
     };
 
     fetchUserEnrolledCourses();
-  }, [id]); // Add id to the dependency array so it runs when id changes
+  }, [id]); 
 
   return (
     <ProtectedContent>
