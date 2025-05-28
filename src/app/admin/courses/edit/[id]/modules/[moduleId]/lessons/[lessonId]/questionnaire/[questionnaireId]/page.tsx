@@ -20,11 +20,18 @@ import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { Question } from '@/_core/modules/content/core/entities/Question';
+import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 
-interface QuestionFormData {
+type QuestionFormData = {
   questionText: string;
   options: string[];
   correctAnswerIndex: number;
+}
+
+type QuestionnaireFormData = {
+  title: string;
+  maxAttempts: number;
+  passingScore: number;
 }
 
 export default function QuestionsManagementPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string, questionnaireId: string }>}) { 
@@ -38,8 +45,14 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
   const [moduleName, setModuleName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
+  const [questionnaireFormData, setQuestionnaireFormData] = useState<QuestionnaireFormData>({
+    title: '',
+    maxAttempts: 3,
+    passingScore: 70,
+  });
+  const [isUpdatingQuestionnaire, setIsUpdatingQuestionnaire] = useState<boolean>(false);
   
-  // State for adding/editing questions
   const [isAddingQuestion, setIsAddingQuestion] = useState<boolean>(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState<boolean>(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
@@ -73,14 +86,20 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
           Register.content.useCase.ListQuestionsOfQuestionnaireUseCase
         );
         
-        const questionnaire = await questionnaireRepository.findById(questionnaireId);
-        if (!questionnaire) {
+        const questionnaireData = await questionnaireRepository.findById(questionnaireId);
+        if (!questionnaireData) {
           setError('Questionário não encontrado');
           setIsLoading(false);
           return;
         }
         
-        setQuestionnaireTitle(questionnaire.title);
+        setQuestionnaire(questionnaireData);
+        setQuestionnaireTitle(questionnaireData.title);
+        setQuestionnaireFormData({
+          title: questionnaireData.title,
+          maxAttempts: questionnaireData.maxAttempts,
+          passingScore: questionnaireData.passingScore
+        });
         
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
@@ -316,6 +335,44 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
   };
 
 
+  const handleQuestionnaireChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setQuestionnaireFormData(prev => ({
+      ...prev,
+      [name]: name === 'maxAttempts' || name === 'passingScore' ? parseInt(value, 10) : value
+    }));
+  };
+
+  const handleUpdateQuestionnaire = async () => {
+    if (!questionnaire) return;
+    
+    try {
+      setIsUpdatingQuestionnaire(true);
+      
+      questionnaire.updateTitle(questionnaireFormData.title);
+      questionnaire.updateMaxAttempts(questionnaireFormData.maxAttempts);
+      questionnaire.updatePassingScore(questionnaireFormData.passingScore);
+      
+      const questionnaireRepository = container.get<QuestionnaireRepository>(
+        Register.content.repository.QuestionnaireRepository
+      );
+      
+      const updatedQuestionnaire = await questionnaireRepository.save(questionnaire);
+      
+
+      setQuestionnaire(updatedQuestionnaire);
+      setQuestionnaireTitle(updatedQuestionnaire.title);
+      
+      setIsUpdatingQuestionnaire(false);
+      
+      alert('Informações do questionário atualizadas com sucesso!');
+    } catch (error) {
+      console.error('Erro ao atualizar questionário:', error);
+      alert(`Falha ao atualizar questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      setIsUpdatingQuestionnaire(false);
+    }
+  };
+
   const handleFinish = () => {
     router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
   };
@@ -357,7 +414,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Gerenciar Perguntas</h1>
+            <h1 className="text-2xl font-bold mb-2">Gerenciar Questionário</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-1">
               Questionário: <span className="font-medium">{questionnaireTitle}</span>
             </p>
@@ -368,6 +425,84 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               Módulo: <span className="font-medium">{moduleName}</span>
             </p>
           </div>
+
+          {/* Questionnaire Information */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Informações do Questionário</CardTitle>
+              <CardDescription>
+                Configure as informações básicas do questionário
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Título do Questionário
+                  </label>
+                  <InputText
+                    id="title"
+                    placeholder="Digite um título para o questionário"
+                    name="title"
+                    value={questionnaireFormData.title}
+                    onChange={handleQuestionnaireChange}
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Um título claro que descreva o objetivo do questionário
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Número Máximo de Tentativas
+                    </label>
+                    <InputText
+                      id="maxAttempts"
+                      type="number"
+                      min="1"
+                      max="10"
+                      name="maxAttempts"
+                      value={questionnaireFormData.maxAttempts.toString()}
+                      onChange={handleQuestionnaireChange}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Quantas vezes o aluno pode tentar responder o questionário
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Nota de Aprovação (%)
+                    </label>
+                    <InputText
+                      id="passingScore"
+                      type="number"
+                      min="0"
+                      max="100"
+                      name="passingScore"
+                      value={questionnaireFormData.passingScore.toString()}
+                      onChange={handleQuestionnaireChange}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Porcentagem mínima para aprovação no questionário
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button 
+                  onClick={handleUpdateQuestionnaire}
+                  disabled={isUpdatingQuestionnaire}
+                >
+                  {isUpdatingQuestionnaire ? 'Salvando...' : 'Atualizar Informações'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Questions List */}
           <Card className="mb-6">

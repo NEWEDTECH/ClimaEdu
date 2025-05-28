@@ -75,9 +75,6 @@ export default function CreateUserPage() {
       
       reset()
       
-      setTimeout(() => {
-        router.push('/')
-      }, 2000)
     } catch (err) {
       console.error('Error creating user:', err)
       setError(err instanceof Error ? err.message : 'Falha ao criar usuário. Por favor, tente novamente.')
@@ -112,7 +109,7 @@ export default function CreateUserPage() {
               <CardContent className="space-y-4">
                 {success && (
                   <div className="p-3 rounded-md bg-green-100 text-green-800 mb-4">
-                    Usuário criado com sucesso! Redirecionando...
+                    Usuário criado com sucesso!
                   </div>
                 )}
                 

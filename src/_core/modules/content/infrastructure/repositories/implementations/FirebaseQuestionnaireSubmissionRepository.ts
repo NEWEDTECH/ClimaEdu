@@ -109,6 +109,14 @@ export class FirebaseQuestionnaireSubmissionRepository implements QuestionnaireS
   async save(submission: QuestionnaireSubmission): Promise<QuestionnaireSubmission> {
     const submissionRef = doc(firestore, this.collectionName, submission.id);
     
+    // Convert QuestionSubmission objects to plain objects for Firestore
+    const questionsData = submission.questions.map(question => ({
+      id: question.id,
+      questionId: question.questionId,
+      selectedOptionIndex: question.selectedOptionIndex,
+      isCorrect: question.isCorrect
+    }));
+    
     // Prepare the submission data for Firestore
     const submissionData = {
       id: submission.id,
@@ -120,7 +128,7 @@ export class FirebaseQuestionnaireSubmissionRepository implements QuestionnaireS
       score: submission.score,
       passed: submission.passed,
       attempt: submission.attempt,
-      questions: submission.questions
+      questions: questionsData
     };
 
     // Check if the submission already exists
