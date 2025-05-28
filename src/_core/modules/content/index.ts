@@ -11,6 +11,9 @@ export * from './core/entities/Questionnaire';
 export * from './core/entities/Question';
 export * from './core/entities/QuestionnaireSubmission';
 export * from './core/entities/QuestionSubmission';
+export * from './core/entities/LessonProgress';
+export * from './core/entities/ContentProgress';
+export * from './core/entities/ProgressStatus';
 
 // Re-export use cases
 export * from './core/use-cases/create-content/create-content.use-case';
@@ -61,6 +64,18 @@ export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-cou
 export * from './core/use-cases/list-tutor-courses/list-tutor-courses.use-case';
 export * from './core/use-cases/list-tutor-courses/list-tutor-courses.input';
 export * from './core/use-cases/list-tutor-courses/list-tutor-courses.output';
+export * from './core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
+export * from './core/use-cases/start-lesson-progress/start-lesson-progress.input';
+export * from './core/use-cases/start-lesson-progress/start-lesson-progress.output';
+export * from './core/use-cases/update-content-progress/update-content-progress.use-case';
+export * from './core/use-cases/update-content-progress/update-content-progress.input';
+export * from './core/use-cases/update-content-progress/update-content-progress.output';
+export * from './core/use-cases/get-lesson-progress/get-lesson-progress.use-case';
+export * from './core/use-cases/get-lesson-progress/get-lesson-progress.input';
+export * from './core/use-cases/get-lesson-progress/get-lesson-progress.output';
+export * from './core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
+export * from './core/use-cases/complete-lesson-progress/complete-lesson-progress.input';
+export * from './core/use-cases/complete-lesson-progress/complete-lesson-progress.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
@@ -72,6 +87,7 @@ export * from './infrastructure/repositories/LessonRepository';
 export * from './infrastructure/repositories/ActivityRepository';
 export * from './infrastructure/repositories/QuestionnaireRepository';
 export * from './infrastructure/repositories/QuestionnaireSubmissionRepository';
+export * from './infrastructure/repositories/LessonProgressRepository';
 
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseContentRepository';

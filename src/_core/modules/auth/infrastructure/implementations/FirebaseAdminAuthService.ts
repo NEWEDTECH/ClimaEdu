@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { injectable } from 'inversify';
 import { AuthService } from '../services/AuthService';
 import { getAdminAuth, initializeFirebaseAdmin } from '@/_core/shared/firebase/firebase-admin';

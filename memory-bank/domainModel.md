@@ -206,6 +206,64 @@ This document describes the domain model of the ClimaEdu platform, organized by 
   - `calculateScore(): number`
   - `checkPass(passingScore): boolean`
 
+### LessonProgress Entity
+- **Purpose**: Represents a student's progress in a lesson (aggregate root)
+- **Properties**:
+  - `id: string` (readonly)
+  - `userId: string` (readonly)
+  - `lessonId: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `status: LessonProgressStatus`
+  - `startedAt: Date` (readonly)
+  - `completedAt: Date | null`
+  - `lastAccessedAt: Date`
+  - `contentProgresses: ContentProgress[]`
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): LessonProgress`
+  - `updateContentProgress(contentId, progressPercentage, timeSpent?, lastPosition?): void`
+  - `markContentAsCompleted(contentId): void`
+  - `checkAndUpdateLessonCompletion(): void`
+  - `forceComplete(): void`
+  - `calculateOverallProgress(): number`
+  - `getTotalTimeSpent(): number`
+  - `getContentProgress(contentId): ContentProgress | null`
+  - `isCompleted(): boolean`
+  - `hasStarted(): boolean`
+  - `touch(): void`
+
+### ContentProgress Value Object
+- **Purpose**: Represents the progress of a specific content within a lesson
+- **Properties**:
+  - `contentId: string` (readonly)
+  - `status: ContentProgressStatus`
+  - `progressPercentage: number`
+  - `timeSpent: number`
+  - `startedAt: Date` (readonly)
+  - `completedAt: Date | null`
+  - `lastPosition: number | null`
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): ContentProgress`
+  - `updateProgress(progressPercentage, timeSpent?, lastPosition?): void`
+  - `markAsCompleted(): void`
+  - `isCompleted(): boolean`
+  - `hasStarted(): boolean`
+  - `getTimeSpentInMinutes(): number`
+  - `getTimeSpentInHours(): number`
+
+### LessonProgressStatus Enum
+- **Values**:
+  - `NOT_STARTED`
+  - `IN_PROGRESS`
+  - `COMPLETED`
+
+### ContentProgressStatus Enum
+- **Values**:
+  - `NOT_STARTED`
+  - `IN_PROGRESS`
+  - `COMPLETED`
+
 ## Enrollment Bounded Context
 
 ### Enrollment Entity
