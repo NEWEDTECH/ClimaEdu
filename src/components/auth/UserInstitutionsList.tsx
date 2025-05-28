@@ -36,7 +36,7 @@ export function UserInstitutionsList() {
         return 'student';
       case UserRole.TUTOR:
         return 'tutor';
-      case UserRole.ADMINISTRATOR:
+      case UserRole.LOCAL_ADMIN:
         return 'admin';
       default:
         return 'student'; // fallback

@@ -194,7 +194,7 @@ export function EmailLinkHandler() {
               case 'TUTOR':
                 userRoleString = 'tutor';
                 break;
-              case 'ADMINISTRATOR':
+              case 'LOCAL_ADMIN':
                 userRoleString = 'admin';
                 break;
             }

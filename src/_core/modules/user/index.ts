@@ -7,6 +7,9 @@ export * from './core/entities/User';
 export * from './core/use-cases/create-user/create-user.use-case';
 export * from './core/use-cases/create-user/create-user.input';
 export * from './core/use-cases/create-user/create-user.output';
+export * from './core/use-cases/create-super-admin/create-super-admin.use-case';
+export * from './core/use-cases/create-super-admin/create-super-admin.input';
+export * from './core/use-cases/create-super-admin/create-super-admin.output';
 // export * from './core/use-cases/authenticate-user/authenticate-user.use-case';
 
 // Re-export repository interfaces

@@ -39,6 +39,7 @@ export class FirebaseUserInstitutionRepository implements UserInstitutionReposit
       id: data.id,
       userId: data.userId,
       institutionId: data.institutionId,
+      userRole: data.userRole,
       createdAt,
       updatedAt
     });

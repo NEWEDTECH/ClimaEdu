@@ -46,12 +46,23 @@ This document describes the domain model of the ClimaEdu platform, organized by 
 
 ### UserRole Enum
 - **Values**:
-  - `SUPER_ADMIN`
-  - `SYSTEM_ADMIN`
-  - `LOCAL_ADMIN`
-  - `CONTENT_MANAGER`
-  - `TUTOR`
-  - `STUDENT`
+  - `SUPER_ADMIN` - Root user of the platform, global access
+  - `SYSTEM_ADMIN` - System-level administrator
+  - `LOCAL_ADMIN` - Institution-level administrator
+  - `CONTENT_MANAGER` - Institution-level content manager
+  - `TUTOR` - Course instructor
+  - `STUDENT` - Course participant
+
+### SUPER_ADMIN Special Rules
+- **Purpose**: Root user of the platform with global access
+- **Creation**: Only one SUPER_ADMIN can exist in the system
+- **Institution Association**: SUPER_ADMIN is not associated with any specific institution (global access)
+- **Authentication**: Uses Firebase Auth like other users
+- **Creation Method**: API endpoint `/api/setup/super-admin` with secret key
+- **Business Rules**:
+  - System prevents creation of multiple SUPER_ADMIN users
+  - Must be the first user created in the system
+  - Has access to all institutions and system-wide operations
 
 ## Content Bounded Context
 

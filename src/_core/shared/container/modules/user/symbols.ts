@@ -5,6 +5,7 @@ export const repositories = {
 
 export const useCases = {
   CreateUserUseCase: Symbol.for('CreateUserUseCase'),
+  CreateSuperAdminUseCase: Symbol.for('CreateSuperAdminUseCase'),
   AuthenticateUserUseCase: Symbol.for('AuthenticateUserUseCase'),
 };
 
