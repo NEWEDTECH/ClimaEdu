@@ -98,3 +98,4 @@ export * from './infrastructure/repositories/implementations/FirebaseLessonRepos
 export * from './infrastructure/repositories/implementations/FirebaseActivityRepository';
 export * from './infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
 export * from './infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
+export * from './infrastructure/repositories/implementations/FirebaseLessonProgressRepository';

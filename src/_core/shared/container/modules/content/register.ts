@@ -10,6 +10,7 @@ import type { LessonRepository } from '@/_core/modules/content/infrastructure/re
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import type { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
+import type { LessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/LessonProgressRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { FirebaseCourseRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseRepository';
 import { FirebaseCourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseTutorRepository';
@@ -18,6 +19,7 @@ import { FirebaseLessonRepository } from '@/_core/modules/content/infrastructure
 import { FirebaseActivityRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseActivityRepository';
 import { FirebaseQuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
 import { FirebaseQuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
+import { FirebaseLessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonProgressRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
@@ -34,6 +36,10 @@ import { SubmitQuestionnaireUseCase } from '@/_core/modules/content/core/use-cas
 import { RetryQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/retry-questionnaire/retry-questionnaire.use-case';
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 import { ListTutorCoursesUseCase } from '@/_core/modules/content/core/use-cases/list-tutor-courses/list-tutor-courses.use-case';
+import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
+import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
+import { GetLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/get-lesson-progress/get-lesson-progress.use-case';
+import { CompleteLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -50,6 +56,7 @@ export function registerContentModule(container: Container): void {
   container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
   container.bind<QuestionnaireRepository>(repositories.QuestionnaireRepository).to(FirebaseQuestionnaireRepository);
   container.bind<QuestionnaireSubmissionRepository>(repositories.QuestionnaireSubmissionRepository).to(FirebaseQuestionnaireSubmissionRepository);
+  container.bind<LessonProgressRepository>(repositories.LessonProgressRepository).to(FirebaseLessonProgressRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);
@@ -68,5 +75,9 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.RetryQuestionnaireUseCase).to(RetryQuestionnaireUseCase);
   container.bind(useCases.AssociateTutorToCourseUseCase).to(AssociateTutorToCourseUseCase);
   container.bind(useCases.ListTutorCoursesUseCase).to(ListTutorCoursesUseCase);
+  container.bind(useCases.StartLessonProgressUseCase).to(StartLessonProgressUseCase);
+  container.bind(useCases.UpdateContentProgressUseCase).to(UpdateContentProgressUseCase);
+  container.bind(useCases.GetLessonProgressUseCase).to(GetLessonProgressUseCase);
+  container.bind(useCases.CompleteLessonProgressUseCase).to(CompleteLessonProgressUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

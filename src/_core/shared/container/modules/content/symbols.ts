@@ -8,6 +8,7 @@ export const repositories = {
   ActivityRepository: Symbol.for('ActivityRepository'),
   QuestionnaireRepository: Symbol.for('QuestionnaireRepository'),
   QuestionnaireSubmissionRepository: Symbol.for('QuestionnaireSubmissionRepository'),
+  LessonProgressRepository: Symbol.for('LessonProgressRepository'),
 };
 
 export const useCases = {
@@ -28,6 +29,10 @@ export const useCases = {
   RetryQuestionnaireUseCase: Symbol.for('RetryQuestionnaireUseCase'),
   AssociateTutorToCourseUseCase: Symbol.for('AssociateTutorToCourseUseCase'),
   ListTutorCoursesUseCase: Symbol.for('ListTutorCoursesUseCase'),
+  StartLessonProgressUseCase: Symbol.for('StartLessonProgressUseCase'),
+  UpdateContentProgressUseCase: Symbol.for('UpdateContentProgressUseCase'),
+  GetLessonProgressUseCase: Symbol.for('GetLessonProgressUseCase'),
+  CompleteLessonProgressUseCase: Symbol.for('CompleteLessonProgressUseCase'),
 };
 
 // Export all symbols for this module
