@@ -5,7 +5,7 @@ import { container, Register } from '@/_core/shared/container';
 import { CreateUserUseCase, UserRole } from '@/_core/modules/user';
 import { CreateContentUseCase, AssociateTutorToCourseUseCase } from '@/_core/modules/content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
-import { AssociateAdministratorUseCase } from '@/_core/modules/institution';
+import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution';
 
 export function UserModule() {
   const [isReady, setIsReady] = useState(false);
@@ -62,21 +62,22 @@ export function InstitutionModule() {
     setIsReady(true);
   }, []);
   
-  const handleAssociateAdministrator = async () => {
+  const handleAssociateUserToInstitution = async () => {
     try {
-      const associateAdministratorUseCase = container.get<AssociateAdministratorUseCase>(
-        Register.institution.useCase.AssociateAdministratorUseCase
+      const associateUserToInstitutionUseCase = container.get<AssociateUserToInstitutionUseCase>(
+        Register.institution.useCase.AssociateUserToInstitutionUseCase
       );
 
-      const result = await associateAdministratorUseCase.execute({
+      const result = await associateUserToInstitutionUseCase.execute({
         userId: 'user-id', // Replace with an actual user ID
         institutionId: 'institution-id', // Replace with an actual institution ID
+        userRole: UserRole.LOCAL_ADMIN, // Specify the role for the association
       });
 
-      alert(`Administrator associated successfully! Association ID: ${result.userInstitution.id}`);
+      alert(`User associated to institution successfully! Association ID: ${result.userInstitution.id}`);
     } catch (error) {
-      console.error('Error associating administrator:', error);
-      alert(`Error associating administrator: ${(error as Error).message}`);
+      console.error('Error associating user to institution:', error);
+      alert(`Error associating user to institution: ${(error as Error).message}`);
     }
   };
   
@@ -85,16 +86,16 @@ export function InstitutionModule() {
       <h3 className="text-lg font-medium mb-2">Institution Module</h3>
       <ul className="list-disc list-inside text-sm space-y-1">
         <li>Entities: Institution, UserInstitution</li>
-        <li>Use Cases: AssociateAdministratorUseCase</li>
+        <li>Use Cases: AssociateUserToInstitutionUseCase</li>
         <li>Repositories: InstitutionRepository, UserInstitutionRepository</li>
         <li>Implementations: FirebaseInstitutionRepository, FirebaseUserInstitutionRepository</li>
       </ul>
       {isReady && (
         <button
-          onClick={handleAssociateAdministrator}
+          onClick={handleAssociateUserToInstitution}
           className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
         >
-          Test Administrator Association
+          Test User to Institution Association
         </button>
       )}
     </div>

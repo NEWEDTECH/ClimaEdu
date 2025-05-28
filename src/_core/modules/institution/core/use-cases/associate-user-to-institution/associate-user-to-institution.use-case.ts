@@ -6,6 +6,7 @@ import { Register } from '@/_core/shared/container';
 import { AssociateUserToInstitutionInput } from './associate-user-to-institution.input';
 import { AssociateUserToInstitutionOutput } from './associate-user-to-institution.output';
 import { UserInstitution } from '../../../core/entities/UserInstitution';
+import { UserRole } from '@/_core/modules/user/core/entities/User';
 
 /**
  * Use case for associating a user to an institution
@@ -31,6 +32,11 @@ export class AssociateUserToInstitutionUseCase {
    * @throws Error if validation fails
    */
   async execute(input: AssociateUserToInstitutionInput): Promise<AssociateUserToInstitutionOutput> {
+    // Validate that userRole is allowed for institution associations
+    if (input.userRole !== UserRole.LOCAL_ADMIN && input.userRole !== UserRole.CONTENT_MANAGER) {
+      throw new Error('Only LOCAL_ADMIN and CONTENT_MANAGER roles are allowed for institution associations');
+    }
+
     // Verify if the user exists
     const user = await this.userRepository.findById(input.userId);
     if (!user) {
@@ -50,6 +56,12 @@ export class AssociateUserToInstitutionUseCase {
     );
     
     if (existingAssociation) {
+      // Update the existing association's role if different
+      if (existingAssociation.userRole !== input.userRole) {
+        existingAssociation.updateUserRole(input.userRole);
+        const updatedAssociation = await this.userInstitutionRepository.save(existingAssociation);
+        return { userInstitution: updatedAssociation };
+      }
       return { userInstitution: existingAssociation };
     }
 
@@ -58,7 +70,8 @@ export class AssociateUserToInstitutionUseCase {
     const userInstitution = UserInstitution.create({
       id,
       userId: input.userId,
-      institutionId: input.institutionId
+      institutionId: input.institutionId,
+      userRole: input.userRole
     });
 
     // Save the association

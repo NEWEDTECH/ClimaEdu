@@ -1,3 +1,5 @@
+import { UserRole } from '../../../user/core/entities/User';
+
 /**
  * UserInstitution entity representing an association between a user and an institution
  * Following Clean Architecture principles, this entity is pure and has no dependencies on infrastructure
@@ -7,6 +9,7 @@ export class UserInstitution {
     readonly id: string,
     readonly userId: string,
     readonly institutionId: string,
+    public userRole: UserRole,
     readonly createdAt: Date,
     public updatedAt: Date
   ) {}
@@ -21,6 +24,7 @@ export class UserInstitution {
     id: string;
     userId: string;
     institutionId: string;
+    userRole: UserRole;
     createdAt?: Date;
     updatedAt?: Date;
   }): UserInstitution {
@@ -32,15 +36,33 @@ export class UserInstitution {
       throw new Error('Institution ID cannot be empty');
     }
 
+    if (params.userRole !== UserRole.LOCAL_ADMIN && params.userRole !== UserRole.CONTENT_MANAGER) {
+      throw new Error('UserRole must be LOCAL_ADMIN or CONTENT_MANAGER for UserInstitution association');
+    }
+
     const now = new Date();
     
     return new UserInstitution(
       params.id,
       params.userId,
       params.institutionId,
+      params.userRole,
       params.createdAt ?? now,
       params.updatedAt ?? now
     );
+  }
+
+  /**
+   * Updates the user role for this institution association
+   * @param newUserRole The new user role (must be LOCAL_ADMIN or CONTENT_MANAGER)
+   */
+  public updateUserRole(newUserRole: UserRole): void {
+    if (newUserRole !== UserRole.LOCAL_ADMIN && newUserRole !== UserRole.CONTENT_MANAGER) {
+      throw new Error('UserRole must be LOCAL_ADMIN or CONTENT_MANAGER for UserInstitution association');
+    }
+    
+    this.userRole = newUserRole;
+    this.updatedAt = new Date();
   }
 
   /**

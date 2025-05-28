@@ -46,9 +46,12 @@ This document describes the domain model of the ClimaEdu platform, organized by 
 
 ### UserRole Enum
 - **Values**:
-  - `STUDENT`
+  - `SUPER_ADMIN`
+  - `SYSTEM_ADMIN`
+  - `LOCAL_ADMIN`
+  - `CONTENT_MANAGER`
   - `TUTOR`
-  - `ADMINISTRATOR`
+  - `STUDENT`
 
 ## Content Bounded Context
 
@@ -245,6 +248,23 @@ This document describes the domain model of the ClimaEdu platform, organized by 
   - `updateLogoUrl(newLogoUrl): InstitutionSettings`
   - `updatePrimaryColor(newColor): InstitutionSettings`
   - `updateSecondaryColor(newColor): InstitutionSettings`
+
+### UserInstitution Entity
+- **Purpose**: Represents an association between a user and an institution with a specific role
+- **Properties**:
+  - `id: string` (readonly)
+  - `userId: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `userRole: UserRole` (must be LOCAL_ADMIN or CONTENT_MANAGER)
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): UserInstitution`
+  - `updateUserRole(newUserRole): void`
+  - `touch(): void`
+- **Business Rules**:
+  - Only LOCAL_ADMIN and CONTENT_MANAGER roles are allowed for institution associations
+  - Validation is enforced in both create and updateUserRole methods
 
 ## Certificate Bounded Context
 

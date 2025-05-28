@@ -5,9 +5,12 @@ import { Profile } from './Profile';
  * Enum representing the types of users in the system
  */
 export enum UserRole {
-  STUDENT = 'STUDENT',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  LOCAL_ADMIN = 'LOCAL_ADMIN',
+  CONTENT_MANAGER = 'CONTENT_MANAGER',
   TUTOR = 'TUTOR',
-  ADMINISTRATOR = 'ADMINISTRATOR',
+  STUDENT = 'STUDENT',
 }
 
 /**

@@ -23,7 +23,7 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Email inválido' }),
   //password: z.string().min(6, { message: 'Senha deve ter pelo menos 6 caracteres' }),
   //confirmPassword: z.string(),
-  role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.ADMINISTRATOR])
+  role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.LOCAL_ADMIN, UserRole.CONTENT_MANAGER])
 })//.refine((data) => data.password === data.confirmPassword, {
   //message: "As senhas não coincidem",
   //path: ["confirmPassword"],
@@ -192,9 +192,10 @@ export default function CreateUserPage() {
                     {...register('role')}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
-                    <option value={UserRole.STUDENT}>Estudante</option>
+                    <option value={UserRole.LOCAL_ADMIN}>Administrador</option>
+                    <option value={UserRole.CONTENT_MANAGER}>Gestor de Conteúdo</option>
                     <option value={UserRole.TUTOR}>Tutor</option>
-                    <option value={UserRole.ADMINISTRATOR}>Administrador</option>
+                    <option value={UserRole.STUDENT}>Estudante</option>
                   </select>
                 </div>
               </CardContent>

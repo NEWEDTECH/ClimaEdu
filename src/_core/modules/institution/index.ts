@@ -14,9 +14,7 @@ export type { UpdateInstitutionSettingsOutput } from './core/use-cases/update-in
 export { AssociateUserToInstitutionUseCase } from './core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case';
 export type { AssociateUserToInstitutionInput } from './core/use-cases/associate-user-to-institution/associate-user-to-institution.input';
 export type { AssociateUserToInstitutionOutput } from './core/use-cases/associate-user-to-institution/associate-user-to-institution.output';
-export { AssociateAdministratorUseCase } from './core/use-cases/associate-administrator/associate-administrator.use-case';
-export type { AssociateAdministratorInput } from './core/use-cases/associate-administrator/associate-administrator.input';
-export type { AssociateAdministratorOutput } from './core/use-cases/associate-administrator/associate-administrator.output';
+
 export { ListUserInstitutionsUseCase } from './core/use-cases/list-user-institutions/list-user-institutions.use-case';
 export type { ListUserInstitutionsInput } from './core/use-cases/list-user-institutions/list-user-institutions.input';
 export type { ListUserInstitutionsOutput } from './core/use-cases/list-user-institutions/list-user-institutions.output';

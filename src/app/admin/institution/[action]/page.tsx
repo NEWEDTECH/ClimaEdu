@@ -13,7 +13,7 @@ import {
   Institution,
   UpdateInstitutionSettingsUseCase,
   UpdateInstitutionSettingsInput,
-  AssociateAdministratorUseCase,
+  AssociateUserToInstitutionUseCase,
   UserInstitution
 } from '@/_core/modules/institution';
 import { User, UserRole } from '@/_core/modules/user/core/entities/User';
@@ -145,7 +145,7 @@ export default function InstitutionPage() {
           Register.user.repository.UserRepository
         );
         
-        const adminUsers = await userRepository.listByType(UserRole.ADMINISTRATOR);
+        const adminUsers = await userRepository.listByType(UserRole.LOCAL_ADMIN);
         setAdministrators(adminUsers);
         setFilteredAdministrators(adminUsers);
       } catch (err) {
@@ -212,7 +212,7 @@ export default function InstitutionPage() {
           // For each association, fetch the user details if they are an administrator
           const adminPromises = userInstitutions.map(async (userInst: UserInstitution) => {
             const user = await userRepository.findById(userInst.userId);
-            if (user && user.role === UserRole.ADMINISTRATOR) {
+            if (user && user.role === UserRole.LOCAL_ADMIN) {
               return { id: user.id, email: user.email.value };
             }
             return null;
@@ -335,14 +335,15 @@ export default function InstitutionPage() {
         
         // Add administrator if needed
         if (adminToAdd) {
-          const associateAdministratorUseCase = container.get<AssociateAdministratorUseCase>(
-            Register.institution.useCase.AssociateAdministratorUseCase
+          const associateUserToInstitutionUseCase = container.get<AssociateUserToInstitutionUseCase>(
+            Register.institution.useCase.AssociateUserToInstitutionUseCase
           );
           
           try {
-            await associateAdministratorUseCase.execute({
+            await associateUserToInstitutionUseCase.execute({
               userId: adminToAdd.id,
-              institutionId: newInstitutionId
+              institutionId: newInstitutionId,
+              userRole: UserRole.LOCAL_ADMIN
             });
             console.log(`Added administrator ${adminToAdd.email} to institution`);
           } catch (addErr) {
@@ -352,14 +353,15 @@ export default function InstitutionPage() {
       } else if (selectedAdministrators.length > 0) {
         // For new institutions, add the first selected administrator
         const adminToAdd = selectedAdministrators[0];
-        const associateAdministratorUseCase = container.get<AssociateAdministratorUseCase>(
-          Register.institution.useCase.AssociateAdministratorUseCase
+        const associateUserToInstitutionUseCase = container.get<AssociateUserToInstitutionUseCase>(
+          Register.institution.useCase.AssociateUserToInstitutionUseCase
         );
         
         try {
-          await associateAdministratorUseCase.execute({
+          await associateUserToInstitutionUseCase.execute({
             userId: adminToAdd.id,
-            institutionId: newInstitutionId
+            institutionId: newInstitutionId,
+            userRole: UserRole.LOCAL_ADMIN
           });
         } catch (associateErr) {
           console.error(`Error associating administrator:`, associateErr);
