@@ -6,6 +6,7 @@ import type { UserRepository } from '@/_core/modules/user/infrastructure/reposit
 import { FirebaseUserRepository } from '@/_core/modules/user/infrastructure/repositories/implementations/FirebaseUserRepository';
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case';
 import { CreateSuperAdminUseCase } from '@/_core/modules/user/core/use-cases/create-super-admin/create-super-admin.use-case';
+import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/get-user-associations/get-user-associations.use-case';
 // import { AuthenticateUserUseCase } from '@/_core/modules/user/core/use-cases/authenticate-user/authenticate-user.use-case';
 
 /**
@@ -19,5 +20,6 @@ export function registerUserModule(container: Container): void {
   // Register use cases
   container.bind(useCases.CreateUserUseCase).to(CreateUserUseCase);
   container.bind(useCases.CreateSuperAdminUseCase).to(CreateSuperAdminUseCase);
+  container.bind(useCases.GetUserAssociationsUseCase).to(GetUserAssociationsUseCase);
   // container.bind(useCases.AuthenticateUserUseCase).to(AuthenticateUserUseCase);
 }

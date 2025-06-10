@@ -55,6 +55,16 @@ Institution
 
 ---
 
+## Use Cases
+
+| Use Case                 | Description |
+|:-------------------------|:------------|
+| **CreateUser**           | Creates a new user in Firebase Auth and Firestore. |
+| **CreateSuperAdmin**     | Special use case to create the first super-admin user. |
+| **GetUserAssociations**  | Retrieves a consolidated list of all contexts (institutions, courses) a user is associated with, along with their specific role in each context (e.g., student in Course A, tutor in Course B, admin of Institution X). This is useful for building dashboards and determining a user's complete set of permissions and relationships across the platform. |
+
+---
+
 ## Implementation Details
 
 - Users are stored in two systems:
