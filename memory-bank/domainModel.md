@@ -258,6 +258,24 @@ This document describes the domain model of the ClimaEdu platform, organized by 
   - `IN_PROGRESS`
   - `COMPLETED`
 
+### Trail Entity
+- **Purpose**: Represents a learning trail composed of multiple courses
+- **Properties**:
+  - `id: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `title: string`
+  - `description: string`
+  - `courseIds: string[]`
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): Trail`
+  - `updateTitle(newTitle): void`
+  - `updateDescription(newDescription): void`
+  - `addCourse(courseId): void`
+  - `removeCourse(courseId): void`
+  - `touch(): void`
+
 ### ContentProgressStatus Enum
 - **Values**:
   - `NOT_STARTED`
@@ -265,6 +283,24 @@ This document describes the domain model of the ClimaEdu platform, organized by 
   - `COMPLETED`
 
 ## Enrollment Bounded Context
+
+### Class Entity
+- **Purpose**: Represents a group of students enrolled in a course or trail
+- **Properties**:
+  - `id: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `name: string`
+  - `courseId: string | null`
+  - `trailId: string | null`
+  - `enrollmentIds: string[]`
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): Class`
+  - `updateName(newName): void`
+  - `addEnrollment(enrollmentId): void`
+  - `removeEnrollment(enrollmentId): void`
+  - `touch(): void`
 
 ### Enrollment Entity
 - **Purpose**: Represents a user's enrollment in a course

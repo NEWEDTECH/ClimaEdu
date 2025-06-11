@@ -9,9 +9,17 @@ export const repositories = {
   QuestionnaireRepository: Symbol.for('QuestionnaireRepository'),
   QuestionnaireSubmissionRepository: Symbol.for('QuestionnaireSubmissionRepository'),
   LessonProgressRepository: Symbol.for('LessonProgressRepository'),
+  TrailRepository: Symbol.for('TrailRepository'),
 };
 
 export const useCases = {
+  CreateTrailUseCase: Symbol.for('CreateTrailUseCase'),
+  UpdateTrailUseCase: Symbol.for('UpdateTrailUseCase'),
+  GetTrailUseCase: Symbol.for('GetTrailUseCase'),
+  ListTrailsUseCase: Symbol.for('ListTrailsUseCase'),
+  DeleteTrailUseCase: Symbol.for('DeleteTrailUseCase'),
+  AddCourseToTrailUseCase: Symbol.for('AddCourseToTrailUseCase'),
+  RemoveCourseFromTrailUseCase: Symbol.for('RemoveCourseFromTrailUseCase'),
   CreateContentUseCase: Symbol.for('CreateContentUseCase'),
   ListContentsUseCase: Symbol.for('ListContentsUseCase'),
   CreateCourseUseCase: Symbol.for('CreateCourseUseCase'),

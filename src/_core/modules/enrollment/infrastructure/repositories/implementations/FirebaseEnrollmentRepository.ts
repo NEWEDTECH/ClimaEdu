@@ -43,6 +43,7 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
       id: data.id,
       userId: data.userId,
       courseId: data.courseId,
+      institutionId: data.institutionId,
       status: data.status as EnrollmentStatus,
       enrolledAt,
       completedAt

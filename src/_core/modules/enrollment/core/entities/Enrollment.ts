@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { EnrollmentStatus } from './EnrollmentStatus';
 
 /**
@@ -9,6 +10,7 @@ export class Enrollment {
     readonly id: string,
     readonly userId: string,
     readonly courseId: string,
+    readonly institutionId: string,
     public status: EnrollmentStatus,
     readonly enrolledAt: Date,
     public completedAt?: Date
@@ -21,9 +23,10 @@ export class Enrollment {
    * @throws Error if validation fails
    */
   public static create(params: {
-    id: string;
+    id?: string; // Optional ID, will be generated if not provided
     userId: string;
     courseId: string;
+    institutionId: string;
     status?: EnrollmentStatus;
     enrolledAt?: Date;
     completedAt?: Date;
@@ -34,6 +37,10 @@ export class Enrollment {
 
     if (!params.courseId || params.courseId.trim() === '') {
       throw new Error('Course ID cannot be empty');
+    }
+
+    if (!params.institutionId || params.institutionId.trim() === '') {
+      throw new Error('Institution ID cannot be empty');
     }
 
     // Default status is ENROLLED if not provided
@@ -49,9 +56,10 @@ export class Enrollment {
     const enrolledAt = params.enrolledAt ?? new Date();
 
     return new Enrollment(
-      params.id,
+      randomUUID(),
       params.userId,
       params.courseId,
+      params.institutionId,
       status,
       enrolledAt,
       completedAt

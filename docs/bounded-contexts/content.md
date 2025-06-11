@@ -14,15 +14,16 @@ Hierarchy of data:
 
 ```plaintext
 Institution
-  └── Course
-       ├── CourseTutor
-       └── Module
-            └── Lesson
-                 ├── Content
-                 ├── Activity (optional)
-                 └── Questionnaire (optional)
-                      └── QuestionnaireSubmission
-                           └── QuestionSubmission
+  └── Trail
+       └── Course
+            ├── CourseTutor
+            └── Module
+                 └── Lesson
+                      ├── Content
+                      ├── Activity (optional)
+                      └── Questionnaire (optional)
+                           └── QuestionnaireSubmission
+                                └── QuestionSubmission
 ```
 
 ---
@@ -41,6 +42,7 @@ Institution
 | **Question**             | A single multiple-choice question inside a Questionnaire. |
 | **QuestionnaireSubmission** | A student's attempt at completing a Questionnaire. |
 | **QuestionSubmission**   | A student's individual answer to a Question within a QuestionnaireSubmission. |
+| **Trail**                | Represents a learning trail composed of multiple courses. |
 | **LessonProgress**       | Tracks a student's progress through a lesson (aggregate root). |
 | **ContentProgress**      | Tracks progress of individual content within a lesson (value object). |
 
@@ -69,6 +71,7 @@ Institution
 
 ## Business Rules
 
+- A **Trail** is a collection of **Courses**.
 - A **Course** must contain at least one **Module** to be published.
 - A **Module** must contain at least one **Lesson**.
 - A **Lesson** may have multiple **Content** items and may optionally have an **Activity** and/or **Questionnaire**.
@@ -88,6 +91,77 @@ Institution
 ---
 
 ## Use Cases
+
+### CreateTrailUseCase
+
+**Purpose**: Creates a new trail.
+
+**Inputs**:
+- `institutionId`: The ID of the institution that owns the trail
+- `title`: The title of the trail
+- `description`: A detailed description of the trail
+- `courseIds`: An array of course IDs to be included in the trail
+
+**Process**:
+1. Creates a new Trail entity with the provided data
+2. Returns the created Trail
+
+**Business Rules**:
+- Trail title cannot be empty
+- Trail description cannot be empty
+- Institution ID must be valid
+
+### UpdateTrailUseCase
+
+**Purpose**: Updates an existing trail's information.
+
+**Inputs**:
+- `id`: The ID of the trail to update
+- `title` (optional): The new title for the trail
+- `description` (optional): The new description for the trail
+
+**Process**:
+1. Finds the trail by ID
+2. Updates only the fields that are provided in the input
+3. Returns the updated Trail
+
+**Business Rules**:
+- Trail must exist
+- If title is provided, it cannot be empty
+- If description is provided, it cannot be empty
+
+### AddCourseToTrailUseCase
+
+**Purpose**: Adds a course to an existing trail.
+
+**Inputs**:
+- `trailId`: The ID of the trail to add the course to
+- `courseId`: The ID of the course to add
+
+**Process**:
+1. Finds the trail by ID
+2. Adds the course to the trail
+3. Returns the updated Trail
+
+**Business Rules**:
+- Trail must exist
+- Course must exist
+
+### RemoveCourseFromTrailUseCase
+
+**Purpose**: Removes a course from an existing trail.
+
+**Inputs**:
+- `trailId`: The ID of the trail to remove the course from
+- `courseId`: The ID of the course to remove
+
+**Process**:
+1. Finds the trail by ID
+2. Removes the course from the trail
+3. Returns the updated Trail
+
+**Business Rules**:
+- Trail must exist
 
 ### CreateCourseUseCase
 
