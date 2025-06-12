@@ -190,6 +190,34 @@ This document describes the domain model of the ClimaEdu platform, organized by 
 - **Purpose**: Represents a student's submission for a questionnaire
 - **Properties**:
   - `id: string` (readonly)
+
+## Chat Bounded Context
+
+### ChatRoom Entity
+- **Purpose**: Represents a chat room for a specific class and course
+- **Properties**:
+  - `id: string` (readonly)
+  - `classId: string` (readonly)
+  - `courseId: string` (readonly)
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+
+### ChatMessage Entity
+- **Purpose**: Represents a single message sent in a chat room
+- **Properties**:
+  - `id: string` (readonly)
+  - `chatRoomId: string` (readonly)
+  - `userId: string` (readonly)
+  - `text: string`
+  - `sentAt: Date` (readonly)
+
+### ChatParticipant Entity
+- **Purpose**: Represents a user's participation in a chat room
+- **Properties**:
+  - `id: string` (readonly)
+  - `chatRoomId: string` (readonly)
+  - `userId: string` (readonly)
+  - `joinedAt: Date` (readonly)
   - `questionnaireId: string` (readonly)
   - `userId: string` (readonly)
   - `institutionId: string` (readonly)

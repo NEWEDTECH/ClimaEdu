@@ -7,9 +7,10 @@ import { ContentSymbols } from './modules/content/symbols';
 import { AuthSymbols } from './modules/auth/symbols';
 import { EnrollmentSymbols } from './modules/enrollment/symbols';
 import { BadgeSymbols } from './modules/badge/symbols';
+import { ChatSymbols } from './modules/chat/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -36,5 +37,9 @@ export const Register = {
   badge: {
     repository: BadgeSymbols.repositories,
     useCase: BadgeSymbols.useCases,
+  },
+  chat: {
+    repository: ChatSymbols.repositories,
+    useCase: ChatSymbols.useCases,
   },
 };
