@@ -42,6 +42,7 @@ const adminItems: DropdownItem[] = [
   { label: 'Podcast', href: '/admin/podcast' },
   { label: 'Alunos', href: '/admin/student' },
   { label: 'Professores', href: '/admin/tutor' },
+  { label: 'Trilhas', href: '/admin/trails' },
   { label: 'Cursos', href: '/admin/courses' },
   { label: 'Relatórios', href: '/admin/reports' },
   { label: 'Criar Usuário', href: '/admin/create-user' },
