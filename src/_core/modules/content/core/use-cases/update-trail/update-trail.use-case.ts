@@ -27,6 +27,10 @@ export class UpdateTrailUseCase {
       trail.updateDescription(input.description);
     }
 
+    if (input.courseIds) {
+      trail.updateCourses(input.courseIds);
+    }
+
     await this.trailRepository.save(trail);
 
     return new UpdateTrailOutput(trail);

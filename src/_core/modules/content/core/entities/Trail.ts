@@ -88,6 +88,11 @@ export class Trail {
     this.touch();
   }
 
+  public updateCourses(courseIds: string[]): void {
+    this._courseIds = [...courseIds];
+    this.touch();
+  }
+
   private touch(): void {
     this._updatedAt = new Date();
   }
