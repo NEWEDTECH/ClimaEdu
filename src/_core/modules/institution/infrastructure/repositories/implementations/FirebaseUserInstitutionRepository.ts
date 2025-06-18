@@ -68,10 +68,11 @@ export class FirebaseUserInstitutionRepository implements UserInstitutionReposit
    * @returns List of UserInstitution
    */
   async findByUserId(userId: string): Promise<UserInstitution[]> {
-    const q = query(
-      collection(firestore, this.collectionName),
-      where('userId', '==', userId)
-    );
+
+    const contentsRef = collection(firestore, this.collectionName);
+    
+    const q = query(contentsRef, where('userId', '==', userId));
+
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map(doc => {

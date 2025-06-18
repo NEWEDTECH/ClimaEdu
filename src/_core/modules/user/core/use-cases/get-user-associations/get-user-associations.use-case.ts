@@ -36,7 +36,7 @@ export class GetUserAssociationsUseCase {
     private readonly courseRepository: CourseRepository,
     @inject(ContentSymbols.repositories.CourseTutorRepository)
     private readonly courseTutorRepository: CourseTutorRepository
-  ) {}
+  ) { }
 
   async execute({
     userId,
@@ -55,11 +55,27 @@ export class GetUserAssociationsUseCase {
     const enrollmentAssociations = await this.mapEnrollments(enrollments);
     const tutorAssociations = await this.mapTutorings(courseTutorings);
 
-    return [
+    const data = [
       ...institutionAssociations,
       ...enrollmentAssociations,
       ...tutorAssociations,
     ];
+
+    const institutions = await Promise.all(
+      data.map(async (values) => {
+        if (values.institutionId) {
+          const institution = await this.institutionRepository.findById(values.institutionId)
+          return institution
+        }
+
+        return null
+      })
+    )
+
+    const output = institutions.filter(institution => !!institution)
+
+    return output
+
   }
 
   private async mapInstitutions(
@@ -74,6 +90,7 @@ export class GetUserAssociationsUseCase {
         contextName: institution?.name || "Unknown Institution",
         role: assoc.userRole,
         contextType: "institution",
+        institutionId: assoc.institutionId,
       } as UserAssociation;
     });
     return Promise.all(promises);
@@ -89,6 +106,7 @@ export class GetUserAssociationsUseCase {
         contextName: course?.title || "Unknown Course",
         role: UserRole.STUDENT,
         contextType: "course",
+        institutionId: assoc.institutionId,
       } as UserAssociation;
     });
     return Promise.all(promises);
@@ -104,6 +122,7 @@ export class GetUserAssociationsUseCase {
         contextName: course?.title || "Unknown Course",
         role: UserRole.TUTOR,
         contextType: "course",
+        institutionId: undefined,
       } as UserAssociation;
     });
     return Promise.all(promises);
