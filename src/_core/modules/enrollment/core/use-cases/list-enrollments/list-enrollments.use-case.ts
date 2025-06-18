@@ -32,10 +32,13 @@ export class ListEnrollmentsUseCase {
     else if (input.courseId) {
       enrollments = await this.enrollmentRepository.listByCourse(input.courseId);
     }
-    // If neither userId nor courseId is provided, we need to implement a method to list all enrollments
-    // This is not currently supported by the repository interface
+    // If institutionId is provided, filter by institution
+    else if (input.institutionId) {
+      enrollments = await this.enrollmentRepository.listByInstitution(input.institutionId);
+    }
+    // If no filter is provided, throw an error
     else {
-      throw new Error('At least one filter (userId or courseId) must be provided');
+      throw new Error('At least one filter (userId, courseId, or institutionId) must be provided');
     }
 
     // If status is provided, filter the results by status

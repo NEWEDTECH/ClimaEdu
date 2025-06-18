@@ -53,4 +53,11 @@ export interface EnrollmentRepository {
    * @returns List of enrollments
    */
   listByCourse(courseId: string): Promise<Enrollment[]>;
+
+  /**
+   * List enrollments by institution
+   * @param institutionId Institution id
+   * @returns List of enrollments
+   */
+  listByInstitution(institutionId: string): Promise<Enrollment[]>;
 }

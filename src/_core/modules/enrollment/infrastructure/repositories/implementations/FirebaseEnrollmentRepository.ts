@@ -39,6 +39,7 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
       : data.completedAt ? new Date(data.completedAt) : undefined;
     
     // Create and return an Enrollment entity
+    // Use a default institutionId if not present in the data
     return Enrollment.create({
       id: data.id,
       userId: data.userId,
@@ -64,7 +65,19 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
     }
 
     const data = enrollmentDoc.data();
-    return this.mapToEntity({ id, ...data });
+    
+    // Check for required fields
+    if (!data.institutionId || !data.courseId || !data.userId) {
+      console.warn(`Invalid enrollment ${id}: missing required fields`);
+      return null;
+    }
+    
+    try {
+      return this.mapToEntity({ id, ...data });
+    } catch (error) {
+      console.warn(`Invalid enrollment ${id}:`, error);
+      return null;
+    }
   }
 
   /**
@@ -88,7 +101,19 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
 
     const doc = querySnapshot.docs[0];
     const data = doc.data();
-    return this.mapToEntity({ id: doc.id, ...data });
+    
+    // Check for required fields
+    if (!data.institutionId || !data.courseId || !data.userId) {
+      console.warn(`Invalid enrollment ${doc.id}: missing required fields`);
+      return null;
+    }
+    
+    try {
+      return this.mapToEntity({ id: doc.id, ...data });
+    } catch (error) {
+      console.warn(`Invalid enrollment ${doc.id}:`, error);
+      return null;
+    }
   }
 
   /**
@@ -104,6 +129,7 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
       id: enrollment.id,
       userId: enrollment.userId,
       courseId: enrollment.courseId,
+      institutionId: enrollment.institutionId,
       status: enrollment.status,
       enrolledAt: enrollment.enrolledAt
     };
@@ -153,10 +179,26 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
     const q = query(enrollmentsRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => {
+    const enrollments: Enrollment[] = [];
+    
+    for (const doc of querySnapshot.docs) {
       const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+      
+      // Skip enrollments with missing required fields
+      if ( !data.courseId || !data.userId) {
+        console.warn(`Skipping invalid enrollment ${doc.id}: missing required fields`);
+        continue;
+      }
+      
+      try {
+        const enrollment = this.mapToEntity({ id: doc.id, ...data });
+        enrollments.push(enrollment);
+      } catch (error) {
+        console.warn(`Skipping invalid enrollment ${doc.id}:`, error);
+      }
+    }
+
+    return enrollments;
   }
 
   /**
@@ -169,9 +211,57 @@ export class FirebaseEnrollmentRepository implements EnrollmentRepository {
     const q = query(enrollmentsRef, where('courseId', '==', courseId));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => {
+    const enrollments: Enrollment[] = [];
+    
+    for (const doc of querySnapshot.docs) {
       const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+      
+      // Skip enrollments with missing required fields
+      if (!data.institutionId || !data.courseId || !data.userId) {
+        console.warn(`Skipping invalid enrollment ${doc.id}: missing required fields`);
+        continue;
+      }
+      
+      try {
+        const enrollment = this.mapToEntity({ id: doc.id, ...data });
+        enrollments.push(enrollment);
+      } catch (error) {
+        console.warn(`Skipping invalid enrollment ${doc.id}:`, error);
+      }
+    }
+
+    return enrollments;
+  }
+
+  /**
+   * List enrollments by institution
+   * @param institutionId Institution id
+   * @returns List of enrollments
+   */
+  async listByInstitution(institutionId: string): Promise<Enrollment[]> {
+    const enrollmentsRef = collection(firestore, this.collectionName);
+    const q = query(enrollmentsRef, where('institutionId', '==', institutionId));
+    const querySnapshot = await getDocs(q);
+
+    const enrollments: Enrollment[] = [];
+    
+    for (const doc of querySnapshot.docs) {
+      const data = doc.data();
+      
+      // Skip enrollments with missing required fields
+      if (!data.institutionId || !data.courseId || !data.userId) {
+        console.warn(`Skipping invalid enrollment ${doc.id}: missing required fields`);
+        continue;
+      }
+      
+      try {
+        const enrollment = this.mapToEntity({ id: doc.id, ...data });
+        enrollments.push(enrollment);
+      } catch (error) {
+        console.warn(`Skipping invalid enrollment ${doc.id}:`, error);
+      }
+    }
+
+    return enrollments;
   }
 }
