@@ -69,7 +69,8 @@ export function Navbar() {
       <div className="flex items-center">
         <Link href="/" className="text-xl font-bold">
           <img
-            //src={infoInstitutions.institutions[0]?.urlImage}
+          className='mt-10 h-[100px] w-[400px] '
+            src={infoInstitutions.institutions.urlImage}
             alt="Logo da instituição"
           />
         </Link>
