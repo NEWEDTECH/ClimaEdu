@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+//import { useRouter } from 'next/navigation';
 
 interface AuthLink {
   email: string;
@@ -20,6 +21,7 @@ interface EmulatorResponse {
 }
 
 export function EmulatorAuthLinks() {
+  //const router = useRouter();
   const [authLinks, setAuthLinks] = useState<AuthLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,12 +112,12 @@ export function EmulatorAuthLinks() {
     const oobCode = url.searchParams.get('oobCode');
     const apiKey = url.searchParams.get('apiKey');
     
-    // Create a new URL to the auth/confirm page with the parameters
     const confirmUrl = `${window.location.origin}/auth/confirm?mode=${mode}&oobCode=${oobCode}&apiKey=${apiKey}&email=${encodeURIComponent(link.email)}`;
     console.log(`Redirecting to: ${confirmUrl}`);
     
     // Navigate to the confirm page
     window.location.href = confirmUrl;
+    //router.push('/')
   };
 
   return (

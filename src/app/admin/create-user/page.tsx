@@ -128,7 +128,7 @@ export default function CreateUserPage() {
 
         await associateUserUseCase.execute({
           userId: createUserResult.user.id,
-          institutionId: infoUser.currentIdInstitution,
+          institutionId:'ins_hOc5LsHn4q',
           userRole: data.role
         })
       }

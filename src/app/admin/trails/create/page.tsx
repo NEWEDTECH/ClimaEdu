@@ -163,7 +163,7 @@ export default function CreateTrailPage() {
         courseIds
       )
       
-      const output = await createTrailUseCase.execute(input)
+      await createTrailUseCase.execute(input)
       
       // Redirect to trails list
       router.push('/admin/trails')

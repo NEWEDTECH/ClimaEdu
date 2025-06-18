@@ -7,12 +7,10 @@ import { Register } from '@/_core/shared/container/symbols';
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
-import { useProfile } from '@/context/zustand/useProfile';
 import { User } from '../../_core/modules/user/core/entities/User';
 
 export function EmailLinkHandler() {
   const router = useRouter();
-  const { setRole, setId } = useProfile();
   const [userId, setUserId] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [status, setStatus] = useState<'checking' | 'success' | 'error'>('checking');
@@ -177,43 +175,15 @@ export function EmailLinkHandler() {
               // Update the userId state with the correct ID from the database
               setUserId(user.id);
 
-              setId(user.id);
             }
           }
 
-          if (user) {
-            console.log('User found in database with role:', user.role);
-            setId(user.id);
-            
-            let userRoleString: 'student' | 'tutor' | 'admin' | null = null;
-            
-            switch (user.role) {
-              case 'STUDENT':
-                userRoleString = 'student';
-                break;
-              case 'TUTOR':
-                userRoleString = 'tutor';
-                break;
-              case 'LOCAL_ADMIN':
-                userRoleString = 'admin';
-                break;
-            }
-            
-            if (userRoleString) {
-              setRole(userRoleString);
-            }
-
-          } else {
-            console.log('User not found in database, defaulting to student role');
-            setRole('admin');
-          }
         } catch (error) {
           console.error('Error fetching user data:', error);
           console.log('Error fetching user role, defaulting to student');
         }
       } else {
         console.log('User not authenticated or no user ID');
-        setRole(null);
       }
       
       // Redirect to the home page
@@ -222,8 +192,7 @@ export function EmailLinkHandler() {
       console.error('Error checking authentication before redirect:', error);
       
       // If there's an error, we still need to redirect but won't set a role
-      setRole(null);
-      
+    
       // Redirect to the home page
       router.push('/');
     }

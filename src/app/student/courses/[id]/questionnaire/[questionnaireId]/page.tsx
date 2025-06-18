@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ProtectedContent } from '@/components/auth';
+//import { ProtectedContent } from '@/components/auth';
 import { DashboardLayout } from '@/components/layout';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
@@ -23,7 +23,7 @@ type QuestionAnswer = {
 export default function QuestionnairePage() {
   const params = useParams();
   const router = useRouter();
-  const { id: userId } = useProfile();
+  const { infoUser } = useProfile();
   
   const courseId = typeof params?.id === 'string' ? params.id : '';
   const questionnaireId = typeof params?.questionnaireId === 'string' ? params.questionnaireId : '';
@@ -81,14 +81,14 @@ export default function QuestionnairePage() {
         setAnswers(initialAnswers);
 
         // Get attempt count if user is logged in
-        if (userId) {
+        if (infoUser.id) {
           const submissionRepository = container.get<QuestionnaireSubmissionRepository>(
             Register.content.repository.QuestionnaireSubmissionRepository
           );
 
           const attempts = await submissionRepository.countAttempts(
             questionnaireId,
-            userId
+            infoUser.id
           );
           setAttemptCount(attempts);
         }
@@ -102,7 +102,7 @@ export default function QuestionnairePage() {
     };
 
     fetchData();
-  }, [questionnaireId, courseId, userId]);
+  }, [questionnaireId, courseId, infoUser.id]);
 
   // Handle answer selection
   const handleAnswerSelect = (questionId: string, optionIndex: number) => {
@@ -122,7 +122,7 @@ export default function QuestionnairePage() {
 
   // Handle questionnaire submission
   const handleSubmit = async () => {
-    if (!questionnaire || !userId || !course) {
+    if (!questionnaire || !infoUser.id || !course) {
       setError('Dados de usuário ou curso não encontrados');
       return;
     }
@@ -140,17 +140,15 @@ export default function QuestionnairePage() {
         Register.content.useCase.SubmitQuestionnaireUseCase
       );
 
-      const result = await submitQuestionnaireUseCase.execute({
+      await submitQuestionnaireUseCase.execute({
         questionnaireId: questionnaire.id,
-        userId: userId,
+        userId: infoUser.id,
         institutionId: course.institutionId,
         answers: answers.map(answer => ({
           questionId: answer.questionId,
           selectedOptionIndex: answer.selectedOptionIndex!
         }))
       });
-
-      console.log(result)
 
       router.push(`/student/courses/${courseId}`);
 
@@ -169,19 +167,19 @@ export default function QuestionnairePage() {
 
   if (isLoading) {
     return (
-      <ProtectedContent>
+
         <DashboardLayout>
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
         </DashboardLayout>
-      </ProtectedContent>
+
     );
   }
 
   if (error && !questionnaire) {
     return (
-      <ProtectedContent>
+
         <DashboardLayout>
           <div className="max-w-4xl mx-auto p-6">
             <div className="text-red-500 text-center p-8 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
@@ -198,7 +196,7 @@ export default function QuestionnairePage() {
             </div>
           </div>
         </DashboardLayout>
-      </ProtectedContent>
+
     );
   }
 
@@ -210,7 +208,7 @@ export default function QuestionnairePage() {
   const hasExceededAttempts = attemptCount >= questionnaire.maxAttempts;
 
   return (
-    <ProtectedContent>
+
       <DashboardLayout>
         <div className="max-w-4xl mx-auto p-6">
           {/* Header */}
@@ -376,6 +374,6 @@ export default function QuestionnairePage() {
           )}
         </div>
       </DashboardLayout>
-    </ProtectedContent>
+    
   );
 }

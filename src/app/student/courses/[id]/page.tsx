@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs/tabs';
 import { VideoPlayer } from '@/components/video';
@@ -184,7 +184,7 @@ export default function CoursePage() {
             setAttemptCount(0);
             setHasPassedQuestionnaire(false);
         }
-    }, []);
+    }, [infoUser.id]);
 
     // Function to load lesson content
     const loadLessonContent = useCallback(async (lessonId: string) => {
