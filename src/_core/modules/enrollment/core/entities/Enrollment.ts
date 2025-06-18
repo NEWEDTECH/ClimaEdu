@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import { EnrollmentStatus } from './EnrollmentStatus';
 
 /**
@@ -55,8 +54,10 @@ export class Enrollment {
     // enrolledAt defaults to now if not provided
     const enrolledAt = params.enrolledAt ?? new Date();
 
+    const uuid = crypto.randomUUID();
+
     return new Enrollment(
-      randomUUID(),
+      uuid,
       params.userId,
       params.courseId,
       params.institutionId,
