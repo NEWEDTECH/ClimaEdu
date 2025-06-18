@@ -120,17 +120,18 @@ export default function CreateUserPage() {
         type: data.role
       })
 
+      if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
+        if (infoUser.currentIdInstitution && createUserResult.user) {
+          const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+            Register.institution.useCase.AssociateUserToInstitutionUseCase
+          )
 
-      if (infoUser.currentIdInstitution && createUserResult.user) {
-        const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
-          Register.institution.useCase.AssociateUserToInstitutionUseCase
-        )
-
-        await associateUserUseCase.execute({
-          userId: createUserResult.user.id,
-          institutionId:'ins_hOc5LsHn4q',
-          userRole: data.role
-        })
+          await associateUserUseCase.execute({
+            userId: createUserResult.user.id,
+            institutionId: infoUser.currentIdInstitution,
+            userRole: data.role
+          })
+        }
       }
 
       setSuccess(true)
