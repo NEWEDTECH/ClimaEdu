@@ -15,6 +15,7 @@ import { CreateClassInput } from '@/_core/modules/enrollment/core/use-cases/crea
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
+import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-trails/list-trails.use-case'
 
 export default function CreateTurmaPage() {
   const router = useRouter()
@@ -27,8 +28,7 @@ export default function CreateTurmaPage() {
   })
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
   const [courses, setCourses] = useState<Array<{ id: string, title: string }>>([])
-  const [availableEnrollments, setAvailableEnrollments] = useState<Array<{ id: string, userEmail: string, courseName: string }>>([])
-  const [selectedEnrollments, setSelectedEnrollments] = useState<string[]>([])
+  const [trails, setTrails] = useState<Array<{ id: string, title: string }>>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,6 +91,33 @@ export default function CreateTurmaPage() {
     }
     
     fetchCourses()
+  }, [formData.institutionId, formData.type])
+
+  useEffect(() => {
+    const fetchTrails = async () => {
+      if (!formData.institutionId || formData.type !== 'trail') return
+      
+      try {
+        const listTrailsUseCase = container.get<ListTrailsUseCase>(
+          Register.content.useCase.ListTrailsUseCase
+        )
+        
+        const trailsResult = await listTrailsUseCase.execute({
+          institutionId: formData.institutionId
+        })
+        
+        const trailsForDropdown = trailsResult.trails.map((trail) => ({
+          id: trail.id,
+          title: trail.title
+        }))
+        
+        setTrails(trailsForDropdown)
+      } catch (err) {
+        console.error('Error fetching trails:', err)
+      }
+    }
+    
+    fetchTrails()
   }, [formData.institutionId, formData.type])
 
   const handleInputChange = (field: string, value: string) => {
@@ -292,18 +319,20 @@ export default function CreateTurmaPage() {
                       <label htmlFor="trail" className="text-sm font-medium">
                         Trilha *
                       </label>
-                      <InputText
+                      <select
                         id="trail"
-                        type="text"
-                        placeholder="ID da trilha (implementação futura)"
                         value={formData.trailId}
                         onChange={(e) => handleInputChange('trailId', e.target.value)}
-                        className="w-full"
-                        disabled
-                      />
-                      <p className="text-xs text-gray-500">
-                        Funcionalidade de trilhas será implementada em breve
-                      </p>
+                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                        required
+                      >
+                        <option value="">Selecione uma trilha</option>
+                        {trails.map(trail => (
+                          <option key={trail.id} value={trail.id}>
+                            {trail.title}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   )}
                 </div>
