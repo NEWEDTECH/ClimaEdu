@@ -18,6 +18,7 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { useProfile } from '@/context/zustand/useProfile';
+import { ChatDropdown } from '@/components/chat';
 
 const ModuleDropdown = ({
     module,
@@ -671,6 +672,16 @@ export default function CoursePage() {
                 </div>
 
             </div>
+
+            {/* Chat Dropdown - Fixed position */}
+            {courseId && infoUser.id && (
+                <ChatDropdown
+                    courseId={courseId}
+                    classId={courseId} // Using courseId as classId for now
+                    userId={infoUser.id}
+                    userName={infoUser.name || 'Usuário'}
+                />
+            )}
         </DashboardLayout>
 
     );
