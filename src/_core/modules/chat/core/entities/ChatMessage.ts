@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 interface ChatMessageProps {
   id?: string;
   chatRoomId: string;
@@ -16,7 +14,7 @@ export class ChatMessage {
   private readonly _sentAt: Date;
 
   private constructor(props: ChatMessageProps) {
-    this._id = props.id ?? randomUUID();
+    this._id = props.id ?? crypto.randomUUID();
     this._chatRoomId = props.chatRoomId;
     this._userId = props.userId;
     this._text = props.text;

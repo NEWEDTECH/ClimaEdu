@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 interface TrailProps {
   id?: string;
   institutionId: string;
@@ -20,7 +18,7 @@ export class Trail {
   private _updatedAt: Date;
 
   private constructor(props: TrailProps) {
-    this._id = props.id ?? randomUUID();
+    this._id = props.id ?? crypto.randomUUID();
     this._institutionId = props.institutionId;
     this._title = props.title;
     this._description = props.description;

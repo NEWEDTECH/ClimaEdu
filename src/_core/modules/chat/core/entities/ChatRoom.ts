@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 interface ChatRoomProps {
   id?: string;
   classId: string;
@@ -16,7 +14,7 @@ export class ChatRoom {
   private _updatedAt: Date;
 
   private constructor(props: ChatRoomProps) {
-    this._id = props.id ?? randomUUID();
+    this._id = props.id ?? crypto.randomUUID();
     this._classId = props.classId;
     this._courseId = props.courseId;
     this._createdAt = props.createdAt ?? new Date();

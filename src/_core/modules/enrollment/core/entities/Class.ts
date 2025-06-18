@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 interface ClassProps {
   id?: string;
   institutionId: string;
@@ -22,7 +20,7 @@ export class Class {
   private _updatedAt: Date;
 
   private constructor(props: ClassProps) {
-    this._id = props.id ?? randomUUID();
+    this._id = props.id ?? crypto.randomUUID();
     this._institutionId = props.institutionId;
     this._name = props.name;
     this._courseId = props.courseId ?? null;
