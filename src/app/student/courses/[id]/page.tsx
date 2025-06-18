@@ -185,7 +185,7 @@ export default function CoursePage() {
             setAttemptCount(0);
             setHasPassedQuestionnaire(false);
         }
-    }, [infoUser.id]);
+    }, [infoUser.id, courseId]);
 
     // Function to load lesson content
     const loadLessonContent = useCallback(async (lessonId: string) => {
