@@ -289,18 +289,25 @@ export default function QuestionnairePage() {
                       {question.options.map((option: string, optionIndex: number) => (
                         <label
                           key={optionIndex}
-                          className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                          className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-colors duration-150 ${
                             currentAnswer?.selectedOptionIndex === optionIndex
                               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                           }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAnswerSelect(question.id, optionIndex);
+                          }}
                         >
                           <input
                             type="radio"
                             name={`question-${question.id}`}
                             value={optionIndex}
                             checked={currentAnswer?.selectedOptionIndex === optionIndex}
-                            onChange={() => handleAnswerSelect(question.id, optionIndex)}
+                            onChange={(e) => {
+                              e.preventDefault();
+                              handleAnswerSelect(question.id, optionIndex);
+                            }}
                             className="sr-only"
                           />
                           
