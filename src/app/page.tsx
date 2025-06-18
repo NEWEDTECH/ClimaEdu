@@ -79,73 +79,79 @@ export default function Home() {
           return;
         }
 
-        //Passo 3: Através do ID do usuário, listar todas as instituições que ele pertence
-        const getUserAssociationsUseCase = container.get<GetUserAssociationsUseCase>(
-          Register.user.useCase.GetUserAssociationsUseCase
-        );
+        let currentInstitutionId = null;
 
-        const userAssociations = await getUserAssociationsUseCase.execute({
-          userId: user.id
-        });
-
-        const institutionsRoleData = userAssociations.map(association => ({
-          idInstitution: association.id,
-          nameInstitution: association.name,
-          roleInstitution: null
-        }));
-
-
-        // Salvar no context/zustand: infoInstitutionsRole
-        setInfoInstitutionsRole(institutionsRoleData);
-
-        // Passo 4: Buscar no localStorage o último ID da instituição que está salvo
-        let currentInstitutionId = getLastInstitutionId();
-
-        // Se não tiver nenhum, pegar qualquer ID de instituição que foi obtido no passo 3
-        if (institutionsRoleData.length > 0) {
-          currentInstitutionId = institutionsRoleData[0].idInstitution;
-        }
-
-        if (!currentInstitutionId) {
-          setError('Nenhuma instituição encontrada para o usuário');
-          setIsLoading(false);
-          return;
-        }
-
-        // Passo 5: Através desse ID da instituição, trazer os dados: id, nome, urlImage
-        const institutionRepository = container.get<InstitutionRepository>(Register.institution.repository.InstitutionRepository);
-        const institution = await institutionRepository.findById(currentInstitutionId);
-
-        if (!institution) {
-          setError('Instituição não encontrada');
-          setIsLoading(false);
-          return;
-        }
-
-        // Passo 6: Salvar os dados dessa instituição
-        setInfoInstitutions({
-          institutions: {
-            idInstitution: institution.id,
-            nameInstitution: institution.name,
-            urlImage: institution.settings.logoUrl || '',
-            roleInstitution: user.role//institutionsRoleData.find(inst => inst.idInstitution === institution.id)?.roleInstitution!
+        if (user.role !== 'SUPER_ADMIN') {
+          //Passo 3: Através do ID do usuário, listar todas as instituições que ele pertence
+          const getUserAssociationsUseCase = container.get<GetUserAssociationsUseCase>(
+            Register.user.useCase.GetUserAssociationsUseCase
+          );
+  
+          const userAssociations = await getUserAssociationsUseCase.execute({
+            userId: user.id
+          });
+  
+          const institutionsRoleData = userAssociations.map(association => ({
+            idInstitution: association.id,
+            nameInstitution: association.name,
+            roleInstitution: null
+          }));
+  
+  
+          // Salvar no context/zustand: infoInstitutionsRole
+          setInfoInstitutionsRole(institutionsRoleData);
+  
+          // Passo 4: Buscar no localStorage o último ID da instituição que está salvo
+          currentInstitutionId = getLastInstitutionId();
+  
+          // Se não tiver nenhum, pegar qualquer ID de instituição que foi obtido no passo 3
+          if (institutionsRoleData.length > 0) {
+            currentInstitutionId = institutionsRoleData[0].idInstitution;
           }
-        });
+  
+          if (!currentInstitutionId) {
+            setError('Nenhuma instituição encontrada para o usuário');
+            setIsLoading(false);
+            return;
+          }
+  
+          // Passo 5: Através desse ID da instituição, trazer os dados: id, nome, urlImage
+          const institutionRepository = container.get<InstitutionRepository>(Register.institution.repository.InstitutionRepository);
+          const institution = await institutionRepository.findById(currentInstitutionId);
+  
+          if (!institution) {
+            setError('Instituição não encontrada');
+            setIsLoading(false);
+            return;
+          }
+  
+          // Passo 6: Salvar os dados dessa instituição
+          setInfoInstitutions({
+            institutions: {
+              idInstitution: institution.id,
+              nameInstitution: institution.name,
+              urlImage: institution.settings.logoUrl || '',
+              roleInstitution: user.role//institutionsRoleData.find(inst => inst.idInstitution === institution.id)?.roleInstitution!
+            }
+          });
+        }
+
 
         // Encontrar o role atual do usuário na instituição
         const currentRole = user.role//institutionsRoleData.find(inst => inst.idInstitution === currentInstitutionId)?.roleInstitution || user.role;
-
         // Passo 7: Salvar os dados do usuário
         setInfoUser({
           ...infoUser,
           id: user.id,
           name: user.name,
           currentRole: currentRole,
-          currentIdInstitution: currentInstitutionId
+          currentIdInstitution: currentInstitutionId || ''
         });
 
         // Passo 8: Salvar esse ID da instituição no localStorage
-        setLastInstitutionId(currentInstitutionId);
+        if (currentInstitutionId) {
+          setLastInstitutionId(currentInstitutionId);
+        }
 
         // Passo 9: Trazer os cursos que esse usuário está matriculado dentro da instituição
         const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
@@ -155,7 +161,7 @@ export default function Home() {
         const enrollmentsResult = await listEnrollmentsUseCase.execute({
           userId: user.id,
           status: EnrollmentStatus.ENROLLED,
-          institutionId: currentInstitutionId
+          institutionId: currentInstitutionId || ''
         });
 
 
@@ -183,53 +189,55 @@ export default function Home() {
         setEnrolledCourses(enrolledCoursesData);
 
         // Passo 10: Trazer os cursos que esse usuário não está matriculado dentro da instituição
-        const allInstitutionCourses = await courseRepository.listByInstitution(currentInstitutionId);
-
-        const enrolledCourseIds = enrolledCoursesData.map(course => course.id);
-        const notEnrolledCourses = allInstitutionCourses.filter((course: Course) =>
-          !enrolledCourseIds.includes(course.id)
-        );
-
-        const availableCoursesData: CourseDisplayData[] = notEnrolledCourses.map((course: Course) => ({
-          id: course.id,
-          title: course.title,
-          href: '#',
-          imageUrl: course.coverImageUrl || '',
-          isBlocked: true
-        }));
-
-        setAvailableCourses(availableCoursesData);
-
-        // Passo 11: Buscar trilhas que o usuário está matriculado
-        const listTrailsUseCase = container.get<ListTrailsUseCase>(
-          Register.content.useCase.ListTrailsUseCase
-        );
-
-        const trailsResult = await listTrailsUseCase.execute({
-          institutionId: currentInstitutionId
-        });
-
-        const enrolledTrailsData: TrailDisplayData[] = [];
-
-        // Para cada trilha, verificar se o usuário está matriculado em TODOS os cursos da trilha
-        for (const trail of trailsResult.trails) {
-          const isEnrolledInAllCourses = trail.courseIds.every(courseId =>
-            enrolledCourseIds.includes(courseId)
+        if (currentInstitutionId) {
+          const allInstitutionCourses = await courseRepository.listByInstitution(currentInstitutionId);
+  
+          const enrolledCourseIds = enrolledCoursesData.map(course => course.id);
+          const notEnrolledCourses = allInstitutionCourses.filter((course: Course) =>
+            !enrolledCourseIds.includes(course.id)
           );
-
-          if (isEnrolledInAllCourses && trail.courseIds.length > 0) {
-            enrolledTrailsData.push({
-              id: trail.id,
-              title: trail.title,
-              description: trail.description,
-              href: `/student/trails/${trail.id}`,
-              imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop', // Placeholder image
-              isBlocked: false
-            });
+  
+          const availableCoursesData: CourseDisplayData[] = notEnrolledCourses.map((course: Course) => ({
+            id: course.id,
+            title: course.title,
+            href: '#',
+            imageUrl: course.coverImageUrl || '',
+            isBlocked: true
+          }));
+  
+          setAvailableCourses(availableCoursesData);
+  
+          // Passo 11: Buscar trilhas que o usuário está matriculado
+          const listTrailsUseCase = container.get<ListTrailsUseCase>(
+            Register.content.useCase.ListTrailsUseCase
+          );
+  
+          const trailsResult = await listTrailsUseCase.execute({
+            institutionId: currentInstitutionId
+          });
+  
+          const enrolledTrailsData: TrailDisplayData[] = [];
+  
+          // Para cada trilha, verificar se o usuário está matriculado em TODOS os cursos da trilha
+          for (const trail of trailsResult.trails) {
+            const isEnrolledInAllCourses = trail.courseIds.every(courseId =>
+              enrolledCourseIds.includes(courseId)
+            );
+  
+            if (isEnrolledInAllCourses && trail.courseIds.length > 0) {
+              enrolledTrailsData.push({
+                id: trail.id,
+                title: trail.title,
+                description: trail.description,
+                href: `/student/trails/${trail.id}`,
+                imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop', // Placeholder image
+                isBlocked: false
+              });
+            }
           }
+  
+          setEnrolledTrails(enrolledTrailsData);
         }
-
-        setEnrolledTrails(enrolledTrailsData);
 
         setIsLoading(false);
       } catch (error) {
