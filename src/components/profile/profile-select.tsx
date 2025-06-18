@@ -14,7 +14,6 @@ import { OptionsProfileProps } from '@/types/profile'
 import { ButtonLogout } from '@/components/logout'
 import { useProfile } from '@/context/zustand/useProfile';
 import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
-import { Institution } from '@/_core/modules/institution/core/entities/Institution';
 
 export interface ProfileSelectProps {
   avatarUrl?: string;
@@ -29,28 +28,40 @@ const OPTIONS_PROFILE: OptionsProfileProps[] = [
 ];
 
 export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
-  const { institution, institutions, setInstitution, role, getUserRoleInInstitution } = useProfile();
+  const { infoUser, infoInstitutions, updateCurrentInstitution, getUserRoleInInstitution } = useProfile();
   const { setLastInstitutionId } = useInstitutionStorage();
-  const isAdmin = role === 'admin';
+  const isAdmin = infoUser.currentRole === 'LOCAL_ADMIN' || infoUser.currentRole === 'SYSTEM_ADMIN' || infoUser.currentRole === 'SUPER_ADMIN';
 
-  const handleInstitutionChange = (inst: Institution) => {
-    setInstitution(inst);
-    setLastInstitutionId(inst.id);
+  const handleInstitutionChange = (institutionId: string) => {
+    updateCurrentInstitution(institutionId);
+    setLastInstitutionId(institutionId);
   };
 
   // Função para obter o texto da role em português
-  const getRoleText = (role: 'student' | 'tutor' | 'admin' | null) => {
+  const getRoleText = (role: 'STUDENT' | 'TUTOR' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'CONTENT_MANAGER' | 'SUPER_ADMIN' | null) => {
     switch (role) {
-      case 'admin':
+      case 'LOCAL_ADMIN':
+      case 'SYSTEM_ADMIN':
+      case 'SUPER_ADMIN':
         return 'Admin';
-      case 'tutor':
+      case 'TUTOR':
         return 'Tutor';
-      case 'student':
+      case 'CONTENT_MANAGER':
+        return 'Gestor de Conteúdo';
+      case 'STUDENT':
         return 'Estudante';
       default:
         return '';
     }
   };
+
+  // Get current institution name
+  //const getCurrentInstitutionName = () => {
+  //  const currentInstitution = infoInstitutions.institutions.find(
+  //    inst => inst.idInstitution === infoUser.currentIdInstitution
+  //  );
+  //  return currentInstitution?.nameInstitution || 'dwdwd';
+  //};
 
   return (
     <Dropdown className={cn(
@@ -69,20 +80,20 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
         )}
       </div>
       <span className="font-medium text-sm">
-        {institution?.name ? institution.name : 'João da Silva'}
+        {infoUser.name}
       </span>
 
       <DropdownMenuContent align="end" className="w-56">
         {/* Institution selection for admin users */}
-        {isAdmin && institutions && institutions.length > 0 && (
+        {isAdmin && infoInstitutions.institutions && infoInstitutions.institutions.length > 0 && (
           <>
             <div className="px-2 py-1.5 text-sm font-semibold">Instituições</div>
-            {institutions.map(inst => {
-              const userRole = getUserRoleInInstitution(inst.id);
+            {infoInstitutions.institutions.map(inst => {
+              const userRole = getUserRoleInInstitution(inst.idInstitution);
               return (
                 <DropdownMenuItem 
-                  key={inst.id}
-                  onClick={() => handleInstitutionChange(inst)}
+                  key={inst.idInstitution}
+                  onClick={() => handleInstitutionChange(inst.idInstitution)}
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <span className="w-4 h-4 text-muted-foreground flex items-center justify-center">
@@ -91,9 +102,9 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
                   <div className="flex-1 min-w-0">
                     <span className={cn(
                       "block truncate",
-                      institution?.id === inst.id && "font-medium"
+                      infoUser.currentIdInstitution === inst.idInstitution && "font-medium"
                     )}>
-                      {inst.name}
+                      {inst.nameInstitution}
                     </span>
                     {userRole && (
                       <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -101,7 +112,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
                       </span>
                     )}
                   </div>
-                  {institution?.id === inst.id && (
+                  {infoUser.currentIdInstitution === inst.idInstitution && (
                     <span className="w-2 h-2 rounded-full bg-green-500" />
                   )}
                 </DropdownMenuItem>
