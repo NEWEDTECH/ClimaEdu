@@ -36,8 +36,8 @@ export class UserInstitution {
       throw new Error('Institution ID cannot be empty');
     }
 
-    if (params.userRole !== UserRole.LOCAL_ADMIN && params.userRole !== UserRole.CONTENT_MANAGER) {
-      throw new Error('UserRole must be LOCAL_ADMIN or CONTENT_MANAGER for UserInstitution association');
+    if (params.userRole !== UserRole.LOCAL_ADMIN) {
+      throw new Error('UserRole must be LOCAL_ADMIN for UserInstitution association');
     }
 
     const now = new Date();
@@ -57,8 +57,8 @@ export class UserInstitution {
    * @param newUserRole The new user role (must be LOCAL_ADMIN or CONTENT_MANAGER)
    */
   public updateUserRole(newUserRole: UserRole): void {
-    if (newUserRole !== UserRole.LOCAL_ADMIN && newUserRole !== UserRole.CONTENT_MANAGER) {
-      throw new Error('UserRole must be LOCAL_ADMIN or CONTENT_MANAGER for UserInstitution association');
+    if (newUserRole !== UserRole.LOCAL_ADMIN) {
+      throw new Error('UserRole must be LOCAL_ADMIN for UserInstitution association');
     }
     
     this.userRole = newUserRole;

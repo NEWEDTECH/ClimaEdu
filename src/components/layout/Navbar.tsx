@@ -68,11 +68,15 @@ export function Navbar() {
 
       <div className="flex items-center">
         <Link href="/" className="text-xl font-bold">
-          <img
-          className='mt-10 h-[100px] w-[400px] '
-            src={infoInstitutions.institutions.urlImage}
-            alt="Logo da instituição"
-          />
+          {infoInstitutions?.institutions?.urlImage ? (
+            <img
+            className='py-4 h-18 w-auto'
+              src={infoInstitutions.institutions.urlImage}
+              alt="Logo da instituição"
+            />
+          ) : (
+            <span className="text-gray-800 dark:text-white">ClimaEdu</span>
+          )}
         </Link>
       </div>
 

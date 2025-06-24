@@ -4,6 +4,7 @@ import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { UserInstitution } from '../../../core/entities/UserInstitution';
 import type { UserInstitutionRepository } from '../UserInstitutionRepository';
 import { nanoid } from 'nanoid';
+import { UserRole } from '@/_core/modules/user';
 
 /**
  * Firebase implementation of the UserInstitutionRepository
@@ -39,7 +40,7 @@ export class FirebaseUserInstitutionRepository implements UserInstitutionReposit
       id: data.id,
       userId: data.userId,
       institutionId: data.institutionId,
-      userRole: data.userRole,
+      userRole: UserRole.LOCAL_ADMIN,
       createdAt,
       updatedAt
     });
