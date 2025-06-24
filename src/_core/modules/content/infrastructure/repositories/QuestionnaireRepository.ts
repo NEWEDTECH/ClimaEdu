@@ -38,4 +38,12 @@ export interface QuestionnaireRepository {
    * @returns true if deleted, false if not found
    */
   delete(id: string): Promise<boolean>;
+
+  /**
+   * Check if a student has passed a questionnaire
+   * @param questionnaireId Questionnaire id
+   * @param userId User id
+   * @returns true if the student has passed, false otherwise
+   */
+  hasStudentPassed(questionnaireId: string, userId: string): Promise<boolean>;
 }

@@ -4,18 +4,24 @@ import { repositories, useCases } from './symbols';
 // Import implementations
 import type { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
 import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+import type { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
 import type { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import type { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import type { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
+import type { LessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/LessonProgressRepository';
+import type { TrailRepository } from '@/_core/modules/content/infrastructure/repositories/TrailRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { FirebaseCourseRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseRepository';
+import { FirebaseCourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseTutorRepository';
 import { FirebaseModuleRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseModuleRepository';
 import { FirebaseLessonRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonRepository';
 import { FirebaseActivityRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseActivityRepository';
 import { FirebaseQuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
 import { FirebaseQuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
+import { FirebaseLessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonProgressRepository';
+import { FirebaseTrailRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseTrailRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
@@ -30,6 +36,19 @@ import { DeleteQuestionUseCase } from '@/_core/modules/content/core/use-cases/de
 import { ListQuestionsOfQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/list-questions-of-questionnaire/list-questions-of-questionnaire.use-case';
 import { SubmitQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/submit-questionnaire/submit-questionnaire.use-case';
 import { RetryQuestionnaireUseCase } from '@/_core/modules/content/core/use-cases/retry-questionnaire/retry-questionnaire.use-case';
+import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
+import { ListTutorCoursesUseCase } from '@/_core/modules/content/core/use-cases/list-tutor-courses/list-tutor-courses.use-case';
+import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
+import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
+import { GetLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/get-lesson-progress/get-lesson-progress.use-case';
+import { CompleteLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
+import { CreateTrailUseCase } from '@/_core/modules/content/core/use-cases/create-trail/create-trail.use-case';
+import { UpdateTrailUseCase } from '@/_core/modules/content/core/use-cases/update-trail/update-trail.use-case';
+import { GetTrailUseCase } from '@/_core/modules/content/core/use-cases/get-trail/get-trail.use-case';
+import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-trails/list-trails.use-case';
+import { DeleteTrailUseCase } from '@/_core/modules/content/core/use-cases/delete-trail/delete-trail.use-case';
+import { AddCourseToTrailUseCase } from '@/_core/modules/content/core/use-cases/add-course-to-trail/add-course-to-trail.use-case';
+import { RemoveCourseFromTrailUseCase } from '@/_core/modules/content/core/use-cases/remove-course-from-trail/remove-course-from-trail.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -40,11 +59,14 @@ export function registerContentModule(container: Container): void {
   // Register repositories
   container.bind<ContentRepository>(repositories.ContentRepository).to(FirebaseContentRepository);
   container.bind<CourseRepository>(repositories.CourseRepository).to(FirebaseCourseRepository);
+  container.bind<CourseTutorRepository>(repositories.CourseTutorRepository).to(FirebaseCourseTutorRepository);
   container.bind<ModuleRepository>(repositories.ModuleRepository).to(FirebaseModuleRepository);
   container.bind<LessonRepository>(repositories.LessonRepository).to(FirebaseLessonRepository);
   container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
   container.bind<QuestionnaireRepository>(repositories.QuestionnaireRepository).to(FirebaseQuestionnaireRepository);
   container.bind<QuestionnaireSubmissionRepository>(repositories.QuestionnaireSubmissionRepository).to(FirebaseQuestionnaireSubmissionRepository);
+  container.bind<LessonProgressRepository>(repositories.LessonProgressRepository).to(FirebaseLessonProgressRepository);
+  container.bind<TrailRepository>(repositories.TrailRepository).to(FirebaseTrailRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);
@@ -61,5 +83,18 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.ListQuestionsOfQuestionnaireUseCase).to(ListQuestionsOfQuestionnaireUseCase);
   container.bind(useCases.SubmitQuestionnaireUseCase).to(SubmitQuestionnaireUseCase);
   container.bind(useCases.RetryQuestionnaireUseCase).to(RetryQuestionnaireUseCase);
+  container.bind(useCases.AssociateTutorToCourseUseCase).to(AssociateTutorToCourseUseCase);
+  container.bind(useCases.ListTutorCoursesUseCase).to(ListTutorCoursesUseCase);
+  container.bind(useCases.StartLessonProgressUseCase).to(StartLessonProgressUseCase);
+  container.bind(useCases.UpdateContentProgressUseCase).to(UpdateContentProgressUseCase);
+  container.bind(useCases.GetLessonProgressUseCase).to(GetLessonProgressUseCase);
+  container.bind(useCases.CompleteLessonProgressUseCase).to(CompleteLessonProgressUseCase);
+  container.bind(useCases.CreateTrailUseCase).to(CreateTrailUseCase);
+  container.bind(useCases.UpdateTrailUseCase).to(UpdateTrailUseCase);
+  container.bind(useCases.GetTrailUseCase).to(GetTrailUseCase);
+  container.bind(useCases.ListTrailsUseCase).to(ListTrailsUseCase);
+  container.bind(useCases.DeleteTrailUseCase).to(DeleteTrailUseCase);
+  container.bind(useCases.AddCourseToTrailUseCase).to(AddCourseToTrailUseCase);
+  container.bind(useCases.RemoveCourseFromTrailUseCase).to(RemoveCourseFromTrailUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

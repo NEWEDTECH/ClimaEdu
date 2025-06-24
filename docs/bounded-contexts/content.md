@@ -14,14 +14,16 @@ Hierarchy of data:
 
 ```plaintext
 Institution
-  └── Course
-       └── Module
-            └── Lesson
-                 ├── Content
-                 ├── Activity (optional)
-                 └── Questionnaire (optional)
-                      └── QuestionnaireSubmission
-                           └── QuestionSubmission
+  └── Trail
+       └── Course
+            ├── CourseTutor
+            └── Module
+                 └── Lesson
+                      ├── Content
+                      ├── Activity (optional)
+                      └── Questionnaire (optional)
+                           └── QuestionnaireSubmission
+                                └── QuestionSubmission
 ```
 
 ---
@@ -31,6 +33,7 @@ Institution
 | Entity                  | Responsibility |
 |:-------------------------|:----------------|
 | **Course**               | Represents a complete learning path, grouping multiple Modules. |
+| **CourseTutor**          | Represents the association between a tutor and a course. |
 | **Module**               | Logical grouping of Lessons within a Course. |
 | **Lesson**               | Individual unit of study containing content, and optionally, assessments. |
 | **Content**              | Educational material attached to a Lesson (Video, PDF, Podcast). |
@@ -39,12 +42,21 @@ Institution
 | **Question**             | A single multiple-choice question inside a Questionnaire. |
 | **QuestionnaireSubmission** | A student's attempt at completing a Questionnaire. |
 | **QuestionSubmission**   | A student's individual answer to a Question within a QuestionnaireSubmission. |
+| **Trail**                | Represents a learning trail composed of multiple courses. |
+| **LessonProgress**       | Tracks a student's progress through a lesson (aggregate root). |
+| **ContentProgress**      | Tracks progress of individual content within a lesson (value object). |
 
 ---
 
 ## Key Attributes (Functional Description)
 
 - **Course.title**: Name displayed to students, identifying the learning path.
+- **Course.institutionId**: The institution that owns the course.
+- **Course.coverImageUrl**: URL of the cover image that visually represents the course in the user interface.
+- **Module.coverImageUrl**: URL of the cover image that visually represents the module in the user interface.
+- **Lesson.coverImageUrl**: URL of the cover image that visually represents the lesson in the user interface.
+- **CourseTutor.userId**: The ID of the tutor associated with the course.
+- **CourseTutor.courseId**: The ID of the course the tutor is associated with.
 - **Module.order**: Numeric position of a Module within a Course for structured progression.
 - **Lesson.title**: Title of the learning unit inside a Module.
 - **Content.type**: Type of material (Video, PDF, Podcast) provided in the Lesson.
@@ -59,6 +71,7 @@ Institution
 
 ## Business Rules
 
+- A **Trail** is a collection of **Courses**.
 - A **Course** must contain at least one **Module** to be published.
 - A **Module** must contain at least one **Lesson**.
 - A **Lesson** may have multiple **Content** items and may optionally have an **Activity** and/or **Questionnaire**.
@@ -68,10 +81,87 @@ Institution
 - Each **QuestionnaireSubmission** records an attempt with calculated score and pass/fail status.
 - Students may be allowed multiple attempts on a **Questionnaire**, depending on institutional or course rules.
 - Certificates can only be issued if the student passes the required Questionnaires with the minimum score defined.
+- Only users with the **TUTOR** role can be associated with a course as a tutor.
+- **LessonProgress** tracks student progress through lessons and automatically updates completion status.
+- All **Content** items within a lesson must be completed for the lesson to be marked as completed.
+- **ContentProgress** tracks individual content progress including time spent and last position (for videos/podcasts).
+- Students can access content in any order within a lesson (no sequential requirement within lessons).
+- Progress is automatically saved and can be resumed from the last position for media content.
 
 ---
 
 ## Use Cases
+
+### CreateTrailUseCase
+
+**Purpose**: Creates a new trail.
+
+**Inputs**:
+- `institutionId`: The ID of the institution that owns the trail
+- `title`: The title of the trail
+- `description`: A detailed description of the trail
+- `courseIds`: An array of course IDs to be included in the trail
+
+**Process**:
+1. Creates a new Trail entity with the provided data
+2. Returns the created Trail
+
+**Business Rules**:
+- Trail title cannot be empty
+- Trail description cannot be empty
+- Institution ID must be valid
+
+### UpdateTrailUseCase
+
+**Purpose**: Updates an existing trail's information.
+
+**Inputs**:
+- `id`: The ID of the trail to update
+- `title` (optional): The new title for the trail
+- `description` (optional): The new description for the trail
+
+**Process**:
+1. Finds the trail by ID
+2. Updates only the fields that are provided in the input
+3. Returns the updated Trail
+
+**Business Rules**:
+- Trail must exist
+- If title is provided, it cannot be empty
+- If description is provided, it cannot be empty
+
+### AddCourseToTrailUseCase
+
+**Purpose**: Adds a course to an existing trail.
+
+**Inputs**:
+- `trailId`: The ID of the trail to add the course to
+- `courseId`: The ID of the course to add
+
+**Process**:
+1. Finds the trail by ID
+2. Adds the course to the trail
+3. Returns the updated Trail
+
+**Business Rules**:
+- Trail must exist
+- Course must exist
+
+### RemoveCourseFromTrailUseCase
+
+**Purpose**: Removes a course from an existing trail.
+
+**Inputs**:
+- `trailId`: The ID of the trail to remove the course from
+- `courseId`: The ID of the course to remove
+
+**Process**:
+1. Finds the trail by ID
+2. Removes the course from the trail
+3. Returns the updated Trail
+
+**Business Rules**:
+- Trail must exist
 
 ### CreateCourseUseCase
 
@@ -110,6 +200,28 @@ Institution
 - If title is provided, it cannot be empty
 - If description is provided, it cannot be empty
 - Only specified fields are updated; other fields retain their current values
+
+### AssociateTutorToCourseUseCase
+
+**Purpose**: Associates a tutor with a course, creating a relationship between them.
+
+**Inputs**:
+- `userId`: The ID of the user to associate as a tutor
+- `courseId`: The ID of the course to associate the tutor with
+
+**Process**:
+1. Verifies that the user exists
+2. Verifies that the user has the TUTOR role
+3. Verifies that the course exists
+4. Checks if the association already exists
+5. If the association doesn't exist, creates a new CourseTutor entity
+6. Returns the CourseTutor entity
+
+**Business Rules**:
+- User must exist
+- User must have the TUTOR role, this use case does not change the user's role
+- Course must exist
+- If the association already exists, the existing association is returned
 
 ### CreateModuleUseCase
 
@@ -355,3 +467,119 @@ Institution
 - Questionnaire must exist
 - The number of attempts remaining is calculated as (max attempts - current attempts)
 - A user can retry if they have at least one attempt remaining
+
+### ListTutorCoursesUseCase
+
+**Purpose**: Retrieves a list of courses where a user is a tutor within a specific institution.
+
+**Inputs**:
+- `userId`: The ID of the user (tutor) to list courses for
+- `institutionId`: The ID of the institution to filter courses by
+
+**Process**:
+1. Verifies that the user exists
+2. Verifies that the user has the TUTOR role
+3. Finds all course-tutor associations for the user
+4. For each association, retrieves the corresponding course details
+5. Filters courses to include only those belonging to the specified institution
+6. Returns a list of courses
+
+**Business Rules**:
+- User must exist
+- User must have the TUTOR role
+- If the user is not associated with any courses, an empty list is returned
+- Only courses belonging to the specified institution are included in the results
+
+### StartLessonProgressUseCase
+
+**Purpose**: Initiates progress tracking for a lesson, creating a new progress record or returning an existing one.
+
+**Inputs**:
+- `userId`: The ID of the student starting the lesson
+- `lessonId`: The ID of the lesson to start
+- `institutionId`: The ID of the institution context
+
+**Process**:
+1. Validates input parameters
+2. Checks if lesson progress already exists for the user and lesson
+3. If exists, updates last accessed timestamp and returns existing progress
+4. If not exists, retrieves lesson details to get content IDs
+5. Creates new LessonProgress with ContentProgress for each content
+6. Saves and returns the new progress
+
+**Business Rules**:
+- User ID, lesson ID, and institution ID are required
+- Lesson must exist and have at least one content item
+- Progress is automatically initialized for all lesson contents
+- If progress already exists, only the last accessed timestamp is updated
+
+### UpdateContentProgressUseCase
+
+**Purpose**: Updates the progress of a specific content within a lesson and automatically manages lesson completion.
+
+**Inputs**:
+- `userId`: The ID of the student updating progress
+- `lessonId`: The ID of the lesson containing the content
+- `contentId`: The ID of the content being updated
+- `progressPercentage`: Progress percentage (0-100)
+- `timeSpent` (optional): Additional time spent in seconds
+- `lastPosition` (optional): Last position for video/audio content
+
+**Process**:
+1. Validates input parameters
+2. Finds existing lesson progress for the user and lesson
+3. Locates the specific content progress within the lesson
+4. Records current completion status for both content and lesson
+5. Updates content progress with new values
+6. Automatically checks and updates lesson completion status
+7. Saves updated progress and returns completion flags
+
+**Business Rules**:
+- Lesson progress must exist (lesson must be started first)
+- Content must exist within the lesson progress
+- Progress percentage must be between 0 and 100
+- Time spent and last position cannot be negative
+- Content is marked completed when progress reaches 100%
+- Lesson is marked completed when all contents are completed
+- Last accessed timestamp is automatically updated
+
+### GetLessonProgressUseCase
+
+**Purpose**: Retrieves the complete progress information for a lesson and user.
+
+**Inputs**:
+- `userId`: The ID of the user whose progress to retrieve
+- `lessonId`: The ID of the lesson to get progress for
+
+**Process**:
+1. Validates input parameters
+2. Searches for lesson progress by user and lesson
+3. Returns the progress or null if not found
+
+**Business Rules**:
+- User ID and lesson ID are required
+- Returns null if no progress exists (lesson not started)
+- Includes complete progress information for all contents
+
+### CompleteLessonProgressUseCase
+
+**Purpose**: Forcefully completes a lesson by marking all contents as 100% completed (administrative function).
+
+**Inputs**:
+- `userId`: The ID of the user completing the lesson
+- `lessonId`: The ID of the lesson to complete
+
+**Process**:
+1. Validates input parameters
+2. Finds existing lesson progress for the user and lesson
+3. Records current completion status
+4. Forces completion of all contents (sets all to 100%)
+5. Marks lesson as completed with completion timestamp
+6. Saves updated progress and returns completion flag
+
+**Business Rules**:
+- Lesson progress must exist (lesson must be started first)
+- All contents are forcefully marked as 100% completed
+- Lesson completion timestamp is set
+- Useful for administrative purposes or special circumstances
+- Returns flag indicating if lesson was already completed

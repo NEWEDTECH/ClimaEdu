@@ -43,6 +43,7 @@ export class FirebaseCourseRepository implements CourseRepository {
       institutionId: data.institutionId,
       title: data.title,
       description: data.description,
+      coverImageUrl: data.coverImageUrl,
       modules: data.modules || [],
       createdAt,
       updatedAt
@@ -80,6 +81,7 @@ export class FirebaseCourseRepository implements CourseRepository {
       institutionId: course.institutionId,
       title: course.title,
       description: course.description,
+      coverImageUrl: course.coverImageUrl,
       modules: course.modules,
       createdAt: course.createdAt,
       updatedAt: course.updatedAt

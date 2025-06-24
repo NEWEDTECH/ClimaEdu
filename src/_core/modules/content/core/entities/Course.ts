@@ -10,6 +10,7 @@ export class Course {
     readonly institutionId: string,
     public title: string,
     public description: string,
+    public coverImageUrl: string | null,
     public modules: Module[],
     readonly createdAt: Date,
     public updatedAt: Date
@@ -26,6 +27,7 @@ export class Course {
     institutionId: string;
     title: string;
     description: string;
+    coverImageUrl?: string;
     modules?: Module[];
     createdAt?: Date;
     updatedAt?: Date;
@@ -48,6 +50,7 @@ export class Course {
       params.institutionId,
       params.title,
       params.description,
+      params.coverImageUrl || null,
       params.modules || [],
       params.createdAt ?? now,
       params.updatedAt ?? now
@@ -86,6 +89,15 @@ export class Course {
       throw new Error('Course description cannot be empty');
     }
     this.description = newDescription;
+    this.touch();
+  }
+
+  /**
+   * Updates the course cover image URL
+   * @param newCoverImageUrl The new cover image URL or null to remove it
+   */
+  public updateCoverImageUrl(newCoverImageUrl: string | null): void {
+    this.coverImageUrl = newCoverImageUrl;
     this.touch();
   }
 

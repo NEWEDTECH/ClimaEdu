@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ProfileSelect } from '@/components/profile';
-import { Button } from '@/components/ui/button/button';
 import { IoMdMenu } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
 import { cn } from '@/lib/utils';
@@ -14,10 +13,12 @@ type DropdownItem = {
   href: string;
 };
 
+type UserRole = 'STUDENT' | 'TUTOR' | 'CONTENT_MANAGER' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'SUPER_ADMIN';
+
 type DropdownSection = {
   title: string;
   items: DropdownItem[];
-  role: string;
+  role: UserRole | UserRole[];
 };
 
 const studentItems: DropdownItem[] = [
@@ -31,33 +32,35 @@ const studentItems: DropdownItem[] = [
 const teacherItems: DropdownItem[] = [
   { label: 'Acompanhamento', href: '/tutor/follow-up' },
   { label: 'Relatórios', href: '/tutor/reports' },
+  { label: 'Cursos', href: '/tutor/courses' },
   { label: 'Gestão de Conteúdos', href: '/tutor/video-upload' },
 ];
 
 const adminItems: DropdownItem[] = [
+  { label: 'Instituições', href: '/admin/institution' },
   { label: 'Dashboard', href: '/admin/dashboard' },
+  { label: 'Podcast', href: '/admin/podcast' },
   { label: 'Alunos', href: '/admin/student' },
+  { label: 'Classes', href: '/admin/turmas' },
   { label: 'Professores', href: '/admin/tutor' },
+  { label: 'Trilhas', href: '/admin/trails' },
   { label: 'Cursos', href: '/admin/courses' },
   { label: 'Relatórios', href: '/admin/reports' },
+  { label: 'Criar Usuário', href: '/admin/create-user' },
   { label: 'Configurações', href: '/admin/settings' },
 ];
 
 const sections: DropdownSection[] = [
-  { title: 'Área do Aluno', items: studentItems, role: 'student' },
-  { title: 'Área do Tutor', items: teacherItems, role: 'tutor' },
-  { title: 'Área do Admin', items: adminItems, role: 'admin' }
+  { title: 'Área do Aluno', items: studentItems, role: 'STUDENT' },
+  { title: 'Área do Tutor', items: teacherItems, role: ['TUTOR', 'CONTENT_MANAGER'] },
+  { title: 'Área do Admin', items: adminItems, role: ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'] }
 ];
-
-type NavbarProps = {
-  userName?: string;
-}
 
 
 export function Navbar() {
 
-  const { role } = useProfile();
-  console.log(role)
+  const { infoUser, infoInstitutions } = useProfile();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   return (
@@ -65,7 +68,11 @@ export function Navbar() {
 
       <div className="flex items-center">
         <Link href="/" className="text-xl font-bold">
-          EAD Platform
+          <img
+          className='mt-10 h-[100px] w-[400px] '
+            src={infoInstitutions.institutions.urlImage}
+            alt="Logo da instituição"
+          />
         </Link>
       </div>
 
@@ -73,12 +80,14 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center space-x-4">
           {sections.map((section) => {
-            if (section.role === role) {
+            if (section.role.includes(infoUser.currentRole!)) {
               return (
-                <div className={cn(
-                  "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
-                )}>
-
+                <div
+                  key={section.title}
+                  className={cn(
+                    "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
+                  )}
+                >
                   {section.items.map(item => (
                     <Link
                       key={item.label}
@@ -88,12 +97,11 @@ export function Navbar() {
                       <span>{item.label}</span>
                     </Link>
                   ))}
-
                 </div>
-              )
+              );
             }
-          }
-          )}
+          })}
+
         </div>
 
         <div className="hidden md:flex items-center gap-4">
@@ -128,7 +136,7 @@ export function Navbar() {
             </div>
 
             {sections.map((section) => {
-              if (section.role === role) {
+              if (section.role.includes(infoUser.currentRole!)) {
                 return (
                   <div key={section.title} className="py-2">
                     <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">

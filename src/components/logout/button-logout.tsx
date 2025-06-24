@@ -4,8 +4,6 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { FiLogOut } from "react-icons/fi";
 
-import { cn } from "@/lib/utils";
-
 import { Button } from '@/components/ui/button/button'
 import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';

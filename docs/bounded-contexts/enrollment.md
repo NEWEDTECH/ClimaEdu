@@ -11,8 +11,9 @@ Hierarchy of data:
 
 ```plaintext
 Institution
-  └── User
+  └── Class
        └── Enrollment
+            ├── User
             └── Course
 ```
 
@@ -22,6 +23,7 @@ Institution
 
 | Entity             | Responsibility |
 |:-------------------|:----------------|
+| **Class**          | Represents a group of students enrolled in a course or trail. |
 | **Enrollment**     | Represents the act of a student registering for a specific course, and tracks their enrollment status. |
 | **EnrollmentStatus** (Enum) | Defines the current state of the enrollment (ENROLLED, COMPLETED, CANCELLED). |
 
@@ -45,6 +47,11 @@ Institution
 
 | Use Case | Description |
 |:---------|:------------|
+| **CreateClass** | Creates a new class for a course or trail. |
+| **UpdateClass** | Updates the name of an existing class. |
+| **AddEnrollmentToClass** | Adds an existing enrollment to a class. |
+| **RemoveEnrollmentFromClass** | Removes an enrollment from a class. |
+| **EnrollInTrail** | Enrolls a user in all courses of a specific trail. |
 | **EnrollInCourse** | Enrolls a user in a specific course, creating a new enrollment record with ENROLLED status. |
 | **CancelEnrollment** | Cancels an existing enrollment, changing its status to CANCELLED. |
 | **ListEnrollments** | Retrieves a list of enrollments based on filters like user ID, course ID, and enrollment status. |

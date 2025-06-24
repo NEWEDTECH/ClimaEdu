@@ -9,6 +9,7 @@ export class Module {
     readonly id: string,
     readonly courseId: string,
     public title: string,
+    public coverImageUrl: string | null,
     public lessons: Lesson[],
     public order: number
   ) {}
@@ -23,6 +24,7 @@ export class Module {
     id: string;
     courseId: string;
     title: string;
+    coverImageUrl?: string;
     order: number;
     lessons?: Lesson[];
   }): Module {
@@ -38,6 +40,7 @@ export class Module {
       params.id,
       params.courseId,
       params.title,
+      params.coverImageUrl || null,
       params.lessons || [],
       params.order
     );
@@ -61,6 +64,14 @@ export class Module {
       throw new Error('Module title cannot be empty');
     }
     this.title = newTitle;
+  }
+
+  /**
+   * Updates the module cover image URL
+   * @param newCoverImageUrl The new cover image URL or null to remove it
+   */
+  public updateCoverImageUrl(newCoverImageUrl: string | null): void {
+    this.coverImageUrl = newCoverImageUrl;
   }
 
   /**

@@ -173,8 +173,8 @@ export default function ConteudosPage() {
     const course = mockCourses.find(c => c.id === selectedCourse);
     if (!course) return null;
 
-    const module = course.modules.find(m => m.id === selectedModule);
-    if (!module) return null;
+    const moduleData = course.modules.find(m => m.id === selectedModule);
+    if (!moduleData) return null;
 
     return (
       <>
@@ -187,14 +187,14 @@ export default function ConteudosPage() {
             ← Voltar para módulos
           </Button>
           <h1 className="text-2xl font-bold mb-1">{course.title}</h1>
-          <h2 className="text-xl font-semibold mb-2">{module.title}</h2>
+          <h2 className="text-xl font-semibold mb-2">{moduleData.title}</h2>
           <p className="text-gray-600 dark:text-gray-400">
             Selecione uma aula para começar
           </p>
         </div>
 
         <div className="space-y-4">
-          {module.lessons.map((lesson) => (
+          {moduleData.lessons.map((lesson) => (
             <Card 
               key={lesson.id} 
               className={`hover:shadow-md transition-shadow ${

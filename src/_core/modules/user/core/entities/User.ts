@@ -5,9 +5,12 @@ import { Profile } from './Profile';
  * Enum representing the types of users in the system
  */
 export enum UserRole {
-  STUDENT = 'STUDENT',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  LOCAL_ADMIN = 'LOCAL_ADMIN',
+  CONTENT_MANAGER = 'CONTENT_MANAGER',
   TUTOR = 'TUTOR',
-  ADMINISTRATOR = 'ADMINISTRATOR',
+  STUDENT = 'STUDENT',
 }
 
 /**
@@ -17,7 +20,6 @@ export enum UserRole {
 export class User {
   private constructor(
     readonly id: string,
-    readonly institutionId: string,
     public name: string,
     public email: Email,
     public role: UserRole,
@@ -34,7 +36,6 @@ export class User {
    */
   public static create(params: {
     id: string;
-    institutionId: string;
     name: string;
     email: Email;
     role: UserRole;
@@ -42,14 +43,10 @@ export class User {
     createdAt?: Date;
     updatedAt?: Date;
   }): User {
-    if (!params.institutionId || params.institutionId.trim() === '') {
-      throw new Error('Institution ID cannot be empty');
-    }
     const now = new Date();
     
     return new User(
       params.id,
-      params.institutionId,
       params.name,
       params.email,
       params.role,

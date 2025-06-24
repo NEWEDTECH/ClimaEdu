@@ -33,6 +33,7 @@ export class FirebaseModuleRepository implements ModuleRepository {
       id: data.id,
       courseId: data.courseId,
       title: data.title,
+      coverImageUrl: data.coverImageUrl,
       order: data.order,
       lessons: data.lessons || []
     });
@@ -68,6 +69,7 @@ export class FirebaseModuleRepository implements ModuleRepository {
       id: module.id,
       courseId: module.courseId,
       title: module.title,
+      coverImageUrl: module.coverImageUrl,
       order: module.order,
       lessons: module.lessons
     };

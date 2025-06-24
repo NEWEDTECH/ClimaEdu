@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button/button'
@@ -53,9 +52,10 @@ const mockEnrollments: Record<string, string[]> = {
   '5': ['5'],      // Student 5 is enrolled in course 5
 }
 
-export default function LinkStudentPage({ params }: { params: { id: string } }) {
-  const router = useRouter()
-  const { id } = params
+export default function LinkStudentPage({ params }: { params: Promise<{ id: string }> }) {
+
+  const resolvedParams = 'then' in params ? use(params) : params
+  const { id } = resolvedParams
   
   const [student, setStudent] = useState<StudentData | null>(null)
   const [availableCourses, setAvailableCourses] = useState<CourseData[]>([])

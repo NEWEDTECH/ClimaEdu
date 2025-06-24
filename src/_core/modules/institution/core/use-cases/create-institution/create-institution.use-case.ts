@@ -4,6 +4,7 @@ import { Register } from '@/_core/shared/container';
 import { CreateInstitutionInput } from './create-institution.input';
 import { CreateInstitutionOutput } from './create-institution.output';
 import { Institution } from '../../entities/Institution';
+import { InstitutionSettings } from '../../entities/InstitutionSettings';
 
 /**
  * Use case for creating an institution with basic settings
@@ -31,10 +32,21 @@ export class CreateInstitutionUseCase {
 
     // Generate ID and create institution entity
     const id = await this.institutionRepository.generateId();
+    
+    // Create settings if any of the settings fields are provided
+    const settings = input.logoUrl || input.primaryColor || input.secondaryColor
+      ? InstitutionSettings.create({
+          logoUrl: input.logoUrl,
+          primaryColor: input.primaryColor,
+          secondaryColor: input.secondaryColor,
+        })
+      : undefined;
+    
     const institution = Institution.create({
       id,
       name: input.name,
       domain: input.domain,
+      settings,
     });
 
     // Save the institution

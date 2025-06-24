@@ -30,6 +30,7 @@ Institution
 |:-------------------------|:----------------|
 | **Institution**          | Represents a customer organization managing its own ecosystem inside the platform. |
 | **InstitutionSettings**  | Contains optional visual customizations such as logo and branding colors. |
+| **UserInstitution**      | Represents the association between a user and an institution. |
 
 ---
 
@@ -41,9 +42,12 @@ Institution
 - **Institution.createdAt**: Timestamp marking when the institution account was created.
 - **Institution.updatedAt**: Timestamp for the latest change to the institution's configuration.
 
-- **InstitutionSettings.logoUrl**: URL pointing to the institution’s custom logo.
-- **InstitutionSettings.primaryColor**: Primary branding color for the institution’s interface.
+- **InstitutionSettings.logoUrl**: URL pointing to the institution's custom logo.
+- **InstitutionSettings.primaryColor**: Primary branding color for the institution's interface.
 - **InstitutionSettings.secondaryColor**: Secondary branding color for additional UI elements.
+
+- **UserInstitution.userId**: The ID of the user associated with the institution.
+- **UserInstitution.institutionId**: The ID of the institution the user is associated with.
 
 ---
 
@@ -54,6 +58,8 @@ Institution
 - Institutions can customize visual elements such as logos and colors to match their branding.
 - Institutions may optionally configure a custom domain for their users' access.
 - Institution settings can be updated at any time without affecting historical user data.
+- A user can be associated with only one institution.
+- When a user is associated as an administrator to an institution, their role is automatically updated to ADMINISTRATOR if it wasn't already.
 
 ---
 
@@ -104,3 +110,66 @@ Institution
 - Institution must exist
 - Only specified settings are updated; other settings retain their current values
 - Settings are immutable; updates create a new settings object
+
+### AssociateUserToInstitutionUseCase
+
+**Purpose**: Associates a user with an institution, creating a relationship between them.
+
+**Inputs**:
+- `userId`: The ID of the user to associate
+- `institutionId`: The ID of the institution to associate the user with
+
+**Process**:
+1. Verifies that the user exists
+2. Verifies that the institution exists
+3. Checks if the association already exists
+4. If the association doesn't exist, creates a new UserInstitution entity
+5. Returns the UserInstitution entity
+
+**Business Rules**:
+- User must exist
+- Institution must exist
+- A user can only be associated with one institution
+- If the association already exists, the existing association is returned
+
+### AssociateAdministratorUseCase
+
+**Purpose**: Associates a user as an administrator to an institution, ensuring the user has the ADMINISTRATOR role.
+
+**Inputs**:
+- `userId`: The ID of the user to associate as an administrator
+- `institutionId`: The ID of the institution to associate the administrator with
+
+**Process**:
+1. Verifies that the user exists
+2. Verifies that the institution exists
+3. Checks if the user has the ADMINISTRATOR role
+4. If not, updates the user's role to ADMINISTRATOR
+5. Checks if the association already exists
+6. If the association doesn't exist, creates a new UserInstitution entity
+7. Returns the UserInstitution entity
+
+**Business Rules**:
+- User must exist
+- Institution must exist
+- The user's role is automatically updated to ADMINISTRATOR if it wasn't already
+- A user can only be associated with one institution
+- If the association already exists, the existing association is returned
+
+### ListUserInstitutionsUseCase
+
+**Purpose**: Retrieves a list of institutions that a user belongs to.
+
+**Inputs**:
+- `userId`: The ID of the user to list institutions for
+
+**Process**:
+1. Verifies that the user exists
+2. Finds all user-institution associations for the user
+3. For each association, retrieves the corresponding institution details
+4. Returns a list of institutions
+
+**Business Rules**:
+- User must exist
+- If the user is not associated with any institutions, an empty list is returned
+- Only active and valid institutions are included in the results

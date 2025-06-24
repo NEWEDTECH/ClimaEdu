@@ -39,6 +39,7 @@ export class CreateModuleUseCase {
       id,
       courseId: input.courseId,
       title: input.title,
+      coverImageUrl: input.coverImageUrl,
       order: input.order,
     });
 

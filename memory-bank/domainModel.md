@@ -46,9 +46,23 @@ This document describes the domain model of the ClimaEdu platform, organized by 
 
 ### UserRole Enum
 - **Values**:
-  - `STUDENT`
-  - `TUTOR`
-  - `ADMINISTRATOR`
+  - `SUPER_ADMIN` - Root user of the platform, global access
+  - `SYSTEM_ADMIN` - System-level administrator
+  - `LOCAL_ADMIN` - Institution-level administrator
+  - `CONTENT_MANAGER` - Institution-level content manager
+  - `TUTOR` - Course instructor
+  - `STUDENT` - Course participant
+
+### SUPER_ADMIN Special Rules
+- **Purpose**: Root user of the platform with global access
+- **Creation**: Only one SUPER_ADMIN can exist in the system
+- **Institution Association**: SUPER_ADMIN is not associated with any specific institution (global access)
+- **Authentication**: Uses Firebase Auth like other users
+- **Creation Method**: API endpoint `/api/setup/super-admin` with secret key
+- **Business Rules**:
+  - System prevents creation of multiple SUPER_ADMIN users
+  - Must be the first user created in the system
+  - Has access to all institutions and system-wide operations
 
 ## Content Bounded Context
 
@@ -176,6 +190,34 @@ This document describes the domain model of the ClimaEdu platform, organized by 
 - **Purpose**: Represents a student's submission for a questionnaire
 - **Properties**:
   - `id: string` (readonly)
+
+## Chat Bounded Context
+
+### ChatRoom Entity
+- **Purpose**: Represents a chat room for a specific class and course
+- **Properties**:
+  - `id: string` (readonly)
+  - `classId: string` (readonly)
+  - `courseId: string` (readonly)
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+
+### ChatMessage Entity
+- **Purpose**: Represents a single message sent in a chat room
+- **Properties**:
+  - `id: string` (readonly)
+  - `chatRoomId: string` (readonly)
+  - `userId: string` (readonly)
+  - `text: string`
+  - `sentAt: Date` (readonly)
+
+### ChatParticipant Entity
+- **Purpose**: Represents a user's participation in a chat room
+- **Properties**:
+  - `id: string` (readonly)
+  - `chatRoomId: string` (readonly)
+  - `userId: string` (readonly)
+  - `joinedAt: Date` (readonly)
   - `questionnaireId: string` (readonly)
   - `userId: string` (readonly)
   - `institutionId: string` (readonly)
@@ -192,7 +234,101 @@ This document describes the domain model of the ClimaEdu platform, organized by 
   - `calculateScore(): number`
   - `checkPass(passingScore): boolean`
 
+### LessonProgress Entity
+- **Purpose**: Represents a student's progress in a lesson (aggregate root)
+- **Properties**:
+  - `id: string` (readonly)
+  - `userId: string` (readonly)
+  - `lessonId: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `status: LessonProgressStatus`
+  - `startedAt: Date` (readonly)
+  - `completedAt: Date | null`
+  - `lastAccessedAt: Date`
+  - `contentProgresses: ContentProgress[]`
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): LessonProgress`
+  - `updateContentProgress(contentId, progressPercentage, timeSpent?, lastPosition?): void`
+  - `markContentAsCompleted(contentId): void`
+  - `checkAndUpdateLessonCompletion(): void`
+  - `forceComplete(): void`
+  - `calculateOverallProgress(): number`
+  - `getTotalTimeSpent(): number`
+  - `getContentProgress(contentId): ContentProgress | null`
+  - `isCompleted(): boolean`
+  - `hasStarted(): boolean`
+  - `touch(): void`
+
+### ContentProgress Value Object
+- **Purpose**: Represents the progress of a specific content within a lesson
+- **Properties**:
+  - `contentId: string` (readonly)
+  - `status: ContentProgressStatus`
+  - `progressPercentage: number`
+  - `timeSpent: number`
+  - `startedAt: Date` (readonly)
+  - `completedAt: Date | null`
+  - `lastPosition: number | null`
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): ContentProgress`
+  - `updateProgress(progressPercentage, timeSpent?, lastPosition?): void`
+  - `markAsCompleted(): void`
+  - `isCompleted(): boolean`
+  - `hasStarted(): boolean`
+  - `getTimeSpentInMinutes(): number`
+  - `getTimeSpentInHours(): number`
+
+### LessonProgressStatus Enum
+- **Values**:
+  - `NOT_STARTED`
+  - `IN_PROGRESS`
+  - `COMPLETED`
+
+### Trail Entity
+- **Purpose**: Represents a learning trail composed of multiple courses
+- **Properties**:
+  - `id: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `title: string`
+  - `description: string`
+  - `courseIds: string[]`
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): Trail`
+  - `updateTitle(newTitle): void`
+  - `updateDescription(newDescription): void`
+  - `addCourse(courseId): void`
+  - `removeCourse(courseId): void`
+  - `touch(): void`
+
+### ContentProgressStatus Enum
+- **Values**:
+  - `NOT_STARTED`
+  - `IN_PROGRESS`
+  - `COMPLETED`
+
 ## Enrollment Bounded Context
+
+### Class Entity
+- **Purpose**: Represents a group of students enrolled in a course or trail
+- **Properties**:
+  - `id: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `name: string`
+  - `courseId: string | null`
+  - `trailId: string | null`
+  - `enrollmentIds: string[]`
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): Class`
+  - `updateName(newName): void`
+  - `addEnrollment(enrollmentId): void`
+  - `removeEnrollment(enrollmentId): void`
+  - `touch(): void`
 
 ### Enrollment Entity
 - **Purpose**: Represents a user's enrollment in a course
@@ -245,6 +381,23 @@ This document describes the domain model of the ClimaEdu platform, organized by 
   - `updateLogoUrl(newLogoUrl): InstitutionSettings`
   - `updatePrimaryColor(newColor): InstitutionSettings`
   - `updateSecondaryColor(newColor): InstitutionSettings`
+
+### UserInstitution Entity
+- **Purpose**: Represents an association between a user and an institution with a specific role
+- **Properties**:
+  - `id: string` (readonly)
+  - `userId: string` (readonly)
+  - `institutionId: string` (readonly)
+  - `userRole: UserRole` (must be LOCAL_ADMIN or CONTENT_MANAGER)
+  - `createdAt: Date` (readonly)
+  - `updatedAt: Date`
+- **Methods**:
+  - `static create(params): UserInstitution`
+  - `updateUserRole(newUserRole): void`
+  - `touch(): void`
+- **Business Rules**:
+  - Only LOCAL_ADMIN and CONTENT_MANAGER roles are allowed for institution associations
+  - Validation is enforced in both create and updateUserRole methods
 
 ## Certificate Bounded Context
 

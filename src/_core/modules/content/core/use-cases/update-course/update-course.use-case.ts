@@ -37,6 +37,10 @@ export class UpdateCourseUseCase {
       course.updateDescription(input.description);
     }
 
+    if (input.coverImageUrl !== undefined) {
+      course.updateCoverImageUrl(input.coverImageUrl);
+    }
+
     // Save the updated course
     const updatedCourse = await this.courseRepository.save(course);
 

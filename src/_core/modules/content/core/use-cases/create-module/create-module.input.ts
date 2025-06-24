@@ -4,5 +4,6 @@
 export interface CreateModuleInput {
   courseId: string;
   title: string;
+  coverImageUrl?: string;
   order: number;
 }

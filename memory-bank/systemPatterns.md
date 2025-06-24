@@ -248,3 +248,70 @@ export const generateCourseId = () => generateId('crs');
 ```
 
 For a complete list of entity prefixes and more details, refer to the `docs/id-convention.md` document.
+
+## Content Module Use Cases
+
+### Course Management
+- CreateCourseUseCase
+- UpdateCourseUseCase
+- AssociateTutorToCourseUseCase
+- ListTutorCoursesUseCase
+
+### Module Management
+- CreateModuleUseCase
+
+### Lesson Management
+- CreateLessonUseCase
+- AddContentToLessonUseCase
+
+### Lesson Progress Management
+- StartLessonProgressUseCase: Initiates progress tracking for a lesson
+- UpdateContentProgressUseCase: Updates progress of specific content within a lesson
+- GetLessonProgressUseCase: Retrieves lesson progress for a user
+- CompleteLessonProgressUseCase: Forces lesson completion (administrative)
+
+### Assessment Management
+- CreateActivityUseCase
+- CreateQuestionnaireUseCase
+- AddQuestionToQuestionnaireUseCase
+- UpdateQuestionUseCase
+- DeleteQuestionUseCase
+- ListQuestionsOfQuestionnaireUseCase
+- SubmitQuestionnaireUseCase
+- RetryQuestionnaireUseCase
+
+## Lesson Progress System
+
+The lesson progress system tracks student progress through educational content using an aggregate pattern:
+
+### Key Components
+
+1. **LessonProgress (Aggregate Root)**:
+   - Tracks overall lesson progress for a student
+   - Contains multiple ContentProgress value objects
+   - Automatically manages lesson completion status
+   - Provides methods for progress calculation and time tracking
+
+2. **ContentProgress (Value Object)**:
+   - Tracks progress of individual content items (videos, PDFs, podcasts)
+   - Stores progress percentage, time spent, and last position
+   - Handles completion status and timestamps
+
+3. **Progress Status Enums**:
+   - LessonProgressStatus: NOT_STARTED, IN_PROGRESS, COMPLETED
+   - ContentProgressStatus: NOT_STARTED, IN_PROGRESS, COMPLETED
+
+### Business Rules
+
+- All content items within a lesson must be completed for lesson completion
+- Progress is automatically saved and can be resumed
+- No sequential requirement within lessons (content can be accessed in any order)
+- Time spent and last position are tracked for media content
+- Lesson completion is automatically determined when all contents reach 100%
+
+### Repository Pattern
+
+- Single LessonProgressRepository handles all progress operations
+- ContentProgress is embedded within LessonProgress (no separate repository)
+- Avoids need for transactions by using aggregate pattern
+- Provides comprehensive query methods for progress tracking

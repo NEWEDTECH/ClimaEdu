@@ -3,6 +3,9 @@ import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, 
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Questionnaire } from '../../../core/entities/Questionnaire';
 import type { QuestionnaireRepository } from '../QuestionnaireRepository';
+import type { QuestionnaireSubmissionRepository } from '../QuestionnaireSubmissionRepository';
+import { container } from '@/_core/shared/container';
+import { Register } from '@/_core/shared/container';
 import { nanoid } from 'nanoid';
 
 /**
@@ -83,12 +86,20 @@ export class FirebaseQuestionnaireRepository implements QuestionnaireRepository 
   async save(questionnaire: Questionnaire): Promise<Questionnaire> {
     const questionnaireRef = doc(firestore, this.collectionName, questionnaire.id);
     
+    // Convert Question objects to plain objects
+    const questionsData = questionnaire.questions.map(question => ({
+      id: question.id,
+      questionText: question.questionText,
+      options: question.options,
+      correctAnswerIndex: question.correctAnswerIndex
+    }));
+    
     // Prepare the questionnaire data for Firestore
     const questionnaireData = {
       id: questionnaire.id,
       lessonId: questionnaire.lessonId,
       title: questionnaire.title,
-      questions: questionnaire.questions,
+      questions: questionsData,
       maxAttempts: questionnaire.maxAttempts,
       passingScore: questionnaire.passingScore
     };
@@ -122,5 +133,29 @@ export class FirebaseQuestionnaireRepository implements QuestionnaireRepository 
 
     await deleteDoc(questionnaireRef);
     return true;
+  }
+
+  /**
+   * Check if a student has passed a questionnaire
+   * @param questionnaireId Questionnaire id
+   * @param userId User id
+   * @returns true if the student has passed, false otherwise
+   */
+  async hasStudentPassed(questionnaireId: string, userId: string): Promise<boolean> {
+    try {
+      // Get the questionnaire submission repository
+      const submissionRepository = container.get<QuestionnaireSubmissionRepository>(
+        Register.content.repository.QuestionnaireSubmissionRepository
+      );
+
+      // Find all submissions for this questionnaire and user
+      const submissions = await submissionRepository.findByQuestionnaireAndUser(questionnaireId, userId);
+
+      // Check if any submission has passed
+      return submissions.some(submission => submission.passed);
+    } catch (error) {
+      console.error('Error checking if student passed questionnaire:', error);
+      return false;
+    }
   }
 }

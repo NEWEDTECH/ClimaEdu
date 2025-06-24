@@ -70,6 +70,7 @@ export class EnrollInCourseUseCase {
       id: enrollmentId,
       userId: input.userId,
       courseId: input.courseId,
+      institutionId: input.institutionId,
       status: EnrollmentStatus.ENROLLED,
       enrolledAt: new Date()
     });

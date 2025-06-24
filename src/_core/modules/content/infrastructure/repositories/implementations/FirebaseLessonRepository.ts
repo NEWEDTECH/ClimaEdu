@@ -33,6 +33,7 @@ export class FirebaseLessonRepository implements LessonRepository {
       id: data.id,
       moduleId: data.moduleId,
       title: data.title,
+      coverImageUrl: data.coverImageUrl,
       order: data.order,
       contents: data.contents || [],
       activity: data.activity,
@@ -65,15 +66,44 @@ export class FirebaseLessonRepository implements LessonRepository {
   async save(lesson: Lesson): Promise<Lesson> {
     const lessonRef = doc(firestore, this.collectionName, lesson.id);
     
+    let activityData = null;
+    if (lesson.activity) {
+      activityData = {
+        id: lesson.activity.id,
+        lessonId: lesson.activity.lessonId,
+        description: lesson.activity.description,
+        instructions: lesson.activity.instructions,
+        resourceUrl: lesson.activity.resourceUrl
+      };
+    }
+    
+    let questionnaireData = null;
+    if (lesson.questionnaire) {
+      questionnaireData = {
+        id: lesson.questionnaire.id,
+        lessonId: lesson.questionnaire.lessonId,
+        title: lesson.questionnaire.title,
+        maxAttempts: lesson.questionnaire.maxAttempts,
+        passingScore: lesson.questionnaire.passingScore,
+        questions: lesson.questionnaire.questions.map(q => ({
+          id: q.id,
+          questionText: q.questionText,
+          options: q.options,
+          correctAnswerIndex: q.correctAnswerIndex
+        }))
+      };
+    }
+    
     // Prepare the lesson data for Firestore
     const lessonData = {
       id: lesson.id,
       moduleId: lesson.moduleId,
       title: lesson.title,
+      coverImageUrl: lesson.coverImageUrl,
       order: lesson.order,
       contents: lesson.contents,
-      activity: lesson.activity,
-      questionnaire: lesson.questionnaire
+      activity: activityData,
+      questionnaire: questionnaireData
     };
 
     // Check if the lesson already exists

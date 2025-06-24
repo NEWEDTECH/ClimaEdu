@@ -15,6 +15,11 @@ export interface ListEnrollmentsInput {
   courseId?: string;
 
   /**
+   * Optional institution ID to filter enrollments by institution
+   */
+  institutionId?: string;
+
+  /**
    * Optional status to filter enrollments by status
    */
   status?: EnrollmentStatus;

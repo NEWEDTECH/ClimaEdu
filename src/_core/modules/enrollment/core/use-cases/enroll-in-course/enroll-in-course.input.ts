@@ -11,4 +11,9 @@ export interface EnrollInCourseInput {
    * The ID of the course to enroll in
    */
   courseId: string;
+
+  /**
+   * The ID of the institution where the enrollment takes place
+   */
+  institutionId: string;
 }

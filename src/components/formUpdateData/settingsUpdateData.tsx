@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { DashboardLayout } from '@/components/layout';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,7 +45,6 @@ export default function FormUpdateData() {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-        reset,
         setValue
     } = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsFormSchema),
@@ -67,7 +65,7 @@ export default function FormUpdateData() {
         }
     }, [profile, setValue]);
 
-    const onSubmit = async (data: SettingsFormValues) => {
+    const onSubmit = async () => {
         try {
             alert('Configurações salvas com sucesso!');
         } catch (error) {
