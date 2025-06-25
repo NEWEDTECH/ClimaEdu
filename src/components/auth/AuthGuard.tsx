@@ -23,7 +23,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     setInfoInstitutionsRole
   } = useProfile();
   
-  const { getLastInstitutionId, setLastInstitutionId } = useInstitutionStorage();
+  const { /*getLastInstitutionId,*/ setLastInstitutionId } = useInstitutionStorage();
 
   const initializeUserData = async (userId: string) => {
     try {
@@ -65,7 +65,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         setInfoInstitutionsRole(institutionsRoleData);
 
         // Passo 3: Buscar no localStorage o último ID da instituição que está salvo
-        currentInstitutionId = getLastInstitutionId();
+        // currentInstitutionId = getLastInstitutionId();
 
         // Se não tiver nenhum, pegar qualquer ID de instituição que foi obtido
         if (!currentInstitutionId && institutionsRoleData.length > 0) {
@@ -80,6 +80,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         const institutionRepository = container.get<InstitutionRepository>(
           Register.institution.repository.InstitutionRepository
         );
+        console.log('🔍 AuthGuard: Fetching institution with ID:', currentInstitutionId);
         const institution = await institutionRepository.findById(currentInstitutionId);
 
         if (!institution) {
