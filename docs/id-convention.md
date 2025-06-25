@@ -44,6 +44,10 @@ The table below defines the prefixes for all system entities, organized by Bound
 | **Badge**               | `bdg_`           | `badges`                   |
 | **StudentBadge**        | `sb_`            | `student_badges` (subcol. of user) |
 | **Report (all types)**  | `rpt_`           | `reports` or generated on-demand |
+| **Post**                | `pst_`           | `posts`                    |
+| **Comment**             | `cmt_`           | `comments`                 |
+| **PostLike**            | `plike_`         | `post_likes`               |
+| **CommentLike**         | `clike_`         | `comment_likes`            |
 | **Email (Value Object)**| (inline)         | embedded in `users`        |
 
 ## Implementation Guidelines
@@ -90,7 +94,11 @@ institutions (ins_)
                     │                                   └── questions (qst_)
         ├── enrollments (enr_)
         ├── certificates (cert_)
-        └── reports (rpt_)
+        ├── reports (rpt_)
+        ├── posts (pst_)
+        ├── comments (cmt_)
+        ├── post_likes (plike_)
+        └── comment_likes (clike_)
 ```
 
 ## Benefits
