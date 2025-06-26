@@ -247,7 +247,7 @@ Implementation of a social network system within ClimaEdu platform, featuring Po
 ### 5.2 Container Registration
 - [x] Create `src/_core/shared/container/modules/social/register.ts`
   - [x] Register repository implementations
-  - [x] Register all use cases with proper dependencies
+  - [x] Register all use cases with proper dependencies (FIXED: All use cases now properly registered)
   - [x] Follow singleton pattern for repositories
   - [x] Follow transient pattern for use cases
 

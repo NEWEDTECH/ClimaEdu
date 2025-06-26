@@ -17,6 +17,7 @@ type DropdownSection = {
 const studentItems: DropdownItem[] = [
   { label: 'Conteúdos', href: '/student/contents' },
   { label: 'Atividades', href: '/student/activities' },
+  { label: 'Social', href: '/social' },
   { label: 'Discussões', href: '/student/forum' },
   { label: 'Questionários', href: '/student/questionnaire' },
   { label: 'Conquistas', href: '/student/achievements' },
