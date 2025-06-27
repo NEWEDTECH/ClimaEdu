@@ -31,6 +31,10 @@ export class UpdateTrailUseCase {
       trail.updateCourses(input.courseIds);
     }
 
+    if (input.coverImageUrl !== undefined) {
+      trail.updateCoverImageUrl(input.coverImageUrl);
+    }
+
     await this.trailRepository.save(trail);
 
     return new UpdateTrailOutput(trail);

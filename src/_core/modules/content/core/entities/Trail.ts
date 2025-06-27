@@ -4,6 +4,7 @@ interface TrailProps {
   title: string;
   description: string;
   courseIds: string[];
+  coverImageUrl?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -14,6 +15,7 @@ export class Trail {
   private _title: string;
   private _description: string;
   private _courseIds: string[];
+  private _coverImageUrl: string | null;
   private readonly _createdAt: Date;
   private _updatedAt: Date;
 
@@ -23,6 +25,7 @@ export class Trail {
     this._title = props.title;
     this._description = props.description;
     this._courseIds = props.courseIds;
+    this._coverImageUrl = props.coverImageUrl ?? null;
     this._createdAt = props.createdAt ?? new Date();
     this._updatedAt = props.updatedAt ?? new Date();
   }
@@ -55,6 +58,10 @@ export class Trail {
     return this._courseIds;
   }
 
+  public get coverImageUrl(): string | null {
+    return this._coverImageUrl;
+  }
+
   public get createdAt(): Date {
     return this._createdAt;
   }
@@ -70,6 +77,11 @@ export class Trail {
 
   public updateDescription(newDescription: string): void {
     this._description = newDescription;
+    this.touch();
+  }
+
+  public updateCoverImageUrl(newCoverImageUrl: string | null): void {
+    this._coverImageUrl = newCoverImageUrl;
     this.touch();
   }
 

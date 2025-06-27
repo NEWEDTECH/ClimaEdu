@@ -21,6 +21,7 @@ export class CreateTrailUseCase {
       title: input.title,
       description: input.description,
       courseIds: input.courseIds,
+      coverImageUrl: input.coverImageUrl,
     });
 
     await this.trailRepository.save(trail);
