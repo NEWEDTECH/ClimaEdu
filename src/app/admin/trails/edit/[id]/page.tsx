@@ -18,6 +18,8 @@ import { CourseRepository } from '@/_core/modules/content/infrastructure/reposit
 import { Trail } from '@/_core/modules/content/core/entities/Trail'
 import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case'
 import { EnrollInTrailInput } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.input'
+import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.use-case'
+import { ListEnrollmentsInput } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.input'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
@@ -51,7 +53,59 @@ export default function EditTrailPage() {
     const [filteredStudents, setFilteredStudents] = useState<User[]>([])
     const [searchStudentTerm, setSearchStudentTerm] = useState<string>('')
     const [showStudentDropdown, setShowStudentDropdown] = useState<boolean>(false)
-    const [selectedStudents, setSelectedStudents] = useState<Array<{ id: string, name: string, email: string }>>([])
+    const [trailStudents, setTrailStudents] = useState<Array<{ id: string, name: string, email: string, isEnrolled: boolean }>>([])
+
+    // Load enrolled students for the trail
+    const loadTrailStudents = async () => {
+        if (!trail || trailCourses.length === 0) {
+            setTrailStudents([])
+            return
+        }
+
+        try {
+            const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
+                Register.enrollment.useCase.ListEnrollmentsUseCase
+            )
+
+            const userRepository = container.get<UserRepository>(
+                Register.user.repository.UserRepository
+            )
+
+            // Get enrollments for all courses in the trail
+            const enrollmentPromises = trailCourses.map(async (course) => {
+                const input: ListEnrollmentsInput = { courseId: course.id }
+                const output = await listEnrollmentsUseCase.execute(input)
+                return output.enrollments
+            })
+
+            const allEnrollments = (await Promise.all(enrollmentPromises)).flat()
+
+            // Get unique user IDs from enrollments
+            const uniqueUserIds = [...new Set(allEnrollments.map(enrollment => enrollment.userId))]
+
+            // Fetch user details for each unique user ID
+            const userPromises = uniqueUserIds.map(async (userId) => {
+                const user = await userRepository.findById(userId)
+                return user
+            })
+
+            const allUsers = await Promise.all(userPromises)
+
+            // Filter out null users and only keep students, mark them as enrolled
+            const enrolledStudentsList = allUsers
+                .filter((user): user is User => user !== null && user.role === UserRole.STUDENT)
+                .map(user => ({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email.value,
+                    isEnrolled: true
+                }))
+
+            setTrailStudents(enrolledStudentsList)
+        } catch (err) {
+            console.error('Error fetching enrolled students:', err)
+        }
+    }
 
     // Load students for the institution
     useEffect(() => {
@@ -95,6 +149,11 @@ export default function EditTrailPage() {
 
         fetchStudents()
     }, [trail])
+
+    // Load enrolled students when trail courses change
+    useEffect(() => {
+        loadTrailStudents()
+    }, [trail, trailCourses])
 
     // Filter students based on search term
     useEffect(() => {
@@ -227,31 +286,58 @@ export default function EditTrailPage() {
             const output = await updateTrailUseCase.execute(input)
             setTrail(output.trail)
 
-            // Enroll selected students if any
-            if (selectedStudents.length > 0) {
-                const enrollInTrailUseCase = container.get<EnrollInTrailUseCase>(
-                    Register.enrollment.useCase.EnrollInTrailUseCase
-                )
+            // Handle student enrollments/removals
+            const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
+                Register.enrollment.useCase.ListEnrollmentsUseCase
+            )
 
-                // Enroll each selected student
-                const enrollmentPromises = selectedStudents.map(async (student) => {
-                    const enrollInput = new EnrollInTrailInput(
-                        student.id,
-                        trailId,
-                        trail!.institutionId
-                    )
-                    return await enrollInTrailUseCase.execute(enrollInput)
-                })
+            const enrollmentRepository = container.get<EnrollmentRepository>(
+                Register.enrollment.repository.EnrollmentRepository
+            )
 
-                await Promise.all(enrollmentPromises)
+            const enrollInTrailUseCase = container.get<EnrollInTrailUseCase>(
+                Register.enrollment.useCase.EnrollInTrailUseCase
+            )
 
-                // Clear selected students after successful enrollment
-                setSelectedStudents([])
-                
-                console.log(`Successfully enrolled ${selectedStudents.length} students in trail`)
+            // Process each student in trailStudents
+            for (const student of trailStudents) {
+                if (student.isEnrolled) {
+                    // Student should be enrolled - check if they need to be enrolled
+                    const enrollmentPromises = trailCourses.map(async (course) => {
+                        const input: ListEnrollmentsInput = { courseId: course.id }
+                        const output = await listEnrollmentsUseCase.execute(input)
+                        const existingEnrollment = output.enrollments.find(e => e.userId === student.id)
+                        
+                        if (!existingEnrollment) {
+                            // Need to enroll this student in this course
+                            const enrollInput = new EnrollInTrailInput(
+                                student.id,
+                                trailId,
+                                trail!.institutionId
+                            )
+                            await enrollInTrailUseCase.execute(enrollInput)
+                        }
+                    })
+                    await Promise.all(enrollmentPromises)
+                } else {
+                    // Student should be removed - remove from all courses
+                    const removalPromises = trailCourses.map(async (course) => {
+                        const input: ListEnrollmentsInput = { courseId: course.id }
+                        const output = await listEnrollmentsUseCase.execute(input)
+                        const enrollment = output.enrollments.find(e => e.userId === student.id)
+                        
+                        if (enrollment) {
+                            await enrollmentRepository.delete(enrollment.id)
+                        }
+                    })
+                    await Promise.all(removalPromises)
+                }
             }
 
-            // Show success message (you could add a toast notification here)
+            // Refresh trail students list
+            await loadTrailStudents()
+
+            // Show success message
             console.log('Trail updated successfully')
         } catch (err) {
             console.error('Error updating trail:', err)
@@ -260,7 +346,6 @@ export default function EditTrailPage() {
             setSaving(false)
         }
     }
-
 
     const handleRemoveCourse = (courseId: string) => {
         // Move course from trail courses to available (local state only)
@@ -271,9 +356,8 @@ export default function EditTrailPage() {
         }
     }
 
-
-    const handleRemoveStudent = (studentId: string) => {
-        setSelectedStudents(prev => prev.filter(student => student.id !== studentId))
+    const handleRemoveTrailStudent = (studentId: string) => {
+        setTrailStudents(prev => prev.filter(student => student.id !== studentId))
     }
 
     const handleCancel = () => {
@@ -375,9 +459,9 @@ export default function EditTrailPage() {
                                         <div className="mb-4">
                                             <h4 className="text-sm font-medium mb-3">Cursos na Trilha ({trailCourses.length})</h4>
                                             <div className="flex flex-wrap gap-2">
-                                                {trailCourses.map((course, index) => (
+                                                {trailCourses.map((course) => (
                                                     <div key={course.id} className="relative bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                                                        <Tooltip label={course.title} />
+                                                        <Tooltip label={course.title}  />
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveCourse(course.id)}
@@ -427,22 +511,21 @@ export default function EditTrailPage() {
                                     </div>
                                 </div>
 
-
                                 {/* Student Enrollment Section */}
                                 <div>
-                                    <h3 className="text-lg font-medium mb-4">Matricular Estudantes</h3>
+                                    <h3 className="text-lg font-medium mb-4">Gerenciar Estudantes</h3>
                                     
-                                    {/* Selected Students */}
-                                    {selectedStudents.length > 0 && (
+                                    {/* Trail Students List */}
+                                    {trailStudents.length > 0 && (
                                         <div className="mb-4">
-                                            <h4 className="text-sm font-medium mb-3">Estudantes Selecionados ({selectedStudents.length})</h4>
+                                            <h4 className="text-sm font-medium mb-3">Estudantes na Trilha ({trailStudents.length})</h4>
                                             <div className="flex flex-wrap gap-2">
-                                                {selectedStudents.map((student) => (
+                                                {trailStudents.map((student) => (
                                                     <div key={student.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                                                         <Tooltip label={student.email} />
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleRemoveStudent(student.id)}
+                                                            onClick={() => handleRemoveTrailStudent(student.id)}
                                                             className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
                                                             aria-label="Remover estudante"
                                                         >
@@ -456,7 +539,7 @@ export default function EditTrailPage() {
 
                                     <div className="relative">
                                         <label htmlFor="studentSearch" className="block text-sm font-medium mb-2">
-                                            Buscar Estudante
+                                            Adicionar Estudante
                                         </label>
                                         <InputText
                                             id="studentSearch"
@@ -474,18 +557,19 @@ export default function EditTrailPage() {
                                         {showStudentDropdown && searchStudentTerm.trim() !== '' && filteredStudents.length > 0 && (
                                             <div className="student-dropdown absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
                                                 {filteredStudents
-                                                    .filter(student => !selectedStudents.some(selected => selected.id === student.id))
+                                                    .filter(student => !trailStudents.some(trailStudent => trailStudent.id === student.id))
                                                     .map((student) => (
                                                         <div
                                                             key={student.id}
                                                             className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                                                             onClick={() => {
-                                                                setSelectedStudents(prev => [
+                                                                setTrailStudents(prev => [
                                                                     ...prev,
                                                                     {
                                                                         id: student.id,
                                                                         name: student.name,
-                                                                        email: student.email.value
+                                                                        email: student.email.value,
+                                                                        isEnrolled: true
                                                                     }
                                                                 ])
                                                                 setSearchStudentTerm('')
@@ -507,9 +591,10 @@ export default function EditTrailPage() {
                                             </div>
                                         )}
                                     </div>
+                                    <p className="text-gray-500 text-xs mt-1">
+                                        Digite para buscar estudantes da instituição
+                                    </p>
                                 </div>
-
-
 
                                 <div className="flex gap-4 pt-4">
                                     <Button
