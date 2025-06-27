@@ -219,7 +219,7 @@ export function ChatDropdown({ courseId, classId, userId }: ChatDropdownProps) {
 
       {/* Chat Dropdown Panel */}
       {isOpen && (
-        <div className="absolute top-16 right-0 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col animate-in slide-in-from-top-2 duration-300">
+        <div className="absolute top-16 right-0 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col animate-in slide-in-from-top-2 duration-300" style={{ height: 'calc(100vh - 10rem)' }}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
             <div className="flex items-center space-x-2">
