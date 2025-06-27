@@ -10,6 +10,7 @@ import { container, Register } from '@/_core/shared/container';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/create-module/create-module.use-case';
+import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 
 type ModuleData = {
@@ -20,6 +21,8 @@ type ModuleData = {
   lessons: LessonData[];
   isEditing?: boolean;
   editingTitle?: string;
+  isAddingLesson?: boolean;
+  newLessonTitle?: string;
 }
 
 type LessonData = {
@@ -39,6 +42,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingLessons, setIsLoadingLessons] = useState<Record<string, boolean>>({});
   const [isUpdatingModule, setIsUpdatingModule] = useState<Record<string, boolean>>({});
+  const [isCreatingLesson, setIsCreatingLesson] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
 
   const fetchModules = useCallback(async () => {
@@ -107,6 +111,70 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
       setIsLoadingLessons(prev => ({ ...prev, [moduleId]: false }));
     }
   }, [isLoadingLessons]);
+
+  const handleAddLesson = (moduleId: string) => {
+    setModules(prevModules =>
+      prevModules.map(module =>
+        module.id === moduleId
+          ? { ...module, isAddingLesson: true, newLessonTitle: '' }
+          : module
+      )
+    );
+  };
+
+  const handleCancelAddLesson = (moduleId: string) => {
+    setModules(prevModules =>
+      prevModules.map(module =>
+        module.id === moduleId
+          ? { ...module, isAddingLesson: false, newLessonTitle: '' }
+          : module
+      )
+    );
+  };
+
+  const handleCreateLesson = async (moduleId: string, lessonTitle: string) => {
+    if (!lessonTitle.trim()) {
+      alert('O título da lição não pode estar vazio');
+      return;
+    }
+
+    setIsCreatingLesson(prev => ({ ...prev, [moduleId]: true }));
+
+    try {
+      const createLessonUseCase = container.get<CreateLessonUseCase>(
+        Register.content.useCase.CreateLessonUseCase
+      );
+
+      const result = await createLessonUseCase.execute({
+        moduleId: moduleId,
+        title: lessonTitle
+      });
+
+      // Update the module with the new lesson
+      setModules(prevModules =>
+        prevModules.map(module =>
+          module.id === moduleId
+            ? {
+                ...module,
+                lessons: [...module.lessons, {
+                  id: result.lesson.id,
+                  title: result.lesson.title,
+                  order: result.lesson.order
+                }].sort((a, b) => a.order - b.order),
+                lessonsCount: module.lessonsCount + 1,
+                isAddingLesson: false,
+                newLessonTitle: ''
+              }
+            : module
+        )
+      );
+    } catch (error) {
+      console.error('Erro ao criar lição:', error);
+      alert(`Falha ao criar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    } finally {
+      setIsCreatingLesson(prev => ({ ...prev, [moduleId]: false }));
+    }
+  };
 
   const handleEditModule = (moduleId: string, currentTitle: string) => {
     setModules(prevModules =>
@@ -322,7 +390,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
                         <Button
                           type="button"
                           onClick={() => handleEditModule(module.id, module.title)}
@@ -330,6 +398,55 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                         >
                           Editar Módulo
                         </Button>
+                        <Button
+                          type="button"
+                          onClick={() => handleAddLesson(module.id)}
+                          className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100"
+                        >
+                          Adicionar Lição
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Add lesson section */}
+                    {module.isAddingLesson && (
+                      <div className="p-4 border rounded-md bg-green-50 dark:bg-green-900/20">
+                        <h4 className="text-sm font-medium mb-3">Adicionar Nova Lição</h4>
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <InputText
+                              id={`newLessonTitle-${module.id}`}
+                              value={module.newLessonTitle || ''}
+                              onChange={(e) => {
+                                setModules(prevModules =>
+                                  prevModules.map(m =>
+                                    m.id === module.id
+                                      ? { ...m, newLessonTitle: e.target.value }
+                                      : m
+                                  )
+                                );
+                              }}
+                              placeholder="Digite o título da lição"
+                              required
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() => handleCreateLesson(module.id, module.newLessonTitle || '')}
+                            disabled={isCreatingLesson[module.id]}
+                            className="text-xs px-3 py-2"
+                          >
+                            {isCreatingLesson[module.id] ? 'Salvando...' : 'Salvar'}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => handleCancelAddLesson(module.id)}
+                            disabled={isCreatingLesson[module.id]}
+                            className="border bg-transparent text-xs px-3 py-2 hover:bg-gray-100"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
                       </div>
                     )}
 
@@ -355,7 +472,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             <span className="text-sm">
                               {lessonIndex + 1}. {lesson.title}
                             </span>
-                            <Link href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}>
+                            <Link href={`/admin/courses/edit/${courseId}/modules/${module.id}/lessons/${lesson.id}`}>
                               <Button className="border bg-transparent text-xs px-2 py-1 hover:bg-gray-100">
                                 Editar
                               </Button>
