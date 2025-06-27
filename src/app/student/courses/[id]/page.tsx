@@ -17,6 +17,8 @@ import { Course } from '@/_core/modules/content/core/entities/Course';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
+import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
+import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
 import { ChatDropdown } from '@/components/chat';
 
@@ -134,6 +136,7 @@ export default function CoursePage() {
     const [activeLesson, setActiveLesson] = useState<string | null>(null);
     const [activeContent, setActiveContent] = useState<Content | null>(null);
     const [activeQuestionnaire, setActiveQuestionnaire] = useState<Questionnaire | null>(null);
+    const [activeActivity, setActiveActivity] = useState<Activity | null>(null);
     const [attemptCount, setAttemptCount] = useState<number>(0);
     const [hasPassedQuestionnaire, setHasPassedQuestionnaire] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -144,6 +147,21 @@ export default function CoursePage() {
     const [overlayTimer, setOverlayTimer] = useState<NodeJS.Timeout | null>(null);
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
 
+
+    // Function to load lesson activity
+    const loadLessonActivity = useCallback(async (lessonId: string) => {
+        try {
+            const activityRepository = container.get<ActivityRepository>(
+                Register.content.repository.ActivityRepository
+            );
+
+            const activity = await activityRepository.findByLessonId(lessonId);
+            setActiveActivity(activity);
+        } catch (error) {
+            console.error('Error loading lesson activity:', error);
+            setActiveActivity(null);
+        }
+    }, []);
 
     // Function to load lesson questionnaire
     const loadLessonQuestionnaire = useCallback(async (lessonId: string) => {
@@ -220,10 +238,13 @@ export default function CoursePage() {
 
             // Load questionnaire for this lesson
             await loadLessonQuestionnaire(lessonId);
+            
+            // Load activity for this lesson
+            await loadLessonActivity(lessonId);
         } catch (error) {
             console.error('Error loading lesson content:', error);
         }
-    }, [loadLessonQuestionnaire]);
+    }, [loadLessonQuestionnaire, loadLessonActivity]);
 
     const handleLessonSelect = async (lessonId: string) => {
         setActiveLesson(lessonId);
@@ -541,11 +562,161 @@ export default function CoursePage() {
 
                                             {activeLesson ? (
                                                 <div>
-                                                    {/* Activity content would go here */}
-                                                    <p className="text-gray-500">Nenhuma atividade disponível para esta lição.</p>
+                                                    {activeActivity ? (
+                                                        <div className="space-y-6">
+                                                            {/* Activity Header */}
+                                                            <div className="border-b border-gray-200 dark:border-gray-600 pb-4">
+                                                                <div className="flex items-center gap-3 mb-3">
+                                                                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-md">
+                                                                        <svg
+                                                                            className="w-5 h-5 text-white"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth="2"
+                                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                            />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                                                            Atividade da Lição
+                                                                        </h4>
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                            Complete a atividade para consolidar seu aprendizado
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Activity Description */}
+                                                            <div className="space-y-4">
+                                                                <div>
+                                                                    <h5 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+                                                                        Descrição
+                                                                    </h5>
+                                                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                                                                            {activeActivity.description}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Activity Instructions */}
+                                                                <div>
+                                                                    <h5 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+                                                                        Instruções
+                                                                    </h5>
+                                                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                                                        <div className="flex items-start gap-3">
+                                                                            <div className="flex-shrink-0 mt-1">
+                                                                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                                </svg>
+                                                                            </div>
+                                                                            <div className="flex-1">
+                                                                                <p className="text-blue-800 dark:text-blue-200 leading-relaxed whitespace-pre-wrap">
+                                                                                    {activeActivity.instructions}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Resource URL if available */}
+                                                                {activeActivity.resourceUrl && (
+                                                                    <div>
+                                                                        <h5 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+                                                                            Recursos
+                                                                        </h5>
+                                                                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="flex-shrink-0">
+                                                                                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                                    </svg>
+                                                                                </div>
+                                                                                <div className="flex-1">
+                                                                                    <p className="text-green-800 dark:text-green-200 font-medium mb-1">
+                                                                                        Material de apoio disponível
+                                                                                    </p>
+                                                                                    <a
+                                                                                        href={activeActivity.resourceUrl}
+                                                                                        target="_blank"
+                                                                                        rel="noopener noreferrer"
+                                                                                        className="inline-flex items-center gap-2 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                                                                                    >
+                                                                                        <span>Acessar recurso</span>
+                                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                                        </svg>
+                                                                                    </a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Activity Status/Action */}
+                                                                <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
+                                                                    <div className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="flex-shrink-0">
+                                                                                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                                </svg>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
+                                                                                    Atividade Prática
+                                                                                </p>
+                                                                                <p className="text-yellow-700 dark:text-yellow-300 text-sm">
+                                                                                    Complete esta atividade seguindo as instruções acima
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex-shrink-0">
+                                                                            <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-8">
+                                                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </div>
+                                                            <p className="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">
+                                                                Nenhuma atividade disponível
+                                                            </p>
+                                                            <p className="text-gray-400 dark:text-gray-500 text-sm">
+                                                                Esta lição não possui atividades práticas.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ) : (
-                                                <p className="text-gray-500">Selecione uma lição para ver as atividades.</p>
+                                                <div className="text-center py-8">
+                                                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                        </svg>
+                                                    </div>
+                                                    <p className="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">
+                                                        Selecione uma lição
+                                                    </p>
+                                                    <p className="text-gray-400 dark:text-gray-500 text-sm">
+                                                        Escolha uma lição na barra lateral para ver as atividades disponíveis.
+                                                    </p>
+                                                </div>
                                             )}
                                         </div>
                                     </TabsContent>
