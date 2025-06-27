@@ -53,6 +53,9 @@ Institution
 - **Course.title**: Name displayed to students, identifying the learning path.
 - **Course.institutionId**: The institution that owns the course.
 - **Course.coverImageUrl**: URL of the cover image that visually represents the course in the user interface.
+- **Trail.title**: Name displayed to students, identifying the learning trail.
+- **Trail.institutionId**: The institution that owns the trail.
+- **Trail.coverImageUrl**: URL of the cover image that visually represents the trail in the user interface.
 - **Module.coverImageUrl**: URL of the cover image that visually represents the module in the user interface.
 - **Lesson.coverImageUrl**: URL of the cover image that visually represents the lesson in the user interface.
 - **CourseTutor.userId**: The ID of the tutor associated with the course.
@@ -101,6 +104,7 @@ Institution
 - `title`: The title of the trail
 - `description`: A detailed description of the trail
 - `courseIds`: An array of course IDs to be included in the trail
+- `coverImageUrl` (optional): URL of the cover image that visually represents the trail
 
 **Process**:
 1. Creates a new Trail entity with the provided data
@@ -110,6 +114,7 @@ Institution
 - Trail title cannot be empty
 - Trail description cannot be empty
 - Institution ID must be valid
+- Cover image URL, if provided, should be a valid URL
 
 ### UpdateTrailUseCase
 
@@ -119,6 +124,7 @@ Institution
 - `id`: The ID of the trail to update
 - `title` (optional): The new title for the trail
 - `description` (optional): The new description for the trail
+- `coverImageUrl` (optional): The new cover image URL for the trail (can be null to remove)
 
 **Process**:
 1. Finds the trail by ID
@@ -129,6 +135,7 @@ Institution
 - Trail must exist
 - If title is provided, it cannot be empty
 - If description is provided, it cannot be empty
+- Cover image URL can be updated or set to null to remove the image
 
 ### AddCourseToTrailUseCase
 
