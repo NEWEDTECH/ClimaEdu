@@ -261,27 +261,8 @@ export default function EditTrailPage() {
         }
     }
 
-    const handleAddCourse = () => {
-        if (!selectedCourseId) {
-            setError('Selecione um curso para adicionar')
-            return
-        }
-
-        // Move course from available to trail courses (local state only)
-        const courseToMove = availableCourses.find(course => course.id === selectedCourseId)
-        if (courseToMove) {
-            setTrailCourses(prev => [...prev, courseToMove])
-            setAvailableCourses(prev => prev.filter(course => course.id !== selectedCourseId))
-            setSelectedCourseId('')
-            setError(null)
-        }
-    }
 
     const handleRemoveCourse = (courseId: string) => {
-        if (!confirm('Tem certeza que deseja remover este curso da trilha?')) {
-            return
-        }
-
         // Move course from trail courses to available (local state only)
         const courseToMove = trailCourses.find(course => course.id === courseId)
         if (courseToMove) {
@@ -387,64 +368,63 @@ export default function EditTrailPage() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-medium mb-4">Adicionar Curso</h3>
-                                    <div className="flex gap-4">
-                                        <div className="flex-1">
-                                            <select
-                                                value={selectedCourseId}
-                                                onChange={(e) => setSelectedCourseId(e.target.value)}
-                                                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                                            >
-                                                <option value="">Selecione um curso para adicionar</option>
-                                                {availableCourses.map(course => (
-                                                    <option key={course.id} value={course.id}>
-                                                        {course.title}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <Button
-                                            onClick={handleAddCourse}
-                                            disabled={!selectedCourseId}
-                                            className="bg-green-600 text-white shadow-xs hover:bg-green-700"
-                                        >
-                                            Adicionar
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Current Courses */}
-                                <div>
-                                    <h3 className="text-lg font-medium mb-4">Cursos na Trilha ({trailCourses.length})</h3>
-                                    {trailCourses.length === 0 ? (
-                                        <div className="text-center py-8 text-gray-500">
-                                            Nenhum curso adicionado à trilha ainda
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {trailCourses.map((course, index) => (
-                                                <div key={course.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                                                {index + 1}
-                                                            </span>
-                                                            <div>
-                                                                <h4 className="font-medium">{course.title}</h4>
-                                                                <p className="text-sm text-gray-600 truncate max-w-md">{course.description}</p>
-                                                            </div>
-                                                        </div>
+                                    <h3 className="text-lg font-medium mb-4">Gerenciar Cursos</h3>
+                                    
+                                    {/* Selected Courses */}
+                                    {trailCourses.length > 0 && (
+                                        <div className="mb-4">
+                                            <h4 className="text-sm font-medium mb-3">Cursos na Trilha ({trailCourses.length})</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {trailCourses.map((course, index) => (
+                                                    <div key={course.id} className="relative bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                                        <Tooltip label={course.title} />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveCourse(course.id)}
+                                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                                                            aria-label="Remover curso"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
                                                     </div>
-                                                    <Button
-                                                        onClick={() => handleRemoveCourse(course.id)}
-                                                        className="border bg-red-50 text-red-600 shadow-xs hover:bg-red-100 hover:text-red-700 h-8 rounded-md gap-1.5 px-3"
-                                                    >
-                                                        Remover
-                                                    </Button>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
+
+                                    <div>
+                                        <label htmlFor="courseSelect" className="block text-sm font-medium mb-2">
+                                            Adicionar Curso
+                                        </label>
+                                        <select
+                                            id="courseSelect"
+                                            value={selectedCourseId}
+                                            onChange={(e) => {
+                                                const courseId = e.target.value
+                                                if (courseId) {
+                                                    // Find and add the course immediately
+                                                    const courseToMove = availableCourses.find(course => course.id === courseId)
+                                                    if (courseToMove) {
+                                                        setTrailCourses(prev => [...prev, courseToMove])
+                                                        setAvailableCourses(prev => prev.filter(course => course.id !== courseId))
+                                                        setSelectedCourseId('')
+                                                        setError(null)
+                                                    }
+                                                }
+                                            }}
+                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                                        >
+                                            <option value="">Selecione um curso para adicionar</option>
+                                            {availableCourses.map(course => (
+                                                <option key={course.id} value={course.id}>
+                                                    {course.title}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <p className="text-gray-500 text-xs mt-1">
+                                            Selecione um curso para adicionar à trilha
+                                        </p>
+                                    </div>
                                 </div>
 
 
@@ -459,8 +439,7 @@ export default function EditTrailPage() {
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedStudents.map((student) => (
                                                     <div key={student.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                                        <Tooltip label={`${student.name} - ${student.email}`} />
-                                                        <span className="text-sm font-medium text-blue-800 pr-6">{student.name}</span>
+                                                        <Tooltip label={student.email} />
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveStudent(student.id)}
