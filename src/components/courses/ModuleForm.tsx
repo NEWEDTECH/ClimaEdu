@@ -11,7 +11,6 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/create-module/create-module.use-case';
 import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
-import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 
 type ModuleData = {
   id: string;
