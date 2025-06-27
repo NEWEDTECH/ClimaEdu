@@ -8,9 +8,10 @@ import { AuthSymbols } from './modules/auth/symbols';
 import { EnrollmentSymbols } from './modules/enrollment/symbols';
 import { BadgeSymbols } from './modules/badge/symbols';
 import { ChatSymbols } from './modules/chat/symbols';
+import { PodcastSymbols } from './modules/podcast/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -41,5 +42,9 @@ export const Register = {
   chat: {
     repository: ChatSymbols.repositories,
     useCase: ChatSymbols.useCases,
+  },
+  podcast: {
+    repository: PodcastSymbols.repositories,
+    useCase: PodcastSymbols.useCases,
   },
 };
