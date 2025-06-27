@@ -23,6 +23,7 @@ type DropdownSection = {
 
 const studentItems: DropdownItem[] = [
   { label: 'Conteúdos', href: '/student/contents' },
+  { label: 'Social', href: '/social' },
   { label: 'Atividades', href: '/student/activities' },
   { label: 'Discussões', href: '/student/forum' },
   { label: 'Questionários', href: '/student/questionnaire' },
@@ -30,6 +31,7 @@ const studentItems: DropdownItem[] = [
 ];
 
 const teacherItems: DropdownItem[] = [
+  { label: 'Social', href: '/social' },
   { label: 'Acompanhamento', href: '/tutor/follow-up' },
   { label: 'Relatórios', href: '/tutor/reports' },
   { label: 'Cursos', href: '/tutor/courses' },
@@ -38,6 +40,7 @@ const teacherItems: DropdownItem[] = [
 
 const adminItems: DropdownItem[] = [
   { label: 'Instituições', href: '/admin/institution' },
+  { label: 'Social', href: '/social' },
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Podcast', href: '/admin/podcast' },
   { label: 'Alunos', href: '/admin/student' },
