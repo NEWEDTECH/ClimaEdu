@@ -16,6 +16,13 @@ import { UpdateTrailUseCase } from '@/_core/modules/content/core/use-cases/updat
 import { UpdateTrailInput } from '@/_core/modules/content/core/use-cases/update-trail/update-trail.input'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { Trail } from '@/_core/modules/content/core/entities/Trail'
+import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case'
+import { EnrollInTrailInput } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.input'
+import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
+import { User, UserRole } from '@/_core/modules/user/core/entities/User'
+import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
+import { Tooltip } from '@/components/tooltip'
+import { X } from 'lucide-react'
 
 type CourseInfo = {
     id: string
@@ -38,6 +45,84 @@ export default function EditTrailPage() {
     const [loading, setLoading] = useState<boolean>(true)
     const [saving, setSaving] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Student enrollment states
+    const [students, setStudents] = useState<User[]>([])
+    const [filteredStudents, setFilteredStudents] = useState<User[]>([])
+    const [searchStudentTerm, setSearchStudentTerm] = useState<string>('')
+    const [showStudentDropdown, setShowStudentDropdown] = useState<boolean>(false)
+    const [selectedStudents, setSelectedStudents] = useState<Array<{ id: string, name: string, email: string }>>([])
+
+    // Load students for the institution
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (!trail) return
+
+            try {
+                const enrollmentRepository = container.get<EnrollmentRepository>(
+                    Register.enrollment.repository.EnrollmentRepository
+                )
+
+                const userRepository = container.get<UserRepository>(
+                    Register.user.repository.UserRepository
+                )
+
+                // Get all enrollments for this institution
+                const enrollments = await enrollmentRepository.listByInstitution(trail.institutionId)
+
+                // Get unique user IDs from enrollments
+                const uniqueUserIds = [...new Set(enrollments.map(enrollment => enrollment.userId))]
+
+                // Fetch user details for each unique user ID
+                const studentPromises = uniqueUserIds.map(async (userId) => {
+                    const user = await userRepository.findById(userId)
+                    return user
+                })
+
+                const allUsers = await Promise.all(studentPromises)
+
+                // Filter out null users and only keep students
+                const institutionStudents = allUsers.filter((user): user is User =>
+                    user !== null && user.role === UserRole.STUDENT
+                )
+
+                setStudents(institutionStudents)
+                setFilteredStudents(institutionStudents)
+            } catch (err) {
+                console.error('Error fetching students:', err)
+            }
+        }
+
+        fetchStudents()
+    }, [trail])
+
+    // Filter students based on search term
+    useEffect(() => {
+        if (searchStudentTerm.trim() === '') {
+            setFilteredStudents(students)
+        } else {
+            const filtered = students.filter(student =>
+                student.email.value.toLowerCase().includes(searchStudentTerm.toLowerCase()) ||
+                student.name.toLowerCase().includes(searchStudentTerm.toLowerCase())
+            )
+            setFilteredStudents(filtered)
+        }
+    }, [searchStudentTerm, students])
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement
+            if (!target.closest('#studentSearch') && !target.closest('.student-dropdown')) {
+                setShowStudentDropdown(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
 
     useEffect(() => {
         const fetchTrailData = async () => {
@@ -125,6 +210,7 @@ export default function EditTrailPage() {
             setSaving(true)
             setError(null)
 
+            // Update trail information
             const updateTrailUseCase = container.get<UpdateTrailUseCase>(
                 Register.content.useCase.UpdateTrailUseCase
             )
@@ -140,6 +226,30 @@ export default function EditTrailPage() {
 
             const output = await updateTrailUseCase.execute(input)
             setTrail(output.trail)
+
+            // Enroll selected students if any
+            if (selectedStudents.length > 0) {
+                const enrollInTrailUseCase = container.get<EnrollInTrailUseCase>(
+                    Register.enrollment.useCase.EnrollInTrailUseCase
+                )
+
+                // Enroll each selected student
+                const enrollmentPromises = selectedStudents.map(async (student) => {
+                    const enrollInput = new EnrollInTrailInput(
+                        student.id,
+                        trailId,
+                        trail!.institutionId
+                    )
+                    return await enrollInTrailUseCase.execute(enrollInput)
+                })
+
+                await Promise.all(enrollmentPromises)
+
+                // Clear selected students after successful enrollment
+                setSelectedStudents([])
+                
+                console.log(`Successfully enrolled ${selectedStudents.length} students in trail`)
+            }
 
             // Show success message (you could add a toast notification here)
             console.log('Trail updated successfully')
@@ -178,6 +288,11 @@ export default function EditTrailPage() {
             setAvailableCourses(prev => [...prev, courseToMove])
             setTrailCourses(prev => prev.filter(course => course.id !== courseId))
         }
+    }
+
+
+    const handleRemoveStudent = (studentId: string) => {
+        setSelectedStudents(prev => prev.filter(student => student.id !== studentId))
     }
 
     const handleCancel = () => {
@@ -332,6 +447,91 @@ export default function EditTrailPage() {
                                     )}
                                 </div>
 
+
+                                {/* Student Enrollment Section */}
+                                <div>
+                                    <h3 className="text-lg font-medium mb-4">Matricular Estudantes</h3>
+                                    
+                                    {/* Selected Students */}
+                                    {selectedStudents.length > 0 && (
+                                        <div className="mb-4">
+                                            <h4 className="text-sm font-medium mb-3">Estudantes Selecionados ({selectedStudents.length})</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedStudents.map((student) => (
+                                                    <div key={student.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                                        <Tooltip label={`${student.name} - ${student.email}`} />
+                                                        <span className="text-sm font-medium text-blue-800 pr-6">{student.name}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveStudent(student.id)}
+                                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                                                            aria-label="Remover estudante"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="relative">
+                                        <label htmlFor="studentSearch" className="block text-sm font-medium mb-2">
+                                            Buscar Estudante
+                                        </label>
+                                        <InputText
+                                            id="studentSearch"
+                                            type="text"
+                                            placeholder="Buscar estudante por nome ou email..."
+                                            value={searchStudentTerm}
+                                            onChange={(e) => {
+                                                setSearchStudentTerm(e.target.value)
+                                                setShowStudentDropdown(true)
+                                            }}
+                                            onFocus={() => setShowStudentDropdown(true)}
+                                            className="w-full"
+                                        />
+
+                                        {showStudentDropdown && searchStudentTerm.trim() !== '' && filteredStudents.length > 0 && (
+                                            <div className="student-dropdown absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
+                                                {filteredStudents
+                                                    .filter(student => !selectedStudents.some(selected => selected.id === student.id))
+                                                    .map((student) => (
+                                                        <div
+                                                            key={student.id}
+                                                            className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                            onClick={() => {
+                                                                setSelectedStudents(prev => [
+                                                                    ...prev,
+                                                                    {
+                                                                        id: student.id,
+                                                                        name: student.name,
+                                                                        email: student.email.value
+                                                                    }
+                                                                ])
+                                                                setSearchStudentTerm('')
+                                                                setShowStudentDropdown(false)
+                                                            }}
+                                                        >
+                                                            <div className="font-medium text-gray-900">{student.name}</div>
+                                                            <div className="text-sm text-gray-500">{student.email.value}</div>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        )}
+
+                                        {showStudentDropdown && searchStudentTerm.trim() !== '' && filteredStudents.length === 0 && (
+                                            <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+                                                <div className="px-4 py-3 text-gray-500 text-center">
+                                                    Nenhum estudante encontrado
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+
+
                                 <div className="flex gap-4 pt-4">
                                     <Button
                                         type="submit"
@@ -344,6 +544,7 @@ export default function EditTrailPage() {
                             </form>
                         </CardContent>
                     </Card>
+
                 </div>
             </DashboardLayout>
         </ProtectedContent>
