@@ -18,6 +18,8 @@ type ModuleData = {
   order: number;
   lessonsCount: number;
   lessons: LessonData[];
+  isEditing?: boolean;
+  editingTitle?: string;
 }
 
 type LessonData = {
@@ -36,6 +38,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [isCreatingModule, setIsCreatingModule] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingLessons, setIsLoadingLessons] = useState<Record<string, boolean>>({});
+  const [isUpdatingModule, setIsUpdatingModule] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
 
   const fetchModules = useCallback(async () => {
@@ -105,6 +108,64 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
     }
   }, [isLoadingLessons]);
 
+  const handleEditModule = (moduleId: string, currentTitle: string) => {
+    setModules(prevModules =>
+      prevModules.map(module =>
+        module.id === moduleId
+          ? { ...module, isEditing: true, editingTitle: currentTitle }
+          : module
+      )
+    );
+  };
+
+  const handleCancelEdit = (moduleId: string) => {
+    setModules(prevModules =>
+      prevModules.map(module =>
+        module.id === moduleId
+          ? { ...module, isEditing: false, editingTitle: '' }
+          : module
+      )
+    );
+  };
+
+  const handleUpdateModule = async (moduleId: string, newTitle: string) => {
+    if (!newTitle.trim()) {
+      alert('O título do módulo não pode estar vazio');
+      return;
+    }
+
+    setIsUpdatingModule(prev => ({ ...prev, [moduleId]: true }));
+
+    try {
+      const moduleRepository = container.get<ModuleRepository>(
+        Register.content.repository.ModuleRepository
+      );
+
+      const moduleData = await moduleRepository.findById(moduleId);
+
+      if (!moduleData) {
+        throw new Error('Módulo não encontrado');
+      }
+
+      moduleData.updateTitle(newTitle);
+
+      await moduleRepository.save(moduleData);
+
+      setModules(prevModules =>
+        prevModules.map(module =>
+          module.id === moduleId
+            ? { ...module, title: newTitle, isEditing: false, editingTitle: '' }
+            : module
+        )
+      );
+    } catch (error) {
+      console.error('Erro ao atualizar módulo:', error);
+      alert(`Falha ao atualizar módulo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    } finally {
+      setIsUpdatingModule(prev => ({ ...prev, [moduleId]: false }));
+    }
+  };
+
   const handleCreateModule = async () => {
     if (!newModuleTitle.trim()) {
       alert('O título do módulo não pode estar vazio');
@@ -165,6 +226,12 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
 
   return (
     <Card>
+      <CardHeader className="pb-3">
+        <CardTitle>Módulos do Curso</CardTitle>
+        <CardDescription>
+          Gerencie os módulos e lições deste curso
+        </CardDescription>
+      </CardHeader>
       <CardContent>
         {/* Always visible module creation form */}
         <div className="mb-6 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
@@ -214,14 +281,57 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-4">
-                    {/* Module actions */}
-                    <div className="flex justify-end">
-                      <Link href={`/admin/courses/edit/${courseId}/modules/${module.id}`}>
-                        <Button className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100">
+                    {/* Module editing section */}
+                    {module.isEditing ? (
+                      <div className="p-4 border rounded-md bg-blue-50 dark:bg-blue-900/20">
+                        <h4 className="text-sm font-medium mb-3">Editar Módulo</h4>
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <InputText
+                              id={`editModuleTitle-${module.id}`}
+                              value={module.editingTitle || ''}
+                              onChange={(e) => {
+                                setModules(prevModules =>
+                                  prevModules.map(m =>
+                                    m.id === module.id
+                                      ? { ...m, editingTitle: e.target.value }
+                                      : m
+                                  )
+                                );
+                              }}
+                              placeholder="Digite o novo título do módulo"
+                              required
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() => handleUpdateModule(module.id, module.editingTitle || '')}
+                            disabled={isUpdatingModule[module.id]}
+                            className="text-xs px-3 py-2"
+                          >
+                            {isUpdatingModule[module.id] ? 'Salvando...' : 'Salvar'}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => handleCancelEdit(module.id)}
+                            disabled={isUpdatingModule[module.id]}
+                            className="border bg-transparent text-xs px-3 py-2 hover:bg-gray-100"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          onClick={() => handleEditModule(module.id, module.title)}
+                          className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100"
+                        >
                           Editar Módulo
                         </Button>
-                      </Link>
-                    </div>
+                      </div>
+                    )}
 
                     {/* Lessons list */}
                     {isLoadingLessons[module.id] ? (
@@ -245,7 +355,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             <span className="text-sm">
                               {lessonIndex + 1}. {lesson.title}
                             </span>
-                            <Link href={`/admin/courses/edit/${courseId}/modules/${module.id}/lessons/${lesson.id}`}>
+                            <Link href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}>
                               <Button className="border bg-transparent text-xs px-2 py-1 hover:bg-gray-100">
                                 Editar
                               </Button>
