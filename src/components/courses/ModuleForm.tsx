@@ -471,7 +471,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             <span className="text-sm">
                               {lessonIndex + 1}. {lesson.title}
                             </span>
-                            <Link href={`/admin/courses/edit/${courseId}/modules/${module.id}/lessons/${lesson.id}`}>
+                            <Link href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}>
                               <Button className="border bg-transparent text-xs px-2 py-1 hover:bg-gray-100">
                                 Editar
                               </Button>
