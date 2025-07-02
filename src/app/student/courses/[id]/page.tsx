@@ -20,6 +20,7 @@ import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infra
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
+import { CourseSidebar } from '@/components/courses/student';
 import { ChatDropdown } from '@/components/chat';
 
 const ModuleDropdown = ({
@@ -146,6 +147,7 @@ export default function CoursePage() {
     const [showNextVideoOverlay, setShowNextVideoOverlay] = useState<boolean>(false);
     const [overlayTimer, setOverlayTimer] = useState<NodeJS.Timeout | null>(null);
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
+    const [sidebarMode, setSidebarMode] = useState<'hidden' | 'chat' | 'modules'>('hidden');
 
 
     // Function to load lesson activity
@@ -367,73 +369,33 @@ export default function CoursePage() {
     }, [courseId, loadLessonContent]);
 
     return (
-
         <DashboardLayout>
-            <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] gap-4">
-                {/* Sidebar with modules */}
-                <div className="w-full md:w-80 flex-shrink-0 overflow-y-auto bg-gradient-to-b from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
+            {/* New Sidebar Component */}
+            <CourseSidebar
+                modules={modules}
+                activeLesson={activeLesson}
+                onLessonSelect={handleLessonSelect}
+                courseId={courseId}
+                userId={infoUser.id}
+                userName={infoUser.name || 'Usuário'}
+                isLoading={isLoading}
+                error={error}
+                openModules={openModules}
+                setOpenModules={setOpenModules}
+                onSidebarModeChange={setSidebarMode}
+            />
 
-                    {/* Sidebar Header */}
-                    <div className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-6 rounded-t-2xl">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
-                                <svg
-                                    className="w-5 h-5 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                                    />
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Conteúdo do Curso</h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Sidebar Content */}
-                    <div className="p-4">
-                        {isLoading ? (
-                            <div className="flex flex-col justify-center items-center h-32 space-y-3">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Carregando módulos...</p>
-                            </div>
-                        ) : error ? (
-                            <div className="text-red-500 text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p className="text-sm">{error}</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {modules.map((module, index) => (
-                                    <ModuleDropdown
-                                        key={module.id}
-                                        module={module}
-                                        activeLesson={activeLesson}
-                                        onLessonSelect={handleLessonSelect}
-                                        isFirstModule={index === 0}
-                                        forceOpen={openModules.has(module.id)}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Main content area */}
-                <div className="flex-1 overflow-y-auto p-4">
+            {/* Main content area - adjusted for new layout with dynamic width */}
+            <div 
+                className="h-[calc(100vh-4rem)] overflow-y-auto p-4 transition-all duration-300"
+                style={{
+                    marginRight: sidebarMode !== 'hidden' 
+                        ? sidebarMode === 'chat' 
+                            ? '500px' // 80px (icons) + 20px (gap) + 320px (chat width) + 80px (margin)
+                            : '580px' // 80px (icons) + 20px (gap) + 384px (modules width) + 96px (margin)
+                        : '100px' // Just the icons width + margin
+                }}
+            >
                     {isLoading ? (
                         <div className="flex justify-center items-center h-64">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -824,7 +786,6 @@ export default function CoursePage() {
                                                             <div className="pt-4 border-t">
                                                                 <a
                                                                     href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}`}
-                                                                    target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${hasPassedQuestionnaire
                                                                         ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
@@ -864,8 +825,6 @@ export default function CoursePage() {
                             </div>
                         </div>
                     )}
-                </div>
-
             </div>
 
             {/* Chat Dropdown - Fixed position */}
@@ -878,6 +837,5 @@ export default function CoursePage() {
                 />
             )}
         </DashboardLayout>
-
     );
 }

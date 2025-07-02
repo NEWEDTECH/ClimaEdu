@@ -21,9 +21,10 @@ type ChatDropdownProps = {
   classId: string;
   userId: string;
   userName: string;
+  isEmbedded?: boolean;
 }
 
-export function ChatDropdown({ courseId, classId, userId }: ChatDropdownProps) {
+export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: ChatDropdownProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -156,10 +157,16 @@ export function ChatDropdown({ courseId, classId, userId }: ChatDropdownProps) {
   };
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if ((isOpen || isEmbedded) && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isOpen]);
+  }, [isOpen, isEmbedded]);
+
+  useEffect(() => {
+    if (isEmbedded && !chatRoom) {
+      initializeChatRoom();
+    }
+  }, [isEmbedded]);
 
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('pt-BR', {
@@ -189,33 +196,101 @@ export function ChatDropdown({ courseId, classId, userId }: ChatDropdownProps) {
     }).format(messageDate);
   };
 
+  // Render embedded chat interface
+  if (isEmbedded) {
+    return (
+      <div className="h-full flex flex-col">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {isInitializing ? (
+            <div className="flex flex-col items-center justify-center h-full space-y-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <p className="text-sm text-gray-500">Carregando chat...</p>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full space-y-2">
+              <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <p className="text-sm text-gray-500 text-center">Nenhuma mensagem ainda.<br />Seja o primeiro a conversar!</p>
+            </div>
+          ) : (
+            messages.map((message, index) => {
+              const isOwnMessage = message.userId === userId;
+              const showDate = index === 0 || 
+                formatDate(messages[index - 1].sentAt) !== formatDate(message.sentAt);
+
+              return (
+                <div key={message.id}>
+                  {showDate && (
+                    <div className="flex justify-center mb-2">
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {formatDate(message.sentAt)}
+                      </span>
+                    </div>
+                  )}
+                  <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                        isOwnMessage
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                      }`}
+                    >
+                      {!isOwnMessage && (
+                        <p className="text-xs font-medium mb-1 opacity-70">
+                          Usuário {message.userId.slice(-4)}
+                        </p>
+                      )}
+                      <p className="break-words">{message.text}</p>
+                      <p className={`text-xs mt-1 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                        {formatTime(message.sentAt)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex space-x-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Digite sua mensagem..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              disabled={isLoading}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={!newMessage.trim() || isLoading || isInitializing}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render dropdown chat interface
   return (
     <div className="fixed top-20 right-4 z-50">
       {/* Chat Toggle Button */}
-      <button
-        onClick={toggleDropdown}
-        className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
-          isOpen 
-            ? 'bg-blue-600 text-white transform rotate-45' 
-            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-        }`}
-        aria-label="Toggle chat"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-      </button>
 
       {/* Chat Dropdown Panel */}
       {isOpen && (
