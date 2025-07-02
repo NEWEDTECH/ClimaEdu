@@ -5,6 +5,8 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
+import { FiBook, FiUsers, FiActivity, FiMessageSquare, FiFileText, FiBarChart, FiVideo, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
+import { MdDashboard, MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +26,7 @@ export interface ProfileSelectProps {
 type DropdownItem = {
   label: string;
   href: string;
+  icon: React.ReactNode;
 };
 
 type UserRole = 'STUDENT' | 'TUTOR' | 'CONTENT_MANAGER' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'SUPER_ADMIN';
@@ -35,35 +38,35 @@ type DropdownSection = {
 };
 
 const studentItems: DropdownItem[] = [
-  { label: 'Conteúdos', href: '/student/contents' },
-  { label: 'Social', href: '/social' },
-  { label: 'Atividades', href: '/student/activities' },
-  { label: 'Discussões', href: '/student/forum' },
-  { label: 'Questionários', href: '/student/questionnaire' },
-  { label: 'Configurações', href: '/student/settings' }
+  { label: 'Conteúdos', href: '/student/contents', icon: <FiBook /> },
+  { label: 'Social', href: '/social', icon: <FiUsers /> },
+  { label: 'Atividades', href: '/student/activities', icon: <FiActivity /> },
+  { label: 'Discussões', href: '/student/forum', icon: <FiMessageSquare /> },
+  { label: 'Questionários', href: '/student/questionnaire', icon: <FiFileText /> },
+  { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> }
 ];
 
 const teacherItems: DropdownItem[] = [
-  { label: 'Social', href: '/social' },
-  { label: 'Acompanhamento', href: '/tutor/follow-up' },
-  { label: 'Relatórios', href: '/tutor/reports' },
-  { label: 'Cursos', href: '/tutor/courses' },
-  { label: 'Gestão de Conteúdos', href: '/tutor/video-upload' },
+  { label: 'Social', href: '/social', icon: <FiUsers /> },
+  { label: 'Acompanhamento', href: '/tutor/follow-up', icon: <FiUserCheck /> },
+  { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
+  { label: 'Cursos', href: '/tutor/courses', icon: <FiBookOpen /> },
+  { label: 'Gestão de Conteúdos', href: '/tutor/video-upload', icon: <FiVideo /> },
 ];
 
 const adminItems: DropdownItem[] = [
-  { label: 'Instituições', href: '/admin/institution' },
-  { label: 'Social', href: '/social' },
-  { label: 'Dashboard', href: '/admin/dashboard' },
-  { label: 'Podcast', href: '/admin/podcast' },
-  { label: 'Alunos', href: '/admin/student' },
-  { label: 'Classes', href: '/admin/turmas' },
-  { label: 'Professores', href: '/admin/tutor' },
-  { label: 'Trilhas', href: '/admin/trails' },
-  { label: 'Cursos', href: '/admin/courses' },
-  { label: 'Relatórios', href: '/admin/reports' },
-  { label: 'Criar Usuário', href: '/admin/create-user' },
-  { label: 'Configurações', href: '/admin/settings' },
+  { label: 'Instituições', href: '/admin/institution', icon: <MdSchool /> },
+  { label: 'Social', href: '/social', icon: <FiUsers /> },
+  { label: 'Dashboard', href: '/admin/dashboard', icon: <MdDashboard /> },
+  { label: 'Podcast', href: '/admin/podcast', icon: <FiMic /> },
+  { label: 'Alunos', href: '/admin/student', icon: <FiUsers /> },
+  { label: 'Classes', href: '/admin/turmas', icon: <FiLayers /> },
+  { label: 'Professores', href: '/admin/tutor', icon: <FiUserCheck /> },
+  { label: 'Trilhas', href: '/admin/trails', icon: <FiHome /> },
+  { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
+  { label: 'Relatórios', href: '/admin/reports', icon: <FiBarChart /> },
+  { label: 'Criar Usuário', href: '/admin/create-user', icon: <FiUserPlus /> },
+  { label: 'Configurações', href: '/admin/settings', icon: <FiSettings /> },
 ];
 
 const sections: DropdownSection[] = [
@@ -97,6 +100,20 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
     return infoUser.currentRole === sectionRole;
   };
 
+  // Count total items to determine if overflow is needed
+  const getTotalItemsCount = () => {
+    let count = OPTIONS_PROFILE.length + 1; // +1 for logout button
+    sections.forEach(section => {
+      if (hasAccessToSection(section.role)) {
+        count += section.items.length;
+      }
+    });
+    return count;
+  };
+
+  const totalItems = getTotalItemsCount();
+  const needsOverflow = totalItems > 8;
+
   // Função para obter o texto da role em português
   //const getRoleText = (role: 'STUDENT' | 'TUTOR' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'CONTENT_MANAGER' | 'SUPER_ADMIN' | null) => {
   //  switch (role) {
@@ -125,7 +142,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
 
   return (
     <Dropdown className={cn(
-      "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+      "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700",
     )}>
 
       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
@@ -143,7 +160,13 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
         {infoUser.name}
       </span>
 
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent 
+        align="end" 
+        className={cn(
+          "w-56",
+          needsOverflow && "max-h-80 overflow-y-auto"
+        )}
+      >
         {/* Navigation sections based on user role */}
         {sections.map((section) => {
           if (hasAccessToSection(section.role)) {
@@ -157,7 +180,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
                     key={item.href}
                     label={item.label}
                     href={item.href}
-                    icon={null}
+                    icon={item.icon}
                   />
                 ))}
                 <div className="h-px my-1 bg-gray-200 dark:bg-gray-700" />
