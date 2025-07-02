@@ -16,7 +16,6 @@ type ModuleData = {
   id: string;
   title: string;
   order: number;
-  lessonsCount: number;
   lessons: LessonData[];
   isEditing?: boolean;
   editingTitle?: string;
@@ -42,6 +41,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [isLoadingLessons, setIsLoadingLessons] = useState<Record<string, boolean>>({});
   const [isUpdatingModule, setIsUpdatingModule] = useState<Record<string, boolean>>({});
   const [isCreatingLesson, setIsCreatingLesson] = useState<Record<string, boolean>>({});
+  const [openModules, setOpenModules] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const fetchModules = useCallback(async () => {
@@ -58,7 +58,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
         id: module.id,
         title: module.title,
         order: module.order,
-        lessonsCount: module.lessons.length,
         lessons: []
       }));
 
@@ -160,7 +159,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                   title: result.lesson.title,
                   order: result.lesson.order
                 }].sort((a, b) => a.order - b.order),
-                lessonsCount: module.lessonsCount + 1,
                 isAddingLesson: false,
                 newLessonTitle: ''
               }
@@ -256,7 +254,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
         id: result.module.id,
         title: result.module.title,
         order: result.module.order,
-        lessonsCount: 0,
         lessons: []
       }]);
 
@@ -312,9 +309,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
           </div>
           <div>
             <h2 className="font-semibold text-gray-800 dark:text-gray-100">Módulos do Curso</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'}
-            </p>
           </div>
         </div>
       </div>
@@ -366,9 +360,20 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                 {/* Module Header */}
                 <button
                   onClick={() => {
-                    if (module.lessons.length === 0) {
-                      fetchLessonsForModule(module.id);
+                    const isOpen = openModules.has(module.id);
+                    const newOpenModules = new Set(openModules);
+                    
+                    if (isOpen) {
+                      newOpenModules.delete(module.id);
+                    } else {
+                      newOpenModules.add(module.id);
+                      // Fetch lessons if not already loaded
+                      if (module.lessons.length === 0) {
+                        fetchLessonsForModule(module.id);
+                      }
                     }
+                    
+                    setOpenModules(newOpenModules);
                   }}
                   className="flex items-center justify-between w-full p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200"
                 >
@@ -393,13 +398,12 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                       <span className="font-semibold text-gray-800 dark:text-gray-200">
                         {index + 1}. {module.title}
                       </span>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {module.lessons.length} {module.lessons.length === 1 ? 'lição' : 'lições'}
-                      </div>
                     </div>
                   </div>
                   <svg
-                    className="w-5 h-5 text-blue-500 transition-transform duration-200"
+                    className={`w-5 h-5 text-blue-500 transition-transform duration-200 ${
+                      openModules.has(module.id) ? 'transform rotate-180' : ''
+                    }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -410,7 +414,8 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                 </button>
 
                 {/* Module Content */}
-                <div className="p-4 space-y-3 border-t border-gray-100 dark:border-gray-700">
+                {openModules.has(module.id) && (
+                  <div className="p-4 space-y-3 border-t border-gray-100 dark:border-gray-700">
                   {/* Module editing section */}
                   {module.isEditing ? (
                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -555,7 +560,8 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                       ))}
                     </div>
                   )}
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
