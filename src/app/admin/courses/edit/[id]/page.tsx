@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/button'
-import { DashboardLayout } from '@/components/layout/DashboardLayout'
-import { ProtectedContent } from '@/components/auth/ProtectedContent'
-import { ModuleForm } from '@/components/courses'
+import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
@@ -136,65 +134,52 @@ export default function TutorEditCoursePage({ params }: { params: Promise<{ id: 
 
   if (isLoading) {
     return (
-      <ProtectedContent>
-        <DashboardLayout>
-          <div className="container mx-auto p-6 flex justify-center items-center">
-            <p>Carregando dados do curso...</p>
-          </div>
-        </DashboardLayout>
-      </ProtectedContent>
+      <CourseEditLayout courseId={id}>
+        <div className="container mx-auto p-6 flex justify-center items-center">
+          <p>Carregando dados do curso...</p>
+        </div>
+      </CourseEditLayout>
     )
   }
 
   if (error) {
     return (
-      <ProtectedContent>
-        <DashboardLayout>
-          <div className="container mx-auto p-6">
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center p-6">
-                <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
-                <p className="mb-4">{error}</p>
-                <Link href="/courses">
-                  <Button>Voltar para Lista de Cursos</Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </DashboardLayout>
-      </ProtectedContent>
+      <CourseEditLayout courseId={id}>
+        <div className="container mx-auto p-6">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
+              <p className="mb-4">{error}</p>
+              <Link href="/courses">
+                <Button>Voltar para Lista de Cursos</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </CourseEditLayout>
     )
   }
 
   return (
-    <ProtectedContent>
-      <DashboardLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Editar Curso</h1>
-            <Link href="/courses">
-              <Button className="border bg-transparent hover:bg-gray-100">Cancelar</Button>
-            </Link>
-          </div>
-
-          <Card>
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-6">
-                {/* Modules Section */}
-                <ModuleForm courseId={id} />
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2 mt-4">
-                <Link href="/courses">
-                  <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
-                </Link>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+    <CourseEditLayout courseId={id}>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Editar Curso</h1>
+          <Link href="/courses">
+            <Button className="border bg-transparent hover:bg-gray-100">Cancelar</Button>
+          </Link>
         </div>
-      </DashboardLayout>
-    </ProtectedContent>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center py-8 text-gray-500">
+              <h2 className="text-xl font-semibold mb-2">Bem-vindo à Edição do Curso</h2>
+              <p className="mb-4">Use a sidebar à esquerda para navegar pelos módulos e lições.</p>
+              <p className="text-sm">Selecione uma lição para começar a editar seu conteúdo.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </CourseEditLayout>
   )
 }

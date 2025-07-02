@@ -271,110 +271,108 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex justify-center items-center p-6">
-          <p>Carregando módulos...</p>
-        </CardContent>
-      </Card>
+      <div className="h-full p-4 flex justify-center items-center">
+        <p className="text-sm text-gray-500">Carregando módulos...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center p-6">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
-          <p className="mb-4">{error}</p>
-          <Button onClick={() => fetchModules()}>Tentar Novamente</Button>
-        </CardContent>
-      </Card>
+      <div className="h-full p-4 flex flex-col items-center justify-center">
+        <h2 className="text-lg font-semibold text-red-600 mb-2">Erro</h2>
+        <p className="mb-4 text-sm text-center">{error}</p>
+        <Button onClick={() => fetchModules()} className="text-xs">
+          Tentar Novamente
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle>Módulos do Curso</CardTitle>
-        <CardDescription>
-          Gerencie os módulos e lições deste curso
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Always visible module creation form */}
-        <div className="mb-6 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
-          <h3 className="text-sm font-medium mb-3">Adicionar Novo Módulo</h3>
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <InputText
-                id="newModuleTitle"
-                value={newModuleTitle}
-                onChange={(e) => setNewModuleTitle(e.target.value)}
-                placeholder="Digite o título do módulo"
-                required
-              />
-            </div>
-            <Button
-              type="button"
-              onClick={handleCreateModule}
-              disabled={isCreatingModule}
-              className="text-xs px-4 py-2"
-            >
-              {isCreatingModule ? 'Criando...' : 'Adicionar'}
-            </Button>
-          </div>
-        </div>
+    <div className="h-full p-4">
+      {/* Header da sidebar */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Módulos do Curso
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Gerencie os módulos e lições
+        </p>
+      </div>
 
-        {modules.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            Este curso ainda não possui módulos. Adicione um módulo para começar.
-          </div>
-        ) : (
-          <Accordion type="multiple" className="w-full">
-            {modules.map((module, index) => (
-              <AccordionItem key={module.id} value={module.id}>
-                <AccordionTrigger
-                  onClick={() => {
-                    if (module.lessons.length === 0) {
-                      fetchLessonsForModule(module.id);
-                    }
-                  }}
-                  className="text-left"
-                >
-                  <div className="flex justify-between items-center w-full pr-4">
-                    <span className="font-medium">
-                      {index + 1}. {module.title}
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4">
-                    {/* Module editing section */}
-                    {module.isEditing ? (
-                      <div className="p-4 border rounded-md bg-blue-50 dark:bg-blue-900/20">
-                        <h4 className="text-sm font-medium mb-3">Editar Módulo</h4>
-                        <div className="flex gap-3">
-                          <div className="flex-1">
-                            <InputText
-                              id={`editModuleTitle-${module.id}`}
-                              value={module.editingTitle || ''}
-                              onChange={(e) => {
-                                setModules(prevModules =>
-                                  prevModules.map(m =>
-                                    m.id === module.id
-                                      ? { ...m, editingTitle: e.target.value }
-                                      : m
-                                  )
-                                );
-                              }}
-                              placeholder="Digite o novo título do módulo"
-                              required
-                            />
-                          </div>
+      {/* Always visible module creation form */}
+      <div className="mb-6 p-3 border rounded-md bg-white dark:bg-gray-800 shadow-sm">
+        <h3 className="text-sm font-medium mb-3">Adicionar Novo Módulo</h3>
+        <div className="space-y-2">
+          <InputText
+            id="newModuleTitle"
+            value={newModuleTitle}
+            onChange={(e) => setNewModuleTitle(e.target.value)}
+            placeholder="Digite o título do módulo"
+            required
+          />
+          <Button
+            type="button"
+            onClick={handleCreateModule}
+            disabled={isCreatingModule}
+            className="w-full text-xs py-2"
+          >
+            {isCreatingModule ? 'Criando...' : 'Adicionar Módulo'}
+          </Button>
+        </div>
+      </div>
+
+      {modules.length === 0 ? (
+        <div className="text-center py-8 text-gray-500 text-sm">
+          Este curso ainda não possui módulos. Adicione um módulo para começar.
+        </div>
+      ) : (
+        <Accordion type="multiple" className="w-full space-y-2">
+          {modules.map((module, index) => (
+            <AccordionItem key={module.id} value={module.id} className="border rounded-md bg-white dark:bg-gray-800 shadow-sm">
+              <AccordionTrigger
+                onClick={() => {
+                  if (module.lessons.length === 0) {
+                    fetchLessonsForModule(module.id);
+                  }
+                }}
+                className="text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <div className="flex justify-between items-center w-full pr-4">
+                  <span className="font-medium text-sm">
+                    {index + 1}. {module.title}
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-3 pb-3">
+                <div className="space-y-3">
+                  {/* Module editing section */}
+                  {module.isEditing ? (
+                    <div className="p-3 border rounded-md bg-blue-50 dark:bg-blue-900/20">
+                      <h4 className="text-xs font-medium mb-2">Editar Módulo</h4>
+                      <div className="space-y-2">
+                        <InputText
+                          id={`editModuleTitle-${module.id}`}
+                          value={module.editingTitle || ''}
+                          onChange={(e) => {
+                            setModules(prevModules =>
+                              prevModules.map(m =>
+                                m.id === module.id
+                                  ? { ...m, editingTitle: e.target.value }
+                                  : m
+                              )
+                            );
+                          }}
+                          placeholder="Digite o novo título do módulo"
+                          required
+                        />
+                        <div className="flex gap-2">
                           <Button
                             type="button"
                             onClick={() => handleUpdateModule(module.id, module.editingTitle || '')}
                             disabled={isUpdatingModule[module.id]}
-                            className="text-xs px-3 py-2"
+                            className="flex-1 text-xs py-1"
                           >
                             {isUpdatingModule[module.id] ? 'Salvando...' : 'Salvar'}
                           </Button>
@@ -382,58 +380,58 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             type="button"
                             onClick={() => handleCancelEdit(module.id)}
                             disabled={isUpdatingModule[module.id]}
-                            className="border bg-transparent text-xs px-3 py-2 hover:bg-gray-100"
+                            className="flex-1 border bg-transparent text-xs py-1 hover:bg-gray-100"
                           >
                             Cancelar
                           </Button>
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          onClick={() => handleEditModule(module.id, module.title)}
-                          className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100"
-                        >
-                          Editar Módulo
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => handleAddLesson(module.id)}
-                          className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100"
-                        >
-                          Adicionar Lição
-                        </Button>
-                      </div>
-                    )}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => handleEditModule(module.id, module.title)}
+                        className="flex-1 border bg-transparent text-xs py-1 hover:bg-gray-100"
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => handleAddLesson(module.id)}
+                        className="flex-1 border bg-transparent text-xs py-1 hover:bg-gray-100"
+                      >
+                        + Lição
+                      </Button>
+                    </div>
+                  )}
 
-                    {/* Add lesson section */}
-                    {module.isAddingLesson && (
-                      <div className="p-4 border rounded-md bg-green-50 dark:bg-green-900/20">
-                        <h4 className="text-sm font-medium mb-3">Adicionar Nova Lição</h4>
-                        <div className="flex gap-3">
-                          <div className="flex-1">
-                            <InputText
-                              id={`newLessonTitle-${module.id}`}
-                              value={module.newLessonTitle || ''}
-                              onChange={(e) => {
-                                setModules(prevModules =>
-                                  prevModules.map(m =>
-                                    m.id === module.id
-                                      ? { ...m, newLessonTitle: e.target.value }
-                                      : m
-                                  )
-                                );
-                              }}
-                              placeholder="Digite o título da lição"
-                              required
-                            />
-                          </div>
+                  {/* Add lesson section */}
+                  {module.isAddingLesson && (
+                    <div className="p-3 border rounded-md bg-green-50 dark:bg-green-900/20">
+                      <h4 className="text-xs font-medium mb-2">Adicionar Nova Lição</h4>
+                      <div className="space-y-2">
+                        <InputText
+                          id={`newLessonTitle-${module.id}`}
+                          value={module.newLessonTitle || ''}
+                          onChange={(e) => {
+                            setModules(prevModules =>
+                              prevModules.map(m =>
+                                m.id === module.id
+                                  ? { ...m, newLessonTitle: e.target.value }
+                                  : m
+                              )
+                            );
+                          }}
+                          placeholder="Digite o título da lição"
+                          required
+                        />
+                        <div className="flex gap-2">
                           <Button
                             type="button"
                             onClick={() => handleCreateLesson(module.id, module.newLessonTitle || '')}
                             disabled={isCreatingLesson[module.id]}
-                            className="text-xs px-3 py-2"
+                            className="flex-1 text-xs py-1"
                           >
                             {isCreatingLesson[module.id] ? 'Salvando...' : 'Salvar'}
                           </Button>
@@ -441,52 +439,58 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             type="button"
                             onClick={() => handleCancelAddLesson(module.id)}
                             disabled={isCreatingLesson[module.id]}
-                            className="border bg-transparent text-xs px-3 py-2 hover:bg-gray-100"
+                            className="flex-1 border bg-transparent text-xs py-1 hover:bg-gray-100"
                           >
                             Cancelar
                           </Button>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Lessons list */}
-                    {isLoadingLessons[module.id] ? (
-                      <div className="text-center py-4 text-gray-500">
-                        Carregando lições...
-                      </div>
-                    ) : module.lessons.length === 0 ? (
-                      <div className="text-center py-4 text-gray-500">
-                        Este módulo ainda não possui lições.
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Lições:
-                        </h4>
-                        {module.lessons.map((lesson, lessonIndex) => (
-                          <div
-                            key={lesson.id}
-                            className="flex justify-between items-center p-3 border rounded-md bg-white dark:bg-gray-900"
-                          >
-                            <span className="text-sm">
+                  {/* Lessons list */}
+                  {isLoadingLessons[module.id] ? (
+                    <div className="text-center py-3 text-gray-500 text-xs">
+                      Carregando lições...
+                    </div>
+                  ) : module.lessons.length === 0 ? (
+                    <div className="text-center py-3 text-gray-500 text-xs">
+                      Este módulo ainda não possui lições.
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Lições:
+                      </h4>
+                      {module.lessons.map((lesson, lessonIndex) => (
+                        <Link 
+                          key={lesson.id}
+                          href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}
+                          className="block"
+                        >
+                          <div className="flex justify-between items-center p-2 border rounded-md bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer">
+                            <span className="text-xs flex-1">
                               {lessonIndex + 1}. {lesson.title}
                             </span>
-                            <Link href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}>
-                              <Button className="border bg-transparent text-xs px-2 py-1 hover:bg-gray-100">
-                                Editar
-                              </Button>
-                            </Link>
+                            <svg 
+                              className="w-3 h-3 text-gray-400" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        )}
-      </CardContent>
-    </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      )}
+    </div>
   );
 }
