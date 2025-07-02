@@ -21,110 +21,7 @@ import { ActivityRepository } from '@/_core/modules/content/infrastructure/repos
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
 import { CourseSidebar } from '@/components/courses/student';
-import { ChatDropdown } from '@/components/chat';
-
-const ModuleDropdown = ({
-    module,
-    activeLesson,
-    onLessonSelect,
-    isFirstModule,
-    forceOpen
-}: {
-    module: Module;
-    activeLesson: string | null;
-    onLessonSelect: (lessonId: string) => void;
-    isFirstModule: boolean;
-    forceOpen?: boolean;
-}) => {
-
-    const [isOpen, setIsOpen] = useState<boolean>(isFirstModule);
-
-    // Update isOpen when forceOpen changes
-    useEffect(() => {
-        if (forceOpen !== undefined) {
-            setIsOpen(forceOpen);
-        }
-    }, [forceOpen]);
-
-    return (
-        <div className="mb-3">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-                <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                        <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                            />
-                        </svg>
-                    </div>
-                    <div>
-                        <span className="font-semibold w-auto text-gray-800 dark:text-gray-200">{module.title}</span>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {module.lessons.length} {module.lessons.length === 1 ? 'lição' : 'lições'}
-                        </div>
-                    </div>
-                </div>
-                <svg
-                    className={`w-5 h-5 text-blue-500 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </button>
-
-            {isOpen && (
-                <div className="mt-2 ml-2 space-y-1 border-l-2 border-blue-200 dark:border-gray-600 pl-4">
-                    {module.lessons.map((lesson, index) => (
-                        <button
-                            key={lesson.id}
-                            onClick={() => onLessonSelect(lesson.id)}
-                            className={`flex items-center w-full p-3 text-left text-sm rounded-lg transition-all duration-200 ${activeLesson === lesson.id
-                                ? 'bg-blue-500 text-white shadow-md transform scale-[1.02]'
-                                : 'hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm text-gray-700 dark:text-gray-300'
-                                }`}
-                        >
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 text-xs font-bold ${activeLesson === lesson.id
-                                ? 'bg-white text-blue-500'
-                                : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
-                                }`}>
-                                {index + 1}
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-medium">{lesson.title}</div>
-                                {activeLesson === lesson.id && (
-                                    <div className="text-xs text-blue-100 mt-1 flex items-center">
-                                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                        </svg>
-                                        Em andamento
-                                    </div>
-                                )}
-                            </div>
-                            {activeLesson === lesson.id && (
-                                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                            )}
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
+import { ChatDropdown } from '@/components/courses/chat';
 
 
 export default function CoursePage() {
@@ -385,15 +282,14 @@ export default function CoursePage() {
                 onSidebarModeChange={setSidebarMode}
             />
 
-            {/* Main content area - adjusted for new layout with dynamic width */}
             <div 
                 className="h-[calc(100vh-4rem)] overflow-y-auto p-4 transition-all duration-300"
                 style={{
                     marginRight: sidebarMode !== 'hidden' 
                         ? sidebarMode === 'chat' 
-                            ? '500px' // 80px (icons) + 20px (gap) + 320px (chat width) + 80px (margin)
-                            : '580px' // 80px (icons) + 20px (gap) + 384px (modules width) + 96px (margin)
-                        : '100px' // Just the icons width + margin
+                            ? '500px' 
+                            : '580px' 
+                        : '100px' 
                 }}
             >
                     {isLoading ? (
@@ -485,7 +381,7 @@ export default function CoursePage() {
                                 )}
                             </div>
 
-
+                            {/* TABS AQUI*/}
                             <div>
                                 <Tabs defaultValue="content" value={activeTab} onValueChange={setActiveTab} className="w-full">
                                     <TabsList className="w-full justify-start bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-1 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">

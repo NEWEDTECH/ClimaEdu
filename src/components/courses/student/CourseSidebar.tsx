@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Module } from '@/_core/modules/content/core/entities/Module';
-import { ChatDropdown } from '@/components/chat';
+import { ChatDropdown } from '@/components/courses/chat';
 
 type CourseSidebarProps = {
   modules: Module[];
