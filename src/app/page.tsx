@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout';
-import { CardSubject } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious
-} from '@/components/ui/carousel';
+import { ContentCarousel } from '@/components/ui/carousel';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
@@ -170,150 +163,37 @@ export default function Home() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">Trilhas Disponíveis</h2>
-            {enrolledTrails.length === 0 && !isLoading && !error && (
-              <p className="text-center text-gray-500">Você não está matriculado em nenhuma trilha ainda.</p>
-            )}
-            {
-              enrolledTrails.length > 0 && (
-                enrolledTrails.length > 1 ? (
-                  <Carousel className="w-full">
-                    <CarouselContent>
-                      {enrolledTrails.map((trail) => (
-                        <CarouselItem key={trail.id} className="md:basis-1/2 lg:basis-1/3">
-                          <CardSubject
-                            title={trail.title}
-                            href={trail.href}
-                            imageUrl={trail.imageUrl}
-                            isBlocked={trail.isBlocked}
-                          />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2" />
-                    <CarouselNext className="right-2" />
-                  </Carousel>
-                ) : (
-                  <CardSubject
-                    className='w-[400px]'
-                    title={enrolledTrails[0].title}
-                    href={enrolledTrails[0].href || '#'}
-                    imageUrl={enrolledTrails[0].imageUrl}
-                    isBlocked={enrolledTrails[0].isBlocked}
-                  />
-                )
-              )
-            }
+          <ContentCarousel
+            items={enrolledTrails}
+            title="Trilhas Disponíveis"
+            emptyMessage="Você não está matriculado em nenhuma trilha ainda."
+          />
 
+          <ContentCarousel
+            items={enrolledCourses}
+            title="Meus Cursos"
+            emptyMessage="Você não está matriculado em nenhum curso ainda."
+          />
 
-          </div>
+          <ContentCarousel
+            items={availableCourses}
+            title="Cursos Disponíveis na Instituição"
+            emptyMessage="Não há outros cursos disponíveis nesta instituição."
+            itemClassName="cursor-not-allowed"
+            singleItemClassName="w-[400px] cursor-not-allowed"
+          />
 
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">Meus Cursos</h2>
-            {enrolledCourses.length === 0 && !isLoading && !error && (
-              <p className="text-center text-gray-500">Você não está matriculado em nenhum curso ainda.</p>
-            )}
-            {
-              enrolledCourses.length > 0 && (
-                enrolledCourses.length > 1 ? (
-                  <Carousel className="w-full">
-                    <CarouselContent>
-                      {enrolledCourses.map((course) => (
-                        <CarouselItem key={course.id} className="md:basis-1/2 lg:basis-1/3">
-                          <CardSubject
-                            title={course.title}
-                            href={course.href}
-                            imageUrl={course.imageUrl}
-                            isBlocked={course.isBlocked}
-                          />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2" />
-                    <CarouselNext className="right-2" />
-                  </Carousel>
-                ) : (
-                  <CardSubject
-                    className='w-[400px]'
-                    title={enrolledCourses[0].title}
-                    href={enrolledCourses[0].href || '#'}
-                    imageUrl={enrolledCourses[0].imageUrl}
-                    isBlocked={enrolledCourses[0].isBlocked}
-                  />
-                )
-              )
-            }
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">Cursos Disponíveis na Instituição</h2>
-            {availableCourses.length === 0 && !isLoading && !error && (
-              <p className="text-center text-gray-500">Não há outros cursos disponíveis nesta instituição.</p>
-            )}
-            {
-              availableCourses.length > 0 && (
-                availableCourses.length > 1 ? (
-                  <Carousel className="w-full">
-                    <CarouselContent>
-                      {availableCourses.map((course) => (
-                        <CarouselItem key={course.id} className="md:basis-1/2 lg:basis-1/3 cursor-not-allowed">
-                          <CardSubject
-                            title={course.title}
-                            href={course.href}
-                            imageUrl={course.imageUrl}
-                            isBlocked={course.isBlocked}
-                          />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2" />
-                    <CarouselNext className="right-2" />
-                  </Carousel>
-                ) : (
-                  <CardSubject
-                    className='w-[400px] cursor-not-allowed'
-                    title={availableCourses[0].title}
-                    href={availableCourses[0].href || '#'}
-                    imageUrl={availableCourses[0].imageUrl}
-                    isBlocked={availableCourses[0].isBlocked}
-                  />
-                )
-              )
-            }
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">Podcasts</h2>
-            {mockCourses.length > 0 && (
-              mockCourses.length > 1 ? (
-                <Carousel className="w-full">
-                  <CarouselContent>
-                    {mockCourses.map((course) => (
-                      <CarouselItem key={course.id} className="md:basis-1/2 lg:basis-1/3">
-                        <CardSubject
-                          title={course.name}
-                          href={course.url}
-                          imageUrl={course.coverImage}
-                          isBlocked={false}
-                        />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-2" />
-                  <CarouselNext className="right-2" />
-                </Carousel>
-              ) : (
-                <CardSubject
-                  className='w-[400px]'
-                  title={mockCourses[0].name}
-                  href={mockCourses[0].url}
-                  imageUrl={mockCourses[0].coverImage}
-                  isBlocked={false}
-                />
-              )
-            )}
-          </div>
+          <ContentCarousel
+            items={mockCourses.map(course => ({
+              id: course.id,
+              title: course.name,
+              href: course.url,
+              imageUrl: course.coverImage,
+              isBlocked: false
+            }))}
+            title="Podcasts"
+            emptyMessage="Nenhum podcast disponível no momento."
+          />
 
         </div>
       )}

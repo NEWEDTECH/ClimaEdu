@@ -1,6 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Card } from "./card";
+import { cn } from "@/lib/utils";
 
 interface CardSubjectProps {
   title: string;
@@ -18,122 +19,88 @@ export function CardSubject({
   isBlocked = false,
   className,
 }: CardSubjectProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
-    <Link href={href} className="block no-underline">
-      <Card className={`relative overflow-hidden h-80 w-full ${className}`}>
+    <Link
+      href={href}
+      className="block no-underline group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Card className={cn(
+        "relative overflow-hidden h-80 w-full",
+        "border-2 border-transparent hover:border-blue-400/30",
+        "transform-gpu will-change-transform",
+        className
+      )}>
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 bg-black">
           {imageUrl && (
-            <div className="relative h-full w-full opacity-60">
-              <img 
-                src={imageUrl} 
+            <div className={cn(
+              "relative h-full w-full transition-all duration-700",
+              isHovered ? "opacity-80 scale-110" : "opacity-60 scale-100"
+            )}>
+              <img
+                src={imageUrl}
                 alt={title || "Course thumbnail image"}
-                //fill
+                className="w-full h-full object-cover transition-transform duration-700 ease-out"
                 style={{ objectFit: "cover" }}
               />
             </div>
           )}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className={cn(
+            "absolute inset-0 transition-all duration-500",
+            isHovered ? "bg-black/30 bg-gradient-to-t from-black/60 via-transparent to-black/20" : "bg-black/50"
+          )} />
         </div>
-        
+
         {/* Content */}
         <div className="relative h-full flex flex-col justify-between p-6 text-white z-10">
           {/* Title in the middle */}
           <div className="flex-grow flex items-center justify-center">
-            <h3 className="text-xl md:text-2xl font-bold text-center uppercase tracking-wider">
+            <h3 className={cn(
+              "text-xl md:text-2xl font-bold text-center uppercase tracking-wider",
+              "drop-shadow-lg group-hover:drop-shadow-2xl",
+              isHovered && "animate-pulse"
+            )}>
               {title}
             </h3>
           </div>
-          
+
+          {/* Hover effect overlay */}
+
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm border border-white/30">
+              <svg
+                className="w-8 h-8 text-white animate-bounce"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-white/90 animate-fade-in">
+              {isBlocked ? "Conteúdo Bloqueado" : "Clique para acessar"}
+            </p>
+          </div>
+
+
           {/* Blocked Status and Logos */}
           {isBlocked && (
-            <div className="mt-auto">
-              <div className="flex justify-center space-x-4 mb-3">
-                <div className="w-8 h-8 bg-white/20 rounded-full"></div>
-                <div className="w-8 h-8 bg-white/20 rounded-full"></div>
-                <div className="w-8 h-8 bg-white/20 rounded-full"></div>
-              </div>
-              <p className="text-center text-sm font-medium">
+            <div>
+              <p className={cn(
+                "text-center text-sm font-medium transition-all duration-300",
+                "group-hover:text-red-200"
+              )}>
                 Este conteúdo está bloqueado.
               </p>
             </div>
           )}
         </div>
+
       </Card>
     </Link>
   );
 }
-
-// Mock data for subjects
-export const mockSubjects = [
-  {
-    id: 1,
-    title: "Introdução ao Curso",
-    href: "/student/contents/introducao",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 2,
-    title: "Fundamentos de Programação",
-    href: "/student/contents/fundamentos",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 3,
-    title: "Desenvolvimento Web",
-    href: "/student/contents/web",
-    imageUrl: "/vercel.svg",
-    isBlocked: false,
-  },
-  {
-    id: 4,
-    title: "Banco de Dados",
-    href: "/student/contents/database",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 5,
-    title: "Arquitetura de Software",
-    href: "/student/contents/arquitetura",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 6,
-    title: "DevOps e CI/CD",
-    href: "/student/contents/devops",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 7,
-    title: "Inteligência Artificial",
-    href: "/student/contents/ai",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 8,
-    title: "Segurança da Informação",
-    href: "/student/contents/seguranca",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 9,
-    title: "Mobile Development",
-    href: "/student/contents/mobile",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-  {
-    id: 10,
-    title: "Projeto Final",
-    href: "/student/contents/projeto-final",
-    imageUrl: "/vercel.svg",
-    isBlocked: true,
-  },
-];
