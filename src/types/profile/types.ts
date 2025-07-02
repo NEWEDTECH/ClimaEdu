@@ -1,5 +1,5 @@
 export type OptionsProfileProps = {
   label: string;
   href: string;
-  icon: React.ReactNode;
+  icon: React.ReactNode | null;
 }

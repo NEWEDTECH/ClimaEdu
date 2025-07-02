@@ -14,10 +14,12 @@ export function ProfileDropdownOptions({
   return (
     <DropdownMenuItem asChild>
       <Link href={href} className="flex items-center gap-2">
-        <span className="w-4 h-4 text-muted-foreground flex items-center justify-center">
-          {icon}
-        </span>
-        <span>{label}</span>
+        {icon && (
+          <span className="w-4 h-4 text-muted-foreground flex items-center justify-center">
+            {icon}
+          </span>
+        )}
+        <span className={icon ? "" : "ml-6"}>{label}</span>
       </Link>
     </DropdownMenuItem>
   );
