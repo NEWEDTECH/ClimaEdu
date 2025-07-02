@@ -196,7 +196,7 @@ export class SocialErrorBoundary extends React.Component<
 // Form validation wrapper
 interface ValidatedFormProps {
   children: React.ReactNode;
-  onSubmit: (data: any) => void | Promise<void>;
+  onSubmit: (data: Record<string, unknown>) => void | Promise<void>;
   schema: z.ZodSchema;
   className?: string;
 }
@@ -320,7 +320,19 @@ export function useNetworkStatus() {
     window.addEventListener('offline', handleOffline);
 
     // Get connection info if available
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    const connection = (navigator as Navigator & {
+      connection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+      mozConnection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+      webkitConnection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+    }).connection || (navigator as Navigator & {
+      connection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+      mozConnection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+      webkitConnection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+    }).mozConnection || (navigator as Navigator & {
+      connection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+      mozConnection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+      webkitConnection?: { effectiveType?: string; addEventListener: (event: string, handler: () => void) => void; removeEventListener: (event: string, handler: () => void) => void };
+    }).webkitConnection;
     if (connection) {
       setConnectionType(connection.effectiveType || 'unknown');
       

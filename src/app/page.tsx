@@ -146,7 +146,7 @@ export default function Home() {
     };
 
     loadCourseData();
-  }, [infoUser.id, infoUser.currentIdInstitution]);
+  }, [infoUser.name, infoUser.id, infoUser.currentIdInstitution]);
 
   return (
 

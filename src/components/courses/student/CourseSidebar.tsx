@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Module } from '@/_core/modules/content/core/entities/Module';
 import { ChatDropdown } from '@/components/courses/chat';
 
@@ -131,11 +131,9 @@ export function CourseSidebar({
   isLoading,
   error,
   openModules,
-  setOpenModules,
   onSidebarModeChange
 }: CourseSidebarProps) {
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('hidden');
-  const chatRef = useRef<{ initializeChatRoom: () => void } | null>(null);
 
   const handleSidebarModeChange = (newMode: SidebarMode) => {
     setSidebarMode(newMode);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { GetChatRoomByClassUseCase } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.use-case';
@@ -38,7 +38,23 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const initializeChatRoom = async () => {
+  const loadMessages = useCallback(async (chatRoomId: string) => {
+    try {
+      const listMessagesUseCase = container.get<ListMessagesUseCase>(
+        Register.chat.useCase.ListMessagesUseCase
+      );
+
+      const listMessagesInput = new ListMessagesInput(chatRoomId);
+      const listMessagesOutput = await listMessagesUseCase.execute(listMessagesInput);
+
+      setMessages(listMessagesOutput.messages);
+      setTimeout(scrollToBottom, 100);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
+  }, []);
+
+  const initializeChatRoom = useCallback(async () => {
     if (!courseId || !classId || !userId) return;
 
     setIsInitializing(true);
@@ -84,23 +100,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     } finally {
       setIsInitializing(false);
     }
-  };
-
-  const loadMessages = async (chatRoomId: string) => {
-    try {
-      const listMessagesUseCase = container.get<ListMessagesUseCase>(
-        Register.chat.useCase.ListMessagesUseCase
-      );
-
-      const listMessagesInput = new ListMessagesInput(chatRoomId);
-      const listMessagesOutput = await listMessagesUseCase.execute(listMessagesInput);
-
-      setMessages(listMessagesOutput.messages);
-      setTimeout(scrollToBottom, 100);
-    } catch (error) {
-      console.error('Error loading messages:', error);
-    }
-  };
+  }, [courseId, classId, userId, loadMessages]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId) return;
@@ -148,14 +148,6 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     }
   };
 
-  const toggleDropdown = () => {
-    const newIsOpen = !isOpen;
-    setIsOpen(newIsOpen);
-    if (newIsOpen && !chatRoom) {
-      initializeChatRoom();
-    }
-  };
-
   useEffect(() => {
     if ((isOpen || isEmbedded) && inputRef.current) {
       inputRef.current.focus();
@@ -166,7 +158,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     if (isEmbedded && !chatRoom) {
       initializeChatRoom();
     }
-  }, [isEmbedded]);
+  }, [isEmbedded, chatRoom, initializeChatRoom]);
 
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('pt-BR', {

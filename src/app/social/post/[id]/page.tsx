@@ -53,6 +53,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     if (infoUser?.id && institutionId) {
       commentsHook.fetchComments(id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, infoUser?.id, institutionId]);
 
   // Handle post like
@@ -64,6 +65,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } catch (error) {
       console.error('Error toggling post like:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post, infoUser]);
 
   // Handle comment like
@@ -79,6 +81,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } catch (error) {
       console.error('Error toggling comment like:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, infoUser, comments]);
 
   // Handle new comment
@@ -90,6 +93,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } catch (error) {
       console.error('Error creating comment:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, infoUser, institutionId]);
 
   // Handle comment reply
@@ -101,6 +105,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } catch (error) {
       console.error('Error creating comment reply:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, infoUser, institutionId]);
 
   // Handle comment edit
@@ -112,6 +117,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } catch (error) {
       console.error('Error updating comment:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, infoUser]);
 
   // Handle comment delete
@@ -127,6 +133,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } catch (error) {
       console.error('Error deleting comment:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, infoUser]);
 
   // Loading state
