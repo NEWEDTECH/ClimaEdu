@@ -265,6 +265,7 @@ export function useLikeAnimations() {
     if (isLiked) {
       createFloatingHearts(element);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createFloatingHearts = useCallback((element: HTMLElement) => {

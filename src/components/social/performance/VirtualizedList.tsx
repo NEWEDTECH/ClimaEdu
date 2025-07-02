@@ -190,7 +190,6 @@ export function VirtualizedGrid<T>({
   className = ''
 }: VirtualizedGridProps<T>) {
   const [scrollTop, setScrollTop] = useState(0);
-  const [scrollLeft] = useState(0);
 
   // Calculate grid dimensions
   const columnsPerRow = Math.floor((containerWidth + gap) / (itemWidth + gap));
@@ -272,7 +271,7 @@ export function usePerformanceMonitor() {
         setMetrics(prev => ({
           ...prev,
           fps,
-          memoryUsage: (performance as any).memory?.usedJSHeapSize || 0
+          memoryUsage: (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0
         }));
         
         frameCount = 0;
@@ -312,7 +311,7 @@ export function useDebouncedSearch<T>(
   const [results, setResults] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (timeoutRef.current) {

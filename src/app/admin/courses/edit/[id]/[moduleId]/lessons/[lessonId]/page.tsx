@@ -8,8 +8,7 @@ import { Button } from '@/components/button'
 import { FormSection } from '@/components/form'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
-import { DashboardLayout } from '@/components/layout/DashboardLayout'
-import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
 import { DropdownVideoPlayer } from '@/components/video'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
@@ -393,296 +392,292 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
   if (isLoading) {
     return (
-      <ProtectedContent>
-        <DashboardLayout>
+      <CourseEditLayout courseId={courseId}>
+        <div className="container mx-auto p-6 flex justify-center items-center">
           <LoadingSpinner />
-        </DashboardLayout>
-      </ProtectedContent>
+        </div>
+      </CourseEditLayout>
     )
   }
 
   if (error) {
     return (
-      <ProtectedContent>
-        <DashboardLayout>
-          <div className="container mx-auto p-6">
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center p-6">
-                <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
-                <p className="mb-4">{error}</p>
-                <Link href={`/admin/courses/edit/${courseId}/${moduleId}`}>
-              <Button>Voltar para o Módulo</Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </DashboardLayout>
-      </ProtectedContent>
+      <CourseEditLayout courseId={courseId}>
+        <div className="container mx-auto p-6">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
+              <p className="mb-4">{error}</p>
+              <Link href={`/admin/courses/edit/${courseId}`}>
+                <Button>Voltar para o Curso</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </CourseEditLayout>
     )
   }
 
   return (
-    <ProtectedContent>
-      <DashboardLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Editar Lição</h1>
-              <p className="text-gray-500">Módulo: {moduleName}</p>
-            </div>
-            <Link href={`/admin/courses/edit/${courseId}/${moduleId}`}>
-              <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Módulo</Button>
-            </Link>
+    <CourseEditLayout courseId={courseId}>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Editar Lição</h1>
+            <p className="text-gray-500">Módulo: {moduleName}</p>
           </div>
+          <Link href={`/admin/courses/edit/${courseId}`}>
+            <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Curso</Button>
+          </Link>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Informações da Lição</CardTitle>
-              <CardDescription>
-                Atualize os detalhes da lição
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FormSection onSubmit={handleSubmit} error={error}>
-                <div className="space-y-2">
-                  <label htmlFor="title" className="text-sm font-medium">
-                    Título da Lição
-                  </label>
-                  <InputText
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder="Digite o título da lição"
-                    required
-                  />
-                </div>
-                
-                {/* Contents Section */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle>Conteúdos da Lição</CardTitle>
-                      <div className="flex gap-2">
-                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
-                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
-                        </Link>
-                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
-                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Atividade</Button>
-                        </Link>
-                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
-                          <Button className="text-xs px-3 py-1">Adicionar Questionário</Button>
-                        </Link>
-                      </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Informações da Lição</CardTitle>
+            <CardDescription>
+              Atualize os detalhes da lição
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <FormSection onSubmit={handleSubmit} error={error}>
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-sm font-medium">
+                  Título da Lição
+                </label>
+                <InputText
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Digite o título da lição"
+                  required
+                />
+              </div>
+              
+              {/* Contents Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Conteúdos da Lição</CardTitle>
+                    <div className="flex gap-2">
+                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
+                        <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
+                      </Link>
+                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
+                        <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Atividade</Button>
+                      </Link>
+                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
+                        <Button className="text-xs px-3 py-1">Adicionar Questionário</Button>
+                      </Link>
                     </div>
-                    <CardDescription>
-                      Gerencie os conteúdos desta lição
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {formData.contents.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        Esta lição ainda não possui conteúdos. Adicione um conteúdo para começar.
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {formData.contents.map((content) => (
-                          <div 
-                            key={content.id} 
-                            className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                          >
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-blue-500">
-                                  {getContentTypeIcon(content.type)}
-                                </div>
-                                <div>
-                                  {content.type === ContentType.VIDEO ? (
-                                    <DropdownVideoPlayer
-                                      videoUrl={content.url}
-                                      videoTitle={content.title}
-                                      autoPlay={false}
-                                      showControls={true}
-                                    >
-                                      <h3 className="font-medium cursor-pointer hover:text-blue-600 transition-colors">
-                                        {content.title}
-                                      </h3>
-                                    </DropdownVideoPlayer>
-                                  ) : (
-                                    <h3 className="font-medium">
-                                      {content.title}
-                                    </h3>
-                                  )}
-                                  <p className="text-xs text-gray-500">
-                                    {getContentTypeLabel(content.type)}
-                                  </p>
-                                </div>
+                  </div>
+                  <CardDescription>
+                    Gerencie os conteúdos desta lição
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {formData.contents.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Esta lição ainda não possui conteúdos. Adicione um conteúdo para começar.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {formData.contents.map((content) => (
+                        <div 
+                          key={content.id} 
+                          className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-blue-500">
+                                {getContentTypeIcon(content.type)}
                               </div>
-                              <div className="flex gap-2">
-                                {content.type === ContentType.VIDEO && (
+                              <div>
+                                {content.type === ContentType.VIDEO ? (
                                   <DropdownVideoPlayer
                                     videoUrl={content.url}
                                     videoTitle={content.title}
                                     autoPlay={false}
                                     showControls={true}
                                   >
-                                    <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">
-                                      Assistir
-                                    </Button>
+                                    <h3 className="font-medium cursor-pointer hover:text-blue-600 transition-colors">
+                                      {content.title}
+                                    </h3>
                                   </DropdownVideoPlayer>
+                                ) : (
+                                  <h3 className="font-medium">
+                                    {content.title}
+                                  </h3>
                                 )}
-                                <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
-                                  <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
-                                </Link>
+                                <p className="text-xs text-gray-500">
+                                  {getContentTypeLabel(content.type)}
+                                </p>
                               </div>
                             </div>
+                            <div className="flex gap-2">
+                              {content.type === ContentType.VIDEO && (
+                                <DropdownVideoPlayer
+                                  videoUrl={content.url}
+                                  videoTitle={content.title}
+                                  autoPlay={false}
+                                  showControls={true}
+                                >
+                                  <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">
+                                    Assistir
+                                  </Button>
+                                </DropdownVideoPlayer>
+                              )}
+                              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
+                                <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
+                              </Link>
+                            </div>
                           </div>
-                        ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Activity Section */}
+              {formData.activity && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Atividade</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Atividade para os alunos realizarem
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-green-500">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                />
+                              </svg>
+                            </div>
+                            <h3 className="font-medium">
+                              {formData.activity.description}
+                            </h3>
+                          </div>
+                          <div className="ml-11 mt-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Instruções:</span> {formData.activity.instructions}
+                            </p>
+                            {formData.activity.resourceUrl && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                <span className="font-medium">Recurso:</span>{' '}
+                                <a 
+                                  href={formData.activity.resourceUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-500 hover:underline"
+                                >
+                                  {formData.activity.resourceUrl}
+                                </a>
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
+              )}
 
-                {/* Activity Section */}
-                {formData.activity && (
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-center">
-                        <CardTitle>Atividade</CardTitle>
+              {/* Questionnaire Section */}
+              {formData.questionnaire && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Questionário</CardTitle>
+                      <div className='flex justify-end gap-2'>
+                        <Button 
+                          className="border text-xs px-3 py-1 bg-red-500 text-white"
+                          onClick={handleDeleteQuestionnaire}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? 'Excluindo...' : 'Excluir'}
+                        </Button>
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
+                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
+                        </Link>
                       </div>
-                      <CardDescription>
-                        Atividade para os alunos realizarem
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center mb-2">
-                              <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-green-500">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                  />
-                                </svg>
-                              </div>
-                              <h3 className="font-medium">
-                                {formData.activity.description}
-                              </h3>
+                    </div>
+                    <CardDescription>
+                      Questionário para avaliar o conhecimento dos alunos
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-purple-500">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
                             </div>
-                            <div className="ml-11 mt-2">
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Instruções:</span> {formData.activity.instructions}
-                              </p>
-                              {formData.activity.resourceUrl && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                  <span className="font-medium">Recurso:</span>{' '}
-                                  <a 
-                                    href={formData.activity.resourceUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-500 hover:underline"
-                                  >
-                                    {formData.activity.resourceUrl}
-                                  </a>
-                                </p>
-                              )}
-                            </div>
+                            <h3 className="font-medium">
+                              {formData.questionnaire.title}
+                            </h3>
+                          </div>
+                          <div className="ml-11 mt-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Tentativas máximas:</span> {formData.questionnaire.maxAttempts}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Nota de aprovação:</span> {formData.questionnaire.passingScore}%
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Número de perguntas:</span> {formData.questionnaire.questions.length}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-                {/* Questionnaire Section */}
-                {formData.questionnaire && (
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-center">
-                        <CardTitle>Questionário</CardTitle>
-                        <div className='flex justify-end gap-2'>
-                          <Button 
-                            className="border text-xs px-3 py-1 bg-red-500 text-white"
-                            onClick={handleDeleteQuestionnaire}
-                            disabled={isSubmitting}
-                          >
-                            {isSubmitting ? 'Excluindo...' : 'Excluir'}
-                          </Button>
-                          <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
-                            <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
-                          </Link>
-                        </div>
-                      </div>
-                      <CardDescription>
-                        Questionário para avaliar o conhecimento dos alunos
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center mb-2">
-                              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-purple-500">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                  />
-                                </svg>
-                              </div>
-                              <h3 className="font-medium">
-                                {formData.questionnaire.title}
-                              </h3>
-                            </div>
-                            <div className="ml-11 mt-2">
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Tentativas máximas:</span> {formData.questionnaire.maxAttempts}
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Nota de aprovação:</span> {formData.questionnaire.passingScore}%
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Número de perguntas:</span> {formData.questionnaire.questions.length}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <div className="flex justify-end gap-2 my-4">
-                  <Link href={`/admin/courses/edit/${courseId}/${moduleId}`}>
-                    <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
-                  </Link>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-                  </Button>
-                </div>
-              </FormSection>
-            </CardContent>
-          </Card>
-        </div>
-      </DashboardLayout>
-    </ProtectedContent>
+              <div className="flex justify-end gap-2 my-4">
+                <Link href={`/admin/courses/edit/${courseId}`}>
+                  <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
+                </Link>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </div>
+            </FormSection>
+          </CardContent>
+        </Card>
+      </div>
+    </CourseEditLayout>
   )
 }

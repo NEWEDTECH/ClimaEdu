@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
 import Link from 'next/link';
@@ -16,7 +14,6 @@ type ModuleData = {
   id: string;
   title: string;
   order: number;
-  lessonsCount: number;
   lessons: LessonData[];
   isEditing?: boolean;
   editingTitle?: string;
@@ -42,6 +39,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [isLoadingLessons, setIsLoadingLessons] = useState<Record<string, boolean>>({});
   const [isUpdatingModule, setIsUpdatingModule] = useState<Record<string, boolean>>({});
   const [isCreatingLesson, setIsCreatingLesson] = useState<Record<string, boolean>>({});
+  const [openModules, setOpenModules] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const fetchModules = useCallback(async () => {
@@ -58,7 +56,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
         id: module.id,
         title: module.title,
         order: module.order,
-        lessonsCount: module.lessons.length,
         lessons: []
       }));
 
@@ -160,7 +157,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                   title: result.lesson.title,
                   order: result.lesson.order
                 }].sort((a, b) => a.order - b.order),
-                lessonsCount: module.lessonsCount + 1,
                 isAddingLesson: false,
                 newLessonTitle: ''
               }
@@ -256,7 +252,6 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
         id: result.module.id,
         title: result.module.title,
         order: result.module.order,
-        lessonsCount: 0,
         lessons: []
       }]);
 
@@ -271,110 +266,181 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex justify-center items-center p-6">
-          <p>Carregando módulos...</p>
-        </CardContent>
-      </Card>
+      <div className="h-full p-4 flex justify-center items-center">
+        <p className="text-sm text-gray-500">Carregando módulos...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center p-6">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
-          <p className="mb-4">{error}</p>
-          <Button onClick={() => fetchModules()}>Tentar Novamente</Button>
-        </CardContent>
-      </Card>
+      <div className="h-full p-4 flex flex-col items-center justify-center">
+        <h2 className="text-lg font-semibold text-red-600 mb-2">Erro</h2>
+        <p className="mb-4 text-sm text-center">{error}</p>
+        <Button onClick={() => fetchModules()} className="text-xs">
+          Tentar Novamente
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle>Módulos do Curso</CardTitle>
-        <CardDescription>
-          Gerencie os módulos e lições deste curso
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Always visible module creation form */}
-        <div className="mb-6 p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
-          <h3 className="text-sm font-medium mb-3">Adicionar Novo Módulo</h3>
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <InputText
-                id="newModuleTitle"
-                value={newModuleTitle}
-                onChange={(e) => setNewModuleTitle(e.target.value)}
-                placeholder="Digite o título do módulo"
-                required
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Header da sidebar */}
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+            <svg
+              className="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
+            </svg>
+          </div>
+          <div>
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100">Módulos do Curso</h2>
+          </div>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Always visible module creation form */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-green-100 dark:border-gray-600 shadow-sm">
+          <div className="flex items-center mb-3">
+            <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center mr-2">
+              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
             </div>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Adicionar Novo Módulo</h3>
+          </div>
+          <div className="space-y-3">
+            <InputText
+              id="newModuleTitle"
+              value={newModuleTitle}
+              onChange={(e) => setNewModuleTitle(e.target.value)}
+              placeholder="Digite o título do módulo"
+              required
+              className="bg-white dark:bg-gray-800 border-green-200 dark:border-gray-600"
+            />
             <Button
               type="button"
               onClick={handleCreateModule}
               disabled={isCreatingModule}
-              className="text-xs px-4 py-2"
+              className="w-full bg-green-500 hover:bg-green-600 text-white text-sm py-2 rounded-lg shadow-sm transition-all duration-200"
             >
-              {isCreatingModule ? 'Criando...' : 'Adicionar'}
+              {isCreatingModule ? 'Criando...' : 'Adicionar Módulo'}
             </Button>
           </div>
         </div>
 
         {modules.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            Este curso ainda não possui módulos. Adicione um módulo para começar.
+          <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <p>Este curso ainda não possui módulos.</p>
+            <p className="text-xs mt-1">Adicione um módulo para começar.</p>
           </div>
         ) : (
-          <Accordion type="multiple" className="w-full">
+          <div className="space-y-3">
             {modules.map((module, index) => (
-              <AccordionItem key={module.id} value={module.id}>
-                <AccordionTrigger
+              <div key={module.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                {/* Module Header */}
+                <button
                   onClick={() => {
-                    if (module.lessons.length === 0) {
-                      fetchLessonsForModule(module.id);
+                    const isOpen = openModules.has(module.id);
+                    const newOpenModules = new Set(openModules);
+                    
+                    if (isOpen) {
+                      newOpenModules.delete(module.id);
+                    } else {
+                      newOpenModules.add(module.id);
+                      // Fetch lessons if not already loaded
+                      if (module.lessons.length === 0) {
+                        fetchLessonsForModule(module.id);
+                      }
                     }
+                    
+                    setOpenModules(newOpenModules);
                   }}
-                  className="text-left"
+                  className="flex items-center justify-between w-full p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200"
                 >
-                  <div className="flex justify-between items-center w-full pr-4">
-                    <span className="font-medium">
-                      {index + 1}. {module.title}
-                    </span>
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {index + 1}. {module.title}
+                      </span>
+                    </div>
                   </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4">
-                    {/* Module editing section */}
-                    {module.isEditing ? (
-                      <div className="p-4 border rounded-md bg-blue-50 dark:bg-blue-900/20">
-                        <h4 className="text-sm font-medium mb-3">Editar Módulo</h4>
-                        <div className="flex gap-3">
-                          <div className="flex-1">
-                            <InputText
-                              id={`editModuleTitle-${module.id}`}
-                              value={module.editingTitle || ''}
-                              onChange={(e) => {
-                                setModules(prevModules =>
-                                  prevModules.map(m =>
-                                    m.id === module.id
-                                      ? { ...m, editingTitle: e.target.value }
-                                      : m
-                                  )
-                                );
-                              }}
-                              placeholder="Digite o novo título do módulo"
-                              required
-                            />
-                          </div>
+                  <svg
+                    className={`w-5 h-5 text-blue-500 transition-transform duration-200 ${
+                      openModules.has(module.id) ? 'transform rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+
+                {/* Module Content */}
+                {openModules.has(module.id) && (
+                  <div className="p-4 space-y-3 border-t border-gray-100 dark:border-gray-700">
+                  {/* Module editing section */}
+                  {module.isEditing ? (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h4 className="text-xs font-medium mb-2 text-blue-800 dark:text-blue-200">Editar Módulo</h4>
+                      <div className="space-y-2">
+                        <InputText
+                          id={`editModuleTitle-${module.id}`}
+                          value={module.editingTitle || ''}
+                          onChange={(e) => {
+                            setModules(prevModules =>
+                              prevModules.map(m =>
+                                m.id === module.id
+                                  ? { ...m, editingTitle: e.target.value }
+                                  : m
+                              )
+                            );
+                          }}
+                          placeholder="Digite o novo título do módulo"
+                          required
+                          className="bg-white dark:bg-gray-800"
+                        />
+                        <div className="flex gap-2">
                           <Button
                             type="button"
                             onClick={() => handleUpdateModule(module.id, module.editingTitle || '')}
                             disabled={isUpdatingModule[module.id]}
-                            className="text-xs px-3 py-2"
+                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 rounded-lg"
                           >
                             {isUpdatingModule[module.id] ? 'Salvando...' : 'Salvar'}
                           </Button>
@@ -382,58 +448,59 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             type="button"
                             onClick={() => handleCancelEdit(module.id)}
                             disabled={isUpdatingModule[module.id]}
-                            className="border bg-transparent text-xs px-3 py-2 hover:bg-gray-100"
+                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs py-2 rounded-lg"
                           >
                             Cancelar
                           </Button>
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          onClick={() => handleEditModule(module.id, module.title)}
-                          className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100"
-                        >
-                          Editar Módulo
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => handleAddLesson(module.id)}
-                          className="border bg-transparent text-xs px-3 py-1 hover:bg-gray-100"
-                        >
-                          Adicionar Lição
-                        </Button>
-                      </div>
-                    )}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => handleEditModule(module.id, module.title)}
+                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-2 rounded-lg transition-colors"
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => handleAddLesson(module.id)}
+                        className="flex-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs py-2 rounded-lg transition-colors"
+                      >
+                        + Lição
+                      </Button>
+                    </div>
+                  )}
 
-                    {/* Add lesson section */}
-                    {module.isAddingLesson && (
-                      <div className="p-4 border rounded-md bg-green-50 dark:bg-green-900/20">
-                        <h4 className="text-sm font-medium mb-3">Adicionar Nova Lição</h4>
-                        <div className="flex gap-3">
-                          <div className="flex-1">
-                            <InputText
-                              id={`newLessonTitle-${module.id}`}
-                              value={module.newLessonTitle || ''}
-                              onChange={(e) => {
-                                setModules(prevModules =>
-                                  prevModules.map(m =>
-                                    m.id === module.id
-                                      ? { ...m, newLessonTitle: e.target.value }
-                                      : m
-                                  )
-                                );
-                              }}
-                              placeholder="Digite o título da lição"
-                              required
-                            />
-                          </div>
+                  {/* Add lesson section */}
+                  {module.isAddingLesson && (
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <h4 className="text-xs font-medium mb-2 text-green-800 dark:text-green-200">Adicionar Nova Lição</h4>
+                      <div className="space-y-2">
+                        <InputText
+                          id={`newLessonTitle-${module.id}`}
+                          value={module.newLessonTitle || ''}
+                          onChange={(e) => {
+                            setModules(prevModules =>
+                              prevModules.map(m =>
+                                m.id === module.id
+                                  ? { ...m, newLessonTitle: e.target.value }
+                                  : m
+                              )
+                            );
+                          }}
+                          placeholder="Digite o título da lição"
+                          required
+                          className="bg-white dark:bg-gray-800"
+                        />
+                        <div className="flex gap-2">
                           <Button
                             type="button"
                             onClick={() => handleCreateLesson(module.id, module.newLessonTitle || '')}
                             disabled={isCreatingLesson[module.id]}
-                            className="text-xs px-3 py-2"
+                            className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs py-2 rounded-lg"
                           >
                             {isCreatingLesson[module.id] ? 'Salvando...' : 'Salvar'}
                           </Button>
@@ -441,52 +508,63 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             type="button"
                             onClick={() => handleCancelAddLesson(module.id)}
                             disabled={isCreatingLesson[module.id]}
-                            className="border bg-transparent text-xs px-3 py-2 hover:bg-gray-100"
+                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs py-2 rounded-lg"
                           >
                             Cancelar
                           </Button>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Lessons list */}
-                    {isLoadingLessons[module.id] ? (
-                      <div className="text-center py-4 text-gray-500">
-                        Carregando lições...
-                      </div>
-                    ) : module.lessons.length === 0 ? (
-                      <div className="text-center py-4 text-gray-500">
-                        Este módulo ainda não possui lições.
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Lições:
-                        </h4>
-                        {module.lessons.map((lesson, lessonIndex) => (
-                          <div
-                            key={lesson.id}
-                            className="flex justify-between items-center p-3 border rounded-md bg-white dark:bg-gray-900"
-                          >
-                            <span className="text-sm">
-                              {lessonIndex + 1}. {lesson.title}
+                  {/* Lessons list */}
+                  {isLoadingLessons[module.id] ? (
+                    <div className="flex flex-col justify-center items-center py-4 space-y-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Carregando lições...</p>
+                    </div>
+                  ) : module.lessons.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500 text-xs bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      Este módulo ainda não possui lições.
+                    </div>
+                  ) : (
+                    <div className="space-y-2 ml-2 border-l-2 border-blue-200 dark:border-gray-600 pl-4">
+                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Lições:
+                      </h4>
+                      {module.lessons.map((lesson, lessonIndex) => (
+                        <Link 
+                          key={lesson.id}
+                          href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}
+                          className="block"
+                        >
+                          <div className="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md">
+                            <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center mr-3 text-xs font-bold text-gray-600 dark:text-gray-400">
+                              {lessonIndex + 1}
+                            </div>
+                            <span className="text-sm flex-1 font-medium text-gray-700 dark:text-gray-300">
+                              {lesson.title}
                             </span>
-                            <Link href={`/admin/courses/edit/${courseId}/${module.id}/lessons/${lesson.id}`}>
-                              <Button className="border bg-transparent text-xs px-2 py-1 hover:bg-gray-100">
-                                Editar
-                              </Button>
-                            </Link>
+                            <svg 
+                              className="w-4 h-4 text-gray-400" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                )}
+              </div>
             ))}
-          </Accordion>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

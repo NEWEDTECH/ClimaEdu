@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/loader'
@@ -56,7 +56,7 @@ export default function EditTrailPage() {
     const [trailStudents, setTrailStudents] = useState<Array<{ id: string, name: string, email: string, isEnrolled: boolean }>>([])
 
     // Load enrolled students for the trail
-    const loadTrailStudents = async () => {
+    const loadTrailStudents = useCallback(async () => {
         if (!trail || trailCourses.length === 0) {
             setTrailStudents([])
             return
@@ -105,7 +105,7 @@ export default function EditTrailPage() {
         } catch (err) {
             console.error('Error fetching enrolled students:', err)
         }
-    }
+    }, [trail, trailCourses])
 
     // Load students for the institution
     useEffect(() => {
@@ -153,7 +153,7 @@ export default function EditTrailPage() {
     // Load enrolled students when trail courses change
     useEffect(() => {
         loadTrailStudents()
-    }, [trail, trailCourses])
+    }, [trail, trailCourses, loadTrailStudents])
 
     // Filter students based on search term
     useEffect(() => {

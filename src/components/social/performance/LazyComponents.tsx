@@ -150,7 +150,8 @@ export function withLazyLoading(
 ) {
   const LazyComponent = lazy(importFn);
   
-  return function LazyWrapper(props: Record<string, unknown>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function LazyWrapper(props: Record<string, any>) {
     return (
       <LazyErrorBoundary fallback={errorFallback}>
         <Suspense fallback={fallback || <ComponentSkeleton />}>
@@ -170,7 +171,7 @@ export function withLazyLoading(
 // Progressive loading hook
 export function useProgressiveLoading<T>(
   loadFn: () => Promise<T>,
-  dependencies: any[] = []
+  dependencies: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -204,6 +205,7 @@ export function useProgressiveLoading<T>(
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies);
 
   return { data, loading, error };
@@ -250,7 +252,7 @@ export function PreloadComponent({
   importFn, 
   when = true 
 }: { 
-  importFn: () => Promise<any>; 
+  importFn: () => Promise<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   when?: boolean; 
 }) {
   useEffect(() => {

@@ -107,6 +107,7 @@ export function usePosts(options: UsePostsOptions = {}) {
     if (autoFetch && institutionId && userId) {
       fetchPosts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch, institutionId, userId]);
 
   // Refresh posts (force fetch)
@@ -289,6 +290,7 @@ export function useMyPosts(options: UsePostsOptions = {}) {
     if (autoFetch && institutionId && userId) {
       fetchMyPosts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch, institutionId, userId]);
 
   const refreshMyPosts = useCallback(() => {
@@ -385,6 +387,7 @@ export function usePost(postId: string, userId?: string) {
     if (postId && userId) {
       fetchPost();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, userId]);
 
   const refreshPost = useCallback(() => {

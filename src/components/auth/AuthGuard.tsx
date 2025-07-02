@@ -1,7 +1,7 @@
 'use client';
 
 import { auth } from "@/_core/shared/firebase/firebase-client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useProfile } from '@/context/zustand/useProfile';
 import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 import { container } from '@/_core/shared/container';
@@ -25,7 +25,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   
   const { /*getLastInstitutionId,*/ setLastInstitutionId } = useInstitutionStorage();
 
-  const initializeUserData = async (userId: string) => {
+  const initializeUserData = useCallback(async (userId: string) => {
     try {
       console.log('🚀 AuthGuard: Initializing user data for:', userId);
       setIsLoading(true);
@@ -124,9 +124,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setInitializationError(error instanceof Error ? error.message : 'Erro desconhecido');
       setIsLoading(false);
     }
-  };
+  }, [infoUser, setInfoUser, setInfoInstitutions, setInfoInstitutionsRole, setLastInstitutionId]);
 
-  const clearUserData = () => {
+  const clearUserData = useCallback(() => {
     console.log('🧹 AuthGuard: Clearing user data on logout');
     setInfoUser({
       id: '',
@@ -148,7 +148,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     setInitializationError(null);
     
     console.log('✅ AuthGuard: User data cleared, ready for new login');
-  };
+  }, [setInfoUser, setInfoInstitutions, setInfoInstitutionsRole]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -176,7 +176,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []); // ✅ Removed problematic dependencies
+  }, [clearUserData, initializeUserData, isInitialized, isLoading]);
 
   // Mostrar loading durante a inicialização
   if (isLoading) {
