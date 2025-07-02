@@ -187,6 +187,51 @@ export default function CoursePage() {
         }
     };
 
+    // Function to find and navigate to the previous video
+    const handlePreviousVideo = () => {
+        if (!activeLesson || modules.length === 0) return;
+
+        // Find current module and lesson
+        let currentModuleIndex = -1;
+        let currentLessonIndex = -1;
+
+        for (let i = 0; i < modules.length; i++) {
+            const currentModuleData = modules[i];
+            const lessonIndex = currentModuleData.lessons.findIndex(lesson => lesson.id === activeLesson);
+
+            if (lessonIndex !== -1) {
+                currentModuleIndex = i;
+                currentLessonIndex = lessonIndex;
+                break;
+            }
+        }
+
+        if (currentModuleIndex === -1 || currentLessonIndex === -1) return;
+
+        const currentModule = modules[currentModuleIndex];
+
+        // Check if there's a previous lesson in the current module
+        if (currentLessonIndex > 0) {
+            // Go to previous lesson in current module
+            const previousLesson = currentModule.lessons[currentLessonIndex - 1];
+            handleLessonSelect(previousLesson.id);
+        } else if (currentModuleIndex > 0) {
+            // Go to last lesson of previous module
+            const previousModule = modules[currentModuleIndex - 1];
+            if (previousModule.lessons.length > 0) {
+                setOpenModules(prev => new Set([...prev, previousModule.id]));
+                const lastLesson = previousModule.lessons[previousModule.lessons.length - 1];
+                handleLessonSelect(lastLesson.id);
+            }
+        }
+    };
+
+    // Function to handle lesson completion (placeholder for now)
+    const handleCompleteLesson = () => {
+        // TODO: Implementar lógica de conclusão da lição
+        console.log('Lesson completed:', activeLesson);
+    };
+
     useEffect(() => {
         const fetchCourseData = async () => {
             if (!courseId) return;
@@ -378,6 +423,48 @@ export default function CoursePage() {
                                         <p className="text-gray-500">Nenhum conteúdo de vídeo disponível</p>
                                     </div>
                                 )}
+
+                                {/* Navigation Buttons - Bottom Right */}
+                                <div className="flex justify-end mt-4">
+                                    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
+                                        {/* Previous Button */}
+                                        <button
+                                            onClick={handlePreviousVideo}
+                                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={!activeLesson || modules.length === 0}
+                                            title="Lição anterior"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+
+                                        {/* Complete Button */}
+                                        <button
+                                            onClick={handleCompleteLesson}
+                                            className="flex items-center justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={!activeLesson}
+                                            title="Concluir lição"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <span className="text-sm font-medium">Concluir</span>
+                                        </button>
+
+                                        {/* Next Button */}
+                                        <button
+                                            onClick={handleNextVideo}
+                                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={!activeLesson || modules.length === 0}
+                                            title="Próxima lição"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* TABS AQUI*/}
