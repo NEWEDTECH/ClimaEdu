@@ -19,6 +19,7 @@ interface TrailDocument {
   title: string;
   description: string;
   courseIds: string[];
+  coverImageUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +32,7 @@ class TrailMapper {
       title: doc.title,
       description: doc.description,
       courseIds: doc.courseIds,
+      coverImageUrl: doc.coverImageUrl,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });
@@ -43,6 +45,7 @@ class TrailMapper {
       title: trail.title,
       description: trail.description,
       courseIds: trail.courseIds,
+      coverImageUrl: trail.coverImageUrl,
       createdAt: trail.createdAt,
       updatedAt: trail.updatedAt,
     };

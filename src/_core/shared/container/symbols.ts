@@ -11,7 +11,8 @@ import { ChatSymbols } from './modules/chat/symbols';
 import { PodcastSymbols } from './modules/podcast/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols, SocialSymbols };
+import { SocialSymbols } from './modules/social/symbols';
 
 // Register object to simplify imports
 export const Register = {
@@ -46,5 +47,10 @@ export const Register = {
   podcast: {
     repository: PodcastSymbols.repositories,
     useCase: PodcastSymbols.useCases,
+  },
+  social: {
+    repository: SocialSymbols.repositories,
+    useCase: SocialSymbols.useCases,
+
   },
 };

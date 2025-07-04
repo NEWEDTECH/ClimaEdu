@@ -1,7 +1,7 @@
 'use client';
 
 import { auth } from "@/_core/shared/firebase/firebase-client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useProfile } from '@/context/zustand/useProfile';
 import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 import { container } from '@/_core/shared/container';
@@ -23,9 +23,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     setInfoInstitutionsRole
   } = useProfile();
   
-  const { getLastInstitutionId, setLastInstitutionId } = useInstitutionStorage();
+  const { /*getLastInstitutionId,*/ setLastInstitutionId } = useInstitutionStorage();
 
-  const initializeUserData = async (userId: string) => {
+  const initializeUserData = useCallback(async (userId: string) => {
     try {
       console.log('🚀 AuthGuard: Initializing user data for:', userId);
       setIsLoading(true);
@@ -65,7 +65,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         setInfoInstitutionsRole(institutionsRoleData);
 
         // Passo 3: Buscar no localStorage o último ID da instituição que está salvo
-        currentInstitutionId = getLastInstitutionId();
+        // currentInstitutionId = getLastInstitutionId();
 
         // Se não tiver nenhum, pegar qualquer ID de instituição que foi obtido
         if (!currentInstitutionId && institutionsRoleData.length > 0) {
@@ -80,6 +80,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         const institutionRepository = container.get<InstitutionRepository>(
           Register.institution.repository.InstitutionRepository
         );
+        console.log('🔍 AuthGuard: Fetching institution with ID:', currentInstitutionId);
         const institution = await institutionRepository.findById(currentInstitutionId);
 
         if (!institution) {
@@ -123,9 +124,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setInitializationError(error instanceof Error ? error.message : 'Erro desconhecido');
       setIsLoading(false);
     }
-  };
+  }, [infoUser, setInfoUser, setInfoInstitutions, setInfoInstitutionsRole, setLastInstitutionId]);
 
-  const clearUserData = () => {
+  const clearUserData = useCallback(() => {
     console.log('🧹 AuthGuard: Clearing user data on logout');
     setInfoUser({
       id: '',
@@ -147,7 +148,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     setInitializationError(null);
     
     console.log('✅ AuthGuard: User data cleared, ready for new login');
-  };
+  }, [setInfoUser, setInfoInstitutions, setInfoInstitutionsRole]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -175,7 +176,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []); // ✅ Removed problematic dependencies
+  }, [clearUserData, initializeUserData, isInitialized, isLoading]);
 
   // Mostrar loading durante a inicialização
   if (isLoading) {
