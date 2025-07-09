@@ -44,6 +44,9 @@ The table below defines the prefixes for all system entities, organized by Bound
 | **Badge**               | `bdg_`           | `badges`                   |
 | **StudentBadge**        | `sb_`            | `student_badges` (subcol. of user) |
 | **Report (all types)**  | `rpt_`           | `reports` or generated on-demand |
+| **Podcast**             | `pod_`           | `podcasts` (subcol. of institution) |
+| **PodcastView**         | `podv_`          | `podcast_views` (subcol. of institution) |
+| **PodcastLike**         | `podl_`          | `podcast_likes` (subcol. of institution) |
 | **Post**                | `pst_`           | `posts`                    |
 | **Comment**             | `cmt_`           | `comments`                 |
 | **PostLike**            | `plike_`         | `post_likes`               |

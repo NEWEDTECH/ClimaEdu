@@ -8,10 +8,11 @@ import { AuthSymbols } from './modules/auth/symbols';
 import { EnrollmentSymbols } from './modules/enrollment/symbols';
 import { BadgeSymbols } from './modules/badge/symbols';
 import { ChatSymbols } from './modules/chat/symbols';
-import { SocialSymbols } from './modules/social/symbols';
+import { PodcastSymbols } from './modules/podcast/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, SocialSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols, SocialSymbols };
+import { SocialSymbols } from './modules/social/symbols';
 
 // Register object to simplify imports
 export const Register = {
@@ -43,8 +44,13 @@ export const Register = {
     repository: ChatSymbols.repositories,
     useCase: ChatSymbols.useCases,
   },
+  podcast: {
+    repository: PodcastSymbols.repositories,
+    useCase: PodcastSymbols.useCases,
+  },
   social: {
     repository: SocialSymbols.repositories,
     useCase: SocialSymbols.useCases,
+
   },
 };

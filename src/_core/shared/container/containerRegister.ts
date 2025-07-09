@@ -8,6 +8,7 @@ import { registerAuthModule } from './modules/auth/register';
 import { registerEnrollmentModule } from './modules/enrollment/register';
 import { registerBadgeModule } from './modules/badge/register';
 import { registerChatModule } from './modules/chat/register';
+import { registerPodcastModule } from './modules/podcast/register';
 import { registerSocialModule } from './modules/social/register';
 
 /**
@@ -22,5 +23,6 @@ export function registerDependencies(): void {
   registerEnrollmentModule(container);
   registerBadgeModule(container);
   registerChatModule(container);
+  registerPodcastModule(container);
   registerSocialModule(container);
 }
