@@ -127,7 +127,7 @@ export default function Home() {
               title: trail.title,
               description: trail.description,
               href: `/student/trails/${trail.id}`,
-              imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+              imageUrl: trail.coverImageUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
               isBlocked: false
             });
           }

@@ -28,6 +28,7 @@ export default function CreateTrailPage() {
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
   const [title, setTitle] = useState<string>('')
   const [description, setDescription] = useState<string>('')
+  const [coverImageUrl, setCoverImageUrl] = useState<string>('')
   const [availableCourses, setAvailableCourses] = useState<CourseInfo[]>([])
   const [selectedCourses, setSelectedCourses] = useState<CourseInfo[]>([])
   const [selectedCourseId, setSelectedCourseId] = useState<string>('')
@@ -160,7 +161,8 @@ export default function CreateTrailPage() {
         selectedInstitutionId,
         title.trim(),
         description.trim(),
-        courseIds
+        courseIds,
+        coverImageUrl.trim() || null
       )
       
       await createTrailUseCase.execute(input)
@@ -261,6 +263,23 @@ export default function CreateTrailPage() {
                       className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive min-h-[100px]"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label htmlFor="coverImageUrl" className="block text-sm font-medium mb-2">
+                      URL da Imagem de Capa
+                    </label>
+                    <InputText
+                      id="coverImageUrl"
+                      type="url"
+                      placeholder="https://exemplo.com/imagem.jpg"
+                      value={coverImageUrl}
+                      onChange={(e) => setCoverImageUrl(e.target.value)}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Opcional. Insira a URL de uma imagem para usar como capa da trilha.
+                    </p>
                   </div>
 
                   <div>
