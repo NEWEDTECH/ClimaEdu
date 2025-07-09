@@ -5,9 +5,9 @@ import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
-import { InputText } from '@/components/input'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { TrailForm, CourseManager, StudentManager } from '@/components/trails'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { GetTrailUseCase } from '@/_core/modules/content/core/use-cases/get-trail/get-trail.use-case'
@@ -23,8 +23,6 @@ import { ListEnrollmentsInput } from '@/_core/modules/enrollment/core/use-cases/
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
-import { Tooltip } from '@/components/tooltip'
-import { X } from 'lucide-react'
 
 type CourseInfo = {
     id: string
@@ -40,6 +38,7 @@ export default function EditTrailPage() {
     const [trail, setTrail] = useState<Trail | null>(null)
     const [title, setTitle] = useState<string>('')
     const [description, setDescription] = useState<string>('')
+    const [coverImageUrl, setCoverImageUrl] = useState<string>('')
     const [availableCourses, setAvailableCourses] = useState<CourseInfo[]>([])
     const [trailCourses, setTrailCourses] = useState<CourseInfo[]>([])
     const [selectedCourseId, setSelectedCourseId] = useState<string>('')
@@ -204,6 +203,7 @@ export default function EditTrailPage() {
                 setTrail(trailOutput.trail)
                 setTitle(trailOutput.trail.title)
                 setDescription(trailOutput.trail.description)
+                setCoverImageUrl(trailOutput.trail.coverImageUrl || '')
 
                 // Get all courses for this institution
                 const courseRepository = container.get<CourseRepository>(
@@ -280,7 +280,8 @@ export default function EditTrailPage() {
                 trailId,
                 title.trim(),
                 description.trim(),
-                courseIds
+                courseIds,
+                coverImageUrl.trim() || null
             )
 
             const output = await updateTrailUseCase.execute(input)
@@ -422,179 +423,60 @@ export default function EditTrailPage() {
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleUpdateTrail} className="space-y-6">
-                                <div>
-                                    <label htmlFor="title" className="block text-sm font-medium mb-2">
-                                        Título *
-                                    </label>
-                                    <InputText
-                                        id="title"
-                                        type="text"
-                                        placeholder="Digite o título da trilha..."
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        className="w-full"
-                                        required
-                                    />
-                                </div>
+                                <TrailForm
+                                    title={title}
+                                    description={description}
+                                    coverImageUrl={coverImageUrl}
+                                    onTitleChange={setTitle}
+                                    onDescriptionChange={setDescription}
+                                    onCoverImageUrlChange={setCoverImageUrl}
+                                />
 
-                                <div>
-                                    <label htmlFor="description" className="block text-sm font-medium mb-2">
-                                        Descrição *
-                                    </label>
-                                    <textarea
-                                        id="description"
-                                        placeholder="Digite a descrição da trilha..."
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive min-h-[100px]"
-                                        required
-                                    />
-                                </div>
+                                <CourseManager
+                                    availableCourses={availableCourses}
+                                    selectedCourses={trailCourses}
+                                    selectedCourseId={selectedCourseId}
+                                    onCourseSelect={(courseId) => {
+                                        if (courseId) {
+                                            const courseToMove = availableCourses.find(course => course.id === courseId)
+                                            if (courseToMove) {
+                                                setTrailCourses(prev => [...prev, courseToMove])
+                                                setAvailableCourses(prev => prev.filter(course => course.id !== courseId))
+                                                setSelectedCourseId('')
+                                                setError(null)
+                                            }
+                                        }
+                                    }}
+                                    onAddCourse={() => {}}
+                                    onRemoveCourse={handleRemoveCourse}
+                                    isEditMode={true}
+                                />
 
-                                <div>
-                                    <h3 className="text-lg font-medium mb-4">Gerenciar Cursos</h3>
-                                    
-                                    {/* Selected Courses */}
-                                    {trailCourses.length > 0 && (
-                                        <div className="mb-4">
-                                            <h4 className="text-sm font-medium mb-3">Cursos na Trilha ({trailCourses.length})</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {trailCourses.map((course) => (
-                                                    <div key={course.id} className="relative bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                                                        <Tooltip label={course.title}  />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveCourse(course.id)}
-                                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                                                            aria-label="Remover curso"
-                                                        >
-                                                            <X size={12} />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div>
-                                        <label htmlFor="courseSelect" className="block text-sm font-medium mb-2">
-                                            Adicionar Curso
-                                        </label>
-                                        <select
-                                            id="courseSelect"
-                                            value={selectedCourseId}
-                                            onChange={(e) => {
-                                                const courseId = e.target.value
-                                                if (courseId) {
-                                                    // Find and add the course immediately
-                                                    const courseToMove = availableCourses.find(course => course.id === courseId)
-                                                    if (courseToMove) {
-                                                        setTrailCourses(prev => [...prev, courseToMove])
-                                                        setAvailableCourses(prev => prev.filter(course => course.id !== courseId))
-                                                        setSelectedCourseId('')
-                                                        setError(null)
-                                                    }
-                                                }
-                                            }}
-                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                                        >
-                                            <option value="">Selecione um curso para adicionar</option>
-                                            {availableCourses.map(course => (
-                                                <option key={course.id} value={course.id}>
-                                                    {course.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <p className="text-gray-500 text-xs mt-1">
-                                            Selecione um curso para adicionar à trilha
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Student Enrollment Section */}
-                                <div>
-                                    <h3 className="text-lg font-medium mb-4">Gerenciar Estudantes</h3>
-                                    
-                                    {/* Trail Students List */}
-                                    {trailStudents.length > 0 && (
-                                        <div className="mb-4">
-                                            <h4 className="text-sm font-medium mb-3">Estudantes na Trilha ({trailStudents.length})</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {trailStudents.map((student) => (
-                                                    <div key={student.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                                        <Tooltip label={student.email} />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveTrailStudent(student.id)}
-                                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                                                            aria-label="Remover estudante"
-                                                        >
-                                                            <X size={12} />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="relative">
-                                        <label htmlFor="studentSearch" className="block text-sm font-medium mb-2">
-                                            Adicionar Estudante
-                                        </label>
-                                        <InputText
-                                            id="studentSearch"
-                                            type="text"
-                                            placeholder="Buscar estudante por nome ou email..."
-                                            value={searchStudentTerm}
-                                            onChange={(e) => {
-                                                setSearchStudentTerm(e.target.value)
-                                                setShowStudentDropdown(true)
-                                            }}
-                                            onFocus={() => setShowStudentDropdown(true)}
-                                            className="w-full"
-                                        />
-
-                                        {showStudentDropdown && searchStudentTerm.trim() !== '' && filteredStudents.length > 0 && (
-                                            <div className="student-dropdown absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
-                                                {filteredStudents
-                                                    .filter(student => !trailStudents.some(trailStudent => trailStudent.id === student.id))
-                                                    .map((student) => (
-                                                        <div
-                                                            key={student.id}
-                                                            className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                                            onClick={() => {
-                                                                setTrailStudents(prev => [
-                                                                    ...prev,
-                                                                    {
-                                                                        id: student.id,
-                                                                        name: student.name,
-                                                                        email: student.email.value,
-                                                                        isEnrolled: true
-                                                                    }
-                                                                ])
-                                                                setSearchStudentTerm('')
-                                                                setShowStudentDropdown(false)
-                                                            }}
-                                                        >
-                                                            <div className="font-medium text-gray-900">{student.name}</div>
-                                                            <div className="text-sm text-gray-500">{student.email.value}</div>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                        )}
-
-                                        {showStudentDropdown && searchStudentTerm.trim() !== '' && filteredStudents.length === 0 && (
-                                            <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1">
-                                                <div className="px-4 py-3 text-gray-500 text-center">
-                                                    Nenhum estudante encontrado
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="text-gray-500 text-xs mt-1">
-                                        Digite para buscar estudantes da instituição
-                                    </p>
-                                </div>
+                                <StudentManager
+                                    trailStudents={trailStudents}
+                                    filteredStudents={filteredStudents}
+                                    searchStudentTerm={searchStudentTerm}
+                                    showStudentDropdown={showStudentDropdown}
+                                    onSearchChange={(value) => {
+                                        setSearchStudentTerm(value)
+                                        setShowStudentDropdown(true)
+                                    }}
+                                    onSearchFocus={() => setShowStudentDropdown(true)}
+                                    onRemoveStudent={handleRemoveTrailStudent}
+                                    onAddStudent={(student) => {
+                                        setTrailStudents(prev => [
+                                            ...prev,
+                                            {
+                                                id: student.id,
+                                                name: student.name,
+                                                email: student.email.value,
+                                                isEnrolled: true
+                                            }
+                                        ])
+                                    }}
+                                    onClearSearch={() => setSearchStudentTerm('')}
+                                    onHideDropdown={() => setShowStudentDropdown(false)}
+                                />
 
                                 <div className="flex gap-4 pt-4">
                                     <Button

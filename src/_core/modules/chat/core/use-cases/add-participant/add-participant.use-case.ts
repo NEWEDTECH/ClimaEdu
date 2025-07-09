@@ -26,8 +26,12 @@ export class AddParticipantUseCase {
       input.chatRoomId
     );
 
-    if (participants.some((p) => p.userId === input.userId)) {
-      throw new AppError("User is already a participant of this chat room");
+    // Check if user is already a participant
+    const existingParticipant = participants.find((p) => p.userId === input.userId);
+    
+    if (existingParticipant) {
+      // User is already a participant, return the existing participant
+      return new AddParticipantOutput(existingParticipant);
     }
 
     const participant = ChatParticipant.create({

@@ -11,8 +11,8 @@ import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-case
 import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus';
 import { Course } from '@/_core/modules/content/core/entities/Course';
 import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-trails/list-trails.use-case';
+import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case';
 import { LoadingSpinner } from '@/components/loader'
-import mockCourses from '@/data/mock-courses.json';
 
 
 type CourseDisplayData = {
@@ -32,11 +32,20 @@ type TrailDisplayData = {
   isBlocked: boolean;
 }
 
+type PodcastDisplayData = {
+  id: string;
+  title: string;
+  href: string;
+  imageUrl: string;
+  isBlocked: boolean;
+}
+
 export default function Home() {
   const { infoUser } = useProfile();
   const [enrolledCourses, setEnrolledCourses] = useState<CourseDisplayData[]>([]);
   const [availableCourses, setAvailableCourses] = useState<CourseDisplayData[]>([]);
   const [enrolledTrails, setEnrolledTrails] = useState<TrailDisplayData[]>([]);
+  const [podcasts, setPodcasts] = useState<PodcastDisplayData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -127,16 +136,39 @@ export default function Home() {
               title: trail.title,
               description: trail.description,
               href: `/student/trails/${trail.id}`,
-              imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+              imageUrl: trail.coverImageUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
               isBlocked: false
             });
           }
         }
 
         setEnrolledTrails(enrolledTrailsData);
+
+        // Carregar podcasts da instituição
+        const listPodcastsUseCase = container.get<ListPodcastsUseCase>(
+          Register.podcast.useCase.ListPodcastsUseCase
+        );
+
+        const podcastsResult = await listPodcastsUseCase.execute({
+          institutionId: infoUser.currentIdInstitution,
+          page: 1,
+          limit: 20,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+
+        const podcastsData: PodcastDisplayData[] = podcastsResult.podcasts.map(podcast => ({
+          id: podcast.id,
+          title: podcast.title,
+          href: `/podcast/${podcast.id}`,
+          imageUrl: podcast.coverImageUrl || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&h=300&fit=crop',
+          isBlocked: false
+        }));
+
+        setPodcasts(podcastsData);
         setIsLoading(false);
 
-        console.log('✅ Home: Course data loaded successfully');
+        console.log('✅ Home: Course and podcast data loaded successfully');
 
       } catch (error) {
         console.error('❌ Home: Error loading course data:', error);
@@ -184,13 +216,7 @@ export default function Home() {
           />
 
           <ContentCarousel
-            items={mockCourses.map(course => ({
-              id: course.id,
-              title: course.name,
-              href: course.url,
-              imageUrl: course.coverImage,
-              isBlocked: false
-            }))}
+            items={podcasts}
             title="Podcasts"
             emptyMessage="Nenhum podcast disponível no momento."
           />

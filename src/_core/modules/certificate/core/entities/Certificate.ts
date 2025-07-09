@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto';
-
 /**
  * Certificate entity representing a formal document issued when a user completes a course
  * Following Clean Architecture principles, this entity is pure and has no dependencies on infrastructure
@@ -70,7 +68,7 @@ export class Certificate {
   public static generateCertificateNumber(): string {
     // Generate a unique certificate number using timestamp and UUID
     const timestamp = new Date().getTime().toString(36).toUpperCase();
-    const uuid = randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
+    const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
     return `CERT-${timestamp}-${uuid}`;
   }
 

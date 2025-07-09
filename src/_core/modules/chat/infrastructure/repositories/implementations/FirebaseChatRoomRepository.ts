@@ -9,6 +9,9 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot,
+  Unsubscribe,
+  Timestamp,
 } from "firebase/firestore";
 import { firestore } from "@/_core/shared/firebase/firebase-client";
 import { nanoid } from "nanoid";
@@ -16,6 +19,29 @@ import { ChatRoom } from "../../../core/entities/ChatRoom";
 import { ChatMessage } from "../../../core/entities/ChatMessage";
 import { ChatParticipant } from "../../../core/entities/ChatParticipant";
 import { ChatRoomRepository } from "../ChatRoomRepository";
+
+// Firebase document interfaces
+interface FirebaseMessageData {
+  id: string;
+  userId: string;
+  userName?: string;
+  text: string;
+  sentAt: Timestamp | Date;
+}
+
+interface FirebaseParticipantData {
+  id: string;
+  userId: string;
+  joinedAt: Timestamp | Date;
+}
+
+// Helper function to convert Timestamp or Date to Date
+const toDate = (timestamp: Timestamp | Date): Date => {
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+  return timestamp.toDate();
+};
 
 // Mappers would go here if the domain and persistence models were different.
 // For simplicity, we'll use the domain entities directly as the persistence model.
@@ -91,6 +117,7 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
       messages: arrayUnion({
         id: message.id,
         userId: message.userId,
+        userName: message.userName,
         text: message.text,
         sentAt: message.sentAt,
       }),
@@ -137,13 +164,14 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
     }
 
     const data = docSnap.data();
-    return (data.messages || []).map((m: ChatMessage) =>
+    return (data.messages || []).map((m: FirebaseMessageData) =>
       ChatMessage.from({
         id: m.id,
         chatRoomId: chatRoomId,
         userId: m.userId,
+        userName: m.userName || 'Usuário Desconhecido',
         text: m.text,
-        sentAt: m.sentAt,
+        sentAt: toDate(m.sentAt),
       })
     );
   }
@@ -159,13 +187,44 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
     }
 
     const data = docSnap.data();
-    return (data.participants || []).map((p: ChatParticipant) =>
+    return (data.participants || []).map((p: FirebaseParticipantData) =>
       ChatParticipant.from({
         id: p.id,
         chatRoomId: chatRoomId,
         userId: p.userId,
-        joinedAt: p.joinedAt,
+        joinedAt: toDate(p.joinedAt),
       })
     );
+  }
+
+  public subscribeToMessages(
+    chatRoomId: string,
+    onMessagesUpdate: (messages: ChatMessage[]) => void
+  ): Unsubscribe {
+    const docRef = doc(this.collection, chatRoomId);
+    
+    return onSnapshot(docRef, (docSnap) => {
+      if (!docSnap.exists()) {
+        onMessagesUpdate([]);
+        return;
+      }
+
+      const data = docSnap.data();
+      const messages = (data.messages || []).map((m: FirebaseMessageData) =>
+        ChatMessage.from({
+          id: m.id,
+          chatRoomId: chatRoomId,
+          userId: m.userId,
+          userName: m.userName || 'Usuário Desconhecido',
+          text: m.text,
+          sentAt: toDate(m.sentAt),
+        })
+      );
+
+      // Sort messages by sentAt to ensure correct order
+      messages.sort((a: ChatMessage, b: ChatMessage) => a.sentAt.getTime() - b.sentAt.getTime());
+      
+      onMessagesUpdate(messages);
+    });
   }
 }

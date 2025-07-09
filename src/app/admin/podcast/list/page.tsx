@@ -12,10 +12,10 @@ import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case'
 import { DeletePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/delete-podcast/delete-podcast.use-case'
-
+import { PodcastMediaType } from '@/_core/modules/podcast/core/entities/PodcastMediaType'
 import type { Podcast } from '@/_core/modules/podcast/core/entities/Podcast'
 
-export default function PodcastPage() {
+export default function PodcastListPage() {
   const { infoUser } = useProfile()
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
   const [filteredPodcasts, setFilteredPodcasts] = useState<Podcast[]>([])
@@ -25,7 +25,6 @@ export default function PodcastPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Carregar podcasts e aplicar filtros
   useEffect(() => {
     const loadPodcasts = async () => {
       try {
@@ -51,40 +50,40 @@ export default function PodcastPage() {
     }
 
     loadPodcasts()
-  }, [])
+  }, [infoUser.currentIdInstitution])
 
-  // Aplicar filtros
   useEffect(() => {
-    const applyFilters = () => {
-      let filtered = podcasts
+    applyFilters()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [podcasts, searchTerm, mediaTypeFilter, tagFilter])
 
-      // Filtro por termo de busca
-      if (searchTerm) {
-        filtered = filtered.filter(podcast =>
-          podcast.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          podcast.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      }
+  const applyFilters = () => {
+    let filtered = podcasts
 
-      // Filtro por tipo de mídia
-      if (mediaTypeFilter !== 'all') {
-        filtered = filtered.filter(podcast => podcast.mediaType === mediaTypeFilter)
-      }
-
-      // Filtro por tag
-      if (tagFilter) {
-        filtered = filtered.filter(podcast =>
-          podcast.tags?.some(tag => 
-            tag.toLowerCase().includes(tagFilter.toLowerCase())
-          )
-        )
-      }
-
-      setFilteredPodcasts(filtered)
+    // Filtro por termo de busca
+    if (searchTerm) {
+      filtered = filtered.filter(podcast =>
+        podcast.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        podcast.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     }
 
-    applyFilters()
-  }, [podcasts, searchTerm, mediaTypeFilter, tagFilter])
+    // Filtro por tipo de mídia
+    if (mediaTypeFilter !== 'all') {
+      filtered = filtered.filter(podcast => podcast.mediaType === mediaTypeFilter)
+    }
+
+    // Filtro por tag
+    if (tagFilter) {
+      filtered = filtered.filter(podcast =>
+        podcast.tags?.some(tag => 
+          tag.toLowerCase().includes(tagFilter.toLowerCase())
+        )
+      )
+    }
+
+    setFilteredPodcasts(filtered)
+  }
 
   const handleDelete = async (podcastId: string, title: string) => {
     if (!confirm(`Tem certeza que deseja excluir o podcast "${title}"?`)) {
@@ -98,8 +97,8 @@ export default function PodcastPage() {
       
       if (result.success) {
         alert(`Podcast "${title}" excluído com sucesso!`)
-        // Atualizar apenas o estado local removendo o podcast excluído
-        setPodcasts(prevPodcasts => prevPodcasts.filter(podcast => podcast.id !== podcastId))
+        // Recarregar lista removendo o podcast excluído
+        setPodcasts(prevPodcasts => prevPodcasts.filter(p => p.id !== podcastId))
       } else {
         alert('Erro ao excluir podcast.')
       }
@@ -115,7 +114,7 @@ export default function PodcastPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">🎧 Podcasts Existentes</h1>
-            <Link href="/admin/podcast/create">
+            <Link href="/admin/podcast">
               <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
                 ➕ Criar novo podcast
               </Button>
@@ -169,6 +168,43 @@ export default function PodcastPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Estatísticas */}
+          {!loading && !error && podcasts.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">📊 Estatísticas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {podcasts.length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Total de Podcasts
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {podcasts.filter(p => p.mediaType === PodcastMediaType.AUDIO).length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Podcasts de Áudio
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {podcasts.filter(p => p.mediaType === PodcastMediaType.VIDEO).length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Vídeo Podcasts
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedContent>

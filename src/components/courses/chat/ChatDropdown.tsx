@@ -3,18 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
+import { useProfile } from '@/context/zustand/useProfile';
 import { GetChatRoomByClassUseCase } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.use-case';
 import { GetChatRoomByClassInput } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.input';
 import { CreateChatRoomForClassUseCase } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.use-case';
 import { CreateChatRoomForClassInput } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.input';
-import { ListMessagesUseCase } from '@/_core/modules/chat/core/use-cases/list-messages/list-messages.use-case';
-import { ListMessagesInput } from '@/_core/modules/chat/core/use-cases/list-messages/list-messages.input';
 import { SendMessageUseCase } from '@/_core/modules/chat/core/use-cases/send-message/send-message.use-case';
 import { SendMessageInput } from '@/_core/modules/chat/core/use-cases/send-message/send-message.input';
 import { AddParticipantUseCase } from '@/_core/modules/chat/core/use-cases/add-participant/add-participant.use-case';
 import { AddParticipantInput } from '@/_core/modules/chat/core/use-cases/add-participant/add-participant.input';
 import { ChatRoom } from '@/_core/modules/chat/core/entities/ChatRoom';
 import { ChatMessage } from '@/_core/modules/chat/core/entities/ChatMessage';
+import { ChatRoomRepository } from '@/_core/modules/chat/infrastructure/repositories/ChatRoomRepository';
 
 type ChatDropdownProps = {
   courseId: string;
@@ -25,6 +25,7 @@ type ChatDropdownProps = {
 }
 
 export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: ChatDropdownProps) {
+  const { infoUser } = useProfile();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -33,24 +34,30 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadMessages = useCallback(async (chatRoomId: string) => {
+  const subscribeToMessages = useCallback((chatRoomId: string) => {
     try {
-      const listMessagesUseCase = container.get<ListMessagesUseCase>(
-        Register.chat.useCase.ListMessagesUseCase
+      const chatRoomRepository = container.get<ChatRoomRepository>(
+        Register.chat.repository.ChatRoomRepository
       );
 
-      const listMessagesInput = new ListMessagesInput(chatRoomId);
-      const listMessagesOutput = await listMessagesUseCase.execute(listMessagesInput);
+      const unsubscribe = chatRoomRepository.subscribeToMessages(
+        chatRoomId,
+        (newMessages: ChatMessage[]) => {
+          setMessages(newMessages);
+          setTimeout(scrollToBottom, 100);
+        }
+      );
 
-      setMessages(listMessagesOutput.messages);
-      setTimeout(scrollToBottom, 100);
+      return unsubscribe;
     } catch (error) {
-      console.error('Error loading messages:', error);
+      console.error('Error subscribing to messages:', error);
+      return () => {};
     }
   }, []);
 
@@ -94,50 +101,94 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       }
 
       setChatRoom(currentChatRoom);
-      await loadMessages(currentChatRoom.id);
+      // Subscribe to real-time messages
+      const unsubscribe = subscribeToMessages(currentChatRoom.id);
+      
+      // Store unsubscribe function for cleanup
+      return unsubscribe;
     } catch (error) {
       console.error('Error initializing chat room:', error);
     } finally {
       setIsInitializing(false);
     }
-  }, [courseId, classId, userId, loadMessages]);
+  }, [courseId, classId, userId, subscribeToMessages]);
+
+  const ensureUserIsParticipant = async (chatRoomId: string) => {
+    try {
+      const addParticipantUseCase = container.get<AddParticipantUseCase>(
+        Register.chat.useCase.AddParticipantUseCase
+      );
+
+      const addParticipantInput = new AddParticipantInput(chatRoomId, userId);
+      await addParticipantUseCase.execute(addParticipantInput);
+    } catch (error) {
+      // User might already be a participant, which is fine
+      console.log('User might already be a participant:', error);
+    }
+  };
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId) return;
 
-    let currentChatRoom = chatRoom;
-
-    // If no chat room exists, try to initialize it first
-    if (!currentChatRoom) {
-      await initializeChatRoom();
-      // Wait a bit and get the updated chat room from state
-      await new Promise(resolve => setTimeout(resolve, 500));
-      currentChatRoom = chatRoom;
-    }
-
-    // Check again if we have a chat room
-    if (!currentChatRoom) {
-      console.error('Could not initialize chat room');
-      return;
-    }
-
+    // Store the message text and clear input immediately for better UX
+    const messageText = newMessage.trim();
+    setNewMessage('');
     setIsLoading(true);
+
     try {
+      let currentChatRoom = chatRoom;
+
+      // If no chat room exists, initialize it first
+      if (!currentChatRoom) {
+        // Get or create chat room
+        const getChatRoomUseCase = container.get<GetChatRoomByClassUseCase>(
+          Register.chat.useCase.GetChatRoomByClassUseCase
+        );
+
+        const getChatRoomInput = new GetChatRoomByClassInput(classId, courseId);
+        const getChatRoomOutput = await getChatRoomUseCase.execute(getChatRoomInput);
+
+        currentChatRoom = getChatRoomOutput.chatRoom;
+
+        // If still no chat room, create one
+        if (!currentChatRoom) {
+          const createChatRoomUseCase = container.get<CreateChatRoomForClassUseCase>(
+            Register.chat.useCase.CreateChatRoomForClassUseCase
+          );
+
+          const createChatRoomInput = new CreateChatRoomForClassInput(classId, courseId);
+          const createChatRoomOutput = await createChatRoomUseCase.execute(createChatRoomInput);
+          currentChatRoom = createChatRoomOutput.chatRoom;
+        }
+
+        // Update state with the chat room
+        setChatRoom(currentChatRoom);
+      }
+
+      // Ensure user is a participant before sending message
+      await ensureUserIsParticipant(currentChatRoom.id);
+
+      // Now send the message using the stored text
       const sendMessageUseCase = container.get<SendMessageUseCase>(
         Register.chat.useCase.SendMessageUseCase
       );
 
-      const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, newMessage.trim());
-      const sendMessageOutput = await sendMessageUseCase.execute(sendMessageInput);
+      const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, infoUser.name || 'Usuário', messageText);
+      await sendMessageUseCase.execute(sendMessageInput);
 
-      // Add the new message to the local state
-      setMessages(prev => [...prev, sendMessageOutput.message]);
-      setNewMessage('');
-      setTimeout(scrollToBottom, 100);
+      // Message will be added via the real-time listener
     } catch (error) {
       console.error('Error sending message:', error);
+      // If there's an error, restore the message text
+      setNewMessage(messageText);
     } finally {
       setIsLoading(false);
+
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   };
 
@@ -156,18 +207,50 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
 
   useEffect(() => {
     if (isEmbedded && !chatRoom) {
-      initializeChatRoom();
+      initializeChatRoom().then((unsubscribe) => {
+        if (unsubscribe) {
+          unsubscribeRef.current = unsubscribe;
+        }
+      });
     }
   }, [isEmbedded, chatRoom, initializeChatRoom]);
 
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
+  }, []);
+
+  // Subscribe to messages when chatRoom changes
+  useEffect(() => {
+    if (chatRoom && !unsubscribeRef.current) {
+      const unsubscribe = subscribeToMessages(chatRoom.id);
+      unsubscribeRef.current = unsubscribe;
+    }
+  }, [chatRoom, subscribeToMessages]);
+
   const formatTime = (date: Date) => {
+    // Validate date
+    if (!date || isNaN(new Date(date).getTime())) {
+      return '--:--';
+    }
+    
     return new Intl.DateTimeFormat('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
-    }).format(date);
+    }).format(new Date(date));
   };
 
   const formatDate = (date: Date) => {
+    // Validate date
+    if (!date || isNaN(new Date(date).getTime())) {
+      return 'Data inválida';
+    }
+    
     const today = new Date();
     const messageDate = new Date(date);
     
@@ -191,7 +274,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   // Render embedded chat interface
   if (isEmbedded) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-[850px] flex flex-col">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {isInitializing ? (
@@ -231,7 +314,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                     >
                       {!isOwnMessage && (
                         <p className="text-xs font-medium mb-1 opacity-70">
-                          Usuário {message.userId.slice(-4)}
+                          {message.userName}
                         </p>
                       )}
                       <p className="break-words">{message.text}</p>
@@ -349,7 +432,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                       >
                         {!isOwnMessage && (
                           <p className="text-xs font-medium mb-1 opacity-70">
-                            Usuário {message.userId.slice(-4)}
+                            {message.userName}
                           </p>
                         )}
                         <p className="break-words">{message.text}</p>
