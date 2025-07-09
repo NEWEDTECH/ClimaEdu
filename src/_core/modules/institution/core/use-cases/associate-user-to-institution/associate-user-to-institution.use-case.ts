@@ -6,7 +6,7 @@ import { Register } from '@/_core/shared/container';
 import { AssociateUserToInstitutionInput } from './associate-user-to-institution.input';
 import { AssociateUserToInstitutionOutput } from './associate-user-to-institution.output';
 import { UserInstitution } from '../../../core/entities/UserInstitution';
-import { UserRole } from '@/_core/modules/user/core/entities/User';
+// import { UserRole } from '@/_core/modules/user/core/entities/User';
 
 /**
  * Use case for associating a user to an institution
@@ -33,9 +33,9 @@ export class AssociateUserToInstitutionUseCase {
    */
   async execute(input: AssociateUserToInstitutionInput): Promise<AssociateUserToInstitutionOutput> {
     // Validate that userRole is allowed for institution associations
-    if (input.userRole !== UserRole.LOCAL_ADMIN && input.userRole !== UserRole.CONTENT_MANAGER) {
-      throw new Error('Only LOCAL_ADMIN and CONTENT_MANAGER roles are allowed for institution associations');
-    }
+    // if (input.userRole !== UserRole.LOCAL_ADMIN && input.userRole !== UserRole.CONTENT_MANAGER) {
+    //   throw new Error('Only LOCAL_ADMIN and CONTENT_MANAGER roles are allowed for institution associations');
+    // }
 
     // Verify if the user exists
     const user = await this.userRepository.findById(input.userId);

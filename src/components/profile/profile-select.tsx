@@ -5,7 +5,7 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
-import { FiBook, FiUsers, FiActivity, FiMessageSquare, FiFileText, FiBarChart, FiVideo, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
+import { FiBook, FiUsers, FiActivity, FiMessageSquare, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
 import { MdDashboard, MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,7 @@ const teacherItems: DropdownItem[] = [
   { label: 'Acompanhamento', href: '/tutor/follow-up', icon: <FiUserCheck /> },
   { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
   { label: 'Cursos', href: '/tutor/courses', icon: <FiBookOpen /> },
-  { label: 'Gestão de Conteúdos', href: '/tutor/video-upload', icon: <FiVideo /> },
+  { label: 'Podcast', href: '/admin/podcast', icon: <FiMic /> },
 ];
 
 const adminItems: DropdownItem[] = [
