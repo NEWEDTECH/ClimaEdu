@@ -137,13 +137,13 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
     }
 
     const data = docSnap.data();
-    return (data.messages || []).map((m: ChatMessage) =>
+    return (data.messages || []).map((m: any) =>
       ChatMessage.from({
         id: m.id,
         chatRoomId: chatRoomId,
         userId: m.userId,
         text: m.text,
-        sentAt: m.sentAt,
+        sentAt: m.sentAt?.toDate ? m.sentAt.toDate() : new Date(m.sentAt),
       })
     );
   }
@@ -159,12 +159,12 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
     }
 
     const data = docSnap.data();
-    return (data.participants || []).map((p: ChatParticipant) =>
+    return (data.participants || []).map((p: any) =>
       ChatParticipant.from({
         id: p.id,
         chatRoomId: chatRoomId,
         userId: p.userId,
-        joinedAt: p.joinedAt,
+        joinedAt: p.joinedAt?.toDate ? p.joinedAt.toDate() : new Date(p.joinedAt),
       })
     );
   }

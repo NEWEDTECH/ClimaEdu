@@ -102,27 +102,58 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     }
   }, [courseId, classId, userId, loadMessages]);
 
+  const ensureUserIsParticipant = async (chatRoomId: string) => {
+    try {
+      const addParticipantUseCase = container.get<AddParticipantUseCase>(
+        Register.chat.useCase.AddParticipantUseCase
+      );
+
+      const addParticipantInput = new AddParticipantInput(chatRoomId, userId);
+      await addParticipantUseCase.execute(addParticipantInput);
+    } catch (error) {
+      // User might already be a participant, which is fine
+      console.log('User might already be a participant:', error);
+    }
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId) return;
 
-    let currentChatRoom = chatRoom;
-
-    // If no chat room exists, try to initialize it first
-    if (!currentChatRoom) {
-      await initializeChatRoom();
-      // Wait a bit and get the updated chat room from state
-      await new Promise(resolve => setTimeout(resolve, 500));
-      currentChatRoom = chatRoom;
-    }
-
-    // Check again if we have a chat room
-    if (!currentChatRoom) {
-      console.error('Could not initialize chat room');
-      return;
-    }
-
     setIsLoading(true);
     try {
+      let currentChatRoom = chatRoom;
+
+      // If no chat room exists, initialize it first
+      if (!currentChatRoom) {
+        // Get or create chat room
+        const getChatRoomUseCase = container.get<GetChatRoomByClassUseCase>(
+          Register.chat.useCase.GetChatRoomByClassUseCase
+        );
+
+        const getChatRoomInput = new GetChatRoomByClassInput(classId, courseId);
+        const getChatRoomOutput = await getChatRoomUseCase.execute(getChatRoomInput);
+
+        currentChatRoom = getChatRoomOutput.chatRoom;
+
+        // If still no chat room, create one
+        if (!currentChatRoom) {
+          const createChatRoomUseCase = container.get<CreateChatRoomForClassUseCase>(
+            Register.chat.useCase.CreateChatRoomForClassUseCase
+          );
+
+          const createChatRoomInput = new CreateChatRoomForClassInput(classId, courseId);
+          const createChatRoomOutput = await createChatRoomUseCase.execute(createChatRoomInput);
+          currentChatRoom = createChatRoomOutput.chatRoom;
+        }
+
+        // Update state with the chat room
+        setChatRoom(currentChatRoom);
+      }
+
+      // Ensure user is a participant before sending message
+      await ensureUserIsParticipant(currentChatRoom.id);
+
+      // Now send the message
       const sendMessageUseCase = container.get<SendMessageUseCase>(
         Register.chat.useCase.SendMessageUseCase
       );
@@ -161,13 +192,23 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   }, [isEmbedded, chatRoom, initializeChatRoom]);
 
   const formatTime = (date: Date) => {
+    // Validate date
+    if (!date || isNaN(new Date(date).getTime())) {
+      return '--:--';
+    }
+    
     return new Intl.DateTimeFormat('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
-    }).format(date);
+    }).format(new Date(date));
   };
 
   const formatDate = (date: Date) => {
+    // Validate date
+    if (!date || isNaN(new Date(date).getTime())) {
+      return 'Data inválida';
+    }
+    
     const today = new Date();
     const messageDate = new Date(date);
     
