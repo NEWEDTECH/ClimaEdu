@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -46,13 +46,14 @@ const podcastSchema = z.object({
 type PodcastFormData = z.infer<typeof podcastSchema>
 
 interface EditPodcastPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function EditPodcastPage({ params }: EditPodcastPageProps) {
   const router = useRouter()
+  const resolvedParams = use(params)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [podcast, setPodcast] = useState<Podcast | null>(null)
@@ -62,7 +63,6 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
     watch,
     setValue
   } = useForm<PodcastFormData>({
@@ -81,54 +81,54 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
 
   // Carregar dados do podcast
   useEffect(() => {
-    loadPodcast()
-  }, [params.id])
+    const loadPodcast = async () => {
+      try {
+        setIsLoading(true)
+        const getPodcastUseCase = container.get<GetPodcastUseCase>(Register.podcast.useCase.GetPodcastUseCase)
 
-  const loadPodcast = async () => {
-    try {
-      setIsLoading(true)
-      const getPodcastUseCase = container.get<GetPodcastUseCase>(Register.podcast.useCase.GetPodcastUseCase)
-      
-      const result = await getPodcastUseCase.execute({
-        podcastId: params.id
-      })
-      
-      if (result.podcast) {
-        setPodcast(result.podcast)
-        
-        // Preencher o formulário com os dados existentes
-        setValue('title', result.podcast.title)
-        setValue('description', result.podcast.description)
-        setValue('coverImageUrl', result.podcast.coverImageUrl)
-        setValue('mediaUrl', result.podcast.mediaUrl)
-        setValue('mediaType', result.podcast.mediaType)
-        setValue('tags', result.podcast.tags ? result.podcast.tags.join(', ') : '')
-      } else {
-        alert('Podcast não encontrado.')
+        const result = await getPodcastUseCase.execute({
+          podcastId: resolvedParams.id
+        })
+
+        if (result.podcast) {
+          setPodcast(result.podcast)
+
+          // Preencher o formulário com os dados existentes
+          setValue('title', result.podcast.title)
+          setValue('description', result.podcast.description)
+          setValue('coverImageUrl', result.podcast.coverImageUrl)
+          setValue('mediaUrl', result.podcast.mediaUrl)
+          setValue('mediaType', result.podcast.mediaType)
+          setValue('tags', result.podcast.tags ? result.podcast.tags.join(', ') : '')
+        } else {
+          alert('Podcast não encontrado.')
+          router.push('/admin/podcast')
+        }
+      } catch (error) {
+        console.error('Erro ao carregar podcast:', error)
+        alert('Erro ao carregar podcast. Tente novamente.')
         router.push('/admin/podcast')
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Erro ao carregar podcast:', error)
-      alert('Erro ao carregar podcast. Tente novamente.')
-      router.push('/admin/podcast')
-    } finally {
-      setIsLoading(false)
     }
-  }
+
+    loadPodcast()
+  }, [resolvedParams.id])
 
   const onSubmit = async (data: PodcastFormData) => {
     setIsSubmitting(true)
-    
+
     try {
       const updatePodcastUseCase = container.get<UpdatePodcastUseCase>(Register.podcast.useCase.UpdatePodcastUseCase)
-      
+
       // Processar tags
-      const tags = data.tags 
+      const tags = data.tags
         ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
         : []
 
-      const result = await updatePodcastUseCase.execute({
-        podcastId: params.id,
+      await updatePodcastUseCase.execute({
+        podcastId: resolvedParams.id,
         title: data.title,
         description: data.description,
         coverImageUrl: data.coverImageUrl,
@@ -152,9 +152,9 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
 
     try {
       const deletePodcastUseCase = container.get<DeletePodcastUseCase>(Register.podcast.useCase.DeletePodcastUseCase)
-      
-      const result = await deletePodcastUseCase.execute({ podcastId: params.id })
-      
+
+      const result = await deletePodcastUseCase.execute({ podcastId: resolvedParams.id })
+
       if (result.success) {
         alert(`Podcast "${podcast.title}" excluído com sucesso!`)
         router.push('/admin/podcast')
@@ -221,7 +221,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                 {podcast.title}
               </CardTitle>
               <CardDescription>
-                Criado em: {new Date(podcast.createdAt).toLocaleDateString('pt-BR')} • 
+                Criado em: {new Date(podcast.createdAt).toLocaleDateString('pt-BR')} •
                 Última atualização: {new Date(podcast.updatedAt).toLocaleDateString('pt-BR')}
               </CardDescription>
             </CardHeader>
@@ -283,9 +283,8 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                     id="description"
                     rows={4}
                     placeholder="Descreva o conteúdo do podcast"
-                    className={`w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none ${
-                      errors.description ? 'border-red-500' : ''
-                    }`}
+                    className={`w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] resize-none ${errors.description ? 'border-red-500' : ''
+                      }`}
                   />
                   {errors.description && (
                     <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -319,8 +318,8 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                     id="mediaUrl"
                     type="url"
                     placeholder={
-                      selectedMediaType === 'AUDIO' 
-                        ? 'https://exemplo.com/podcast.mp3' 
+                      selectedMediaType === 'AUDIO'
+                        ? 'https://exemplo.com/podcast.mp3'
                         : 'https://youtube.com/watch?v=...'
                     }
                     className={errors.mediaUrl ? 'border-red-500' : ''}
@@ -355,12 +354,12 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                     disabled={isSubmitting}
                     className="w-full bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {isSubmitting 
-                      ? 'Salvando alterações...' 
+                    {isSubmitting
+                      ? 'Salvando alterações...'
                       : 'Salvar Alterações'
                     }
                   </Button>
-                  
+
                   <Button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}

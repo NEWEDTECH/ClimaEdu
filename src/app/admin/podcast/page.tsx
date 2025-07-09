@@ -25,66 +25,66 @@ export default function PodcastPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Carregar podcasts
+  // Carregar podcasts e aplicar filtros
   useEffect(() => {
+    const loadPodcasts = async () => {
+      try {
+        setLoading(true)
+        const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
+        
+        const result = await listPodcastsUseCase.execute({
+          institutionId: "ins_hOc5LsHn4q",
+          page: 1,
+          limit: 100,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        })
+        
+        setPodcasts(result.podcasts)
+        setError(null)
+      } catch (err) {
+        console.error('Erro ao carregar podcasts:', err)
+        setError('Falha ao carregar podcasts. Tente novamente mais tarde.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     loadPodcasts()
   }, [])
 
   // Aplicar filtros
   useEffect(() => {
+    const applyFilters = () => {
+      let filtered = podcasts
+
+      // Filtro por termo de busca
+      if (searchTerm) {
+        filtered = filtered.filter(podcast =>
+          podcast.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          podcast.description.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      }
+
+      // Filtro por tipo de mídia
+      if (mediaTypeFilter !== 'all') {
+        filtered = filtered.filter(podcast => podcast.mediaType === mediaTypeFilter)
+      }
+
+      // Filtro por tag
+      if (tagFilter) {
+        filtered = filtered.filter(podcast =>
+          podcast.tags?.some(tag => 
+            tag.toLowerCase().includes(tagFilter.toLowerCase())
+          )
+        )
+      }
+
+      setFilteredPodcasts(filtered)
+    }
+
     applyFilters()
   }, [podcasts, searchTerm, mediaTypeFilter, tagFilter])
-
-  const loadPodcasts = async () => {
-    try {
-      setLoading(true)
-      const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
-      
-      const result = await listPodcastsUseCase.execute({
-        institutionId: "ins_hOc5LsHn4q",
-        page: 1,
-        limit: 100,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      })
-      
-      setPodcasts(result.podcasts)
-      setError(null)
-    } catch (err) {
-      console.error('Erro ao carregar podcasts:', err)
-      setError('Falha ao carregar podcasts. Tente novamente mais tarde.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const applyFilters = () => {
-    let filtered = podcasts
-
-    // Filtro por termo de busca
-    if (searchTerm) {
-      filtered = filtered.filter(podcast =>
-        podcast.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        podcast.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    // Filtro por tipo de mídia
-    if (mediaTypeFilter !== 'all') {
-      filtered = filtered.filter(podcast => podcast.mediaType === mediaTypeFilter)
-    }
-
-    // Filtro por tag
-    if (tagFilter) {
-      filtered = filtered.filter(podcast =>
-        podcast.tags?.some(tag => 
-          tag.toLowerCase().includes(tagFilter.toLowerCase())
-        )
-      )
-    }
-
-    setFilteredPodcasts(filtered)
-  }
 
   const handleDelete = async (podcastId: string, title: string) => {
     if (!confirm(`Tem certeza que deseja excluir o podcast "${title}"?`)) {
@@ -98,7 +98,8 @@ export default function PodcastPage() {
       
       if (result.success) {
         alert(`Podcast "${title}" excluído com sucesso!`)
-        loadPodcasts() // Recarregar lista
+        // Atualizar apenas o estado local removendo o podcast excluído
+        setPodcasts(prevPodcasts => prevPodcasts.filter(podcast => podcast.id !== podcastId))
       } else {
         alert('Erro ao excluir podcast.')
       }
@@ -168,7 +169,6 @@ export default function PodcastPage() {
               )}
             </CardContent>
           </Card>
-
         </div>
       </DashboardLayout>
     </ProtectedContent>
