@@ -12,7 +12,7 @@ import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case'
 import { DeletePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/delete-podcast/delete-podcast.use-case'
-import { PodcastMediaType } from '@/_core/modules/podcast/core/entities/PodcastMediaType'
+
 import type { Podcast } from '@/_core/modules/podcast/core/entities/Podcast'
 
 export default function PodcastPage() {
@@ -33,7 +33,7 @@ export default function PodcastPage() {
         const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
         
         const result = await listPodcastsUseCase.execute({
-          institutionId: "ins_hOc5LsHn4q",
+          institutionId: infoUser.currentIdInstitution,
           page: 1,
           limit: 100,
           sortBy: 'createdAt',

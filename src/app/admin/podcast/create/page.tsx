@@ -52,7 +52,6 @@ export default function CreatePodcastPage() {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
     watch
   } = useForm<PodcastFormData>({
     resolver: zodResolver(podcastSchema),
@@ -80,7 +79,7 @@ export default function CreatePodcastPage() {
         : []
 
       await createPodcastUseCase.execute({
-        institutionId: "ins_hOc5LsHn4q",
+        institutionId: infoUser.currentIdInstitution,
         title: data.title,
         description: data.description,
         coverImageUrl: data.coverImageUrl,

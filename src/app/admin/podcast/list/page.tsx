@@ -25,38 +25,37 @@ export default function PodcastListPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Carregar podcasts
   useEffect(() => {
-    loadPodcasts()
-  }, [])
+    const loadPodcasts = async () => {
+      try {
+        setLoading(true)
+        const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
+        
+        const result = await listPodcastsUseCase.execute({
+          institutionId: infoUser.currentIdInstitution,
+          page: 1,
+          limit: 100,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        })
+        
+        setPodcasts(result.podcasts)
+        setError(null)
+      } catch (err) {
+        console.error('Erro ao carregar podcasts:', err)
+        setError('Falha ao carregar podcasts. Tente novamente mais tarde.')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Aplicar filtros
+    loadPodcasts()
+  }, [infoUser.currentIdInstitution])
+
   useEffect(() => {
     applyFilters()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [podcasts, searchTerm, mediaTypeFilter, tagFilter])
-
-  const loadPodcasts = async () => {
-    try {
-      setLoading(true)
-      const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
-      
-      const result = await listPodcastsUseCase.execute({
-        institutionId: infoUser.currentIdInstitution,
-        page: 1,
-        limit: 100,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-      })
-      
-      setPodcasts(result.podcasts)
-      setError(null)
-    } catch (err) {
-      console.error('Erro ao carregar podcasts:', err)
-      setError('Falha ao carregar podcasts. Tente novamente mais tarde.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const applyFilters = () => {
     let filtered = podcasts
@@ -98,7 +97,8 @@ export default function PodcastListPage() {
       
       if (result.success) {
         alert(`Podcast "${title}" excluído com sucesso!`)
-        loadPodcasts() // Recarregar lista
+        // Recarregar lista removendo o podcast excluído
+        setPodcasts(prevPodcasts => prevPodcasts.filter(p => p.id !== podcastId))
       } else {
         alert('Erro ao excluir podcast.')
       }

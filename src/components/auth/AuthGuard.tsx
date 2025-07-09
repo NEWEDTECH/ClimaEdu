@@ -72,6 +72,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           currentInstitutionId = institutionsRoleData[0].idInstitution;
         }
 
+        currentInstitutionId = institutionsRoleData[0].idInstitution;
+
         if (!currentInstitutionId) {
           throw new Error('Nenhuma instituição encontrada para o usuário');
         }
@@ -107,7 +109,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         id: user.id,
         name: user.name,
         currentRole: currentRole,
-        currentIdInstitution: currentInstitutionId || ''
+        currentIdInstitution: currentInstitutionId!
       });
 
       // Passo 7: Salvar esse ID da instituição no localStorage

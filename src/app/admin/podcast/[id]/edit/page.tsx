@@ -54,10 +54,10 @@ interface EditPodcastPageProps {
 export default function EditPodcastPage({ params }: EditPodcastPageProps) {
   const router = useRouter()
   const resolvedParams = use(params)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [podcast, setPodcast] = useState<Podcast | null>(null)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false)
 
   const {
     register,
@@ -114,7 +114,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
     }
 
     loadPodcast()
-  }, [resolvedParams.id])
+  }, [resolvedParams.id, setValue, router])
 
   const onSubmit = async (data: PodcastFormData) => {
     setIsSubmitting(true)
@@ -385,7 +385,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                 <CardContent>
                   <div className="space-y-4">
                     <p className="text-sm">
-                      Tem certeza que deseja excluir o podcast <strong>"{podcast.title}"</strong>?
+                      Tem certeza que deseja excluir o podcast <strong>{podcast.title}</strong>?
                     </p>
                     <div className="flex gap-2">
                       <Button
