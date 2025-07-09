@@ -25,6 +25,8 @@
     - [x] Corrigido fluxo de envio de mensagens para garantir que usuário seja participante
     - [x] Adicionada função `ensureUserIsParticipant` para verificar participação antes de enviar mensagem
     - [x] Melhorada lógica de inicialização do chat room na função `sendMessage`
+    - [x] **NOVO**: Adicionado nome do usuário nas mensagens usando `useProfile`
+    - [x] **NOVO**: Mensagens agora exibem o nome real do usuário em vez de "Usuário {userId}"
 
 #### Bugs Corrigidos
 - [x] **randomUUID Error**: Erro do `crypto.randomUUID` no browser foi resolvido pelo usuário

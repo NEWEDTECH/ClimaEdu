@@ -31,6 +31,7 @@ export class SendMessageUseCase {
     const message = ChatMessage.create({
       chatRoomId: input.chatRoomId,
       userId: input.userId,
+      userName: input.userName,
       text: input.text,
     });
 

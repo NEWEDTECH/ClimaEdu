@@ -91,6 +91,7 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
       messages: arrayUnion({
         id: message.id,
         userId: message.userId,
+        userName: message.userName,
         text: message.text,
         sentAt: message.sentAt,
       }),
@@ -142,6 +143,7 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
         id: m.id,
         chatRoomId: chatRoomId,
         userId: m.userId,
+        userName: m.userName || 'Usuário Desconhecido',
         text: m.text,
         sentAt: m.sentAt?.toDate ? m.sentAt.toDate() : new Date(m.sentAt),
       })

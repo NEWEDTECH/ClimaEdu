@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
+import { useProfile } from '@/context/zustand/useProfile';
 import { GetChatRoomByClassUseCase } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.use-case';
 import { GetChatRoomByClassInput } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.input';
 import { CreateChatRoomForClassUseCase } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.use-case';
@@ -25,6 +26,7 @@ type ChatDropdownProps = {
 }
 
 export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: ChatDropdownProps) {
+  const { infoUser } = useProfile();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -158,7 +160,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
         Register.chat.useCase.SendMessageUseCase
       );
 
-      const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, newMessage.trim());
+      const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, infoUser.name || 'Usuário', newMessage.trim());
       const sendMessageOutput = await sendMessageUseCase.execute(sendMessageInput);
 
       // Add the new message to the local state
@@ -272,7 +274,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                     >
                       {!isOwnMessage && (
                         <p className="text-xs font-medium mb-1 opacity-70">
-                          Usuário {message.userId.slice(-4)}
+                          {message.userName}
                         </p>
                       )}
                       <p className="break-words">{message.text}</p>
@@ -390,7 +392,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                       >
                         {!isOwnMessage && (
                           <p className="text-xs font-medium mb-1 opacity-70">
-                            Usuário {message.userId.slice(-4)}
+                            {message.userName}
                           </p>
                         )}
                         <p className="break-words">{message.text}</p>
