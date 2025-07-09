@@ -8,8 +8,6 @@ import { GetChatRoomByClassUseCase } from '@/_core/modules/chat/core/use-cases/g
 import { GetChatRoomByClassInput } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.input';
 import { CreateChatRoomForClassUseCase } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.use-case';
 import { CreateChatRoomForClassInput } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.input';
-import { ListMessagesUseCase } from '@/_core/modules/chat/core/use-cases/list-messages/list-messages.use-case';
-import { ListMessagesInput } from '@/_core/modules/chat/core/use-cases/list-messages/list-messages.input';
 import { SendMessageUseCase } from '@/_core/modules/chat/core/use-cases/send-message/send-message.use-case';
 import { SendMessageInput } from '@/_core/modules/chat/core/use-cases/send-message/send-message.input';
 import { AddParticipantUseCase } from '@/_core/modules/chat/core/use-cases/add-participant/add-participant.use-case';
@@ -131,7 +129,11 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId) return;
 
+    // Store the message text and clear input immediately for better UX
+    const messageText = newMessage.trim();
+    setNewMessage('');
     setIsLoading(true);
+
     try {
       let currentChatRoom = chatRoom;
 
@@ -165,18 +167,19 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       // Ensure user is a participant before sending message
       await ensureUserIsParticipant(currentChatRoom.id);
 
-      // Now send the message
+      // Now send the message using the stored text
       const sendMessageUseCase = container.get<SendMessageUseCase>(
         Register.chat.useCase.SendMessageUseCase
       );
 
-      const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, infoUser.name || 'Usuário', newMessage.trim());
+      const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, infoUser.name || 'Usuário', messageText);
       await sendMessageUseCase.execute(sendMessageInput);
 
-      // Clear the input - the message will be added via the real-time listener
-      setNewMessage('');
+      // Message will be added via the real-time listener
     } catch (error) {
       console.error('Error sending message:', error);
+      // If there's an error, restore the message text
+      setNewMessage(messageText);
     } finally {
       setIsLoading(false);
     }
@@ -264,7 +267,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   // Render embedded chat interface
   if (isEmbedded) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-[750px] flex flex-col">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {isInitializing ? (
