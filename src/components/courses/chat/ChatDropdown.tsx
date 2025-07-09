@@ -274,7 +274,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   // Render embedded chat interface
   if (isEmbedded) {
     return (
-      <div className="h-[750px] flex flex-col">
+      <div className="h-[850px] flex flex-col">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {isInitializing ? (
