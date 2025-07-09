@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useProfile } from '@/context/zustand/useProfile';
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -14,8 +14,8 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { FormSection } from '@/components/form'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
-import { CreatePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/create-podcast/create-podcast.use-case'
-import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case'
+import { GetPodcastUseCase } from '@/_core/modules/podcast/core/use-cases/get-podcast/get-podcast.use-case'
+import { UpdatePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/update-podcast/update-podcast.use-case'
 import { DeletePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/delete-podcast/delete-podcast.use-case'
 import { PodcastMediaType } from '@/_core/modules/podcast/core/entities/PodcastMediaType'
 import type { Podcast } from '@/_core/modules/podcast/core/entities/Podcast'
@@ -45,18 +45,26 @@ const podcastSchema = z.object({
 
 type PodcastFormData = z.infer<typeof podcastSchema>
 
-export default function PodcastPage() {
-  const { infoUser } = useProfile();
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const [podcasts, setPodcasts] = useState<Podcast[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+interface EditPodcastPageProps {
+  params: {
+    id: string
+  }
+}
+
+export default function EditPodcastPage({ params }: EditPodcastPageProps) {
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [podcast, setPodcast] = useState<Podcast | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    watch
+    watch,
+    setValue
   } = useForm<PodcastFormData>({
     resolver: zodResolver(podcastSchema),
     defaultValues: {
@@ -71,29 +79,38 @@ export default function PodcastPage() {
 
   const selectedMediaType = watch('mediaType')
 
-  // Carregar podcasts existentes
+  // Carregar dados do podcast
   useEffect(() => {
-    loadPodcasts()
-  }, [])
+    loadPodcast()
+  }, [params.id])
 
-  const loadPodcasts = async () => {
+  const loadPodcast = async () => {
     try {
       setIsLoading(true)
-      const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
+      const getPodcastUseCase = container.get<GetPodcastUseCase>(Register.podcast.useCase.GetPodcastUseCase)
       
-      // TODO: Pegar institutionId do contexto de autenticação
-      const result = await listPodcastsUseCase.execute({
-        institutionId: infoUser.currentIdInstitution, // Temporário
-        page: 1,
-        limit: 50,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
+      const result = await getPodcastUseCase.execute({
+        podcastId: params.id
       })
       
-      setPodcasts(result.podcasts)
+      if (result.podcast) {
+        setPodcast(result.podcast)
+        
+        // Preencher o formulário com os dados existentes
+        setValue('title', result.podcast.title)
+        setValue('description', result.podcast.description)
+        setValue('coverImageUrl', result.podcast.coverImageUrl)
+        setValue('mediaUrl', result.podcast.mediaUrl)
+        setValue('mediaType', result.podcast.mediaType)
+        setValue('tags', result.podcast.tags ? result.podcast.tags.join(', ') : '')
+      } else {
+        alert('Podcast não encontrado.')
+        router.push('/admin/podcast')
+      }
     } catch (error) {
-      console.error('Erro ao carregar podcasts:', error)
-      alert('Erro ao carregar podcasts. Tente novamente.')
+      console.error('Erro ao carregar podcast:', error)
+      alert('Erro ao carregar podcast. Tente novamente.')
+      router.push('/admin/podcast')
     } finally {
       setIsLoading(false)
     }
@@ -103,15 +120,15 @@ export default function PodcastPage() {
     setIsSubmitting(true)
     
     try {
-      const createPodcastUseCase = container.get<CreatePodcastUseCase>(Register.podcast.useCase.CreatePodcastUseCase)
+      const updatePodcastUseCase = container.get<UpdatePodcastUseCase>(Register.podcast.useCase.UpdatePodcastUseCase)
       
       // Processar tags
       const tags = data.tags 
         ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
         : []
 
-      const result = await createPodcastUseCase.execute({
-        institutionId: infoUser.currentIdInstitution,
+      const result = await updatePodcastUseCase.execute({
+        podcastId: params.id,
         title: data.title,
         description: data.description,
         coverImageUrl: data.coverImageUrl,
@@ -120,30 +137,27 @@ export default function PodcastPage() {
         tags
       })
 
-      alert(`Podcast "${data.title}" criado com sucesso!`)
-      reset()
-      loadPodcasts() // Recarregar lista
+      alert(`Podcast "${data.title}" atualizado com sucesso!`)
+      router.push('/admin/podcast')
     } catch (error) {
-      console.error('Erro ao criar podcast:', error)
-      alert('Erro ao criar podcast. Tente novamente.')
+      console.error('Erro ao atualizar podcast:', error)
+      alert('Erro ao atualizar podcast. Tente novamente.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleDelete = async (podcastId: string, title: string) => {
-    if (!confirm(`Tem certeza que deseja excluir o podcast "${title}"?`)) {
-      return
-    }
+  const handleDelete = async () => {
+    if (!podcast) return
 
     try {
       const deletePodcastUseCase = container.get<DeletePodcastUseCase>(Register.podcast.useCase.DeletePodcastUseCase)
       
-      const result = await deletePodcastUseCase.execute({ podcastId })
+      const result = await deletePodcastUseCase.execute({ podcastId: params.id })
       
       if (result.success) {
-        alert(`Podcast "${title}" excluído com sucesso!`)
-        loadPodcasts() // Recarregar lista
+        alert(`Podcast "${podcast.title}" excluído com sucesso!`)
+        router.push('/admin/podcast')
       } else {
         alert('Erro ao excluir podcast.')
       }
@@ -153,27 +167,74 @@ export default function PodcastPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando podcast...</p>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
+
+  if (!podcast) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
+            <div className="text-center py-8">
+              <p className="text-red-500">Podcast não encontrado.</p>
+              <Link href="/admin/podcast">
+                <Button className="mt-4">← Voltar para Podcasts</Button>
+              </Link>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
+
   return (
     <ProtectedContent>
       <DashboardLayout>
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">🎧 Gestão de Podcasts</h1>
-            <Link href="/">
+            <h1 className="text-3xl font-bold">✏️ Editar Podcast</h1>
+            <Link href="/admin/podcast">
               <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 rounded-md gap-1.5 px-3">
-                ← Voltar
+                ← Voltar para Podcasts
               </Button>
             </Link>
           </div>
 
-          {/* Formulário de Criação */}
+          {/* Informações do Podcast Atual */}
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-lg">
+                  {podcast.mediaType === 'AUDIO' ? '🎧' : '📹'}
+                </span>
+                {podcast.title}
+              </CardTitle>
+              <CardDescription>
+                Criado em: {new Date(podcast.createdAt).toLocaleDateString('pt-BR')} • 
+                Última atualização: {new Date(podcast.updatedAt).toLocaleDateString('pt-BR')}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {/* Formulário de Edição */}
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle>
-                {selectedMediaType === 'AUDIO' ? '🎧 Novo Podcast' : '📹 Novo Vídeo Podcast'}
+                {selectedMediaType === 'AUDIO' ? '🎧 Editar Podcast' : '📹 Editar Vídeo Podcast'}
               </CardTitle>
               <CardDescription>
-                Crie um novo {selectedMediaType === 'AUDIO' ? 'podcast de áudio' : 'vídeo podcast'} para sua plataforma educacional
+                Atualize as informações do {selectedMediaType === 'AUDIO' ? 'podcast de áudio' : 'vídeo podcast'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -287,115 +348,65 @@ export default function PodcastPage() {
                   )}
                 </div>
 
-                {/* Botão de Submit */}
-                <div className="pt-4">
+                {/* Botões de Ação */}
+                <div className="pt-4 space-y-3">
                   <Button
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50"
                   >
                     {isSubmitting 
-                      ? 'Criando podcast...' 
-                      : 'Criar Podcast'
+                      ? 'Salvando alterações...' 
+                      : 'Salvar Alterações'
                     }
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    🗑️ Excluir Podcast
                   </Button>
                 </div>
               </FormSection>
             </CardContent>
           </Card>
 
-          {/* Lista de Podcasts Existentes */}
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                📚 Podcasts Existentes
-                {!isLoading && <span className="text-sm font-normal text-gray-500">({podcasts.length})</span>}
-              </CardTitle>
-              <CardDescription>
-                Gerencie seus podcasts existentes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Carregando podcasts...</p>
-                </div>
-              ) : podcasts.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Nenhum podcast encontrado. Crie seu primeiro podcast acima!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {podcasts.map((podcast) => (
-                    <div key={podcast.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-lg">
-                              {podcast.mediaType === 'AUDIO' ? '🎧' : '📹'}
-                            </span>
-                            <h3 className="font-semibold text-lg">{podcast.title}</h3>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-400 mb-2">{podcast.description}</p>
-                          {podcast.tags && podcast.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              {podcast.tags.map((tag, index) => (
-                                <span key={index} className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded">
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          <div className="text-xs text-gray-500">
-                            Criado em: {new Date(podcast.createdAt).toLocaleDateString('pt-BR')}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <Link href={`/admin/podcast/${podcast.id}/edit`}>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1">
-                              ✏️ Editar
-                            </Button>
-                          </Link>
-                          <Button 
-                            onClick={() => handleDelete(podcast.id, podcast.title)}
-                            className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
-                          >
-                            🗑️ Excluir
-                          </Button>
-                        </div>
-                      </div>
+          {/* Modal de Confirmação de Exclusão */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <Card className="max-w-md mx-4">
+                <CardHeader>
+                  <CardTitle className="text-red-600">⚠️ Confirmar Exclusão</CardTitle>
+                  <CardDescription>
+                    Esta ação não pode ser desfeita. O podcast será permanentemente excluído.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm">
+                      Tem certeza que deseja excluir o podcast <strong>"{podcast.title}"</strong>?
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleDelete}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        Sim, Excluir
+                      </Button>
+                      <Button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="flex-1 border bg-background hover:bg-accent"
+                      >
+                        Cancelar
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Informações adicionais */}
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-lg">ℹ️ Informações Importantes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <h4 className="font-medium mb-2">Formatos Suportados:</h4>
-                <ul className="list-disc list-inside space-y-1">
-                  <li><strong>Áudio:</strong> MP3, WAV, OGG</li>
-                  <li><strong>Vídeo:</strong> YouTube, Vimeo, MP4, WebM</li>
-                </ul>
-              </div>
-              
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <h4 className="font-medium mb-2">Dicas:</h4>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Use URLs públicas e acessíveis</li>
-                  <li>Imagens de capa em formato JPG ou PNG</li>
-                  <li>Títulos descritivos ajudam na busca</li>
-                  <li>Tags facilitam a organização e descoberta</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedContent>
