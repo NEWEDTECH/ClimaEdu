@@ -14,6 +14,7 @@ import { AddParticipantUseCase } from '@/_core/modules/chat/core/use-cases/add-p
 import { AddParticipantInput } from '@/_core/modules/chat/core/use-cases/add-participant/add-participant.input';
 import { ChatRoom } from '@/_core/modules/chat/core/entities/ChatRoom';
 import { ChatMessage } from '@/_core/modules/chat/core/entities/ChatMessage';
+import { ChatRoomRepository } from '@/_core/modules/chat/infrastructure/repositories/ChatRoomRepository';
 
 type ChatDropdownProps = {
   courseId: string;
@@ -41,7 +42,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
 
   const subscribeToMessages = useCallback((chatRoomId: string) => {
     try {
-      const chatRoomRepository = container.get<any>(
+      const chatRoomRepository = container.get<ChatRoomRepository>(
         Register.chat.repository.ChatRoomRepository
       );
 

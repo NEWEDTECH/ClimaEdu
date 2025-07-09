@@ -11,6 +11,7 @@ import {
   getDocs,
   onSnapshot,
   Unsubscribe,
+  Timestamp,
 } from "firebase/firestore";
 import { firestore } from "@/_core/shared/firebase/firebase-client";
 import { nanoid } from "nanoid";
@@ -18,6 +19,29 @@ import { ChatRoom } from "../../../core/entities/ChatRoom";
 import { ChatMessage } from "../../../core/entities/ChatMessage";
 import { ChatParticipant } from "../../../core/entities/ChatParticipant";
 import { ChatRoomRepository } from "../ChatRoomRepository";
+
+// Firebase document interfaces
+interface FirebaseMessageData {
+  id: string;
+  userId: string;
+  userName?: string;
+  text: string;
+  sentAt: Timestamp | Date;
+}
+
+interface FirebaseParticipantData {
+  id: string;
+  userId: string;
+  joinedAt: Timestamp | Date;
+}
+
+// Helper function to convert Timestamp or Date to Date
+const toDate = (timestamp: Timestamp | Date): Date => {
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+  return timestamp.toDate();
+};
 
 // Mappers would go here if the domain and persistence models were different.
 // For simplicity, we'll use the domain entities directly as the persistence model.
@@ -140,14 +164,14 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
     }
 
     const data = docSnap.data();
-    return (data.messages || []).map((m: any) =>
+    return (data.messages || []).map((m: FirebaseMessageData) =>
       ChatMessage.from({
         id: m.id,
         chatRoomId: chatRoomId,
         userId: m.userId,
         userName: m.userName || 'Usuário Desconhecido',
         text: m.text,
-        sentAt: m.sentAt?.toDate ? m.sentAt.toDate() : new Date(m.sentAt),
+        sentAt: toDate(m.sentAt),
       })
     );
   }
@@ -163,12 +187,12 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
     }
 
     const data = docSnap.data();
-    return (data.participants || []).map((p: any) =>
+    return (data.participants || []).map((p: FirebaseParticipantData) =>
       ChatParticipant.from({
         id: p.id,
         chatRoomId: chatRoomId,
         userId: p.userId,
-        joinedAt: p.joinedAt?.toDate ? p.joinedAt.toDate() : new Date(p.joinedAt),
+        joinedAt: toDate(p.joinedAt),
       })
     );
   }
@@ -186,14 +210,14 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
       }
 
       const data = docSnap.data();
-      const messages = (data.messages || []).map((m: any) =>
+      const messages = (data.messages || []).map((m: FirebaseMessageData) =>
         ChatMessage.from({
           id: m.id,
           chatRoomId: chatRoomId,
           userId: m.userId,
           userName: m.userName || 'Usuário Desconhecido',
           text: m.text,
-          sentAt: m.sentAt?.toDate ? m.sentAt.toDate() : new Date(m.sentAt),
+          sentAt: toDate(m.sentAt),
         })
       );
 
