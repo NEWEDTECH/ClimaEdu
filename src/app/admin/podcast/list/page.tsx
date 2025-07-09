@@ -15,7 +15,7 @@ import { DeletePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/del
 import { PodcastMediaType } from '@/_core/modules/podcast/core/entities/PodcastMediaType'
 import type { Podcast } from '@/_core/modules/podcast/core/entities/Podcast'
 
-export default function PodcastPage() {
+export default function PodcastListPage() {
   const { infoUser } = useProfile()
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
   const [filteredPodcasts, setFilteredPodcasts] = useState<Podcast[]>([])
@@ -41,7 +41,7 @@ export default function PodcastPage() {
       const listPodcastsUseCase = container.get<ListPodcastsUseCase>(Register.podcast.useCase.ListPodcastsUseCase)
       
       const result = await listPodcastsUseCase.execute({
-        institutionId: "ins_hOc5LsHn4q",
+        institutionId: infoUser.currentIdInstitution,
         page: 1,
         limit: 100,
         sortBy: 'createdAt',
@@ -114,7 +114,7 @@ export default function PodcastPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">🎧 Podcasts Existentes</h1>
-            <Link href="/admin/podcast/create">
+            <Link href="/admin/podcast">
               <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
                 ➕ Criar novo podcast
               </Button>
@@ -169,6 +169,42 @@ export default function PodcastPage() {
             </CardContent>
           </Card>
 
+          {/* Estatísticas */}
+          {!loading && !error && podcasts.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">📊 Estatísticas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {podcasts.length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Total de Podcasts
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {podcasts.filter(p => p.mediaType === PodcastMediaType.AUDIO).length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Podcasts de Áudio
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {podcasts.filter(p => p.mediaType === PodcastMediaType.VIDEO).length}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Vídeo Podcasts
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedContent>
