@@ -182,6 +182,12 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       setNewMessage(messageText);
     } finally {
       setIsLoading(false);
+
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   };
 
