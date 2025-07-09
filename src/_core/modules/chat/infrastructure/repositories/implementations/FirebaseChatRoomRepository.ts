@@ -9,6 +9,8 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot,
+  Unsubscribe,
 } from "firebase/firestore";
 import { firestore } from "@/_core/shared/firebase/firebase-client";
 import { nanoid } from "nanoid";
@@ -169,5 +171,36 @@ export class FirebaseChatRoomRepository implements ChatRoomRepository {
         joinedAt: p.joinedAt?.toDate ? p.joinedAt.toDate() : new Date(p.joinedAt),
       })
     );
+  }
+
+  public subscribeToMessages(
+    chatRoomId: string,
+    onMessagesUpdate: (messages: ChatMessage[]) => void
+  ): Unsubscribe {
+    const docRef = doc(this.collection, chatRoomId);
+    
+    return onSnapshot(docRef, (docSnap) => {
+      if (!docSnap.exists()) {
+        onMessagesUpdate([]);
+        return;
+      }
+
+      const data = docSnap.data();
+      const messages = (data.messages || []).map((m: any) =>
+        ChatMessage.from({
+          id: m.id,
+          chatRoomId: chatRoomId,
+          userId: m.userId,
+          userName: m.userName || 'Usuário Desconhecido',
+          text: m.text,
+          sentAt: m.sentAt?.toDate ? m.sentAt.toDate() : new Date(m.sentAt),
+        })
+      );
+
+      // Sort messages by sentAt to ensure correct order
+      messages.sort((a: ChatMessage, b: ChatMessage) => a.sentAt.getTime() - b.sentAt.getTime());
+      
+      onMessagesUpdate(messages);
+    });
   }
 }

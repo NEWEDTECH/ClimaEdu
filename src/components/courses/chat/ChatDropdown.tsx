@@ -35,24 +35,30 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadMessages = useCallback(async (chatRoomId: string) => {
+  const subscribeToMessages = useCallback((chatRoomId: string) => {
     try {
-      const listMessagesUseCase = container.get<ListMessagesUseCase>(
-        Register.chat.useCase.ListMessagesUseCase
+      const chatRoomRepository = container.get<any>(
+        Register.chat.repository.ChatRoomRepository
       );
 
-      const listMessagesInput = new ListMessagesInput(chatRoomId);
-      const listMessagesOutput = await listMessagesUseCase.execute(listMessagesInput);
+      const unsubscribe = chatRoomRepository.subscribeToMessages(
+        chatRoomId,
+        (newMessages: ChatMessage[]) => {
+          setMessages(newMessages);
+          setTimeout(scrollToBottom, 100);
+        }
+      );
 
-      setMessages(listMessagesOutput.messages);
-      setTimeout(scrollToBottom, 100);
+      return unsubscribe;
     } catch (error) {
-      console.error('Error loading messages:', error);
+      console.error('Error subscribing to messages:', error);
+      return () => {};
     }
   }, []);
 
@@ -96,13 +102,17 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       }
 
       setChatRoom(currentChatRoom);
-      await loadMessages(currentChatRoom.id);
+      // Subscribe to real-time messages
+      const unsubscribe = subscribeToMessages(currentChatRoom.id);
+      
+      // Store unsubscribe function for cleanup
+      return unsubscribe;
     } catch (error) {
       console.error('Error initializing chat room:', error);
     } finally {
       setIsInitializing(false);
     }
-  }, [courseId, classId, userId, loadMessages]);
+  }, [courseId, classId, userId, subscribeToMessages]);
 
   const ensureUserIsParticipant = async (chatRoomId: string) => {
     try {
@@ -161,12 +171,10 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       );
 
       const sendMessageInput = new SendMessageInput(currentChatRoom.id, userId, infoUser.name || 'Usuário', newMessage.trim());
-      const sendMessageOutput = await sendMessageUseCase.execute(sendMessageInput);
+      await sendMessageUseCase.execute(sendMessageInput);
 
-      // Add the new message to the local state
-      setMessages(prev => [...prev, sendMessageOutput.message]);
+      // Clear the input - the message will be added via the real-time listener
       setNewMessage('');
-      setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -189,9 +197,31 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
 
   useEffect(() => {
     if (isEmbedded && !chatRoom) {
-      initializeChatRoom();
+      initializeChatRoom().then((unsubscribe) => {
+        if (unsubscribe) {
+          unsubscribeRef.current = unsubscribe;
+        }
+      });
     }
   }, [isEmbedded, chatRoom, initializeChatRoom]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
+  }, []);
+
+  // Subscribe to messages when chatRoom changes
+  useEffect(() => {
+    if (chatRoom && !unsubscribeRef.current) {
+      const unsubscribe = subscribeToMessages(chatRoom.id);
+      unsubscribeRef.current = unsubscribe;
+    }
+  }, [chatRoom, subscribeToMessages]);
 
   const formatTime = (date: Date) => {
     // Validate date

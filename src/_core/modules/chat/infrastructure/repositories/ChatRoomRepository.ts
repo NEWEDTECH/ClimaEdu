@@ -15,4 +15,8 @@ export interface ChatRoomRepository {
   removeParticipant(chatRoomId: string, userId: string): Promise<void>;
   getMessages(chatRoomId: string): Promise<ChatMessage[]>;
   getParticipants(chatRoomId: string): Promise<ChatParticipant[]>;
+  subscribeToMessages(
+    chatRoomId: string,
+    onMessagesUpdate: (messages: ChatMessage[]) => void
+  ): () => void;
 }
