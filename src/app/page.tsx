@@ -160,7 +160,7 @@ export default function Home() {
         const podcastsData: PodcastDisplayData[] = podcastsResult.podcasts.map(podcast => ({
           id: podcast.id,
           title: podcast.title,
-          href: `/student/podcast/${podcast.id}`, // TODO: Criar página de visualização de podcast
+          href: `/podcast/${podcast.id}`,
           imageUrl: podcast.coverImageUrl || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&h=300&fit=crop',
           isBlocked: false
         }));
