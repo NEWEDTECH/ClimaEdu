@@ -134,6 +134,11 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       
       content.updateTitle(formData.title)
       
+      // Update URL for video content
+      if (formData.type === ContentType.VIDEO && formData.url !== content.url) {
+        content.url = formData.url
+      }
+      
       await contentRepository.save(content)
       
       router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
@@ -197,16 +202,63 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  const getEmbedUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // YouTube URL patterns
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const youtubeMatch = url.match(youtubeRegex);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+    
+    // Vimeo URL patterns
+    const vimeoRegex = /(?:vimeo\.com\/)(?:.*\/)?(\d+)/;
+    const vimeoMatch = url.match(vimeoRegex);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+    
+    // If it's already an embed URL or other format, return as is
+    return url;
+  };
+
   const renderContentPreview = () => {
     switch (formData.type) {
       case ContentType.VIDEO:
+        const embedUrl = getEmbedUrl(formData.url);
+        if (!embedUrl) {
+          return (
+            <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
+              <div className="text-center">
+                <svg
+                  className="w-12 h-12 text-gray-400 mb-2 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="text-sm text-gray-500">Insira uma URL válida para visualizar o vídeo</p>
+              </div>
+            </div>
+          );
+        }
+        
         return (
           <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
             <iframe
-              src={formData.url}
+              src={embedUrl}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              title="Video Preview"
             ></iframe>
           </div>
         );
@@ -357,6 +409,25 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
                     {getContentTypeLabel(formData.type)}
                   </div>
                 </div>
+
+                {formData.type === ContentType.VIDEO && (
+                  <div className="space-y-2">
+                    <label htmlFor="url" className="text-sm font-medium">
+                      URL do Vídeo
+                    </label>
+                    <InputText
+                      id="url"
+                      name="url"
+                      value={formData.url}
+                      onChange={handleChange}
+                      placeholder="Cole aqui o link do vídeo (YouTube, Vimeo, etc.)"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Suporte para YouTube, Vimeo, e outros links de vídeo. Cole o link completo do vídeo.
+                    </p>
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">

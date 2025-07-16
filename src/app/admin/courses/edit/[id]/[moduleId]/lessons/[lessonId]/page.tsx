@@ -515,18 +515,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              {content.type === ContentType.VIDEO && (
-                                <DropdownVideoPlayer
-                                  videoUrl={content.url}
-                                  videoTitle={content.title}
-                                  autoPlay={false}
-                                  showControls={true}
-                                >
-                                  <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">
-                                    Assistir
-                                  </Button>
-                                </DropdownVideoPlayer>
-                              )}
                               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                 <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                               </Link>

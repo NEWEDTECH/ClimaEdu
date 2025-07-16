@@ -7,7 +7,6 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
 import { Button } from '@/components/button';
-import { InputMedia } from '@/components/ui/input/input-media/InputMedia';
 import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
 import { LoadingSpinner } from '@/components/loader';
@@ -18,8 +17,6 @@ import { Content } from '@/_core/modules/content/core/entities/Content';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
-import { storage } from '@/_core/shared/firebase/firebase-client';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 export default function VideoUploadPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }>}) {
   const router = useRouter();
@@ -28,9 +25,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
   
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [uploadComplete, setUploadComplete] = useState<boolean>(false);
-  const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
+  const [videoUrl, setVideoUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,47 +73,6 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     fetchData();
   }, [lessonId, moduleId]);
 
-  const uploadVideoToFirebase = (
-    file: File,
-    onProgress: (progress: number) => void,
-    onComplete: () => void
-  ) => {
-    setIsUploading(true);
-    
-    const storageRef = ref(storage, `videos/${courseId}/${moduleId}/${lessonId}/${Date.now()}_${file.name}`);
-    
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-    
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        onProgress(progress);
-      },
-      (error) => {
-        console.error('Error uploading video:', error);
-        setIsUploading(false);
-        alert('Falha ao fazer upload do vídeo. Por favor, tente novamente.');
-      },
-      async () => {
-
-        try {
-
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          setVideoUrl(downloadURL);
-          setIsUploading(false);
-          setUploadComplete(true);
-          onComplete();
-        } catch (error) {
-          console.error('Error getting download URL:', error);
-          setIsUploading(false);
-          alert('Falha ao obter URL do vídeo. Por favor, tente novamente.');
-        }
-      }
-    );
-  };
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,8 +82,8 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       return;
     }
     
-    if (!videoUrl) {
-      alert('Por favor, faça upload de um vídeo');
+    if (!videoUrl.trim()) {
+      alert('Por favor, insira a URL do vídeo');
       return;
     }
     
@@ -231,7 +185,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Upload de Vídeo Aula</h1>
+            <h1 className="text-2xl font-bold mb-2">Adicionar Vídeo Aula</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
               Adicionar vídeo à lição: <span className="font-medium">{lessonTitle}</span>
             </p>
@@ -272,22 +226,19 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                     />
                   </div>
 
-                  <div className='flex flex-col items-center'>
+                  <div>
                     <label className="block text-sm font-medium mb-1">
-                      Vídeo
+                      URL do Vídeo
                     </label>
-                    <div className="max-w-xl">
-                      <InputMedia
-                        aspect="16:9"
-                        allowedExtensions="mp4,webm,mov"
-                        maxFileSizeMB={500}
-                        maxDurationSeconds={3600} // 1 hour max
-                        initialImageSrc={videoUrl}
-                        uploadFunction={uploadVideoToFirebase}
-                      />
-                    </div>
+                    <InputText
+                      id="video-url"
+                      placeholder="Cole aqui o link do vídeo (YouTube, Vimeo, etc.)"
+                      value={videoUrl}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)}
+                      required
+                    />
                     <p className="text-xs text-gray-500 mt-1">
-                      Formatos aceitos: MP4, WebM, MOV. Tamanho máximo: 500MB. Duração máxima: 1 hora.
+                      Suporte para YouTube, Vimeo, e outros links de vídeo. Cole o link completo do vídeo.
                     </p>
                   </div>
                 </div>
@@ -302,9 +253,9 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isUploading || !uploadComplete || isSaving}
+                    disabled={isSaving}
                   >
-                    {isUploading ? 'Enviando...' : isSaving ? 'Salvando...' : 'Salvar Vídeo Aula'}
+                    {isSaving ? 'Salvando...' : 'Salvar Vídeo Aula'}
                   </Button>
                 </div>
               </FormSection>
