@@ -8,7 +8,7 @@ export const useCases = {
   CreateInstitutionUseCase: Symbol.for('CreateInstitutionUseCase'),
   UpdateInstitutionSettingsUseCase: Symbol.for('UpdateInstitutionSettingsUseCase'),
   AssociateUserToInstitutionUseCase: Symbol.for('AssociateUserToInstitutionUseCase'),
-
+  ListInstitutionsUseCase: Symbol.for('ListInstitutionsUseCase'),
   ListUserInstitutionsUseCase: Symbol.for('ListUserInstitutionsUseCase'),
 };
 

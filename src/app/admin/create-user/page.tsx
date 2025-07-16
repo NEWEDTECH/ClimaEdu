@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -15,7 +15,9 @@ import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case'
+import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
+import { Institution } from '@/_core/modules/institution/core/entities/Institution'
 import { useProfile } from '@/context/zustand/useProfile'
 import { ArrowLeftIcon } from 'lucide-react'
 
@@ -40,7 +42,8 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Email inválido' }),
   //password: z.string().min(6, { message: 'Senha deve ter pelo menos 6 caracteres' }),
   //confirmPassword: z.string(),
-  role: z.enum(allowedRoles)
+  role: z.enum(allowedRoles),
+  institutionId: z.string().optional()
 })//.refine((data) => data.password === data.confirmPassword, {
 //message: "As senhas não coincidem",
 //path: ["confirmPassword"],
@@ -53,6 +56,8 @@ export default function CreateUserPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<boolean>(false)
+  const [institutions, setInstitutions] = useState<Institution[]>([])
+  const [isLoadingInstitutions, setIsLoadingInstitutions] = useState(false)
   const { infoUser } = useProfile()
 
   const currentUserRole: UserRole = UserRole.SUPER_ADMIN;
@@ -87,6 +92,28 @@ export default function CreateUserPage() {
 
   const allowedRoles = getAllowedRolesToCreate(currentUserRole);
 
+  // Fetch institutions for SUPER_ADMIN and SYSTEM_ADMIN
+  useEffect(() => {
+    const fetchInstitutions = async () => {
+      if (currentUserRole === UserRole.SUPER_ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN) {
+        setIsLoadingInstitutions(true)
+        try {
+          const listInstitutionsUseCase = container.get<ListInstitutionsUseCase>(
+            Register.institution.useCase.ListInstitutionsUseCase
+          )
+          const result = await listInstitutionsUseCase.execute({})
+          setInstitutions(result.institutions)
+        } catch (err) {
+          console.error('Error fetching institutions:', err)
+        } finally {
+          setIsLoadingInstitutions(false)
+        }
+      }
+    }
+
+    fetchInstitutions()
+  }, [currentUserRole])
+
   const {
     register,
     handleSubmit,
@@ -120,6 +147,7 @@ export default function CreateUserPage() {
         type: data.role
       })
 
+      // Associate user to institution based on user role and selected institution
       if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
         if (infoUser.currentIdInstitution && createUserResult.user) {
           const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
@@ -132,6 +160,16 @@ export default function CreateUserPage() {
             userRole: data.role
           })
         }
+      } else if ((infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) && data.institutionId && createUserResult.user) {
+        const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+          Register.institution.useCase.AssociateUserToInstitutionUseCase
+        )
+
+        await associateUserUseCase.execute({
+          userId: createUserResult.user.id,
+          institutionId: data.institutionId,
+          userRole: data.role
+        })
       }
 
       setSuccess(true)
@@ -258,6 +296,35 @@ export default function CreateUserPage() {
                     ))}
                   </select>
                 </div>
+
+                {(currentUserRole === UserRole.SUPER_ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN) && (
+                  <div className="space-y-2">
+                    <label htmlFor="institutionId" className="block text-sm font-medium">
+                      Instituição
+                    </label>
+                    {isLoadingInstitutions ? (
+                      <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm items-center">
+                        Carregando instituições...
+                      </div>
+                    ) : (
+                      <select
+                        id="institutionId"
+                        {...register('institutionId')}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        <option value="">Selecione uma instituição</option>
+                        {institutions.map((institution) => (
+                          <option key={institution.id} value={institution.id}>
+                            {institution.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {errors.institutionId && (
+                      <p className="text-red-500 text-xs mt-1">{errors.institutionId.message}</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
 
               <CardFooter className="flex justify-end gap-2">

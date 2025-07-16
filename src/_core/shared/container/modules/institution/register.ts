@@ -5,7 +5,7 @@ import { repositories, useCases } from './symbols';
 import { CreateInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/create-institution/create-institution.use-case';
 import { UpdateInstitutionSettingsUseCase } from '@/_core/modules/institution/core/use-cases/update-institution-settings/update-institution-settings.use-case';
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case';
-
+import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case';
 import { ListUserInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-user-institutions/list-user-institutions.use-case';
 import type { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import type { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository';
@@ -25,5 +25,6 @@ export function registerInstitutionModule(container: Container): void {
   container.bind(useCases.CreateInstitutionUseCase).to(CreateInstitutionUseCase);
   container.bind(useCases.UpdateInstitutionSettingsUseCase).to(UpdateInstitutionSettingsUseCase);
   container.bind(useCases.AssociateUserToInstitutionUseCase).to(AssociateUserToInstitutionUseCase);
+  container.bind(useCases.ListInstitutionsUseCase).to(ListInstitutionsUseCase);
   container.bind(useCases.ListUserInstitutionsUseCase).to(ListUserInstitutionsUseCase);
 }
