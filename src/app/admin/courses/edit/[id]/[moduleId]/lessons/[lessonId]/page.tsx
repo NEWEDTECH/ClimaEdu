@@ -460,6 +460,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                   <div className="flex justify-between items-center">
                     <CardTitle>Conteúdos da Lição</CardTitle>
                     <div className="flex gap-2">
+                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/description`}>
+                        <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Descrição</Button>
+                      </Link>
                       <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
                         <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
                       </Link>
