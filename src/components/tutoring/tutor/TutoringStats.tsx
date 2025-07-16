@@ -1,7 +1,7 @@
 'use client'
 
 import { TutorSession } from '@/app/tutor/tutoring/data/mockTutorData'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/card'
+import { Card, CardContent,  } from '@/components/ui/card/card'
 import { CalendarIcon, ClockIcon, CheckCircleIcon, XCircleIcon, AlertCircleIcon, UserIcon } from 'lucide-react'
 
 interface TutoringStatsProps {
@@ -10,7 +10,6 @@ interface TutoringStatsProps {
 
 export function TutoringStats({ sessions }: TutoringStatsProps) {
   // Calculate stats
-  const totalSessions = sessions.length
   const scheduledSessions = sessions.filter(s => s.status === 'scheduled').length
   const completedSessions = sessions.filter(s => s.status === 'completed').length
   const inProgressSessions = sessions.filter(s => s.status === 'in_progress').length

@@ -47,8 +47,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
         }
         
         setLessonTitle(lesson.title)
-        // Handle description property safely
-        setDescription((lesson as any).description || '')
+        setDescription(lesson.description)
         
         const moduleData = await moduleRepository.findById(moduleId)
         if (!moduleData) {
@@ -83,9 +82,8 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
         throw new Error('Lição não encontrada')
       }
       
-      // Update lesson description
-      // @ts-expect-error - We're manually updating the description property
-      lesson.description = description
+      // Update lesson description using the entity method
+      lesson.updateDescription(description)
       
       await lessonRepository.save(lesson)
       

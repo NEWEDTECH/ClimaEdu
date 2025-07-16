@@ -1,7 +1,6 @@
 /**
  * Input for ListInstitutionsUseCase
  * Following Clean Architecture principles, this defines the input contract
+ * Using Record<string, never> to represent an empty object type
  */
-export interface ListInstitutionsInput {
-  // No input parameters needed for listing all institutions
-}
+export type ListInstitutionsInput = Record<string, never>;

@@ -16,10 +16,11 @@ export class ListInstitutionsUseCase {
 
   /**
    * Execute the use case
-   * @param input Input parameters (empty for this use case)
+   * @param _input Input parameters (empty for this use case)
    * @returns Promise with the list of institutions
    */
-  async execute(input: ListInstitutionsInput): Promise<ListInstitutionsOutput> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async execute(_: ListInstitutionsInput): Promise<ListInstitutionsOutput> {
     const institutions = await this.institutionRepository.list();
 
     return {

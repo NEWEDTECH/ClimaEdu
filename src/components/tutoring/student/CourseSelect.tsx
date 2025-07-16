@@ -1,6 +1,6 @@
 'use client'
 
-import { Course } from '../../app/student/tutoring/data/mockData'
+import { Course } from '@/app/student/tutoring/data/mockData'
 import { ChevronDownIcon } from 'lucide-react'
 
 interface CourseSelectProps {

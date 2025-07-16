@@ -13,7 +13,6 @@ import {
   EditIcon,
   CheckIcon,
   PlayIcon,
-  PauseIcon,
   FileTextIcon
 } from 'lucide-react'
 
