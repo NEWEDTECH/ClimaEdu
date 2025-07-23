@@ -91,6 +91,14 @@ export function ActivitySection({
             <span>Atividade</span>
           </CardTitle>
           <div className="flex gap-2">
+            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
+              <Button className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Adicionar Atividade
+              </Button>
+            </Link>
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/edit`}>
               <Button className="border border-green-300 bg-white hover:bg-green-50 text-green-700 text-xs px-3 py-1">
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

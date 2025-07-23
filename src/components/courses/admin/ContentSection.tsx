@@ -95,7 +95,7 @@ export function ContentSection({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <span>Conteúdos da Lição</span>
+            <span>Vídeo Aula</span>
           </CardTitle>
           <div className="flex gap-2">
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
@@ -106,6 +106,24 @@ export function ContentSection({
                 Adicionar Vídeo
               </Button>
             </Link>
+            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${contents[0].id}/edit`}>
+              <Button className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs px-3 py-1">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Editar
+              </Button>
+            </Link>
+            <Button
+              className="border border-red-300 text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+              onClick={() => onDeleteContent(contents[0].id)}
+              disabled={isSubmitting}
+            >
+              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Excluir
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -130,71 +148,44 @@ export function ContentSection({
             </Link>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {contents.map((content) => (
-              <div 
-                key={content.id} 
-                className="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${getContentTypeColor(content.type)} flex items-center justify-center shadow-md flex-shrink-0`}>
-                      <div className="text-white">
-                        {getContentTypeIcon(content.type)}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {content.type === ContentType.VIDEO ? (
-                        <DropdownVideoPlayer
-                          videoUrl={content.url}
-                          videoTitle={content.title}
-                          autoPlay={false}
-                          showControls={true}
-                        >
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate">
-                            {content.title}
-                          </h3>
-                        </DropdownVideoPlayer>
-                      ) : (
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                          {content.title}
-                        </h3>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
-                          {getContentTypeLabel(content.type)}
-                        </span>
-                        {content.type === ContentType.VIDEO && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Clique para visualizar
-                          </span>
-                        )}
-                      </div>
-                    </div>
+          <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${getContentTypeColor(contents[0].type)} flex items-center justify-center shadow-md flex-shrink-0`}>
+                  <div className="text-white">
+                    {getContentTypeIcon(contents[0].type)}
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
-                      <Button className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs px-3 py-1">
-                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Editar
-                      </Button>
-                    </Link>
-                    <Button 
-                      className="border border-red-300 text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
-                      onClick={() => onDeleteContent(content.id)}
-                      disabled={isSubmitting}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {contents[0].type === ContentType.VIDEO ? (
+                    <DropdownVideoPlayer
+                      videoUrl={contents[0].url}
+                      videoTitle={contents[0].title}
+                      autoPlay={false}
+                      showControls={true}
                     >
-                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Excluir
-                    </Button>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate">
+                        {contents[0].title}
+                      </h3>
+                    </DropdownVideoPlayer>
+                  ) : (
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                      {contents[0].title}
+                    </h3>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
+                      {getContentTypeLabel(contents[0].type)}
+                    </span>
+                    {contents[0].type === ContentType.VIDEO && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Clique para visualizar
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         )}
       </CardContent>
