@@ -16,6 +16,7 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository'
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository'
+import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 
@@ -303,6 +304,49 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const handleDeleteContent = async (contentId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este conteúdo?')) {
+      return
+    }
+    
+    try {
+      const contentRepository = container.get<ContentRepository>(
+        Register.content.repository.ContentRepository
+      )
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      const deleted = await contentRepository.delete(contentId)
+      
+      if (!deleted) {
+        throw new Error('Conteúdo não encontrado')
+      }
+      
+      const lesson = await lessonRepository.findById(lessonId)
+      
+      if (!lesson) {
+        throw new Error('Lição não encontrada')
+      }
+      
+      lesson.contents = lesson.contents.filter(content => content.id !== contentId)
+      
+      await lessonRepository.save(lesson)
+      
+      // Update UI state
+      setFormData(prev => ({
+        ...prev,
+        contents: prev.contents.filter(content => content.id !== contentId)
+      }))
+      
+      alert('Conteúdo excluído com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir conteúdo:', error)
+      alert(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -482,9 +526,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         <Card>
           <CardHeader>
             <CardTitle>Informações da Lição</CardTitle>
-            <CardDescription>
-              Atualize os detalhes da lição
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <FormSection onSubmit={handleSubmit} error={error}>
@@ -522,9 +563,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       </Link>
                     </div>
                   </div>
-                  <CardDescription>
-                    Gerencie os conteúdos desta lição
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {formData.contents.length === 0 ? (
@@ -569,6 +607,13 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                 <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                               </Link>
+                              <Button 
+                                className="border text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+                                onClick={() => handleDeleteContent(content.id)}
+                                disabled={isSubmitting}
+                              >
+                                Excluir
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -625,9 +670,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       )}
                     </div>
                   </div>
-                  <CardDescription>
-                    Descrição detalhada da lição para os estudantes
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {lessonDescription ? (
@@ -685,9 +727,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                         </Button>
                       </div>
                     </div>
-                    <CardDescription>
-                      Atividade para os alunos realizarem
-                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -746,6 +785,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <div className="flex justify-between items-center">
                       <CardTitle>Questionário</CardTitle>
                       <div className='flex justify-end gap-2'>
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
+                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
+                        </Link>
                         <Button 
                           className="border text-xs px-3 py-1 bg-red-500 text-white"
                           onClick={handleDeleteQuestionnaire}
@@ -753,14 +795,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                         >
                           {isSubmitting ? 'Excluindo...' : 'Excluir'}
                         </Button>
-                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
-                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
-                        </Link>
                       </div>
                     </div>
-                    <CardDescription>
-                      Questionário para avaliar o conhecimento dos alunos
-                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
