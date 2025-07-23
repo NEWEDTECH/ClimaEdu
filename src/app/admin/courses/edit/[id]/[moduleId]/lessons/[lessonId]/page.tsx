@@ -9,7 +9,7 @@ import { FormSection } from '@/components/form'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
-import { ActivitySection, ContentSection, DescriptionSection } from '@/components/courses/admin'
+import { ActivitySection, ContentSection, DescriptionSection, QuestionnaireSection } from '@/components/courses/admin'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -595,67 +595,14 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               />
 
               {/* Questionnaire Section */}
-              {formData.questionnaire && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle>Questionário</CardTitle>
-                      <div className='flex justify-end gap-2'>
-                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
-                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
-                        </Link>
-                        <Button 
-                          className="border text-xs px-3 py-1 bg-red-500 text-white"
-                          onClick={handleDeleteQuestionnaire}
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? 'Excluindo...' : 'Excluir'}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-purple-500">
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="font-medium">
-                              {formData.questionnaire.title}
-                            </h3>
-                          </div>
-                          <div className="ml-11 mt-2">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Tentativas máximas:</span> {formData.questionnaire.maxAttempts}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Nota de aprovação:</span> {formData.questionnaire.passingScore}%
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Número de perguntas:</span> {formData.questionnaire.questions.length}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <QuestionnaireSection
+                questionnaire={formData.questionnaire}
+                courseId={courseId}
+                moduleId={moduleId}
+                lessonId={lessonId}
+                onDelete={handleDeleteQuestionnaire}
+                isSubmitting={isSubmitting}
+              />
 
               <div className="flex justify-end gap-2 my-4">
                 <Link href={`/admin/courses/edit/${courseId}`}>
