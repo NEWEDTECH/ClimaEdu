@@ -609,7 +609,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                         <div className="flex-1">
                           <h3 className="font-medium mb-2">Descrição da Lição</h3>
                           <div 
-                            className="prose prose-sm max-w-none text-gray-600 dark:text-gray-400"
+                            className="prose prose-sm max-w-none text-gray-600 dark:text-gray-400 [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400"
                             dangerouslySetInnerHTML={{ __html: lessonDescription }}
                           />
                         </div>

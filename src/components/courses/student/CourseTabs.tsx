@@ -88,7 +88,7 @@ export function CourseTabs({
                 
                 <div className="prose prose-gray dark:prose-invert max-w-none">
                   <div 
-                    className="text-gray-700 dark:text-gray-300 leading-relaxed"
+                    className="text-gray-700 dark:text-gray-300 leading-relaxed [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400"
                     dangerouslySetInnerHTML={{ __html: activeLessonData.description }}
                   />
                 </div>
