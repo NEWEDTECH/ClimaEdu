@@ -15,8 +15,8 @@ export function ColorPicker({ onColorSelect, onClose }: ColorPickerProps) {
     '#FF0000', '#FF6600', '#FFCC00', '#FFFF00', '#99FF00', '#00FF00',
     '#00FFCC', '#00CCFF', '#0066FF', '#0000FF', '#6600FF', '#CC00FF',
     '#FF0099', '#FF3366', '#FF6699', '#FF99CC', '#FFCCFF', '#CCCCFF',
-    '#99CCFF', '#66CCFF', '#33CCFF', '#00CCFF', '#00FFFF', '#66FFCC',
-    '#99FFCC', '#CCFFCC', '#CCFF99', '#CCFF66', '#CCFF33', '#CCFF00'
+    '#99CCFF', '#66CCFF', '#33CCFF', '#00FFFF', '#66FFCC', '#99FFCC',
+    '#CCFFCC', '#CCFF99', '#CCFF66', '#CCFF33', '#CCFF00', '#FFCC99'
   ]
 
   useEffect(() => {
