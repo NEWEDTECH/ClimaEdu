@@ -9,10 +9,12 @@ import { EnrollmentSymbols } from './modules/enrollment/symbols';
 import { BadgeSymbols } from './modules/badge/symbols';
 import { ChatSymbols } from './modules/chat/symbols';
 import { PodcastSymbols } from './modules/podcast/symbols';
+import { SocialSymbols } from './modules/social/symbols';
+import { ReportSymbols } from './modules/report/symbols';
+import { CertificateSymbols } from './modules/certificate/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols, SocialSymbols };
-import { SocialSymbols } from './modules/social/symbols';
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -51,6 +53,13 @@ export const Register = {
   social: {
     repository: SocialSymbols.repositories,
     useCase: SocialSymbols.useCases,
-
+  },
+  report: {
+    repository: ReportSymbols.repositories,
+    useCase: ReportSymbols.useCases,
+  },
+  certificate: {
+    repository: CertificateSymbols.repositories,
+    useCase: CertificateSymbols.useCases,
   },
 };
