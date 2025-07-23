@@ -9,13 +9,15 @@ import { FormSection } from '@/components/form'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
-import { DropdownVideoPlayer } from '@/components/video'
+import { ActivitySection, ContentSection, DescriptionSection, QuestionnaireSection } from '@/components/courses/admin'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository'
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository'
+import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
+import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 
 type LessonFormData = {
@@ -71,6 +73,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     contents: []
   })
   
+  const [lessonDescription, setLessonDescription] = useState<string>('')
   const [moduleName, setModuleName] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -187,6 +190,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           questionnaire: questionnaireData
         })
         
+        // Set lesson description
+        setLessonDescription(lesson.description || '')
+        
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching lesson data:', error)
@@ -255,6 +261,115 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const handleDeleteActivity = async () => {
+    if (!formData.activity) return
+    
+    if (!confirm('Tem certeza que deseja excluir esta atividade?')) {
+      return
+    }
+    
+    try {
+      const activityRepository = container.get<ActivityRepository>(
+        Register.content.repository.ActivityRepository
+      )
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      // Delete the activity
+      const deleted = await activityRepository.delete(formData.activity.id)
+      
+      if (!deleted) {
+        throw new Error('Não foi possível excluir a atividade')
+      }
+      
+      // Update lesson to remove activity reference
+      const lesson = await lessonRepository.findById(lessonId)
+      if (lesson) {
+        lesson.activity = undefined
+        await lessonRepository.save(lesson)
+      }
+      
+      // Update UI state
+      setFormData(prev => ({
+        ...prev,
+        activity: undefined
+      }))
+      
+      alert('Atividade excluída com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir atividade:', error)
+      alert('Falha ao excluir atividade')
+    }
+  }
+
+  const handleDeleteContent = async (contentId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este conteúdo?')) {
+      return
+    }
+    
+    try {
+      const contentRepository = container.get<ContentRepository>(
+        Register.content.repository.ContentRepository
+      )
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      const deleted = await contentRepository.delete(contentId)
+      
+      if (!deleted) {
+        throw new Error('Conteúdo não encontrado')
+      }
+      
+      const lesson = await lessonRepository.findById(lessonId)
+      
+      if (!lesson) {
+        throw new Error('Lição não encontrada')
+      }
+      
+      lesson.contents = lesson.contents.filter(content => content.id !== contentId)
+      
+      await lessonRepository.save(lesson)
+      
+      // Update UI state
+      setFormData(prev => ({
+        ...prev,
+        contents: prev.contents.filter(content => content.id !== contentId)
+      }))
+      
+      alert('Conteúdo excluído com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir conteúdo:', error)
+      alert(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    }
+  }
+
+  const handleDeleteDescription = async () => {
+    if (!confirm('Tem certeza que deseja excluir a descrição desta lição?')) {
+      return
+    }
+    
+    try {
+      const updateLessonDescriptionUseCase = container.get<UpdateLessonDescriptionUseCase>(
+        Register.content.useCase.UpdateLessonDescriptionUseCase
+      )
+      
+      await updateLessonDescriptionUseCase.execute({
+        lessonId,
+        description: ''
+      })
+      
+      setLessonDescription('')
+      alert('Descrição excluída com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir descrição:', error)
+      alert('Falha ao excluir descrição')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -304,92 +419,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const getContentTypeLabel = (type: ContentType): string => {
-    switch (type) {
-      case ContentType.VIDEO:
-        return 'Vídeo';
-      case ContentType.PDF:
-        return 'PDF';
-      case ContentType.PODCAST:
-        return 'Podcast';
-      default:
-        return 'Conteúdo';
-    }
-  }
-
-  const getContentTypeIcon = (type: ContentType): React.ReactNode => {
-    switch (type) {
-      case ContentType.VIDEO:
-        return (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-            />
-          </svg>
-        );
-      case ContentType.PDF:
-        return (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-            />
-          </svg>
-        );
-      case ContentType.PODCAST:
-        return (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-            />
-          </svg>
-        );
-      default:
-        return (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        );
-    }
-  }
-
   if (isLoading) {
     return (
       <CourseEditLayout courseId={courseId}>
@@ -434,9 +463,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         <Card>
           <CardHeader>
             <CardTitle>Informações da Lição</CardTitle>
-            <CardDescription>
-              Atualize os detalhes da lição
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <FormSection onSubmit={handleSubmit} error={error}>
@@ -454,208 +480,45 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                 />
               </div>
               
-              {/* Contents Section */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle>Conteúdos da Lição</CardTitle>
-                    <div className="flex gap-2">
-                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/description`}>
-                        <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Descrição</Button>
-                      </Link>
-                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
-                        <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
-                      </Link>
-                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
-                        <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Atividade</Button>
-                      </Link>
-                      <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
-                        <Button className="text-xs px-3 py-1">Adicionar Questionário</Button>
-                      </Link>
-                    </div>
-                  </div>
-                  <CardDescription>
-                    Gerencie os conteúdos desta lição
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {formData.contents.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      Esta lição ainda não possui conteúdos. Adicione um conteúdo para começar.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {formData.contents.map((content) => (
-                        <div 
-                          key={content.id} 
-                          className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-blue-500">
-                                {getContentTypeIcon(content.type)}
-                              </div>
-                              <div>
-                                {content.type === ContentType.VIDEO ? (
-                                  <DropdownVideoPlayer
-                                    videoUrl={content.url}
-                                    videoTitle={content.title}
-                                    autoPlay={false}
-                                    showControls={true}
-                                  >
-                                    <h3 className="font-medium cursor-pointer hover:text-blue-600 transition-colors">
-                                      {content.title}
-                                    </h3>
-                                  </DropdownVideoPlayer>
-                                ) : (
-                                  <h3 className="font-medium">
-                                    {content.title}
-                                  </h3>
-                                )}
-                                <p className="text-xs text-gray-500">
-                                  {getContentTypeLabel(content.type)}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
-                                <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Content Section */}
+              <ContentSection
+                contents={formData.contents}
+                courseId={courseId}
+                moduleId={moduleId}
+                lessonId={lessonId}
+                onDeleteContent={handleDeleteContent}
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Description Section */}
+              <DescriptionSection
+                description={lessonDescription}
+                courseId={courseId}
+                moduleId={moduleId}
+                lessonId={lessonId}
+                onDelete={handleDeleteDescription}
+                isSubmitting={isSubmitting}
+              />
 
               {/* Activity Section */}
-              {formData.activity && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle>Atividade</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Atividade para os alunos realizarem
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-green-500">
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="font-medium">
-                              {formData.activity.description}
-                            </h3>
-                          </div>
-                          <div className="ml-11 mt-2">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Instruções:</span> {formData.activity.instructions}
-                            </p>
-                            {formData.activity.resourceUrl && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                <span className="font-medium">Recurso:</span>{' '}
-                                <a 
-                                  href={formData.activity.resourceUrl} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-500 hover:underline"
-                                >
-                                  {formData.activity.resourceUrl}
-                                </a>
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <ActivitySection
+                activity={formData.activity}
+                courseId={courseId}
+                moduleId={moduleId}
+                lessonId={lessonId}
+                onDelete={handleDeleteActivity}
+                isSubmitting={isSubmitting}
+              />
 
               {/* Questionnaire Section */}
-              {formData.questionnaire && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle>Questionário</CardTitle>
-                      <div className='flex justify-end gap-2'>
-                        <Button 
-                          className="border text-xs px-3 py-1 bg-red-500 text-white"
-                          onClick={handleDeleteQuestionnaire}
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? 'Excluindo...' : 'Excluir'}
-                        </Button>
-                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}`}>
-                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
-                        </Link>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Questionário para avaliar o conhecimento dos alunos
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-purple-500">
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="font-medium">
-                              {formData.questionnaire.title}
-                            </h3>
-                          </div>
-                          <div className="ml-11 mt-2">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Tentativas máximas:</span> {formData.questionnaire.maxAttempts}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Nota de aprovação:</span> {formData.questionnaire.passingScore}%
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-medium">Número de perguntas:</span> {formData.questionnaire.questions.length}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <QuestionnaireSection
+                questionnaire={formData.questionnaire}
+                courseId={courseId}
+                moduleId={moduleId}
+                lessonId={lessonId}
+                onDelete={handleDeleteQuestionnaire}
+                isSubmitting={isSubmitting}
+              />
 
               <div className="flex justify-end gap-2 my-4">
                 <Link href={`/admin/courses/edit/${courseId}`}>

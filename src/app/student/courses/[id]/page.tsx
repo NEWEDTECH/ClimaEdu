@@ -10,6 +10,7 @@ import { CourseRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { Module } from '@/_core/modules/content/core/entities/Module';
+import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { Course } from '@/_core/modules/content/core/entities/Course';
@@ -31,6 +32,7 @@ export default function CoursePage() {
     const [course, setCourse] = useState<Course | null>(null);
     const [modules, setModules] = useState<Module[]>([]);
     const [activeLesson, setActiveLesson] = useState<string | null>(null);
+    const [activeLessonData, setActiveLessonData] = useState<Lesson | null>(null);
     const [activeContent, setActiveContent] = useState<Content | null>(null);
     const [activeQuestionnaire, setActiveQuestionnaire] = useState<Questionnaire | null>(null);
     const [activeActivity, setActiveActivity] = useState<Activity | null>(null);
@@ -116,21 +118,29 @@ export default function CoursePage() {
 
             const fullLesson = await lessonRepository.findById(lessonId);
 
-            if (fullLesson && fullLesson.contents.length > 0) {
-                const videoContent = fullLesson.contents.find(c => c.type === ContentType.VIDEO);
-                if (videoContent) {
-                    // Reset the active content to ensure the video reloads
-                    setActiveContent(null);
+            if (fullLesson) {
+                // Set the lesson data for the tabs
+                setActiveLessonData(fullLesson);
 
-                    // Use setTimeout to ensure the state update happens before setting the new content
-                    setTimeout(() => {
-                        setActiveContent(videoContent);
-                    }, 50);
+                if (fullLesson.contents.length > 0) {
+                    const videoContent = fullLesson.contents.find(c => c.type === ContentType.VIDEO);
+                    if (videoContent) {
+                        // Reset the active content to ensure the video reloads
+                        setActiveContent(null);
+
+                        // Use setTimeout to ensure the state update happens before setting the new content
+                        setTimeout(() => {
+                            setActiveContent(videoContent);
+                        }, 50);
+                    } else {
+                        // If no video content, use the first content
+                        setActiveContent(fullLesson.contents[0]);
+                    }
                 } else {
-                    // If no video content, use the first content
-                    setActiveContent(fullLesson.contents[0]);
+                    setActiveContent(null);
                 }
             } else {
+                setActiveLessonData(null);
                 setActiveContent(null);
             }
 
@@ -473,6 +483,7 @@ export default function CoursePage() {
                                 setActiveTab={setActiveTab}
                                 activeContent={activeContent}
                                 activeLesson={activeLesson}
+                                activeLessonData={activeLessonData}
                                 activeActivity={activeActivity}
                                 activeQuestionnaire={activeQuestionnaire}
                                 attemptCount={attemptCount}

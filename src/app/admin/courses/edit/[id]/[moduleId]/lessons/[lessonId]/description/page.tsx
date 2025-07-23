@@ -13,6 +13,7 @@ import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
+import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
 
 export default function LessonDescriptionPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter()
@@ -72,20 +73,15 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
     setIsSaving(true)
     
     try {
-      const lessonRepository = container.get<LessonRepository>(
-        Register.content.repository.LessonRepository
+      // Use the new UpdateLessonDescriptionUseCase
+      const updateLessonDescriptionUseCase = container.get<UpdateLessonDescriptionUseCase>(
+        Register.content.useCase.UpdateLessonDescriptionUseCase
       )
       
-      const lesson = await lessonRepository.findById(lessonId)
-      
-      if (!lesson) {
-        throw new Error('Lição não encontrada')
-      }
-      
-      // Update lesson description using the entity method
-      lesson.updateDescription(description)
-      
-      await lessonRepository.save(lesson)
+      await updateLessonDescriptionUseCase.execute({
+        lessonId,
+        description
+      })
       
       router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`)
     } catch (error) {

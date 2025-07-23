@@ -85,7 +85,7 @@ export const EditorContent = forwardRef<HTMLDivElement, EditorContentProps>(
           onFocus={onFocus}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          className="min-h-[200px] p-4 focus:outline-none text-gray-900 leading-relaxed"
+          className="min-h-[200px] p-4 focus:outline-none text-gray-900 leading-relaxed [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600"
           style={{ wordBreak: 'break-word' }}
           suppressContentEditableWarning={true}
         />
