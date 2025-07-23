@@ -5,12 +5,14 @@ import { Content } from '@/_core/modules/content/core/entities/Content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
+import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 
 type CourseTabsProps = {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   activeContent: Content | null;
   activeLesson: string | null;
+  activeLessonData: Lesson | null;
   activeActivity: Activity | null;
   activeQuestionnaire: Questionnaire | null;
   attemptCount: number;
@@ -23,6 +25,7 @@ export function CourseTabs({
   setActiveTab,
   activeContent,
   activeLesson,
+  activeLessonData,
   activeActivity,
   activeQuestionnaire,
   attemptCount,
@@ -63,26 +66,35 @@ export function CourseTabs({
         </TabsList>
 
         <TabsContent value="content" className="mt-4">
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <h3 className="text-lg font-medium mb-2">
-              {activeContent?.title || 'Selecione uma lição para ver o conteúdo'}
-            </h3>
-
-            {activeContent && activeContent.type === ContentType.PDF && (
-              <div className="mt-4">
-                <a
-                  href={activeContent.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                  Abrir PDF
-                </a>
+          <div className="space-y-6">
+            {/* Lesson Description Section */}
+            {activeLessonData && activeLessonData.description && (
+              <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      {activeLessonData.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Descrição da lição
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="prose prose-gray dark:prose-invert max-w-none">
+                  <div 
+                    className="text-gray-700 dark:text-gray-300 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: activeLessonData.description }}
+                  />
+                </div>
               </div>
             )}
+
           </div>
         </TabsContent>
 

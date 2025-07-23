@@ -49,6 +49,7 @@ import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-t
 import { DeleteTrailUseCase } from '@/_core/modules/content/core/use-cases/delete-trail/delete-trail.use-case';
 import { AddCourseToTrailUseCase } from '@/_core/modules/content/core/use-cases/add-course-to-trail/add-course-to-trail.use-case';
 import { RemoveCourseFromTrailUseCase } from '@/_core/modules/content/core/use-cases/remove-course-from-trail/remove-course-from-trail.use-case';
+import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -96,5 +97,6 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.DeleteTrailUseCase).to(DeleteTrailUseCase);
   container.bind(useCases.AddCourseToTrailUseCase).to(AddCourseToTrailUseCase);
   container.bind(useCases.RemoveCourseFromTrailUseCase).to(RemoveCourseFromTrailUseCase);
+  container.bind(useCases.UpdateLessonDescriptionUseCase).to(UpdateLessonDescriptionUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

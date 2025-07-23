@@ -41,6 +41,7 @@ export const useCases = {
   UpdateContentProgressUseCase: Symbol.for('UpdateContentProgressUseCase'),
   GetLessonProgressUseCase: Symbol.for('GetLessonProgressUseCase'),
   CompleteLessonProgressUseCase: Symbol.for('CompleteLessonProgressUseCase'),
+  UpdateLessonDescriptionUseCase: Symbol.for('UpdateLessonDescriptionUseCase'),
 };
 
 // Export all symbols for this module
