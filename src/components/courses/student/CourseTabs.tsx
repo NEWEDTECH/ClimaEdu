@@ -2,7 +2,6 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs/tabs';
 import { Content } from '@/_core/modules/content/core/entities/Content';
-import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
@@ -23,7 +22,6 @@ type CourseTabsProps = {
 export function CourseTabs({
   activeTab,
   setActiveTab,
-  activeContent,
   activeLesson,
   activeLessonData,
   activeActivity,
