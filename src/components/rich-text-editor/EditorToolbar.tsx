@@ -179,12 +179,13 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
         {/* Font size */}
         <select
           onChange={(e) => onCommand('fontSize', e.target.value)}
+          defaultValue="3"
           className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           title="Tamanho da fonte"
         >
           <option value="1">Muito pequeno</option>
           <option value="2">Pequeno</option>
-          <option value="3" selected>Normal</option>
+          <option value="3">Normal</option>
           <option value="4">Médio</option>
           <option value="5">Grande</option>
           <option value="6">Muito grande</option>
