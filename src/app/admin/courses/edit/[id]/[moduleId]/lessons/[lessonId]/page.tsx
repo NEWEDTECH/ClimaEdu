@@ -260,6 +260,49 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const handleDeleteActivity = async () => {
+    if (!formData.activity) return
+    
+    if (!confirm('Tem certeza que deseja excluir esta atividade?')) {
+      return
+    }
+    
+    try {
+      const activityRepository = container.get<ActivityRepository>(
+        Register.content.repository.ActivityRepository
+      )
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      // Delete the activity
+      const deleted = await activityRepository.delete(formData.activity.id)
+      
+      if (!deleted) {
+        throw new Error('Não foi possível excluir a atividade')
+      }
+      
+      // Update lesson to remove activity reference
+      const lesson = await lessonRepository.findById(lessonId)
+      if (lesson) {
+        lesson.activity = undefined
+        await lessonRepository.save(lesson)
+      }
+      
+      // Update UI state
+      setFormData(prev => ({
+        ...prev,
+        activity: undefined
+      }))
+      
+      alert('Atividade excluída com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir atividade:', error)
+      alert('Falha ao excluir atividade')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -629,6 +672,18 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
                       <CardTitle>Atividade</CardTitle>
+                      <div className="flex gap-2">
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/edit`}>
+                          <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
+                        </Link>
+                        <Button 
+                          className="border text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+                          onClick={handleDeleteActivity}
+                          disabled={isSubmitting}
+                        >
+                          Excluir
+                        </Button>
+                      </div>
                     </div>
                     <CardDescription>
                       Atividade para os alunos realizarem
