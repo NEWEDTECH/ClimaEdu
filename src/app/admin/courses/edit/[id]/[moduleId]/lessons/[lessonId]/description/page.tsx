@@ -14,6 +14,7 @@ import { Register } from '@/_core/shared/container'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
+import { showToast } from '@/components/toast'
 
 export default function LessonDescriptionPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter()
@@ -61,7 +62,9 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching data:', error)
-        setError('Falha ao carregar dados')
+        const errorMessage = 'Falha ao carregar dados'
+        setError(errorMessage)
+        showToast.error(errorMessage)
         setIsLoading(false)
       }
     }
@@ -71,6 +74,9 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
 
   const handleSave = async () => {
     setIsSaving(true)
+    
+    // Show loading toast
+    const loadingToastId = showToast.loading('Salvando descrição...')
     
     try {
       // Use the new UpdateLessonDescriptionUseCase
@@ -83,10 +89,25 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
         description
       })
       
-      router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`)
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Descrição salva com sucesso!',
+        type: 'success'
+      })
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`)
+      }, 1000)
     } catch (error) {
       console.error('Erro ao salvar descrição:', error)
-      alert(`Falha ao salvar descrição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao salvar descrição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error'
+      })
     } finally {
       setIsSaving(false)
     }

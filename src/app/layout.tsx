@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ContainerProvider } from "@/shared/container/ContainerProvider";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ToastProvider } from "@/components/toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,14 +32,16 @@ export default function RootLayout({
       >
         <ContainerProvider>
           <AuthGuard>
-            <main className="min-h-screen">
-              {children}
-            </main>
-            <footer className="bg-white dark:bg-gray-900 border-t py-6">
-              <div className="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                &copy; {new Date().getFullYear()} ClimaEdu. All rights reserved.
-              </div>
-            </footer>
+            <ToastProvider>
+              <main className="min-h-screen">
+                {children}
+              </main>
+              <footer className="bg-white dark:bg-gray-900 border-t py-6">
+                <div className="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                  &copy; {new Date().getFullYear()} ClimaEdu. All rights reserved.
+                </div>
+              </footer>
+            </ToastProvider>
           </AuthGuard>
         </ContainerProvider>
       </body>

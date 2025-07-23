@@ -16,6 +16,7 @@ import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/re
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
+import { showToast } from '@/components/toast'
 
 
 type CourseWithUIProps = {
@@ -73,7 +74,9 @@ export default function CoursesPage() {
         setError(null)
       } catch (err) {
         console.error('Error fetching institutions:', err)
-        setError('Failed to load institutions. Please try again later.')
+        const errorMessage = 'Falha ao carregar instituições. Tente novamente.'
+        setError(errorMessage)
+        showToast.error(errorMessage)
       } finally {
         setLoading(false)
       }
@@ -147,7 +150,9 @@ export default function CoursesPage() {
         setError(null)
       } catch (err) {
         console.error('Error fetching courses:', err)
-        setError('Failed to load courses. Please try again later.')
+        const errorMessage = 'Falha ao carregar cursos. Tente novamente.'
+        setError(errorMessage)
+        showToast.error(errorMessage)
       } finally {
         setLoading(false)
       }

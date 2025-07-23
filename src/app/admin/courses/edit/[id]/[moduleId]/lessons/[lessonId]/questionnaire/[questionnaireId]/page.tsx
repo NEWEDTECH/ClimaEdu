@@ -21,6 +21,7 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { Question } from '@/_core/modules/content/core/entities/Question';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
+import { showToast } from '@/components/toast';
 
 type QuestionFormData = {
   questionText: string;
@@ -127,7 +128,9 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Falha ao carregar dados');
+        const errorMessage = 'Falha ao carregar dados';
+        setError(errorMessage);
+        showToast.error(errorMessage);
         setIsLoading(false);
       }
     };
@@ -144,7 +147,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
 
   const handleRemoveOption = (index: number) => {
     if (questionFormData.options.length <= 2) {
-      alert('Uma pergunta deve ter pelo menos 2 opções');
+      showToast.warning('Uma pergunta deve ter pelo menos 2 opções');
       return;
     }
     
@@ -238,15 +241,17 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     try {
 
       if (!questionFormData.questionText.trim()) {
-        alert('O texto da pergunta não pode estar vazio');
+        showToast.warning('O texto da pergunta não pode estar vazio');
         return;
       }
       
       if (questionFormData.options.some(option => !option.trim())) {
-        alert('Todas as opções devem ser preenchidas');
+        showToast.warning('Todas as opções devem ser preenchidas');
         return;
       }
       
+      // Show loading toast
+      const loadingToastId = showToast.loading('Adicionando pergunta...');
 
       const addQuestionUseCase = container.get<AddQuestionToQuestionnaireUseCase>(
         Register.content.useCase.AddQuestionToQuestionnaireUseCase
@@ -262,10 +267,16 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       
       setQuestions(prev => [...prev, result.question]);
       
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Pergunta adicionada com sucesso!',
+        type: 'success'
+      });
+      
       resetFormData();
     } catch (error) {
       console.error('Erro ao adicionar pergunta:', error);
-      alert(`Falha ao adicionar pergunta: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      showToast.error(`Falha ao adicionar pergunta: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
@@ -278,14 +289,17 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     try {
 
       if (!questionFormData.questionText.trim()) {
-        alert('O texto da pergunta não pode estar vazio');
+        showToast.warning('O texto da pergunta não pode estar vazio');
         return;
       }
       
       if (questionFormData.options.some(option => !option.trim())) {
-        alert('Todas as opções devem ser preenchidas');
+        showToast.warning('Todas as opções devem ser preenchidas');
         return;
       }
+      
+      // Show loading toast
+      const loadingToastId = showToast.loading('Atualizando pergunta...');
       
       const updateQuestionUseCase = container.get<UpdateQuestionUseCase>(
         Register.content.useCase.UpdateQuestionUseCase
@@ -303,10 +317,16 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         prev.map(q => q.id === editingQuestionId ? result.question : q)
       );
       
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Pergunta atualizada com sucesso!',
+        type: 'success'
+      });
+      
       resetFormData();
     } catch (error) {
       console.error('Erro ao atualizar pergunta:', error);
-      alert(`Falha ao atualizar pergunta: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      showToast.error(`Falha ao atualizar pergunta: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
@@ -314,6 +334,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     if (!deletingQuestionId) return;
     
     try {
+      // Show loading toast
+      const loadingToastId = showToast.loading('Excluindo pergunta...');
 
       const deleteQuestionUseCase = container.get<DeleteQuestionUseCase>(
         Register.content.useCase.DeleteQuestionUseCase
@@ -326,11 +348,17 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       
       setQuestions(prev => prev.filter(q => q.id !== deletingQuestionId));
       
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Pergunta excluída com sucesso!',
+        type: 'success'
+      });
+      
       setDeletingQuestionId(null);
       setIsDeletingQuestion(false);
     } catch (error) {
       console.error('Erro ao excluir pergunta:', error);
-      alert(`Falha ao excluir pergunta: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      showToast.error(`Falha ao excluir pergunta: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
@@ -349,6 +377,9 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     try {
       setIsUpdatingQuestionnaire(true);
       
+      // Show loading toast
+      const loadingToastId = showToast.loading('Atualizando questionário...');
+      
       questionnaire.updateTitle(questionnaireFormData.title);
       questionnaire.updateMaxAttempts(questionnaireFormData.maxAttempts);
       questionnaire.updatePassingScore(questionnaireFormData.passingScore);
@@ -363,18 +394,22 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       setQuestionnaire(updatedQuestionnaire);
       setQuestionnaireTitle(updatedQuestionnaire.title);
       
-      setIsUpdatingQuestionnaire(false);
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Informações do questionário atualizadas com sucesso!',
+        type: 'success'
+      });
       
-      alert('Informações do questionário atualizadas com sucesso!');
+      setIsUpdatingQuestionnaire(false);
     } catch (error) {
       console.error('Erro ao atualizar questionário:', error);
-      alert(`Falha ao atualizar questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      showToast.error(`Falha ao atualizar questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       setIsUpdatingQuestionnaire(false);
     }
   };
 
   const handleFinish = () => {
-    router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+    router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
   };
 
   if (isLoading) {

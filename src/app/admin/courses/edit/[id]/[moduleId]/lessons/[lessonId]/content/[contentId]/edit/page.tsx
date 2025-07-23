@@ -16,6 +16,7 @@ import { ContentRepository } from '@/_core/modules/content/infrastructure/reposi
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
+import { showToast } from '@/components/toast'
 
 interface ContentFormData {
   id: string;
@@ -103,7 +104,9 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching content data:', error)
-        setError('Falha ao carregar dados do conteúdo')
+        const errorMessage = 'Falha ao carregar dados do conteúdo'
+        setError(errorMessage)
+        showToast.error(errorMessage)
         setIsLoading(false)
       }
     }
@@ -119,6 +122,9 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    
+    // Show loading toast
+    const loadingToastId = showToast.loading('Atualizando conteúdo...')
     
     try {
 
@@ -141,10 +147,25 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       
       await contentRepository.save(content)
       
-      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Conteúdo atualizado com sucesso!',
+        type: 'success'
+      })
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
+      }, 1000)
     } catch (error) {
       console.error('Erro ao atualizar conteúdo:', error)
-      alert(`Falha ao atualizar conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao atualizar conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -152,6 +173,9 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
 
   const handleDelete = async () => {
     setIsDeleting(true)
+    
+    // Show loading toast
+    const loadingToastId = showToast.loading('Excluindo conteúdo...')
     
     try {
 
@@ -179,10 +203,25 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       
       await lessonRepository.save(lesson)
       
-      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Conteúdo excluído com sucesso!',
+        type: 'success'
+      })
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
+      }, 1000)
     } catch (error) {
       console.error('Erro ao excluir conteúdo:', error)
-      alert(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error'
+      })
     } finally {
       setIsDeleting(false)
       setShowDeleteConfirm(false)
