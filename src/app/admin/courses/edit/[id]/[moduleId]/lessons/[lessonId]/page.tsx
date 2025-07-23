@@ -16,6 +16,7 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository'
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository'
+import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 
 type LessonFormData = {
@@ -71,6 +72,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     contents: []
   })
   
+  const [lessonDescription, setLessonDescription] = useState<string>('')
   const [moduleName, setModuleName] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -186,6 +188,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           activity: activityData,
           questionnaire: questionnaireData
         })
+        
+        // Set lesson description
+        setLessonDescription(lesson.description || '')
         
         setIsLoading(false)
       } catch (error) {
@@ -525,6 +530,94 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Description Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Descrição da Lição</CardTitle>
+                    <div className="flex gap-2">
+                      {lessonDescription ? (
+                        <>
+                          <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/description`}>
+                            <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
+                          </Link>
+                          <Button 
+                            className="border text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+                            onClick={async () => {
+                              if (!confirm('Tem certeza que deseja excluir a descrição desta lição?')) {
+                                return;
+                              }
+                              
+                              try {
+                                const updateLessonDescriptionUseCase = container.get<UpdateLessonDescriptionUseCase>(
+                                  Register.content.useCase.UpdateLessonDescriptionUseCase
+                                );
+                                
+                                await updateLessonDescriptionUseCase.execute({
+                                  lessonId,
+                                  description: ''
+                                });
+                                
+                                setLessonDescription('');
+                                alert('Descrição excluída com sucesso!');
+                              } catch (error) {
+                                console.error('Erro ao excluir descrição:', error);
+                                alert('Falha ao excluir descrição');
+                              }
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            Excluir
+                          </Button>
+                        </>
+                      ) : (
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/description`}>
+                          <Button className="text-xs px-3 py-1">Adicionar Descrição</Button>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                  <CardDescription>
+                    Descrição detalhada da lição para os estudantes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {lessonDescription ? (
+                    <div className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div className="flex items-start">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-indigo-500">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium mb-2">Descrição da Lição</h3>
+                          <div 
+                            className="prose prose-sm max-w-none text-gray-600 dark:text-gray-400"
+                            dangerouslySetInnerHTML={{ __html: lessonDescription }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      Esta lição ainda não possui uma descrição. Adicione uma descrição para fornecer mais contexto aos estudantes.
                     </div>
                   )}
                 </CardContent>
