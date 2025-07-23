@@ -13,6 +13,7 @@ import { Course } from '@/_core/modules/content/core/entities/Course';
 import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-trails/list-trails.use-case';
 import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case';
 import { LoadingSpinner } from '@/components/loader'
+import { SearchComponent } from '@/components/search'
 
 
 type CourseDisplayData = {
@@ -190,12 +191,19 @@ export default function Home() {
         < LoadingSpinner />
       ) : (
         <div className="grid gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="flex items-center justify-center text-2xl font-semibold mb-4">Bem-vindo à Plataforma ClimaEdu EAD</h2>
-            {error && (
-              <p className="text-red-500 text-center">{error}</p>
-            )}
-          </div>
+          
+            <div className="text-center mb-6">
+              {error && (
+                <p className="text-red-500 text-center mt-2">{error}</p>
+              )}
+            </div>
+            
+            <SearchComponent 
+              placeholder="Buscar cursos, trilhas ou podcasts..."
+              className="w-full"
+              showFilters={true}
+            />
+
 
           <ContentCarousel
             items={enrolledTrails}
