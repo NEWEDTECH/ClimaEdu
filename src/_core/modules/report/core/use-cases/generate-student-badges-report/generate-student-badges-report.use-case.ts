@@ -7,7 +7,7 @@ import type { UserRepository } from '../../../../user/infrastructure/repositorie
 import type { EnrollmentRepository } from '../../../../enrollment/infrastructure/repositories/EnrollmentRepository';
 import type { QuestionnaireSubmissionRepository } from '../../../../content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { LessonProgressRepository } from '../../../../content/infrastructure/repositories/LessonProgressRepository';
-import type { CertificateRepository } from '../../../../certificate/infrastructure/repositories/CertificateRepository';
+// import type { CertificateRepository } from '../../../../certificate/infrastructure/repositories/CertificateRepository';
 import { Register } from '../../../../../shared/container/symbols';
 import { Badge } from '../../../../badge/core/entities/Badge';
 import { StudentBadge } from '../../../../badge/core/entities/StudentBadge';
@@ -37,10 +37,10 @@ export class GenerateStudentBadgesReportUseCase {
     private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
     
     @inject(Register.content.repository.LessonProgressRepository)
-    private readonly lessonProgressRepository: LessonProgressRepository,
+    private readonly lessonProgressRepository: LessonProgressRepository
     
-    @inject(Register.certificate.repository.CertificateRepository)
-    private readonly certificateRepository: CertificateRepository
+    // @inject(Register.certificate.repository.CertificateRepository)
+    // private readonly certificateRepository: CertificateRepository
   ) {}
 
   async execute(input: GenerateStudentBadgesReportInput): Promise<GenerateStudentBadgesReportOutput> {
@@ -434,9 +434,10 @@ export class GenerateStudentBadgesReportUseCase {
         return completedLessons.length;
 
       case BadgeCriteriaType.CERTIFICATE_ACHIEVED:
-        const certificates = await this.certificateRepository.listByUser(userId);
-        const institutionCertificates = certificates.filter(c => c.institutionId === institutionId);
-        return institutionCertificates.length;
+        // const certificates = await this.certificateRepository.listByUser(userId);
+        // const institutionCertificates = certificates.filter(c => c.institutionId === institutionId);
+        // return institutionCertificates.length;
+        return 0; // Returning 0 as CertificateRepository is not implemented
 
       case BadgeCriteriaType.DAILY_LOGIN:
         // For daily login, we would need login tracking data

@@ -4,14 +4,11 @@ import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AssessmentPerformanceReport } from '@/components/reports/student/AssessmentPerformanceReport';
-
-// Placeholder components for other report tabs
-const CourseProgressReport = () => <Card><CardHeader><CardTitle>Progresso nos Cursos</CardTitle><CardDescription>Seu avanço em cada curso.</CardDescription></CardHeader><CardContent><p>Em breve.</p></CardContent></Card>;
-const BadgesReport = () => <Card><CardHeader><CardTitle>Badges e Conquistas</CardTitle><CardDescription>Suas medalhas e reconhecimentos.</CardDescription></CardHeader><CardContent><p>Em breve.</p></CardContent></Card>;
-const CertificatesReport = () => <Card><CardHeader><CardTitle>Certificados</CardTitle><CardDescription>Seus certificados obtidos e em andamento.</CardDescription></CardHeader><CardContent><p>Em breve.</p></CardContent></Card>;
-const StudyHabitsReport = () => <Card><CardHeader><CardTitle>Hábitos de Estudo</CardTitle><CardDescription>Análise dos seus padrões de estudo.</CardDescription></CardHeader><CardContent><p>Em breve.</p></CardContent></Card>;
+import { CourseProgressReport } from '@/components/reports/student/CourseProgressReport';
+import { BadgesReport } from '@/components/reports/student/BadgesReport';
+import { CertificatesReport } from '@/components/reports/student/CertificatesReport';
+import { StudyHabitsReport } from '@/components/reports/student/StudyHabitsReport';
 
 export default function StudentReports() {
   return (
