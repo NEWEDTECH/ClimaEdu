@@ -18,6 +18,9 @@ import { Question } from '@/_core/modules/content/core/entities/Question';
 import { QuestionSubmission } from '@/_core/modules/content/core/entities/QuestionSubmission';
 import { QuestionnaireSubmission } from '@/_core/modules/content';
 import { Class } from '@/_core/modules/enrollment/core/entities/Class';
+import { Content } from '@/_core/modules/content/core/entities/Content';
+import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
+import { LessonProgress } from '@/_core/modules/content/core/entities/LessonProgress';
 
 // --- Configuração ---
 const NUM_LOCAL_ADMINS = 1;
@@ -36,10 +39,12 @@ const C = {
   COURSES: 'courses',
   COURSE_TUTORS: 'course_tutors',
   MODULES: 'modules',
+  LESSONS: 'lessons',
+  CONTENTS: 'contents',
   QUESTIONNAIRES: 'questionnaires',
   ENROLLMENTS: 'enrollments',
-  LESSON_PROGRESS: 'lessonProgress',
-  QUESTIONNAIRE_SUBMISSIONS: 'questionnaireSubmissions',
+  LESSON_PROGRESS: 'lesson_progresses',
+  QUESTIONNAIRE_SUBMISSIONS: 'questionnaire_submissions',
   CERTIFICATES: 'certificates',
   CLASSES: 'classes',
 };
@@ -155,7 +160,7 @@ const createClasses = async (courses: Course[], institutionId: string): Promise<
 };
 
 const createModulesAndLessons = async (courses: Course[]) => {
-  console.log('Criando módulos e lições com questionários...');
+  console.log('Criando módulos, lições, conteúdos e questionários...');
   let batch = firestore.batch();
   let operationCount = 0;
 
@@ -170,18 +175,37 @@ const createModulesAndLessons = async (courses: Course[]) => {
       for (let j = 0; j < numLessons; j++) {
         const lessonId = `les_${faker.string.uuid()}`;
         const lesson = Lesson.create({ id: lessonId, moduleId: courseModule.id, title: faker.lorem.sentence(5), order: j });
-        lessons.push({ id: lesson.id, title: lesson.title, order: lesson.order });
+        
+        const contentVideo = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.VIDEO, title: 'Vídeo Aula', url: faker.internet.url() });
+        const contentPdf = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.PDF, title: 'Material de Apoio', url: faker.internet.url() });
+        
+        batch.set(firestore.collection(C.CONTENTS).doc(contentVideo.id), { ...contentVideo });
+        batch.set(firestore.collection(C.CONTENTS).doc(contentPdf.id), { ...contentPdf });
+        operationCount += 2;
+        
+        lesson.addContent(contentVideo);
+        lesson.addContent(contentPdf);
+        
+        const lessonPlain: { [key: string]: unknown } = {
+          id: lesson.id,
+          moduleId: lesson.moduleId,
+          title: lesson.title,
+          description: lesson.description,
+          coverImageUrl: lesson.coverImageUrl,
+          order: lesson.order,
+          contents: lesson.contents.map((c: Content) => ({ ...c })),
+        };
+        if (lesson.activity) lessonPlain.activity = lesson.activity;
+        if (lesson.questionnaire) lessonPlain.questionnaire = lesson.questionnaire;
+        lessons.push(lessonPlain);
 
-        for (let k = 0; k < 5; k++) {
+        for (let k = 0; k < 2; k++) {
           const questionnaireId = `qt_${faker.string.uuid()}`;
-          const questions = Array.from({ length: 5 }, () => {
-            const questionId = `q_${faker.string.uuid()}`;
-            return Question.create({
-              id: questionId, questionText: faker.lorem.sentence() + '?',
-              options: [faker.lorem.word(), faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
-              correctAnswerIndex: randomInt(0, 3),
-            });
-          });
+          const questions = Array.from({ length: 5 }, () => Question.create({
+            id: `q_${faker.string.uuid()}`, questionText: faker.lorem.sentence() + '?',
+            options: [faker.lorem.word(), faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
+            correctAnswerIndex: randomInt(0, 3),
+          }));
           const questionnaire = Questionnaire.create({ id: questionnaireId, lessonId, title: `Questionário ${k + 1}`, questions });
           const questionnairePlain = {
             id: questionnaire.id, lessonId: questionnaire.lessonId, title: questionnaire.title,
@@ -190,8 +214,7 @@ const createModulesAndLessons = async (courses: Course[]) => {
               id: q.id, questionText: q.questionText, options: q.options, correctAnswerIndex: q.correctAnswerIndex,
             })),
           };
-          const questionnaireRef = firestore.collection(C.QUESTIONNAIRES).doc(questionnaire.id);
-          batch.set(questionnaireRef, questionnairePlain);
+          batch.set(firestore.collection(C.QUESTIONNAIRES).doc(questionnaire.id), questionnairePlain);
           operationCount++;
         }
       }
@@ -203,7 +226,7 @@ const createModulesAndLessons = async (courses: Course[]) => {
     const courseRef = firestore.collection(C.COURSES).doc(course.id);
     batch.update(courseRef, { modules: courseModules });
     operationCount++;
-    console.log(`- ${numModules} módulos e suas lições/questionários criados para o curso "${course.title}"`);
+    console.log(`- ${numModules} módulos e suas lições criados para o curso "${course.title}"`);
 
     if (operationCount > BATCH_LIMIT - 100) {
       await batch.commit();
@@ -257,7 +280,7 @@ const enrollStudents = async (students: User[], courses: Course[], institutionId
 };
 
 const simulateProgress = async (enrollments: Enrollment[]) => {
-  console.log('Simulando progresso e respostas de questionários...');
+  console.log('Simulando progresso...');
   let batch = firestore.batch();
   let operationCount = 0;
 
@@ -273,12 +296,40 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
       for (const lesson of lessons) {
         const shouldCompleteLesson = shouldCompleteCourse || Math.random() > 0.3;
         if (shouldCompleteLesson) {
-          const progressRef = firestore.collection(C.LESSON_PROGRESS).doc();
-          batch.set(progressRef, {
-            userId: enrollment.userId, lessonId: lesson.id, courseId: enrollment.courseId,
-            moduleId: moduleDoc.id, institutionId: enrollment.institutionId, status: 'COMPLETED',
-            completedAt: faker.date.past({ years: 1 }),
+          const contentIds = lesson.contents?.map((c: { id: string }) => c.id) || [];
+          if (contentIds.length === 0) {
+            console.warn(`Lição ${lesson.id} sem conteúdo, pulando progresso.`);
+            continue;
+          }
+
+          const lessonProgress = LessonProgress.create({
+            userId: enrollment.userId, lessonId: lesson.id, institutionId: enrollment.institutionId,
+            contentIds,
           });
+          lessonProgress.forceComplete();
+          
+          const progressPlain = {
+            id: lessonProgress.id,
+            userId: lessonProgress.userId,
+            lessonId: lessonProgress.lessonId,
+            institutionId: lessonProgress.institutionId,
+            status: lessonProgress.status,
+            startedAt: lessonProgress.startedAt,
+            completedAt: lessonProgress.completedAt,
+            lastAccessedAt: lessonProgress.lastAccessedAt,
+            updatedAt: lessonProgress.updatedAt,
+            contentProgresses: lessonProgress.contentProgresses.map(cp => ({
+              contentId: cp.contentId,
+              status: cp.status,
+              progressPercentage: cp.progressPercentage,
+              startedAt: cp.startedAt,
+              completedAt: cp.completedAt,
+              timeSpent: cp.timeSpent,
+              lastPosition: cp.lastPosition,
+            })),
+          };
+          const progressRef = firestore.collection(C.LESSON_PROGRESS).doc(lessonProgress.id);
+          batch.set(progressRef, progressPlain);
           operationCount++;
           totalLessonsCompleted++;
 

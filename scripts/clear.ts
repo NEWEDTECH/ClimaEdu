@@ -70,11 +70,15 @@ const clear = async () => {
     'courses',
     'course_tutors',
     'enrollments',
-    'lessonProgress',
+    'lesson_progresses',
     'questionnaires',
-    'questionnaireSubmissions',
+    'questionnaire_submissions',
     'certificates',
-    'userInstitutions',
+    'user_institutions',
+    'classes',
+    'modules',
+    'activities',
+    'contents',
   ];
 
   // Deleta todas as coleções do Firestore
