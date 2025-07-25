@@ -11,8 +11,8 @@ import { GenerateStudentStudyHabitsReportUseCase } from '@/_core/modules/report/
 // Tutor Reports
 import { GenerateClassAssessmentPerformanceReportUseCase } from '@/_core/modules/report/core/use-cases/generate-class-assessment-performance-report';
 import { GenerateClassOverviewReportUseCase } from '@/_core/modules/report/core/use-cases/generate-class-overview-report';
-// import { GenerateIndividualStudentReportUseCase } from '@/_core/modules/report/core/use-cases/generate-individual-student-report';
-// import { GenerateEngagementRetentionReportUseCase } from '@/_core/modules/report/core/use-cases/generate-engagement-retention-report';
+import { GenerateIndividualStudentReportUseCase } from '@/_core/modules/report/core/use-cases/generate-individual-student-report';
+import { GenerateEngagementRetentionReportUseCase } from '@/_core/modules/report/core/use-cases/generate-engagement-retention-report';
 
 // Institution Reports
 import { GenerateCourseDashboardReportUseCase } from '@/_core/modules/report/core/use-cases/generate-course-dashboard-report';
@@ -35,8 +35,8 @@ export function registerReportModule(container: Container): void {
   // Tutor Reports
   container.bind(ReportSymbols.useCases.GenerateClassAssessmentPerformanceReportUseCase).to(GenerateClassAssessmentPerformanceReportUseCase);
   container.bind(ReportSymbols.useCases.GenerateClassOverviewReportUseCase).to(GenerateClassOverviewReportUseCase);
-  // container.bind(ReportSymbols.useCases.GenerateIndividualStudentTrackingReportUseCase).to(GenerateIndividualStudentReportUseCase); // Symbol name mismatch
-  // container.bind(ReportSymbols.useCases.GenerateStudentEngagementRetentionReportUseCase).to(GenerateEngagementRetentionReportUseCase); // Symbol name mismatch
+  container.bind(ReportSymbols.useCases.GenerateIndividualStudentTrackingReportUseCase).to(GenerateIndividualStudentReportUseCase);
+  container.bind(ReportSymbols.useCases.GenerateStudentEngagementRetentionReportUseCase).to(GenerateEngagementRetentionReportUseCase);
 
   // Institution Reports
   container.bind(ReportSymbols.useCases.GenerateCourseDashboardReportUseCase).to(GenerateCourseDashboardReportUseCase);

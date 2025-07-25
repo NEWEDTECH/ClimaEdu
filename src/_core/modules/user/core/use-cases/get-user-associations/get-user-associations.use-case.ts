@@ -74,8 +74,6 @@ export class GetUserAssociationsUseCase {
 
     const output = institutions.filter(institution => !!institution)
 
-    console.log({output})
-
     return output
 
   }

@@ -17,14 +17,32 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Question } from '@/_core/modules/content/core/entities/Question';
 import { QuestionSubmission } from '@/_core/modules/content/core/entities/QuestionSubmission';
 import { QuestionnaireSubmission } from '@/_core/modules/content';
+import { Class } from '@/_core/modules/enrollment/core/entities/Class';
 
 // --- Configuração ---
 const NUM_LOCAL_ADMINS = 1;
-const NUM_TUTORS = 5;
+const NUM_TUTORS = 2;
 const NUM_STUDENTS = 20;
-const NUM_COURSES = 10;
+const NUM_COURSES = 3;
+const CLASSES_PER_COURSE = 2;
 const INSTITUTION_NAME = 'ClimaEdu Tech';
 const BATCH_LIMIT = 499;
+
+// --- Nomes das Coleções ---
+const C = {
+  INSTITUTIONS: 'institutions',
+  USERS: 'users',
+  USER_INSTITUTIONS: 'user_institutions',
+  COURSES: 'courses',
+  COURSE_TUTORS: 'course_tutors',
+  MODULES: 'modules',
+  QUESTIONNAIRES: 'questionnaires',
+  ENROLLMENTS: 'enrollments',
+  LESSON_PROGRESS: 'lessonProgress',
+  QUESTIONNAIRE_SUBMISSIONS: 'questionnaireSubmissions',
+  CERTIFICATES: 'certificates',
+  CLASSES: 'classes',
+};
 
 // --- Conexão com Firebase ---
 initializeFirebaseAdmin();
@@ -39,12 +57,10 @@ const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max 
 const createInstitution = async () => {
   console.log('Criando instituição...');
   const institutionId = `inst_${faker.string.uuid()}`;
-  const institutionRef = firestore.collection('institutions').doc(institutionId);
+  const institutionRef = firestore.collection(C.INSTITUTIONS).doc(institutionId);
   await institutionRef.set({
-    id: institutionId,
-    name: INSTITUTION_NAME,
-    domain: faker.internet.domainName().toLowerCase(),
-    createdAt: new Date(),
+    id: institutionId, name: INSTITUTION_NAME,
+    domain: faker.internet.domainName().toLowerCase(), createdAt: new Date(),
   });
   console.log(`Instituição "${INSTITUTION_NAME}" criada com ID: ${institutionId}`);
   return institutionId;
@@ -65,7 +81,7 @@ const createUsers = async (institutionId: string, role: UserRole, count: number)
         createdAt: user.createdAt, updatedAt: user.updatedAt, currentInstitutionId: institutionId,
       };
       if (user.profile) userPlain.profile = user.profile;
-      await firestore.collection('users').doc(user.id).set(userPlain);
+      await firestore.collection(C.USERS).doc(user.id).set(userPlain);
 
       if (role !== UserRole.STUDENT) {
         const userInstitution = UserInstitution.create({
@@ -75,7 +91,7 @@ const createUsers = async (institutionId: string, role: UserRole, count: number)
           id: userInstitution.id, userId: userInstitution.userId, institutionId: userInstitution.institutionId,
           userRole: userInstitution.userRole, createdAt: userInstitution.createdAt, updatedAt: userInstitution.updatedAt,
         };
-        await firestore.collection('user_institutions').doc(userInstPlain.id).set(userInstPlain);
+        await firestore.collection(C.USER_INSTITUTIONS).doc(userInstPlain.id).set(userInstPlain);
       }
       users.push(user);
       console.log(`- Usuário criado: ${name} (${emailString})`);
@@ -100,13 +116,42 @@ const createCourses = async (institutionId: string, tutors: User[]): Promise<Cou
       description: course.description, coverImageUrl: course.coverImageUrl,
       modules: [], createdAt: course.createdAt, updatedAt: course.updatedAt,
     };
-    await firestore.collection('courses').doc(course.id).set(coursePlain);
+    await firestore.collection(C.COURSES).doc(course.id).set(coursePlain);
     const tutor = tutors[i % tutors.length];
-    await firestore.collection('course_tutors').add({ courseId: course.id, tutorId: tutor.id, institutionId });
+    await firestore.collection(C.COURSE_TUTORS).add({ courseId: course.id, userId: tutor.id, institutionId });
     courses.push(course);
     console.log(`- Curso criado: "${course.title}" (Tutor: ${tutor.name})`);
   }
   return courses;
+};
+
+const createClasses = async (courses: Course[], institutionId: string): Promise<Map<string, Class[]>> => {
+  console.log('Criando classes para os cursos...');
+  const courseClassesMap = new Map<string, Class[]>();
+  const batch = firestore.batch();
+
+  for (const course of courses) {
+    const classes: Class[] = [];
+    for (let i = 0; i < CLASSES_PER_COURSE; i++) {
+      const classEntity = Class.create({
+        institutionId,
+        name: `${course.title} - Turma ${i + 1}`,
+        courseId: course.id,
+        enrollmentIds: [],
+      });
+      classes.push(classEntity);
+      const classRef = firestore.collection(C.CLASSES).doc(classEntity.id);
+      batch.set(classRef, {
+        id: classEntity.id, institutionId: classEntity.institutionId, name: classEntity.name,
+        courseId: classEntity.courseId, trailId: classEntity.trailId, enrollmentIds: classEntity.enrollmentIds,
+        createdAt: classEntity.createdAt, updatedAt: classEntity.updatedAt,
+      });
+    }
+    courseClassesMap.set(course.id, classes);
+    console.log(`- ${CLASSES_PER_COURSE} classes criadas para o curso "${course.title}"`);
+  }
+  await batch.commit();
+  return courseClassesMap;
 };
 
 const createModulesAndLessons = async (courses: Course[]) => {
@@ -145,17 +190,17 @@ const createModulesAndLessons = async (courses: Course[]) => {
               id: q.id, questionText: q.questionText, options: q.options, correctAnswerIndex: q.correctAnswerIndex,
             })),
           };
-          const questionnaireRef = firestore.collection('questionnaires').doc(questionnaire.id);
+          const questionnaireRef = firestore.collection(C.QUESTIONNAIRES).doc(questionnaire.id);
           batch.set(questionnaireRef, questionnairePlain);
           operationCount++;
         }
       }
-      const moduleRef = firestore.collection('courses').doc(course.id).collection('modules').doc(courseModule.id);
+      const moduleRef = firestore.collection(C.COURSES).doc(course.id).collection(C.MODULES).doc(courseModule.id);
       batch.set(moduleRef, { id: courseModule.id, title: courseModule.title, order: courseModule.order, lessons });
       operationCount++;
       courseModules.push({ id: courseModule.id, title: courseModule.title, order: courseModule.order });
     }
-    const courseRef = firestore.collection('courses').doc(course.id);
+    const courseRef = firestore.collection(C.COURSES).doc(course.id);
     batch.update(courseRef, { modules: courseModules });
     operationCount++;
     console.log(`- ${numModules} módulos e suas lições/questionários criados para o curso "${course.title}"`);
@@ -172,12 +217,14 @@ const createModulesAndLessons = async (courses: Course[]) => {
   }
 };
 
-const enrollStudents = async (students: User[], courses: Course[], institutionId: string): Promise<Enrollment[]> => {
-  console.log('Matriculando estudantes...');
+const enrollStudents = async (students: User[], courses: Course[], institutionId: string, courseClassesMap: Map<string, Class[]>) => {
+  console.log('Matriculando estudantes e associando a classes...');
   const enrollments: Enrollment[] = [];
   const batch = firestore.batch();
+  let operationCount = 0;
+
   for (const student of students) {
-    const numEnrollments = randomInt(1, 5);
+    const numEnrollments = randomInt(1, Math.min(courses.length, 3));
     const coursesToEnroll = faker.helpers.shuffle(courses).slice(0, numEnrollments);
     for (const course of coursesToEnroll) {
       const enrollment = Enrollment.create({ userId: student.id, courseId: course.id, institutionId });
@@ -186,14 +233,26 @@ const enrollStudents = async (students: User[], courses: Course[], institutionId
         institutionId: enrollment.institutionId, status: enrollment.status,
         enrolledAt: enrollment.enrolledAt,
       };
-      if (enrollment.completedAt) enrollmentPlain.completedAt = enrollment.completedAt;
-      const enrollmentRef = firestore.collection('enrollments').doc(enrollment.id);
+      if (enrollment.completedAt) {
+        enrollmentPlain.completedAt = enrollment.completedAt;
+      }
+      const enrollmentRef = firestore.collection(C.ENROLLMENTS).doc(enrollment.id);
       batch.set(enrollmentRef, enrollmentPlain);
+      operationCount++;
       enrollments.push(enrollment);
+
+      const classesForCourse = courseClassesMap.get(course.id);
+      if (classesForCourse && classesForCourse.length > 0) {
+        const randomClass = classesForCourse[randomInt(0, classesForCourse.length - 1)];
+        randomClass.addEnrollment(enrollment.id);
+        const classRef = firestore.collection(C.CLASSES).doc(randomClass.id);
+        batch.update(classRef, { enrollmentIds: randomClass.enrollmentIds });
+        operationCount++;
+      }
     }
     console.log(`- Estudante "${student.name}" matriculado em ${numEnrollments} cursos.`);
   }
-  await batch.commit();
+  if (operationCount > 0) await batch.commit();
   return enrollments;
 };
 
@@ -203,8 +262,8 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
   let operationCount = 0;
 
   for (const enrollment of enrollments) {
-    const courseRef = firestore.collection('courses').doc(enrollment.courseId);
-    const modulesSnap = await courseRef.collection('modules').get();
+    const courseRef = firestore.collection(C.COURSES).doc(enrollment.courseId);
+    const modulesSnap = await courseRef.collection(C.MODULES).get();
     if (modulesSnap.empty) continue;
     let totalLessonsCompleted = 0;
     const shouldCompleteCourse = Math.random() > 0.5;
@@ -214,7 +273,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
       for (const lesson of lessons) {
         const shouldCompleteLesson = shouldCompleteCourse || Math.random() > 0.3;
         if (shouldCompleteLesson) {
-          const progressRef = firestore.collection('lessonProgress').doc();
+          const progressRef = firestore.collection(C.LESSON_PROGRESS).doc();
           batch.set(progressRef, {
             userId: enrollment.userId, lessonId: lesson.id, courseId: enrollment.courseId,
             moduleId: moduleDoc.id, institutionId: enrollment.institutionId, status: 'COMPLETED',
@@ -223,7 +282,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
           operationCount++;
           totalLessonsCompleted++;
 
-          const questionnairesSnap = await firestore.collection('questionnaires').where('lessonId', '==', lesson.id).get();
+          const questionnairesSnap = await firestore.collection(C.QUESTIONNAIRES).where('lessonId', '==', lesson.id).get();
           for (const qDoc of questionnairesSnap.docs) {
             const questionnaire = qDoc.data() as Questionnaire;
             const questions = questionnaire.questions.map((q: {id: string, correctAnswerIndex: number, options: unknown[]}) => {
@@ -248,7 +307,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
                 id: q.id, questionId: q.questionId, selectedOptionIndex: q.selectedOptionIndex, isCorrect: q.isCorrect,
               })),
             };
-            const subRef = firestore.collection('questionnaireSubmissions').doc(submission.id);
+            const subRef = firestore.collection(C.QUESTIONNAIRE_SUBMISSIONS).doc(submission.id);
             batch.set(subRef, submissionPlain);
             operationCount++;
           }
@@ -256,7 +315,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
       }
     }
     if (shouldCompleteCourse && totalLessonsCompleted > 0) {
-      const enrollmentRef = firestore.collection('enrollments').doc(enrollment.id);
+      const enrollmentRef = firestore.collection(C.ENROLLMENTS).doc(enrollment.id);
       batch.update(enrollmentRef, { status: EnrollmentStatus.COMPLETED, completedAt: new Date() });
       operationCount++;
 
@@ -265,7 +324,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
         institutionId: enrollment.institutionId, certificateUrl: faker.internet.url(),
       });
       const { ...certPlain } = certificate;
-      const certRef = firestore.collection('certificates').doc(certificate.id);
+      const certRef = firestore.collection(C.CERTIFICATES).doc(certificate.id);
       batch.set(certRef, { ...certPlain });
       operationCount++;
     }
@@ -293,8 +352,9 @@ const seed = async () => {
     const tutors = await createUsers(institutionId, UserRole.TUTOR, NUM_TUTORS);
     const students = await createUsers(institutionId, UserRole.STUDENT, NUM_STUDENTS);
     const courses = await createCourses(institutionId, tutors);
+    const courseClassesMap = await createClasses(courses, institutionId);
     await createModulesAndLessons(courses);
-    const enrollments = await enrollStudents(students, courses, institutionId);
+    const enrollments = await enrollStudents(students, courses, institutionId, courseClassesMap);
     await simulateProgress(enrollments);
 
     console.log('\n--- Seeding concluído com sucesso! ---');
