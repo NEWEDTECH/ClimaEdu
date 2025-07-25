@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "emulators": "tsc --watch & firebase emulators:start --import=./firebasedata --export-on-exit",
-    "dev:emulators": "concurrently \"npm run emulators\" \"npm run dev\""
+    "dev:emulators": "concurrently \"npm run emulators\" \"npm run dev\"",
+    "db:seed": "NODE_ENV=development ts-node --require tsconfig-paths/register --compiler-options '{\"module\": \"CommonJS\"}' scripts/seed.ts",
+    "db:clear": "NODE_ENV=development ts-node --require tsconfig-paths/register --compiler-options '{\"module\": \"CommonJS\"}' scripts/clear.ts"
   },
   "dependencies": {
     "@casl/ability": "^6.7.3",
@@ -46,14 +48,18 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@faker-js/faker": "^9.9.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^8.2.2",
+    "dotenv": "^17.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5"
   }
 }
