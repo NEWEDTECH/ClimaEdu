@@ -19,6 +19,7 @@ import type { QuestionnaireSubmissionRepository } from '../../../../content/infr
 import type { QuestionnaireRepository } from '../../../../content/infrastructure/repositories/QuestionnaireRepository';
 import { User } from '../../../../user/core/entities/User';
 import { LessonProgress } from '../../../../content/core/entities/LessonProgress';
+import { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
 import { Enrollment, EnrollmentStatus } from '../../../../enrollment/core/entities';
 import { Course } from '../../../../content/core/entities/Course';
 import { Register } from '../../../../../shared/container/symbols';
@@ -86,8 +87,10 @@ export class GenerateIndividualStudentReportUseCase {
       ? await this.buildProgressDetails(input, filteredProgresses)
       : undefined;
 
+    const enrollments = await this.enrollmentRepository.listByUser(input.studentId);
+
     const assessmentPerformance = input.includeAssessments 
-      ? await this.buildAssessmentPerformance(input.studentId, input.institutionId)
+      ? await this.buildAssessmentPerformance(input.studentId, input.institutionId, enrollments)
       : undefined;
 
     const engagementMetrics = input.includeEngagement 
@@ -304,7 +307,28 @@ export class GenerateIndividualStudentReportUseCase {
     });
   }
 
-  private async buildAssessmentPerformance(studentId: string, institutionId: string): Promise<AssessmentPerformance> {
+  private async buildAssessmentPerformance(
+    studentId: string,
+    institutionId: string,
+    enrollments: Enrollment[]
+  ): Promise<AssessmentPerformance> {
+    const relevantEnrollments = enrollments.filter(e => e.institutionId === institutionId);
+    const courseIds = relevantEnrollments.map(e => e.courseId);
+    
+    let totalAssessments = 0;
+    for (const courseId of courseIds) {
+      const course = await this.courseRepository.findById(courseId);
+      if (course) {
+        for (const courseModule of course.modules) {
+          for (const lesson of courseModule.lessons) {
+            if (lesson.questionnaire) {
+              totalAssessments++;
+            }
+          }
+        }
+      }
+    }
+
     const submissions = await this.questionnaireSubmissionRepository.listByUser(studentId);
     const institutionSubmissions = submissions.filter(s => s.institutionId === institutionId);
 
@@ -328,6 +352,8 @@ export class GenerateIndividualStudentReportUseCase {
     const assessmentDetails = await Promise.all(
       institutionSubmissions.map(async s => {
         const questionnaire = await this.questionnaireRepository.findById(s.questionnaireId);
+        const attempts = institutionSubmissions.filter(sub => sub.questionnaireId === s.questionnaireId).length;
+        
         return {
           assessmentId: s.questionnaireId,
           assessmentName: questionnaire?.title ?? `Questionário ${s.questionnaireId}`,
@@ -335,8 +361,7 @@ export class GenerateIndividualStudentReportUseCase {
           // TODO: Calculate maxScore based on the sum of points of each question
           maxScore: 100, // Simplified
           completedAt: s.completedAt,
-          // TODO: Implement logic to count attempts for the same questionnaire
-          attempts: 1, // Simplified
+          attempts,
           // TODO: This should be calculated based on submission start and end times
           timeSpent: 0, // Simplified
           // TODO: Difficulty should be a property of the Questionnaire entity
@@ -345,21 +370,67 @@ export class GenerateIndividualStudentReportUseCase {
       })
     );
 
+    const trend = this.calculateImprovementTrend(institutionSubmissions);
+
     return {
-      // TODO: This should be calculated based on all available assessments in the course
-      totalAssessments: new Set(institutionSubmissions.map(s => s.questionnaireId)).size,
+      totalAssessments,
       completedAssessments: institutionSubmissions.length,
       averageScore: Math.round(averageScore),
       highestScore: Math.max(...scores),
       lowestScore: Math.min(...scores),
-      // TODO: Implement trend analysis based on submission dates and scores
-      improvementTrend: 'stable', // Simplified
+      improvementTrend: trend,
       assessmentDetails,
       // TODO: Implement analysis of question categories to identify strengths
       strengthAreas: [], // Simplified
       // TODO: Implement analysis of question categories to identify weaknesses
       weaknessAreas: [] // Simplified
     };
+  }
+
+  private calculateImprovementTrend(
+    submissions: QuestionnaireSubmission[]
+  ): 'improving' | 'stable' | 'declining' {
+    if (submissions.length < 2) {
+      return 'stable';
+    }
+
+    // Group submissions by questionnaire
+    const submissionsByQuestionnaire = submissions.reduce((acc, sub) => {
+      if (!acc[sub.questionnaireId]) {
+        acc[sub.questionnaireId] = [];
+      }
+      acc[sub.questionnaireId].push(sub);
+      return acc;
+    }, {} as Record<string, QuestionnaireSubmission[]>);
+
+    let trendScore = 0;
+    let comparableAssessments = 0;
+
+    for (const questionnaireId in submissionsByQuestionnaire) {
+      const subs = submissionsByQuestionnaire[questionnaireId];
+      if (subs.length > 1) {
+        subs.sort((a, b) => a.completedAt.getTime() - b.completedAt.getTime());
+        const firstScore = subs[0].score;
+        const lastScore = subs[subs.length - 1].score;
+
+        if (lastScore > firstScore) {
+          trendScore++;
+        } else if (lastScore < firstScore) {
+          trendScore--;
+        }
+        comparableAssessments++;
+      }
+    }
+
+    if (comparableAssessments === 0) {
+      return 'stable';
+    }
+
+    const averageTrend = trendScore / comparableAssessments;
+
+    if (averageTrend > 0.1) return 'improving';
+    if (averageTrend < -0.1) return 'declining';
+    return 'stable';
   }
 
   private buildEngagementMetrics(
