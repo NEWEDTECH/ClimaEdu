@@ -21,6 +21,7 @@ import { User } from '../../../../user/core/entities/User';
 import { LessonProgress } from '../../../../content/core/entities/LessonProgress';
 import { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
 import { Enrollment, EnrollmentStatus } from '../../../../enrollment/core/entities';
+import { ListClassStudentsUseCase } from '../../../../enrollment/core/use-cases/list-class-students';
 import { Course } from '../../../../content/core/entities/Course';
 import { Register } from '../../../../../shared/container/symbols';
 
@@ -48,7 +49,10 @@ export class GenerateIndividualStudentReportUseCase {
     private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
 
     @inject(Register.content.repository.QuestionnaireRepository)
-    private readonly questionnaireRepository: QuestionnaireRepository
+    private readonly questionnaireRepository: QuestionnaireRepository,
+
+    @inject(ListClassStudentsUseCase)
+    private readonly listClassStudentsUseCase: ListClassStudentsUseCase
   ) {}
 
   async execute(input: GenerateIndividualStudentReportInput): Promise<GenerateIndividualStudentReportOutput> {
@@ -101,8 +105,8 @@ export class GenerateIndividualStudentReportUseCase {
       ? this.buildFeedbackHistory()
       : undefined;
 
-    const classComparison = input.includeClassComparison 
-      ? await this.buildClassComparison(input, filteredProgresses)
+    const classComparison = input.includeClassComparison && input.classId
+      ? await this.buildClassComparison(input)
       : undefined;
 
     // Always build learning analytics and recommendations
@@ -451,6 +455,54 @@ export class GenerateIndividualStudentReportUseCase {
     return 'stable';
   }
 
+  private calculateStudyStreak(lessonProgresses: LessonProgress[]): { current: number; longest: number } {
+    if (lessonProgresses.length === 0) {
+      return { current: 0, longest: 0 };
+    }
+
+    const accessDates = lessonProgresses
+      .map(p => p.lastAccessedAt.toISOString().split('T')[0])
+      .filter((v, i, a) => a.indexOf(v) === i) // Unique dates
+      .map(dateStr => new Date(dateStr))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    if (accessDates.length === 0) {
+      return { current: 0, longest: 0 };
+    }
+
+    let longestStreak = 0;
+    let currentStreak = 0;
+    
+    for (let i = 0; i < accessDates.length; i++) {
+      if (i === 0) {
+        currentStreak = 1;
+        longestStreak = 1;
+      } else {
+        const diffDays = (accessDates[i].getTime() - accessDates[i - 1].getTime()) / (1000 * 3600 * 24);
+        if (diffDays === 1) {
+          currentStreak++;
+        } else {
+          currentStreak = 1; // Reset streak
+        }
+      }
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+      }
+    }
+
+    // Check if the streak is current
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastAccessDay = accessDates[accessDates.length - 1];
+    const diffFromToday = (today.getTime() - lastAccessDay.getTime()) / (1000 * 3600 * 24);
+
+    if (diffFromToday > 1) {
+      currentStreak = 0; // Streak is broken
+    }
+
+    return { current: currentStreak, longest: longestStreak };
+  }
+
   private buildEngagementMetrics(
     lessonProgresses: LessonProgress[],
     analysisPeriod: { startDate: Date; endDate: Date; totalDays: number }
@@ -480,9 +532,7 @@ export class GenerateIndividualStudentReportUseCase {
       .slice(0, 3)
       .map(([hour]) => hour);
 
-    // Calculate study streak (simplified)
-    const currentStreak = Math.min(7, uniqueDays);
-    const longestStreak = Math.min(14, uniqueDays + 3);
+    const studyStreak = this.calculateStudyStreak(lessonProgresses);
 
     return {
       loginFrequency: {
@@ -496,10 +546,7 @@ export class GenerateIndividualStudentReportUseCase {
         averageSessionLength: Math.round(averageSessionLength),
         longestSession: Math.max(...lessonProgresses.map(p => p.getTotalTimeSpent()), 0),
         shortestSession: Math.min(...lessonProgresses.map(p => p.getTotalTimeSpent()), 0),
-        studyStreak: {
-          current: currentStreak,
-          longest: longestStreak
-        }
+        studyStreak,
       },
       contentInteraction: {
         videosWatched: Math.floor(totalSessions * 0.7),
@@ -550,40 +597,102 @@ export class GenerateIndividualStudentReportUseCase {
   }
 
   private async buildClassComparison(
-    input: GenerateIndividualStudentReportInput,
-    lessonProgresses: LessonProgress[]
+    input: GenerateIndividualStudentReportInput
   ): Promise<IndividualClassComparison> {
-    // Simplified class comparison - in real implementation would compare with actual class data
-    const studentScore = lessonProgresses.length * 10; // Simplified scoring
-    const classAverage = 150; // Mock class average
-    const classSize = 25;
-    const studentRank = Math.max(1, Math.floor(Math.random() * classSize));
+    // This method requires classId to be present in the input
+    if (!input.classId) {
+      throw new Error('classId is required for class comparison');
+    }
+
+    // Step 1: List all students in the class
+    const { students } = await this.listClassStudentsUseCase.execute({
+      classId: input.classId,
+      institutionId: input.institutionId,
+    });
+
+    const classSize = students.length;
+    if (classSize === 0) {
+      // Cannot compare if the class is empty
+      return {
+        classSize: 0,
+        studentRank: 0,
+        percentileRank: 0,
+        comparisonMetrics: [],
+        peerComparison: {
+          similarStudents: 0,
+          betterPerformingStudents: 0,
+          worsePerformingStudents: 0,
+        },
+      };
+    }
+
+    // Step 2: Collect data for all students in the class
+    const allStudentsData = await Promise.all(
+      students.map(async (student) => {
+        const progresses = await this.lessonProgressRepository.findByUserAndInstitution(
+          student.id,
+          input.institutionId
+        );
+        const submissions = await this.questionnaireSubmissionRepository.listByUser(student.id);
+        
+        const totalTimeSpent = progresses.reduce((sum, p) => sum + p.getTotalTimeSpent(), 0);
+        const averageScore = submissions.length > 0 
+          ? submissions.reduce((sum, s) => sum + s.score, 0) / submissions.length
+          : 0;
+
+        return {
+          studentId: student.id,
+          totalTimeSpent,
+          averageScore,
+        };
+      })
+    );
+
+    // Step 3: Calculate class averages and medians
+    const totalTimeSpentAll = allStudentsData.map(d => d.totalTimeSpent);
+    const averageScoresAll = allStudentsData.map(d => d.averageScore);
+
+    const classAverageTime = totalTimeSpentAll.reduce((sum, t) => sum + t, 0) / classSize;
+    const classAverageScore = averageScoresAll.reduce((sum, s) => sum + s, 0) / classSize;
+
+    // Step 4: Find the current student's data
+    const currentStudentData = allStudentsData.find(d => d.studentId === input.studentId);
+    if (!currentStudentData) {
+      // Should not happen if the student is in the class, but as a safeguard
+      throw new Error('Current student not found in class data');
+    }
+
+    // Step 5: Calculate student's rank
+    const studentRankByScore = allStudentsData.sort((a, b) => b.averageScore - a.averageScore)
+      .findIndex(d => d.studentId === input.studentId) + 1;
+
+    const percentileRank = Math.round(((classSize - studentRankByScore + 1) / classSize) * 100);
 
     return {
       classSize,
-      studentRank,
-      percentileRank: Math.round(((classSize - studentRank + 1) / classSize) * 100),
+      studentRank: studentRankByScore,
+      percentileRank,
       comparisonMetrics: [
         {
-          metric: 'Progresso Geral',
-          studentValue: studentScore,
-          classAverage,
-          classMedian: 140,
-          studentPerformance: studentScore > classAverage ? 'ABOVE_AVERAGE' : 
-                            studentScore < classAverage * 0.8 ? 'BELOW_AVERAGE' : 'AVERAGE'
+          metric: 'Desempenho (Média de Notas)',
+          studentValue: currentStudentData.averageScore,
+          classAverage: classAverageScore,
+          classMedian: 0, // Median calculation can be added later
+          studentPerformance: currentStudentData.averageScore > classAverageScore ? 'ABOVE_AVERAGE' : 
+                            currentStudentData.averageScore < classAverageScore * 0.8 ? 'BELOW_AVERAGE' : 'AVERAGE'
         },
         {
-          metric: 'Tempo de Estudo',
-          studentValue: lessonProgresses.reduce((sum, p) => sum + p.getTotalTimeSpent(), 0),
-          classAverage: 300,
-          classMedian: 280,
-          studentPerformance: 'AVERAGE'
+          metric: 'Tempo de Estudo (min)',
+          studentValue: currentStudentData.totalTimeSpent,
+          classAverage: classAverageTime,
+          classMedian: 0, // Median calculation can be added later
+          studentPerformance: currentStudentData.totalTimeSpent > classAverageTime ? 'ABOVE_AVERAGE' : 'AVERAGE'
         }
       ],
       peerComparison: {
-        similarStudents: 5,
-        betterPerformingStudents: studentRank - 1,
-        worsePerformingStudents: classSize - studentRank
+        similarStudents: 0, // Complex calculation, for later
+        betterPerformingStudents: studentRankByScore - 1,
+        worsePerformingStudents: classSize - studentRankByScore
       }
     };
   }
