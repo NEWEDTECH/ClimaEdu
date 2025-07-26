@@ -7,10 +7,18 @@ import { container } from '@/_core/shared/container';
 import { GenerateIndividualStudentReportUseCase } from '@/_core/modules/report/core/use-cases/generate-individual-student-report/generate-individual-student-report.use-case';
 import { GenerateIndividualStudentReportOutput } from '@/_core/modules/report/core/use-cases/generate-individual-student-report/generate-individual-student-report.output';
 import { Dropdown, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/select/select";
-import { Progress } from '@/components/ui/progress';
 import { ListClassStudentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-class-students';
 import { User } from '@/_core/modules/user/core/entities/User';
 import { ReportSymbols } from '@/_core/shared/container/symbols';
+import { ReportSummary } from './sections/ReportSummary';
+import { StudentDetails } from './sections/StudentDetails';
+import { ProgressDetails } from './sections/ProgressDetails';
+import { AssessmentDetails } from './sections/AssessmentDetails';
+import { EngagementAnalysis } from './sections/EngagementAnalysis';
+import { FeedbackSummary } from './sections/FeedbackSummary';
+import { ClassComparison } from './sections/ClassComparison';
+import { LearningInsights } from './sections/LearningInsights';
+import { TutorRecommendations } from './sections/TutorRecommendations';
 
 interface IndividualStudentTrackingReportProps {
   courseId: string | null;
@@ -59,6 +67,9 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
           courseId,
           includeProgressDetails: true,
           includeAssessments: true,
+          includeEngagement: true,
+          includeFeedbackHistory: true,
+          includeClassComparison: true,
         });
         setReport(result);
       } catch (err) {
@@ -99,46 +110,15 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
         
         {report && (
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{report.studentInfo.studentName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Email: {report.studentInfo.email}</p>
-                <p>Matriculado em: {new Date(report.studentInfo.enrollmentDate).toLocaleDateString()}</p>
-                <p>Status: {report.studentInfo.status}</p>
-              </CardContent>
-            </Card>
-
-            {report.progressDetails?.map(progress => (
-              <Card key={progress.courseId}>
-                <CardHeader>
-                  <CardTitle>Progresso em {progress.courseName}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <span>Progresso Geral: {progress.overallProgress.toFixed(2)}%</span>
-                    <Progress value={progress.overallProgress} className="w-full" />
-                  </div>
-                  <p>Lições Concluídas: {progress.lessonsCompleted}/{progress.totalLessons}</p>
-                  <p>Tempo Gasto: {(progress.timeSpent / 60).toFixed(2)} horas</p>
-                </CardContent>
-              </Card>
-            ))}
-
-            {report.assessmentPerformance && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Desempenho em Avaliações</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Média: {report.assessmentPerformance.averageScore.toFixed(2)}%</p>
-                  <p>Melhor Nota: {report.assessmentPerformance.highestScore.toFixed(2)}%</p>
-                  <p>Pior Nota: {report.assessmentPerformance.lowestScore.toFixed(2)}%</p>
-                  <p>Tendência: {report.assessmentPerformance.improvementTrend}</p>
-                </CardContent>
-              </Card>
-            )}
+            {report.summary && <ReportSummary data={report.summary} />}
+            {report.studentInfo && <StudentDetails data={report.studentInfo} />}
+            {report.recommendations && <TutorRecommendations data={report.recommendations} />}
+            {report.progressDetails && <ProgressDetails data={report.progressDetails} />}
+            {report.assessmentPerformance && <AssessmentDetails data={report.assessmentPerformance} />}
+            {report.engagementMetrics && <EngagementAnalysis data={report.engagementMetrics} />}
+            {report.classComparison && <ClassComparison data={report.classComparison} />}
+            {report.learningAnalytics && <LearningInsights data={report.learningAnalytics} />}
+            {report.feedbackHistory && <FeedbackSummary data={report.feedbackHistory} />}
           </div>
         )}
       </CardContent>
