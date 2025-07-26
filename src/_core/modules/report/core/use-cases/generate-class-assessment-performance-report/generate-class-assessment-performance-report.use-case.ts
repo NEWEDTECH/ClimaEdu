@@ -18,6 +18,8 @@ import type { ClassRepository } from '../../../../enrollment/infrastructure/repo
 import type { CourseRepository } from '../../../../content/infrastructure/repositories/CourseRepository';
 import { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
 import { Register } from '../../../../../shared/container/symbols';
+import { Class } from '../../../../enrollment/core/entities/Class';
+import { Enrollment } from '../../../../enrollment/core/entities/Enrollment';
 
 @injectable()
 export class GenerateClassAssessmentPerformanceReportUseCase {
@@ -42,18 +44,34 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
   ) {}
 
   async execute(input: GenerateClassAssessmentPerformanceReportInput): Promise<GenerateClassAssessmentPerformanceReportOutput> {
+    // Fetch class data once
+    const classEntity = await this.classRepository.findById(input.classId);
+    if (!classEntity) {
+      throw new Error('Class not found');
+    }
+
+    // Fetch enrollments once
+    const allEnrollments = await this.enrollmentRepository.listByInstitution(classEntity.institutionId);
+    const classEnrollments = allEnrollments.filter((e: Enrollment) => classEntity.enrollmentIds.includes(e.id));
+
+    console.log({
+      classEntity,
+      allEnrollments,
+      classEnrollments,
+    })
+
     // Validate tutor access to class
-    await this.validateTutorAccess(input.tutorId, input.classId, input.institutionId);
+    await this.validateTutorAccess(input.tutorId, classEntity, input.institutionId);
 
     // Get class and course information
-    const classInfo = await this.getClassInfo(input.classId, input.courseId);
+    const classInfo = await this.getClassInfo(classEntity, classEnrollments, input.courseId);
 
     // Get all students in the class
-    const students = await this.getClassStudents(input.classId);
+    const students = await this.getClassStudents(classEnrollments);
 
     // Get assessment submissions
     const submissions = await this.getAssessmentSubmissions(
-      input.classId,
+      classEnrollments,
       input.assessmentType,
       input.dateFrom,
       input.dateTo,
@@ -118,15 +136,10 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     };
   }
 
-  private async validateTutorAccess(tutorId: string, classId: string, institutionId: string): Promise<void> {
+  private async validateTutorAccess(tutorId: string, classEntity: Class, institutionId: string): Promise<void> {
     const tutor = await this.userRepository.findById(tutorId);
     if (!tutor) {
       throw new Error('Tutor not found');
-    }
-
-    const classEntity = await this.classRepository.findById(classId);
-    if (!classEntity) {
-      throw new Error('Class not found');
     }
 
     if (classEntity.institutionId !== institutionId) {
@@ -134,14 +147,10 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     }
 
     // Additional validation could check if tutor is assigned to this class
-    console.log(`Tutor ${tutorId} accessing class ${classId} in institution ${institutionId}`);
+    console.log(`Tutor ${tutorId} accessing class ${classEntity.id} in institution ${institutionId}`);
   }
 
-  private async getClassInfo(classId: string, courseId?: string): Promise<GenerateClassAssessmentPerformanceReportOutput['classInfo']> {
-    const classEntity = await this.classRepository.findById(classId);
-    if (!classEntity) {
-      throw new Error('Class not found');
-    }
+  private async getClassInfo(classEntity: Class, classEnrollments: Enrollment[], courseId?: string): Promise<GenerateClassAssessmentPerformanceReportOutput['classInfo']> {
 
     let course = null;
     const actualCourseId = courseId || classEntity.courseId;
@@ -149,10 +158,6 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     if (actualCourseId) {
       course = await this.courseRepository.findById(actualCourseId);
     }
-
-    // Get tutor information (simplified - would need proper tutor-class relationship)
-    const enrollments = await this.enrollmentRepository.listByInstitution(classEntity.institutionId);
-    const classEnrollments = enrollments.filter(e => classEntity.enrollmentIds.includes(e.id));
 
     return {
       classId: classEntity.id,
@@ -162,18 +167,11 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
       tutorId: 'tutor-placeholder', // Would need proper tutor-class relationship
       tutorName: 'Tutor Name', // Would need proper tutor-class relationship
       totalStudents: classEntity.enrollmentIds.length,
-      activeStudents: classEnrollments.filter(e => e.status.toString() === 'ENROLLED').length
+      activeStudents: classEnrollments.filter((e: Enrollment) => e.status.toString() === 'ENROLLED').length
     };
   }
 
-  private async getClassStudents(classId: string): Promise<Array<{ id: string; name: string; email: string }>> {
-    const classEntity = await this.classRepository.findById(classId);
-    if (!classEntity) {
-      throw new Error('Class not found');
-    }
-
-    const enrollments = await this.enrollmentRepository.listByInstitution(classEntity.institutionId);
-    const classEnrollments = enrollments.filter(e => classEntity.enrollmentIds.includes(e.id));
+  private async getClassStudents(classEnrollments: Enrollment[]): Promise<Array<{ id: string; name: string; email: string }>> {
 
     const students: Array<{ id: string; name: string; email: string }> = [];
     
@@ -192,7 +190,7 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
   }
 
   private async getAssessmentSubmissions(
-    classId: string,
+    classEnrollments: Enrollment[],
     assessmentType?: string,
     dateFrom?: Date,
     dateTo?: Date,
@@ -207,14 +205,8 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     timeSpent: number;
     attempts: number;
   }>> {
-    const classEntity = await this.classRepository.findById(classId);
-    if (!classEntity) {
-      throw new Error('Class not found');
-    }
 
-    const enrollments = await this.enrollmentRepository.listByInstitution(classEntity.institutionId);
-    const classEnrollments = enrollments.filter(e => classEntity.enrollmentIds.includes(e.id));
-    const studentIds = classEnrollments.map(e => e.userId);
+    const studentIds = classEnrollments.map((e: Enrollment) => e.userId);
 
     // Get all questionnaire submissions for students in this class
     const allSubmissions: QuestionnaireSubmission[] = [];

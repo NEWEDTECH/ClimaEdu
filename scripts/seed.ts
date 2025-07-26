@@ -250,7 +250,8 @@ const enrollStudents = async (students: User[], courses: Course[], institutionId
     const numEnrollments = randomInt(1, Math.min(courses.length, 3));
     const coursesToEnroll = faker.helpers.shuffle(courses).slice(0, numEnrollments);
     for (const course of coursesToEnroll) {
-      const enrollment = Enrollment.create({ userId: student.id, courseId: course.id, institutionId });
+      const enrollmentId = `enr_${faker.string.uuid()}`;
+      const enrollment = Enrollment.create({ id: enrollmentId, userId: student.id, courseId: course.id, institutionId });
       const enrollmentPlain: { [key: string]: unknown } = {
         id: enrollment.id, userId: enrollment.userId, courseId: enrollment.courseId,
         institutionId: enrollment.institutionId, status: enrollment.status,

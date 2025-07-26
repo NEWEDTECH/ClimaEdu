@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClassOverviewReport } from '@/components/reports/tutor/ClassOverviewReport';
 import { ClassAssessmentPerformanceReport } from '@/components/reports/tutor/ClassAssessmentPerformanceReport';
 import { EngagementRetentionReport } from '@/components/reports/tutor/EngagementRetentionReport';
@@ -26,6 +26,7 @@ export default function TutorReports() {
   const [classes, setClasses] = useState<Class[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('class-overview');
 
   useEffect(() => {
     if (!user) return;
@@ -76,26 +77,28 @@ export default function TutorReports() {
         </div>
 
         <div className="mt-6">
-          <Tabs defaultValue="class-overview">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="class-overview">Visão Geral</TabsTrigger>
               <TabsTrigger value="assessment-performance">Avaliações</TabsTrigger>
               <TabsTrigger value="engagement-retention">Engajamento</TabsTrigger>
               <TabsTrigger value="individual-tracking">Acompanhamento Individual</TabsTrigger>
             </TabsList>
-            <TabsContent value="class-overview" className="mt-4">
-              <ClassOverviewReport courseId={selectedCourse} classId={selectedClass} />
-            </TabsContent>
-            <TabsContent value="assessment-performance" className="mt-4">
-              <ClassAssessmentPerformanceReport courseId={selectedCourse} classId={selectedClass} />
-            </TabsContent>
-            <TabsContent value="engagement-retention" className="mt-4">
-              <EngagementRetentionReport courseId={selectedCourse} classId={selectedClass} />
-            </TabsContent>
-            <TabsContent value="individual-tracking" className="mt-4">
-              <IndividualStudentTrackingReport courseId={selectedCourse} classId={selectedClass} />
-            </TabsContent>
           </Tabs>
+          <div className="mt-4">
+            <div style={{ display: activeTab === 'class-overview' ? 'block' : 'none' }}>
+              <ClassOverviewReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+            <div style={{ display: activeTab === 'assessment-performance' ? 'block' : 'none' }}>
+              <ClassAssessmentPerformanceReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+            <div style={{ display: activeTab === 'engagement-retention' ? 'block' : 'none' }}>
+              <EngagementRetentionReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+            <div style={{ display: activeTab === 'individual-tracking' ? 'block' : 'none' }}>
+              <IndividualStudentTrackingReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedContent>
