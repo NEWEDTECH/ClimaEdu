@@ -84,7 +84,7 @@ export class GenerateIndividualStudentReportUseCase {
 
     // Build optional sections based on input flags
     const progressDetails = input.includeProgressDetails 
-      ? await this.buildProgressDetails(input, filteredProgresses)
+      ? await this.buildProgressDetails(input, filteredProgresses, analysisPeriod)
       : undefined;
 
     const enrollments = await this.enrollmentRepository.listByUser(input.studentId);
@@ -207,7 +207,8 @@ export class GenerateIndividualStudentReportUseCase {
 
   private async buildProgressDetails(
     input: GenerateIndividualStudentReportInput,
-    lessonProgresses: LessonProgress[]
+    lessonProgresses: LessonProgress[],
+    analysisPeriod: { totalDays: number }
   ): Promise<DetailedProgress[]> {
     const progressDetails: DetailedProgress[] = [];
 
@@ -250,7 +251,12 @@ export class GenerateIndividualStudentReportUseCase {
           totalLessons,
           modulesCompleted,
           totalModules: course.modules.length,
-          estimatedCompletionDate: this.calculateEstimatedCompletion(completedLessons, totalLessons),
+          estimatedCompletionDate: this.calculateEstimatedCompletion(
+            completedLessons,
+            totalLessons,
+            courseProgresses,
+            analysisPeriod
+          ),
           timeSpent,
           averageSessionTime: Math.round(averageSessionTime),
           lastActivity,
@@ -266,14 +272,26 @@ export class GenerateIndividualStudentReportUseCase {
     return progressDetails;
   }
 
-  private calculateEstimatedCompletion(completed: number, total: number): Date | undefined {
+  private calculateEstimatedCompletion(
+    completed: number,
+    total: number,
+    progresses: LessonProgress[],
+    analysisPeriod: { totalDays: number }
+  ): Date | undefined {
     if (completed === 0) return undefined;
+
+    const completedInPeriod = progresses.filter(p => p.isCompleted()).length;
+    const weeksInPeriod = analysisPeriod.totalDays / 7;
     
+    // Avoid division by zero and ensure the period is meaningful
+    const averageLessonsPerWeek = weeksInPeriod > 1 ? completedInPeriod / weeksInPeriod : 2;
+
+    if (averageLessonsPerWeek === 0) return undefined;
+
     const remainingLessons = total - completed;
-    const averageLessonsPerWeek = 2; // Simplified assumption
     const weeksToComplete = Math.ceil(remainingLessons / averageLessonsPerWeek);
-    
-    return new Date(Date.now() + (weeksToComplete * 7 * 24 * 60 * 60 * 1000));
+
+    return new Date(Date.now() + weeksToComplete * 7 * 24 * 60 * 60 * 1000);
   }
 
   private buildModuleProgress(
