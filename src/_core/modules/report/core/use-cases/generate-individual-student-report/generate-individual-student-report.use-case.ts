@@ -16,9 +16,11 @@ import type { EnrollmentRepository } from '../../../../enrollment/infrastructure
 import type { UserRepository } from '../../../../user/infrastructure/repositories/UserRepository';
 import type { CourseRepository } from '../../../../content/infrastructure/repositories/CourseRepository';
 import type { QuestionnaireSubmissionRepository } from '../../../../content/infrastructure/repositories/QuestionnaireSubmissionRepository';
+import type { QuestionnaireRepository } from '../../../../content/infrastructure/repositories/QuestionnaireRepository';
 import { User } from '../../../../user/core/entities/User';
 import { LessonProgress } from '../../../../content/core/entities/LessonProgress';
-import { Enrollment } from '../../../../enrollment/core/entities/Enrollment';
+import { Enrollment, EnrollmentStatus } from '../../../../enrollment/core/entities';
+import { Course } from '../../../../content/core/entities/Course';
 import { Register } from '../../../../../shared/container/symbols';
 
 /**
@@ -42,7 +44,10 @@ export class GenerateIndividualStudentReportUseCase {
     private readonly courseRepository: CourseRepository,
     
     @inject(Register.content.repository.QuestionnaireSubmissionRepository)
-    private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository
+    private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
+
+    @inject(Register.content.repository.QuestionnaireRepository)
+    private readonly questionnaireRepository: QuestionnaireRepository
   ) {}
 
   async execute(input: GenerateIndividualStudentReportInput): Promise<GenerateIndividualStudentReportOutput> {
@@ -170,11 +175,31 @@ export class GenerateIndividualStudentReportUseCase {
       studentId: student.id,
       studentName: student.name,
       email: student.email.value,
-      enrollmentDate: institutionEnrollment?.enrolledAt || new Date(),
-      lastLoginDate: new Date(), // Simplified - would come from user activity tracking
-      status: 'ACTIVE', // Simplified
-      profileCompleteness: 85 // Simplified - would be calculated based on profile fields
+      enrollmentDate: institutionEnrollment?.enrolledAt ?? student.createdAt,
+      // TODO: This should come from a dedicated user activity tracking system
+      lastLoginDate: new Date(), // Simplified
+      status: this.mapEnrollmentStatusToStudentInfoStatus(institutionEnrollment?.status),
+      // TODO: Implement a real calculation based on the user's profile fields
+      profileCompleteness: 85, // Simplified
     };
+  }
+
+  private mapEnrollmentStatusToStudentInfoStatus(
+    status?: EnrollmentStatus
+  ): 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' {
+    if (!status) {
+      return 'INACTIVE';
+    }
+
+    switch (status) {
+      case EnrollmentStatus.ENROLLED:
+      case EnrollmentStatus.COMPLETED:
+        return 'ACTIVE';
+      case EnrollmentStatus.CANCELLED:
+        return 'INACTIVE';
+      default:
+        return 'INACTIVE';
+    }
   }
 
   private async buildProgressDetails(
@@ -195,33 +220,38 @@ export class GenerateIndividualStudentReportUseCase {
         const course = await this.courseRepository.findById(enrollment.courseId);
         if (!course) continue;
 
-        // Filter progresses for this course
-        const courseProgresses = lessonProgresses.filter(() => 
-          // Simplified - in real implementation, would need to map lessons to courses
-          true
+        // Get all lesson IDs for the current course
+        const courseLessonIds = new Set(
+          course.modules.flatMap(module => module.lessons.map(lesson => lesson.id))
         );
 
-        const totalLessons = 20; // Simplified - would get from course structure
+        // Filter progresses for this course
+        const courseProgresses = lessonProgresses.filter(p => courseLessonIds.has(p.lessonId));
+
+        const totalLessons = courseLessonIds.size;
         const completedLessons = courseProgresses.filter(p => p.isCompleted()).length;
         const timeSpent = courseProgresses.reduce((sum, p) => sum + p.getTotalTimeSpent(), 0);
         const averageSessionTime = courseProgresses.length > 0 ? timeSpent / courseProgresses.length : 0;
         const lastActivity = courseProgresses.length > 0 
           ? new Date(Math.max(...courseProgresses.map(p => p.lastAccessedAt.getTime())))
-          : new Date();
+          : enrollment.enrolledAt;
+
+        const progressByModule = this.buildModuleProgress(course, courseProgresses);
+        const modulesCompleted = progressByModule.filter(m => m.progress === 100).length;
 
         progressDetails.push({
           courseId: course.id,
           courseName: course.title,
-          overallProgress: Math.round((completedLessons / totalLessons) * 100),
+          overallProgress: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0,
           lessonsCompleted: completedLessons,
           totalLessons,
-          modulesCompleted: Math.floor(completedLessons / 5), // Simplified
-          totalModules: Math.ceil(totalLessons / 5), // Simplified
+          modulesCompleted,
+          totalModules: course.modules.length,
           estimatedCompletionDate: this.calculateEstimatedCompletion(completedLessons, totalLessons),
           timeSpent,
           averageSessionTime: Math.round(averageSessionTime),
           lastActivity,
-          progressByModule: this.buildModuleProgress()
+          progressByModule,
         });
 
       } catch {
@@ -243,7 +273,10 @@ export class GenerateIndividualStudentReportUseCase {
     return new Date(Date.now() + (weeksToComplete * 7 * 24 * 60 * 60 * 1000));
   }
 
-  private buildModuleProgress(): Array<{
+  private buildModuleProgress(
+    course: Course,
+    courseProgresses: LessonProgress[]
+  ): Array<{
     moduleId: string;
     moduleName: string;
     progress: number;
@@ -251,25 +284,24 @@ export class GenerateIndividualStudentReportUseCase {
     totalLessons: number;
     timeSpent: number;
   }> {
-    // Simplified module progress - in real implementation would group by actual modules
-    return [
-      {
-        moduleId: 'module-1',
-        moduleName: 'Módulo 1 - Introdução',
-        progress: 80,
-        lessonsCompleted: 4,
-        totalLessons: 5,
-        timeSpent: 120
-      },
-      {
-        moduleId: 'module-2',
-        moduleName: 'Módulo 2 - Conceitos Básicos',
-        progress: 60,
-        lessonsCompleted: 3,
-        totalLessons: 5,
-        timeSpent: 90
-      }
-    ];
+    return course.modules.map(module => {
+      const moduleLessonIds = new Set(module.lessons.map(lesson => lesson.id));
+      const moduleProgresses = courseProgresses.filter(p => moduleLessonIds.has(p.lessonId));
+      
+      const totalLessonsInModule = moduleLessonIds.size;
+      const completedLessonsInModule = moduleProgresses.filter(p => p.isCompleted()).length;
+      const timeSpentOnModule = moduleProgresses.reduce((sum, p) => sum + p.getTotalTimeSpent(), 0);
+      const progress = totalLessonsInModule > 0 ? Math.round((completedLessonsInModule / totalLessonsInModule) * 100) : 0;
+
+      return {
+        moduleId: module.id,
+        moduleName: module.title,
+        progress,
+        lessonsCompleted: completedLessonsInModule,
+        totalLessons: totalLessonsInModule,
+        timeSpent: timeSpentOnModule,
+      };
+    });
   }
 
   private async buildAssessmentPerformance(studentId: string, institutionId: string): Promise<AssessmentPerformance> {
@@ -293,24 +325,39 @@ export class GenerateIndividualStudentReportUseCase {
     const scores = institutionSubmissions.map(s => s.score);
     const averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
 
+    const assessmentDetails = await Promise.all(
+      institutionSubmissions.map(async s => {
+        const questionnaire = await this.questionnaireRepository.findById(s.questionnaireId);
+        return {
+          assessmentId: s.questionnaireId,
+          assessmentName: questionnaire?.title ?? `Questionário ${s.questionnaireId}`,
+          score: s.score,
+          // TODO: Calculate maxScore based on the sum of points of each question
+          maxScore: 100, // Simplified
+          completedAt: s.completedAt,
+          // TODO: Implement logic to count attempts for the same questionnaire
+          attempts: 1, // Simplified
+          // TODO: This should be calculated based on submission start and end times
+          timeSpent: 0, // Simplified
+          // TODO: Difficulty should be a property of the Questionnaire entity
+          difficulty: 'MEDIUM' as 'MEDIUM' | 'EASY' | 'HARD'
+        };
+      })
+    );
+
     return {
-      totalAssessments: 0, // Simplified - would need to get total assessments from course
+      // TODO: This should be calculated based on all available assessments in the course
+      totalAssessments: new Set(institutionSubmissions.map(s => s.questionnaireId)).size,
       completedAssessments: institutionSubmissions.length,
       averageScore: Math.round(averageScore),
       highestScore: Math.max(...scores),
       lowestScore: Math.min(...scores),
+      // TODO: Implement trend analysis based on submission dates and scores
       improvementTrend: 'stable', // Simplified
-      assessmentDetails: institutionSubmissions.map(s => ({
-        assessmentId: s.questionnaireId,
-        assessmentName: `Questionário ${s.questionnaireId}`, // Simplified
-        score: s.score,
-        maxScore: 100, // Simplified
-        completedAt: s.completedAt,
-        attempts: 1, // Simplified
-        timeSpent: 0, // Simplified
-        difficulty: 'MEDIUM'
-      })),
+      assessmentDetails,
+      // TODO: Implement analysis of question categories to identify strengths
       strengthAreas: [], // Simplified
+      // TODO: Implement analysis of question categories to identify weaknesses
       weaknessAreas: [] // Simplified
     };
   }
