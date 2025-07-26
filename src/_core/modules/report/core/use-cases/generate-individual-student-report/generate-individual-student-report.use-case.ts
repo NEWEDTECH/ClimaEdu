@@ -17,6 +17,7 @@ import type { UserRepository } from '../../../../user/infrastructure/repositorie
 import type { CourseRepository } from '../../../../content/infrastructure/repositories/CourseRepository';
 import type { QuestionnaireSubmissionRepository } from '../../../../content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { QuestionnaireRepository } from '../../../../content/infrastructure/repositories/QuestionnaireRepository';
+import type { ClassRepository } from '../../../../enrollment/infrastructure/repositories/ClassRepository';
 import { User } from '../../../../user/core/entities/User';
 import { LessonProgress } from '../../../../content/core/entities/LessonProgress';
 import { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
@@ -52,10 +53,23 @@ export class GenerateIndividualStudentReportUseCase {
     private readonly questionnaireRepository: QuestionnaireRepository,
 
     @inject(ListClassStudentsUseCase)
-    private readonly listClassStudentsUseCase: ListClassStudentsUseCase
+    private readonly listClassStudentsUseCase: ListClassStudentsUseCase,
+
+    @inject(Register.enrollment.repository.ClassRepository)
+    private readonly classRepository: ClassRepository
   ) {}
 
   async execute(input: GenerateIndividualStudentReportInput): Promise<GenerateIndividualStudentReportOutput> {
+    // Validate class exists and has a course
+    if (!input.classId) {
+      throw new Error('Class ID is required');
+    }
+    const studentClass = await this.classRepository.findById(input.classId);
+    if (!studentClass || !studentClass.courseId) {
+      throw new Error('Class not found or not associated with a course');
+    }
+    const courseId = studentClass.courseId;
+
     // Validate tutor exists
     const tutor = await this.userRepository.findById(input.tutorId);
     if (!tutor) {
@@ -88,13 +102,13 @@ export class GenerateIndividualStudentReportUseCase {
 
     // Build optional sections based on input flags
     const progressDetails = input.includeProgressDetails 
-      ? await this.buildProgressDetails(input, filteredProgresses, analysisPeriod)
+      ? await this.buildProgressDetails(input, filteredProgresses, analysisPeriod, courseId)
       : undefined;
 
     const enrollments = await this.enrollmentRepository.listByUser(input.studentId);
 
     const assessmentPerformance = input.includeAssessments 
-      ? await this.buildAssessmentPerformance(input.studentId, input.institutionId, enrollments)
+      ? await this.buildAssessmentPerformance(input.studentId, input.institutionId, enrollments, courseId)
       : undefined;
 
     const engagementMetrics = input.includeEngagement 
@@ -146,7 +160,8 @@ export class GenerateIndividualStudentReportUseCase {
       recommendations,
       summary,
       filtersApplied: {
-        courseId: input.courseId,
+        classId: input.classId,
+        courseId: courseId,
         dateRange: input.dateFrom && input.dateTo ? {
           from: input.dateFrom,
           to: input.dateTo
@@ -212,21 +227,21 @@ export class GenerateIndividualStudentReportUseCase {
   private async buildProgressDetails(
     input: GenerateIndividualStudentReportInput,
     lessonProgresses: LessonProgress[],
-    analysisPeriod: { totalDays: number }
+    analysisPeriod: { totalDays: number },
+    courseId: string
   ): Promise<DetailedProgress[]> {
     const progressDetails: DetailedProgress[] = [];
 
-    // Get courses the student is enrolled in
+    // Get the student's enrollment for the specific course
     const enrollments = await this.enrollmentRepository.listByUser(input.studentId);
-    const relevantEnrollments = enrollments.filter((e: Enrollment) => 
-      e.institutionId === input.institutionId &&
-      (!input.courseId || e.courseId === input.courseId)
+    const relevantEnrollment = enrollments.find((e: Enrollment) => 
+      e.institutionId === input.institutionId && e.courseId === courseId
     );
 
-    for (const enrollment of relevantEnrollments) {
+    if (relevantEnrollment) {
       try {
-        const course = await this.courseRepository.findById(enrollment.courseId);
-        if (!course) continue;
+        const course = await this.courseRepository.findById(courseId);
+        if (!course) return [];
 
         // Get all lesson IDs for the current course
         const courseLessonIds = new Set(
@@ -242,7 +257,7 @@ export class GenerateIndividualStudentReportUseCase {
         const averageSessionTime = courseProgresses.length > 0 ? timeSpent / courseProgresses.length : 0;
         const lastActivity = courseProgresses.length > 0 
           ? new Date(Math.max(...courseProgresses.map(p => p.lastAccessedAt.getTime())))
-          : enrollment.enrolledAt;
+          : relevantEnrollment.enrolledAt;
 
         const progressByModule = this.buildModuleProgress(course, courseProgresses);
         const modulesCompleted = progressByModule.filter(m => m.progress === 100).length;
@@ -268,8 +283,7 @@ export class GenerateIndividualStudentReportUseCase {
         });
 
       } catch {
-        // Skip courses that can't be loaded
-        continue;
+        // Skip if course can't be loaded
       }
     }
 
@@ -332,14 +346,11 @@ export class GenerateIndividualStudentReportUseCase {
   private async buildAssessmentPerformance(
     studentId: string,
     institutionId: string,
-    enrollments: Enrollment[]
+    enrollments: Enrollment[],
+    courseId: string
   ): Promise<AssessmentPerformance> {
-    const relevantEnrollments = enrollments.filter(e => e.institutionId === institutionId);
-    const courseIds = relevantEnrollments.map(e => e.courseId);
-    
     let totalAssessments = 0;
-    for (const courseId of courseIds) {
-      const course = await this.courseRepository.findById(courseId);
+    const course = await this.courseRepository.findById(courseId);
       if (course) {
         for (const courseModule of course.modules) {
           for (const lesson of courseModule.lessons) {
@@ -349,7 +360,6 @@ export class GenerateIndividualStudentReportUseCase {
           }
         }
       }
-    }
 
     const submissions = await this.questionnaireSubmissionRepository.listByUser(studentId);
     const institutionSubmissions = submissions.filter(s => s.institutionId === institutionId);

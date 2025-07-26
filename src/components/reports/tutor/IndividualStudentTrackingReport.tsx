@@ -64,7 +64,6 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
           tutorId: user.id,
           institutionId: user.currentIdInstitution,
           studentId: selectedStudent,
-          courseId,
           classId,
           includeProgressDetails: true,
           includeAssessments: true,

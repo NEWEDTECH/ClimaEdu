@@ -19,14 +19,9 @@ export interface GenerateIndividualStudentReportInput {
   institutionId: string;
 
   /**
-   * Optional: Filter by specific course
+   * ID of the class to generate the report for
    */
-  courseId?: string;
-
-  /**
-   * Optional: Filter by specific class (required for class comparison)
-   */
-  classId?: string;
+  classId: string;
 
   /**
    * Optional: Date range for analysis

@@ -258,6 +258,7 @@ export interface GenerateIndividualStudentReportOutput extends BaseReportOutput 
    * Filters applied to generate this report
    */
   filtersApplied: {
+    classId: string
     courseId?: string;
     dateRange?: {
       from: Date;
