@@ -12,6 +12,7 @@ import {
 import type { LessonProgressRepository } from '../../../../content/infrastructure/repositories/LessonProgressRepository';
 import type { EnrollmentRepository } from '../../../../enrollment/infrastructure/repositories/EnrollmentRepository';
 import type { UserRepository } from '../../../../user/infrastructure/repositories/UserRepository';
+import type { InstitutionRepository } from '../../../../institution/infrastructure/repositories/InstitutionRepository';
 import { LessonProgress } from '../../../../content/core/entities/LessonProgress';
 import { Enrollment } from '../../../../enrollment/core/entities/Enrollment';
 import { Register } from '../../../../../shared/container/symbols';
@@ -31,10 +32,19 @@ export class GenerateEngagementRetentionReportUseCase {
     private readonly enrollmentRepository: EnrollmentRepository,
     
     @inject(Register.user.repository.UserRepository)
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
+
+    @inject(Register.institution.repository.InstitutionRepository)
+    private readonly institutionRepository: InstitutionRepository
   ) {}
 
   async execute(input: GenerateEngagementRetentionReportInput): Promise<GenerateEngagementRetentionReportOutput> {
+    // Get institution
+    const institution = await this.institutionRepository.findById(input.institutionId);
+    if (!institution) {
+      throw new Error('Institution not found');
+    }
+
     // Validate tutor exists
     const tutor = await this.userRepository.findById(input.tutorId);
     if (!tutor) {
@@ -54,7 +64,7 @@ export class GenerateEngagementRetentionReportUseCase {
     const studentEngagementData = await this.buildStudentEngagementData(
       enrollments, 
       allProgresses, 
-      input.inactivityThreshold || 7,
+      institution.settings.inactivityThreshold,
       analysisPeriod
     );
 

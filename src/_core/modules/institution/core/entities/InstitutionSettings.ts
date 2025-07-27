@@ -56,6 +56,10 @@ export class InstitutionSettings {
     return this.settings?.inactivityThreshold ?? defaultInstitutionSettings.settings.inactivityThreshold;
   }
 
+  get profileCompleteness() {
+    return this.settings?.profileCompleteness ?? defaultInstitutionSettings.settings.profileCompleteness;
+  }
+
   /**
    * Updates the logo URL
    * @param newLogoUrl The new logo URL

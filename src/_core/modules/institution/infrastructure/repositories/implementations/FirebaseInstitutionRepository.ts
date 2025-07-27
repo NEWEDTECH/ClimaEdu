@@ -34,7 +34,7 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
       logoUrl: data.settings?.logoUrl,
       primaryColor: data.settings?.primaryColor,
       secondaryColor: data.settings?.secondaryColor,
-      settings: data.settings?.settings
+      settings: data.settings
     });
     
     // Convert Firestore timestamps to Date objects

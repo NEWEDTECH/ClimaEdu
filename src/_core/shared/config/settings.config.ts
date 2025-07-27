@@ -15,6 +15,7 @@ export interface InstitutionSettings {
       belowAverage: number;
     };
     inactivityThreshold: number;
+    profileCompleteness: number;
   };
 }
 
@@ -35,5 +36,6 @@ export const defaultInstitutionSettings: InstitutionSettings = {
       belowAverage: 55,
     },
     inactivityThreshold: 7,
+    profileCompleteness: 85,
   },
 };
