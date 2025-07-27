@@ -9,6 +9,10 @@ import { GenerateClassAssessmentPerformanceReportOutput, AssessmentStatistics, S
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { ReportSymbols } from '@/_core/shared/container/symbols';
+import { AssessmentTrends } from './assessment-sections/AssessmentTrends';
+import { AssessmentRecommendations } from './assessment-sections/AssessmentRecommendations';
+import { AssessmentInsights } from './assessment-sections/AssessmentInsights';
+import { AssessmentComparison } from './assessment-sections/AssessmentComparison';
 
 interface ClassAssessmentPerformanceReportProps {
   courseId: string | null;
@@ -39,6 +43,8 @@ export function ClassAssessmentPerformanceReport({ courseId, classId }: ClassAss
           courseId,
           includeIndividualScores: true,
           includeStatistics: true,
+          includeTrends: true,
+          includeQuestionAnalysis: true,
         });
         console.log('🙋‍♂️ Report Data:', result);
         setReport(result);
@@ -183,37 +189,12 @@ export function ClassAssessmentPerformanceReport({ courseId, classId }: ClassAss
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Alunos em Destaque</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {report.insights.topPerformers.map(student => (
-                <li key={student.studentId} className="flex justify-between">
-                  <span>{student.studentName}</span>
-                  <span className="font-semibold">{student.averageScore.toFixed(2)}%</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Alunos que Precisam de Atenção</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {report.insights.strugglingStudents.map(student => (
-                <li key={student.studentId} className="flex justify-between">
-                  <span>{student.studentName}</span>
-                  <span className="font-semibold">{student.averageScore.toFixed(2)}%</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        {report.insights && <AssessmentInsights data={report.insights} />}
+        {report.recommendations && <AssessmentRecommendations data={report.recommendations} />}
       </div>
+
+      {report.performanceTrends && <AssessmentTrends data={report.performanceTrends} />}
+      {report.classComparison && <AssessmentComparison data={report.classComparison} />}
     </div>
   );
 }

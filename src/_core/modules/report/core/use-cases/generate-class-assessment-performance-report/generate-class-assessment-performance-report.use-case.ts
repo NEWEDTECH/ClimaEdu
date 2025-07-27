@@ -79,7 +79,7 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     );
 
     // Calculate assessment overview
-    const assessmentOverview = this.calculateAssessmentOverview(submissions);
+    const assessmentOverview = this.calculateAssessmentOverview(submissions, classInfo);
 
     // Generate assessment statistics if requested
     const assessmentStatistics = input.includeStatistics 
@@ -241,7 +241,8 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
       studentId: submission.userId,
       assessmentId: submission.questionnaireId,
       score: submission.score,
-      maxScore: submission.questions.length * 100, // Assuming each question is worth 100 points
+      // TODO: This should be calculated based on the sum of points of each question
+      maxScore: 100, // Simplified
       submittedAt: submission.completedAt,
       timeSpent: Math.round((submission.completedAt.getTime() - submission.startedAt.getTime()) / 1000 / 60), // Convert to minutes
       attempts: submission.attempt
@@ -262,12 +263,16 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     return submissions;
   }
 
-  private calculateAssessmentOverview(submissions: Array<{
-    score: number;
-    maxScore: number;
-    attempts: number;
-    assessmentId: string;
-  }>): AssessmentOverview {
+  private calculateAssessmentOverview(
+    submissions: Array<{
+      score: number;
+      maxScore: number;
+      attempts: number;
+      assessmentId: string;
+      studentId: string;
+    }>,
+    classInfo: { totalStudents: number }
+  ): AssessmentOverview {
     if (submissions.length === 0) {
       return {
         totalAssessments: 0,
@@ -289,13 +294,16 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
 
     // Get unique assessments
     const uniqueAssessments = new Set(submissions.map(sub => sub.assessmentId));
+    const uniqueStudentsWhoSubmitted = new Set(submissions.map(sub => sub.studentId));
+
+    const completionRate = (uniqueStudentsWhoSubmitted.size / classInfo.totalStudents) * 100;
 
     return {
       totalAssessments: uniqueAssessments.size,
       totalSubmissions,
       averageScore: Math.round(averageScore * 100) / 100,
       passRate: Math.round(passRate * 100) / 100,
-      completionRate: 100, // Simplified - would need enrolled students count
+      completionRate: Math.round(completionRate * 100) / 100,
       averageAttempts: Math.round(averageAttempts * 100) / 100
     };
   }
@@ -455,8 +463,9 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     for (const assessmentId of uniqueAssessments) {
       const questionnaire = await this.questionnaireRepository.findById(assessmentId);
       if (questionnaire) {
-        // Would need to analyze individual question performance
-        // This requires question-level submission data which is not currently available
+        // TODO: Implement question analysis
+        // This requires a refactor of the QuestionnaireSubmission entity to include individual question responses.
+        // Once available, this method should analyze the performance for each question (e.g., percentage of correct answers).
         console.log(`Question analysis for ${questionnaire.title} - requires detailed implementation`);
       }
     }
@@ -531,17 +540,29 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     institutionId: string,
     courseId?: string
   ): Promise<ClassComparison> {
-    // Since listByInstitution doesn't exist, we'll use simplified comparison
-    // In a real implementation, we would need to collect submissions from all users in the institution
-    
-    if (courseId) {
-      // Filter by course (would need course-questionnaire relationship)
-      console.log(`Course filtering for ${courseId} - requires course-questionnaire relationship`);
+    const allEnrollments = await this.enrollmentRepository.listByInstitution(institutionId);
+    const allStudentIds = allEnrollments.map(e => e.userId);
+
+    const allSubmissions: QuestionnaireSubmission[] = [];
+    for (const studentId of allStudentIds) {
+      const userSubmissions = await this.questionnaireSubmissionRepository.listByUser(studentId);
+      allSubmissions.push(...userSubmissions);
     }
 
-    // For now, using simplified averages based on typical educational benchmarks
-    const institutionAverage = 72; // Typical institution average
-    const courseAverage = 75; // Typical course average
+    const institutionAverage = allSubmissions.length > 0
+      ? allSubmissions.reduce((sum, s) => sum + s.score, 0) / allSubmissions.length
+      : 0;
+
+    const courseSubmissions = courseId 
+      ? allSubmissions.filter(s => {
+          const enrollment = allEnrollments.find(e => e.userId === s.userId);
+          return enrollment?.courseId === courseId;
+        })
+      : [];
+    
+    const courseAverage = courseSubmissions.length > 0
+      ? courseSubmissions.reduce((sum, s) => sum + s.score, 0) / courseSubmissions.length
+      : 0;
     
     // Calculate percentile rank (simplified)
     const percentileRank = classAverage > institutionAverage 
