@@ -1,3 +1,5 @@
+import { defaultInstitutionSettings, InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
+
 /**
  * InstitutionSettings value object representing customization settings for an institution
  * Following Clean Architecture principles, this value object is pure and has no dependencies on infrastructure
@@ -6,7 +8,8 @@ export class InstitutionSettings {
   private constructor(
     public logoUrl?: string,
     public primaryColor?: string,
-    public secondaryColor?: string
+    public secondaryColor?: string,
+    public settings?: Partial<GlobalSettings['settings']>
   ) {}
 
   /**
@@ -18,12 +21,39 @@ export class InstitutionSettings {
     logoUrl?: string;
     primaryColor?: string;
     secondaryColor?: string;
+    settings?: Partial<GlobalSettings['settings']>;
   }): InstitutionSettings {
     return new InstitutionSettings(
       params?.logoUrl,
       params?.primaryColor,
-      params?.secondaryColor
+      params?.secondaryColor,
+      params?.settings
     );
+  }
+
+  get riskLevelThresholds() {
+    return {
+      ...defaultInstitutionSettings.settings.riskLevels,
+      ...this.settings?.riskLevels,
+    };
+  }
+
+  get participationLevelThresholds() {
+    return {
+      ...defaultInstitutionSettings.settings.participationLevels,
+      ...this.settings?.participationLevels,
+    };
+  }
+
+  get performanceRatingThresholds() {
+    return {
+      ...defaultInstitutionSettings.settings.performanceRatings,
+      ...this.settings?.performanceRatings,
+    };
+  }
+
+  get inactivityThreshold() {
+    return this.settings?.inactivityThreshold ?? defaultInstitutionSettings.settings.inactivityThreshold;
   }
 
   /**
@@ -35,7 +65,8 @@ export class InstitutionSettings {
     return new InstitutionSettings(
       newLogoUrl,
       this.primaryColor,
-      this.secondaryColor
+      this.secondaryColor,
+      this.settings
     );
   }
 
@@ -48,7 +79,8 @@ export class InstitutionSettings {
     return new InstitutionSettings(
       this.logoUrl,
       newColor,
-      this.secondaryColor
+      this.secondaryColor,
+      this.settings
     );
   }
 
@@ -61,7 +93,8 @@ export class InstitutionSettings {
     return new InstitutionSettings(
       this.logoUrl,
       this.primaryColor,
-      newColor
+      newColor,
+      this.settings
     );
   }
 }

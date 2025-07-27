@@ -6,10 +6,12 @@ import type { EnrollmentRepository } from '../../../../enrollment/infrastructure
 import type { LessonProgressRepository } from '../../../../content/infrastructure/repositories/LessonProgressRepository';
 import type { CourseRepository } from '../../../../content/infrastructure/repositories/CourseRepository';
 import type { QuestionnaireSubmissionRepository } from '../../../../content/infrastructure/repositories/QuestionnaireSubmissionRepository';
+import type { InstitutionRepository } from '../../../../institution/infrastructure/repositories/InstitutionRepository';
 import { Register } from '../../../../../shared/container/symbols';
 import type { Enrollment } from '../../../../enrollment/core/entities/Enrollment';
 import type { LessonProgress } from '../../../../content/core/entities/LessonProgress';
 import type { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
+import type { Institution } from '../../../../institution/core/entities/Institution';
 
 /**
  * Use case for generating class overview report
@@ -32,10 +34,19 @@ export class GenerateClassOverviewReportUseCase {
     private readonly courseRepository: CourseRepository,
     
     @inject(Register.content.repository.QuestionnaireSubmissionRepository)
-    private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository
+    private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
+
+    @inject(Register.institution.repository.InstitutionRepository)
+    private readonly institutionRepository: InstitutionRepository
   ) {}
 
   async execute(input: GenerateClassOverviewReportInput): Promise<GenerateClassOverviewReportOutput> {
+    // Get institution
+    const institution = await this.institutionRepository.findById(input.institutionId);
+    if (!institution) {
+      throw new Error('Institution not found');
+    }
+
     // Validate tutor exists and get tutor info
     const tutor = await this.userRepository.findById(input.tutorId);
     if (!tutor) {
@@ -56,7 +67,7 @@ export class GenerateClassOverviewReportUseCase {
     );
 
     // Build student data with real calculations
-    const students = await this.buildStudentData(classEnrollments, input);
+    const students = await this.buildStudentData(classEnrollments, input, institution);
 
     // Calculate class statistics based on real data
     const classStatistics = await this.calculateClassStatistics(students);
@@ -141,7 +152,11 @@ export class GenerateClassOverviewReportUseCase {
   /**
    * Build student data with real calculations from repositories
    */
-  private async buildStudentData(enrollments: Enrollment[], input: GenerateClassOverviewReportInput): Promise<ClassStudentData[]> {
+  private async buildStudentData(
+    enrollments: Enrollment[],
+    input: GenerateClassOverviewReportInput,
+    institution: Institution
+  ): Promise<ClassStudentData[]> {
     const students: ClassStudentData[] = [];
 
     for (const enrollment of enrollments) {
@@ -177,7 +192,12 @@ export class GenerateClassOverviewReportUseCase {
         const daysSinceLastAccess = Math.floor((Date.now() - lastAccessDate.getTime()) / (1000 * 60 * 60 * 24));
 
         // Determine risk level
-        const riskLevel = this.calculateRiskLevel(overallProgress, daysSinceLastAccess, averageScore);
+        const riskLevel = this.calculateRiskLevel(
+          overallProgress,
+          daysSinceLastAccess,
+          averageScore,
+          institution.settings
+        );
 
         // Determine completion status
         const completionStatus = this.getCompletionStatus(enrollment.status.toString(), overallProgress);
@@ -267,10 +287,18 @@ export class GenerateClassOverviewReportUseCase {
   /**
    * Calculate risk level for a student
    */
-  private calculateRiskLevel(progress: number, daysSinceLastAccess: number, averageScore: number): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
-    if (daysSinceLastAccess > 14 || averageScore < 50) return 'CRITICAL';
-    if (daysSinceLastAccess > 7 || progress < 30 || averageScore < 70) return 'HIGH';
-    if (daysSinceLastAccess > 3 || progress < 60) return 'MEDIUM';
+  private calculateRiskLevel(
+    progress: number,
+    daysSinceLastAccess: number,
+    averageScore: number,
+    settings: Institution['settings']
+  ): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+    const { high, medium } = settings.riskLevelThresholds;
+    const inactivityThreshold = settings.inactivityThreshold;
+
+    if (daysSinceLastAccess > inactivityThreshold * 2 || averageScore < 50) return 'CRITICAL';
+    if (daysSinceLastAccess > inactivityThreshold || progress < 30 || averageScore < high) return 'HIGH';
+    if (daysSinceLastAccess > 3 || progress < 60 || averageScore < medium) return 'MEDIUM';
     return 'LOW';
   }
 

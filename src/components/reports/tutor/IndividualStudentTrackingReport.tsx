@@ -42,7 +42,6 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
     const fetchStudents = async () => {
       const useCase = container.get<ListClassStudentsUseCase>(ListClassStudentsUseCase);
       const result = await useCase.execute({ classId, institutionId: user.currentIdInstitution });
-      console.log({ students: result.students }); // Debugging line
       setStudents(result.students);
     };
 

@@ -77,14 +77,16 @@ export default function TutorReports() {
         </div>
 
         <div className="mt-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-              <TabsTrigger value="class-overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="assessment-performance">Avaliações</TabsTrigger>
-              <TabsTrigger value="engagement-retention">Engajamento</TabsTrigger>
-              <TabsTrigger value="individual-tracking">Acompanhamento Individual</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full md:grid-cols-4">
+                <TabsTrigger value="class-overview">Visão Geral</TabsTrigger>
+                <TabsTrigger value="assessment-performance">Avaliações</TabsTrigger>
+                <TabsTrigger value="engagement-retention">Engajamento</TabsTrigger>
+                <TabsTrigger value="individual-tracking">Acompanhamento Individual</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           <div className="mt-4">
             <div style={{ display: activeTab === 'class-overview' ? 'block' : 'none' }}>
               <ClassOverviewReport courseId={selectedCourse} classId={selectedClass} />

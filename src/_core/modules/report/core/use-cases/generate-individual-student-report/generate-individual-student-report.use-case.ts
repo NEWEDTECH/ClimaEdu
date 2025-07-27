@@ -18,6 +18,7 @@ import type { CourseRepository } from '../../../../content/infrastructure/reposi
 import type { QuestionnaireSubmissionRepository } from '../../../../content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { QuestionnaireRepository } from '../../../../content/infrastructure/repositories/QuestionnaireRepository';
 import type { ClassRepository } from '../../../../enrollment/infrastructure/repositories/ClassRepository';
+import type { InstitutionRepository } from '../../../../institution/infrastructure/repositories/InstitutionRepository';
 import { User } from '../../../../user/core/entities/User';
 import { LessonProgress } from '../../../../content/core/entities/LessonProgress';
 import { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
@@ -56,10 +57,19 @@ export class GenerateIndividualStudentReportUseCase {
     private readonly listClassStudentsUseCase: ListClassStudentsUseCase,
 
     @inject(Register.enrollment.repository.ClassRepository)
-    private readonly classRepository: ClassRepository
+    private readonly classRepository: ClassRepository,
+
+    @inject(Register.institution.repository.InstitutionRepository)
+    private readonly institutionRepository: InstitutionRepository
   ) {}
 
   async execute(input: GenerateIndividualStudentReportInput): Promise<GenerateIndividualStudentReportOutput> {
+    // Get institution
+    const institution = await this.institutionRepository.findById(input.institutionId);
+    if (!institution) {
+      throw new Error('Institution not found');
+    }
+
     // Validate class exists and has a course
     if (!input.classId) {
       throw new Error('Class ID is required');
