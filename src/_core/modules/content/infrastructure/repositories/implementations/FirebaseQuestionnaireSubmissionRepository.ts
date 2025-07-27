@@ -176,4 +176,28 @@ export class FirebaseQuestionnaireSubmissionRepository implements QuestionnaireS
       return this.mapToEntity({ id: doc.id, ...data });
     });
   }
+
+  async listByUsers(userIds: string[]): Promise<QuestionnaireSubmission[]> {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    const chunks = [];
+    for (let i = 0; i < userIds.length; i += 30) {
+      chunks.push(userIds.slice(i, i + 30));
+    }
+
+    const promises = chunks.map(async (chunk) => {
+      const submissionsRef = collection(firestore, this.collectionName);
+      const q = query(submissionsRef, where('userId', 'in', chunk));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return this.mapToEntity({ id: doc.id, ...data });
+      });
+    });
+
+    const results = await Promise.all(promises);
+    return results.flat();
+  }
 }

@@ -19,6 +19,13 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
 
   /**
+   * Find users by a list of ids
+   * @param ids List of user ids
+   * @returns List of users
+   */
+  findByIds(ids: string[]): Promise<User[]>;
+
+  /**
    * Find a user by email
    * @param email User email
    * @returns User or null if not found

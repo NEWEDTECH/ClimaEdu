@@ -172,21 +172,17 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
   }
 
   private async getClassStudents(classEnrollments: Enrollment[]): Promise<Array<{ id: string; name: string; email: string }>> {
-
-    const students: Array<{ id: string; name: string; email: string }> = [];
-    
-    for (const enrollment of classEnrollments) {
-      const user = await this.userRepository.findById(enrollment.userId);
-      if (user) {
-        students.push({
-          id: user.id,
-          name: user.name,
-          email: user.email.value
-        });
-      }
+    const studentIds = classEnrollments.map(e => e.userId);
+    if (studentIds.length === 0) {
+      return [];
     }
 
-    return students;
+    const users = await this.userRepository.findByIds(studentIds);
+    return users.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email.value
+    }));
   }
 
   private async getAssessmentSubmissions(
@@ -209,13 +205,7 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     const studentIds = classEnrollments.map((e: Enrollment) => e.userId);
 
     // Get all questionnaire submissions for students in this class
-    const allSubmissions: QuestionnaireSubmission[] = [];
-    
-    // Since listByInstitution doesn't exist, we need to get submissions by user
-    for (const studentId of studentIds) {
-      const userSubmissions = await this.questionnaireSubmissionRepository.listByUser(studentId);
-      allSubmissions.push(...userSubmissions);
-    }
+    const allSubmissions = await this.questionnaireSubmissionRepository.listByUsers(studentIds);
     
     let filteredSubmissions = allSubmissions.filter((submission: QuestionnaireSubmission) => 
       studentIds.includes(submission.userId)
@@ -322,8 +312,12 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
 
     const statistics: AssessmentStatistics[] = [];
 
+    const assessmentIds = Object.keys(assessmentGroups);
+    const questionnaires = await this.questionnaireRepository.findByIds(assessmentIds);
+    const questionnairesMap = new Map(questionnaires.map(q => [q.id, q]));
+
     for (const [assessmentId, assessmentSubmissions] of Object.entries(assessmentGroups)) {
-      const questionnaire = await this.questionnaireRepository.findById(assessmentId);
+      const questionnaire = questionnairesMap.get(assessmentId);
       
       const scores = assessmentSubmissions.map(sub => (sub.score / sub.maxScore) * 100);
       const totalSubmissions = assessmentSubmissions.length;
@@ -460,8 +454,11 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     
     const analysis: QuestionAnalysis[] = [];
     
+    const questionnaires = await this.questionnaireRepository.findByIds(uniqueAssessments);
+    const questionnairesMap = new Map(questionnaires.map(q => [q.id, q]));
+
     for (const assessmentId of uniqueAssessments) {
-      const questionnaire = await this.questionnaireRepository.findById(assessmentId);
+      const questionnaire = questionnairesMap.get(assessmentId);
       if (questionnaire) {
         // TODO: Implement question analysis
         // This requires a refactor of the QuestionnaireSubmission entity to include individual question responses.
@@ -543,11 +540,7 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
     const allEnrollments = await this.enrollmentRepository.listByInstitution(institutionId);
     const allStudentIds = allEnrollments.map(e => e.userId);
 
-    const allSubmissions: QuestionnaireSubmission[] = [];
-    for (const studentId of allStudentIds) {
-      const userSubmissions = await this.questionnaireSubmissionRepository.listByUser(studentId);
-      allSubmissions.push(...userSubmissions);
-    }
+    const allSubmissions = await this.questionnaireSubmissionRepository.listByUsers(allStudentIds);
 
     const institutionAverage = allSubmissions.length > 0
       ? allSubmissions.reduce((sum, s) => sum + s.score, 0) / allSubmissions.length
