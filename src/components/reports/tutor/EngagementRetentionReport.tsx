@@ -9,6 +9,12 @@ import { GenerateEngagementRetentionReportOutput, StudentEngagementData } from '
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { ReportSymbols } from '@/_core/shared/container/symbols';
+import { EngagementSummary } from './engagement-sections/EngagementSummary';
+import { EngagementClassOverview } from './engagement-sections/EngagementClassOverview';
+import { EngagementDropoutRisk } from './engagement-sections/EngagementDropoutRisk';
+import { EngagementRetentionMetrics } from './engagement-sections/EngagementRetentionMetrics';
+import { EngagementTrends } from './engagement-sections/EngagementTrends';
+import { EngagementRecommendations } from './engagement-sections/EngagementRecommendations';
 
 interface EngagementRetentionReportProps {
   courseId: string | null;
@@ -38,6 +44,8 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
           classId,
           courseId,
           includeStudentDetails: true,
+          includeTrendAnalysis: true,
+          includeRecommendations: true,
         });
         setReport(result);
       } catch (err) {
@@ -65,80 +73,47 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Visão Geral de Engajamento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Saúde da Turma</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{report.classOverview.classHealthScore.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Engajamento Médio</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{report.classOverview.averageEngagementScore.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Taxa de Retenção</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{report.retentionMetrics.overallRetentionRate.toFixed(2)}%</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Alunos em Risco</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{report.dropoutRisk.highRiskStudents}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
+      {report.summary && <EngagementSummary data={report.summary} />}
+      {report.recommendations && <EngagementRecommendations data={report.recommendations} />}
+      {report.classOverview && <EngagementClassOverview data={report.classOverview} />}
+      {report.dropoutRisk && <EngagementDropoutRisk data={report.dropoutRisk} />}
+      {report.retentionMetrics && <EngagementRetentionMetrics data={report.retentionMetrics} />}
+      {report.trends && <EngagementTrends data={report.trends} />}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Detalhes de Engajamento por Aluno</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Aluno</TableHead>
-                <TableHead>Nível de Engajamento</TableHead>
-                <TableHead>Nível de Risco</TableHead>
-                <TableHead>Último Acesso</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {report.studentDetails?.map((student: StudentEngagementData) => (
-                <TableRow key={student.studentId}>
-                  <TableCell>{student.studentName}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>{student.engagementLevel}</span>
-                      <Progress value={student.engagementScore} className="w-24" />
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.riskLevel}</TableCell>
-                  <TableCell>{student.daysSinceLastAccess} dias atrás</TableCell>
+      {report.studentDetails && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Detalhes de Engajamento por Aluno</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Nível de Engajamento</TableHead>
+                  <TableHead>Nível de Risco</TableHead>
+                  <TableHead>Último Acesso</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {report.studentDetails.map((student: StudentEngagementData) => (
+                  <TableRow key={student.studentId}>
+                    <TableCell>{student.studentName}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span>{student.engagementLevel}</span>
+                        <Progress value={student.engagementScore} className="w-24" />
+                      </div>
+                    </TableCell>
+                    <TableCell>{student.riskLevel}</TableCell>
+                    <TableCell>{student.daysSinceLastAccess} dias atrás</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

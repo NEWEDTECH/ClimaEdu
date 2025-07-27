@@ -54,7 +54,8 @@ export class GenerateEngagementRetentionReportUseCase {
     const studentEngagementData = await this.buildStudentEngagementData(
       enrollments, 
       allProgresses, 
-      input.inactivityThreshold || 7
+      input.inactivityThreshold || 7,
+      analysisPeriod
     );
 
     // Apply filters and sorting
@@ -176,7 +177,8 @@ export class GenerateEngagementRetentionReportUseCase {
   private async buildStudentEngagementData(
     enrollments: Enrollment[],
     progressMap: Map<string, LessonProgress[]>,
-    inactivityThreshold: number
+    inactivityThreshold: number,
+    analysisPeriod: { totalDays: number }
   ): Promise<StudentEngagementData[]> {
     const engagementData: StudentEngagementData[] = [];
 
@@ -186,7 +188,7 @@ export class GenerateEngagementRetentionReportUseCase {
         if (!user) continue;
 
         const progresses = progressMap.get(enrollment.userId) || [];
-        const engagementInfo = this.calculateEngagementMetrics(progresses, inactivityThreshold);
+        const engagementInfo = this.calculateEngagementMetrics(progresses, inactivityThreshold, analysisPeriod);
 
         engagementData.push({
           studentId: user.id,
@@ -215,7 +217,11 @@ export class GenerateEngagementRetentionReportUseCase {
     return engagementData;
   }
 
-  private calculateEngagementMetrics(progresses: LessonProgress[], inactivityThreshold: number): {
+  private calculateEngagementMetrics(
+    progresses: LessonProgress[], 
+    inactivityThreshold: number,
+    analysisPeriod: { totalDays: number }
+  ): {
     lastAccessDate: Date;
     daysSinceLastAccess: number;
     engagementScore: number;
@@ -252,10 +258,11 @@ export class GenerateEngagementRetentionReportUseCase {
       progresses.map(p => p.lastAccessedAt.toISOString().split('T')[0])
     ).size;
     
+    const weeksInPeriod = analysisPeriod.totalDays / 7;
     const loginFrequency = {
-      daily: uniqueDays / 30, // Simplified - assumes 30-day period
-      weekly: uniqueDays / 4.3, // Simplified
-      monthly: uniqueDays / 1
+      daily: uniqueDays / analysisPeriod.totalDays,
+      weekly: weeksInPeriod > 0 ? uniqueDays / weeksInPeriod : 0,
+      monthly: uniqueDays / (analysisPeriod.totalDays / 30)
     };
 
     // Calculate engagement score (0-100)
@@ -285,10 +292,7 @@ export class GenerateEngagementRetentionReportUseCase {
       riskLevel = 'LOW';
     }
 
-    // Calculate activity trend (simplified)
-    const activityTrend: 'INCREASING' | 'STABLE' | 'DECREASING' = 
-      engagementScore > 60 ? 'INCREASING' : 
-      engagementScore > 40 ? 'STABLE' : 'DECREASING';
+    const activityTrend = this.calculateActivityTrend(progresses, analysisPeriod);
 
     return {
       lastAccessDate,
@@ -794,5 +798,29 @@ export class GenerateEngagementRetentionReportUseCase {
       riskIndicators: riskIndicators.length > 0 ? riskIndicators : ['Nenhum risco crítico identificado'],
       trendDirection
     };
+  }
+
+  private calculateActivityTrend(
+    progresses: LessonProgress[],
+    analysisPeriod: { totalDays: number }
+  ): 'INCREASING' | 'STABLE' | 'DECREASING' {
+    if (progresses.length < 2) {
+      return 'STABLE';
+    }
+
+    const halfPeriod = analysisPeriod.totalDays / 2;
+    const now = new Date();
+    const midpointDate = new Date(now.getTime() - halfPeriod * 24 * 60 * 60 * 1000);
+
+    const firstHalfProgresses = progresses.filter(p => p.lastAccessedAt < midpointDate).length;
+    const secondHalfProgresses = progresses.filter(p => p.lastAccessedAt >= midpointDate).length;
+
+    if (secondHalfProgresses > firstHalfProgresses * 1.2) {
+      return 'INCREASING';
+    }
+    if (firstHalfProgresses > secondHalfProgresses * 1.2) {
+      return 'DECREASING';
+    }
+    return 'STABLE';
   }
 }
