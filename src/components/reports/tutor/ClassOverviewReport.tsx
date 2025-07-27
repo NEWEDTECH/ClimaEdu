@@ -1,12 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
 import { GenerateClassOverviewReportUseCase } from '@/_core/modules/report/core/use-cases/generate-class-overview-report/generate-class-overview-report.use-case';
 import { GenerateClassOverviewReportOutput } from '@/_core/modules/report/core/use-cases/generate-class-overview-report/generate-class-overview-report.output';
 import { ReportSymbols } from '@/_core/shared/container/symbols';
+import { OverviewStatistics } from './overview-sections/OverviewStatistics';
+import { OverviewStudentList } from './overview-sections/OverviewStudentList';
+import { OverviewAlerts } from './overview-sections/OverviewAlerts';
+import { OverviewTrends } from './overview-sections/OverviewTrends';
+import { OverviewBenchmarks } from './overview-sections/OverviewBenchmarks';
+import { OverviewInsights } from './overview-sections/OverviewInsights';
 
 interface ClassOverviewReportProps {
   courseId: string | null;
@@ -62,54 +67,13 @@ export function ClassOverviewReport({ courseId, classId }: ClassOverviewReportPr
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Visão Geral da Turma</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total de Alunos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{report.classStatistics.totalStudents}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Alunos Ativos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{report.classStatistics.activeStudents}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Progresso Médio
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{report.classStatistics.averageProgress.toFixed(2)}%</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Média da Turma
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{report.classStatistics.classAverageScore.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      {report.classStatistics && <OverviewStatistics data={report.classStatistics} />}
+      {report.alerts && <OverviewAlerts data={report.alerts} />}
+      {report.students && <OverviewStudentList data={report.students} />}
+      {report.trends && <OverviewTrends data={report.trends} />}
+      {report.benchmarks && <OverviewBenchmarks data={report.benchmarks} />}
+      {report.insights && <OverviewInsights data={report.insights} />}
+    </div>
   );
 }

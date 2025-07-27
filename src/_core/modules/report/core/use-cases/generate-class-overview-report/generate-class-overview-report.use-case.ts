@@ -166,9 +166,9 @@ export class GenerateClassOverviewReportUseCase {
           ? Math.round(courseSubmissions.reduce((sum: number, s: QuestionnaireSubmission) => sum + s.score, 0) / courseSubmissions.length)
           : 0;
 
-        // Calculate study time (simplified - would need actual tracking)
-        const totalStudyTime = completedLessons.length * 30; // 30 minutes per lesson average
-        const averageSessionLength = totalStudyTime > 0 ? Math.round(totalStudyTime / Math.max(1, completedLessons.length)) : 0;
+        // Calculate study time
+        const totalStudyTime = lessonProgresses.reduce((sum, lp) => sum + lp.getTotalTimeSpent(), 0) / 60; // in minutes
+        const averageSessionLength = lessonProgresses.length > 0 ? Math.round(totalStudyTime / lessonProgresses.length) : 0;
 
         // Calculate days since last access
         const lastAccessDate = lessonProgresses.length > 0 
@@ -285,11 +285,54 @@ export class GenerateClassOverviewReportUseCase {
   }
 
   /**
-   * Calculate study streak (simplified implementation)
+   * Calculate study streak
    */
   private calculateStudyStreak(lessonProgresses: LessonProgress[]): number {
-    // Simplified - would need actual daily activity tracking
-    return Math.min(lessonProgresses.length, 7);
+    if (lessonProgresses.length === 0) {
+      return 0;
+    }
+
+    const accessDates = lessonProgresses
+      .map(p => p.lastAccessedAt.toISOString().split('T')[0])
+      .filter((v, i, a) => a.indexOf(v) === i) // Unique dates
+      .map(dateStr => new Date(dateStr))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    if (accessDates.length === 0) {
+      return 0;
+    }
+
+    let longestStreak = 0;
+    let currentStreak = 0;
+    
+    for (let i = 0; i < accessDates.length; i++) {
+      if (i === 0) {
+        currentStreak = 1;
+        longestStreak = 1;
+      } else {
+        const diffDays = (accessDates[i].getTime() - accessDates[i - 1].getTime()) / (1000 * 3600 * 24);
+        if (diffDays === 1) {
+          currentStreak++;
+        } else {
+          currentStreak = 1; // Reset streak
+        }
+      }
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+      }
+    }
+
+    // Check if the streak is current
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastAccessDay = accessDates[accessDates.length - 1];
+    const diffFromToday = (today.getTime() - lastAccessDay.getTime()) / (1000 * 3600 * 24);
+
+    if (diffFromToday > 1) {
+      currentStreak = 0; // Streak is broken
+    }
+
+    return currentStreak;
   }
 
   /**
