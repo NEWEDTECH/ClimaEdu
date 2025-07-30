@@ -144,7 +144,7 @@ export default function CoursePage() {
 
             // Load questionnaire for this lesson
             await loadLessonQuestionnaire(lessonId);
-            
+
             // Load activity for this lesson
             await loadLessonActivity(lessonId);
         } catch (error) {
@@ -350,143 +350,144 @@ export default function CoursePage() {
                 onSidebarModeChange={setSidebarMode}
             />
 
-            <div 
+            <div
                 className="h-[calc(100vh-4rem)] p-4 transition-all duration-300"
                 style={{
-                    marginRight: sidebarMode !== 'hidden' 
-                        ? sidebarMode === 'chat' 
-                            ? '500px' 
-                            : '580px' 
-                        : '100px' 
+                    marginRight: sidebarMode !== 'hidden'
+                        ? sidebarMode === 'chat'
+                            ? '500px'
+                            : '580px'
+                        : '0px',
+                    width: sidebarMode === 'hidden' ? '100%' : 'auto'
                 }}
             >
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                        </div>
-                    ) : error ? (
-                        <div className="text-red-500 text-center p-8">{error}</div>
-                    ) : (
-                        <div className="space-y-6">
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    </div>
+                ) : error ? (
+                    <div className="text-red-500 text-center p-8">{error}</div>
+                ) : (
+                    <div className="space-y-6">
 
-                            <div className="w-full border-gray-300 pb-4 relative">
-                                {activeContent && activeContent.type === ContentType.VIDEO ? (
-                                    <>
-                                        <VideoPlayer
-                                            url={activeContent.url}
-                                            autoPlay={true}
-                                            showControls={true}
-                                            onEnded={handleNextVideo}
-                                            handleProgress={handleVideoProgress}
-                                        />
+                        <div className="w-full border-gray-300 pb-4 relative">
+                            {activeContent && activeContent.type === ContentType.VIDEO ? (
+                                <>
+                                    <VideoPlayer
+                                        url={activeContent.url}
+                                        autoPlay={true}
+                                        showControls={true}
+                                        onEnded={handleNextVideo}
+                                        handleProgress={handleVideoProgress}
+                                    />
 
-                                        {/* Netflix-style Next Video Overlay */}
-                                        {showNextVideoOverlay && (
-                                            <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg max-w-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="flex-shrink-0">
-                                                        <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-sm font-medium">Próximo vídeo em breve</p>
-                                                        <p className="text-xs text-gray-300">Deseja continuar?</p>
-                                                    </div>
+                                    {/* Netflix-style Next Video Overlay */}
+                                    {showNextVideoOverlay && (
+                                        <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg max-w-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex-shrink-0">
+                                                    <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
                                                 </div>
-
-                                                <div className="flex space-x-2 mt-3">
-                                                    <button
-                                                        onClick={() => {
-                                                            handleNextVideo();
-                                                            setShowNextVideoOverlay(false);
-                                                            if (overlayTimer) {
-                                                                clearTimeout(overlayTimer);
-                                                                setOverlayTimer(null);
-                                                            }
-                                                        }}
-                                                        className="flex-1 bg-white text-black px-3 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
-                                                    >
-                                                        Sim, continuar
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setShowNextVideoOverlay(false);
-                                                            if (overlayTimer) {
-                                                                clearTimeout(overlayTimer);
-                                                                setOverlayTimer(null);
-                                                            }
-                                                        }}
-                                                        className="flex-1 bg-gray-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-gray-700 transition-colors"
-                                                    >
-                                                        Não
-                                                    </button>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium">Próximo vídeo em breve</p>
+                                                    <p className="text-xs text-gray-300">Deseja continuar?</p>
                                                 </div>
                                             </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="flex justify-center items-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                        <p className="text-gray-500">Nenhum conteúdo de vídeo disponível</p>
-                                    </div>
-                                )}
 
-                                {/* Navigation Buttons - Bottom Right */}
-                                <div className="flex justify-end mt-4">
-                                    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-                                        {/* Previous Button */}
-                                        <button
-                                            onClick={handlePreviousVideo}
-                                            className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            disabled={!activeLesson || modules.length === 0}
-                                            title="Lição anterior"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                        </button>
+                                            <div className="flex space-x-2 mt-3">
+                                                <button
+                                                    onClick={() => {
+                                                        handleNextVideo();
+                                                        setShowNextVideoOverlay(false);
+                                                        if (overlayTimer) {
+                                                            clearTimeout(overlayTimer);
+                                                            setOverlayTimer(null);
+                                                        }
+                                                    }}
+                                                    className="flex-1 bg-white text-black px-3 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
+                                                >
+                                                    Sim, continuar
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowNextVideoOverlay(false);
+                                                        if (overlayTimer) {
+                                                            clearTimeout(overlayTimer);
+                                                            setOverlayTimer(null);
+                                                        }
+                                                    }}
+                                                    className="flex-1 bg-gray-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-gray-700 transition-colors"
+                                                >
+                                                    Não
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="flex justify-center items-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                    <p className="text-gray-500">Nenhum conteúdo de vídeo disponível</p>
+                                </div>
+                            )}
 
-                                        {/* Complete Button */}
-                                        <button
-                                            onClick={handleCompleteLesson}
-                                            className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            disabled={!activeLesson}
-                                            title="Concluir lição"
-                                        >
-                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            <span className="text-sm font-medium">Concluir</span>
-                                        </button>
+                            {/* Navigation Buttons - Bottom Right */}
+                            <div className="flex justify-end mt-4">
+                                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
+                                    {/* Previous Button */}
+                                    <button
+                                        onClick={handlePreviousVideo}
+                                        className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={!activeLesson || modules.length === 0}
+                                        title="Lição anterior"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
 
-                                        {/* Next Button */}
-                                        <button
-                                            onClick={handleNextVideo}
-                                            className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            disabled={!activeLesson || modules.length === 0}
-                                            title="Próxima lição"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                    </div>
+                                    {/* Complete Button */}
+                                    <button
+                                        onClick={handleCompleteLesson}
+                                        className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={!activeLesson}
+                                        title="Concluir lição"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-sm font-medium">Concluir</span>
+                                    </button>
+
+                                    {/* Next Button */}
+                                    <button
+                                        onClick={handleNextVideo}
+                                        className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={!activeLesson || modules.length === 0}
+                                        title="Próxima lição"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
-
-                            {/* CONTEÚDO VERTICAL */}
-                            <CourseContent
-                                activeContent={activeContent}
-                                activeLesson={activeLesson}
-                                activeLessonData={activeLessonData}
-                                activeActivity={activeActivity}
-                                activeQuestionnaire={activeQuestionnaire}
-                                attemptCount={attemptCount}
-                                hasPassedQuestionnaire={hasPassedQuestionnaire}
-                                courseId={courseId}
-                            />
                         </div>
-                    )}
+
+                        {/* CONTEÚDO VERTICAL */}
+                        <CourseContent
+                            activeContent={activeContent}
+                            activeLesson={activeLesson}
+                            activeLessonData={activeLessonData}
+                            activeActivity={activeActivity}
+                            activeQuestionnaire={activeQuestionnaire}
+                            attemptCount={attemptCount}
+                            hasPassedQuestionnaire={hasPassedQuestionnaire}
+                            courseId={courseId}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Chat Dropdown - Fixed position */}

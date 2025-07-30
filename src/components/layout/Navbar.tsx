@@ -20,7 +20,7 @@ export function Navbar() {
   return (
     <nav className={`h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between backdrop-blur-md shadow-lg relative z-50 transition-all duration-300 ${
       isDarkMode 
-        ? 'bg-gray-800/80 border-b border-white/10' 
+        ? 'bg-black border-b border-white/10' 
         : 'bg-gray-100/80 border-b border-gray-200/50'
     }`}>
 

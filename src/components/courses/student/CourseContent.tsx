@@ -47,7 +47,7 @@ export function CourseContent({
         {activeLessonData && activeLessonData.description ? (
           <div className={`p-6 rounded-lg shadow border ${
             isDarkMode 
-              ? 'bg-gray-900 border-gray-700' 
+              ? 'bg-[#272727] border-gray-700' 
               : 'bg-gray-50 border-gray-200'
           }`}>
             <div className="flex items-center gap-3 mb-4">
@@ -282,7 +282,7 @@ export function CourseContent({
         {activeLesson ? (
           <div>
             {activeQuestionnaire ? (
-              <div className="space-y-6">
+              <div className="">
                 {/* Questionnaire Info */}
                 <div className="space-y-4">
                   <h4 className={`text-xl font-semibold ${
@@ -291,64 +291,64 @@ export function CourseContent({
                     {activeQuestionnaire.title}
                   </h4>
 
-                  <div className="space-y-3 text-sm">
-                    <div className={`flex justify-between py-2 border-b ${
+                  <div className="text-sm">
+                    <div className={`flex py-2 ${
                       isDarkMode ? 'border-gray-600' : 'border-gray-200'
                     }`}>
                       <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                         Tentativas máximas:
                       </span>
-                      <span className={`font-medium ${
+                      <span className={`font-medium ml-2 ml-2 ${
                         isDarkMode ? 'text-white' : 'text-gray-900'
                       }`}>
                         {activeQuestionnaire.maxAttempts}
                       </span>
                     </div>
 
-                    <div className={`flex justify-between py-2 border-b ${
+                    <div className={`flex py-2 ${
                       isDarkMode ? 'border-gray-600' : 'border-gray-200'
                     }`}>
                       <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                         Tentativas realizadas:
                       </span>
-                      <span className={`font-medium ${
+                      <span className={`font-medium ml-2 ${
                         isDarkMode ? 'text-white' : 'text-gray-900'
                       }`}>
                         {attemptCount}
                       </span>
                     </div>
 
-                    <div className={`flex justify-between py-2 border-b ${
+                    <div className={`flex py-2 ${
                       isDarkMode ? 'border-gray-600' : 'border-gray-200'
                     }`}>
                       <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                         Nota de aprovação:
                       </span>
-                      <span className={`font-medium ${
+                      <span className={`font-medium ml-2 ${
                         isDarkMode ? 'text-white' : 'text-gray-900'
                       }`}>
                         {activeQuestionnaire.passingScore}%
                       </span>
                     </div>
 
-                    <div className={`flex justify-between py-2 border-b ${
+                    <div className={`flex py-2 ${
                       isDarkMode ? 'border-gray-600' : 'border-gray-200'
                     }`}>
                       <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                         Total de perguntas:
                       </span>
-                      <span className={`font-medium ${
+                      <span className={`font-medium ml-2 ${
                         isDarkMode ? 'text-white' : 'text-gray-900'
                       }`}>
                         {activeQuestionnaire.questions.length}
                       </span>
                     </div>
 
-                    <div className="flex justify-between py-2">
+                    <div className="flex py-2">
                       <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                         Status:
                       </span>
-                      <span className={`font-medium ${
+                      <span className={`font-medium ml-2 ${
                         hasPassedQuestionnaire
                           ? 'text-green-600 dark:text-green-400'
                           : isDarkMode ? 'text-white' : 'text-gray-900'
@@ -358,27 +358,7 @@ export function CourseContent({
                     </div>
                   </div>
                 </div>
-
-                {/* Success message if student passed */}
-                {hasPassedQuestionnaire && (
-                  <div className={`p-4 border rounded-lg ${
-                    isDarkMode 
-                      ? 'bg-green-900/20 border-green-800' 
-                      : 'bg-green-50 border-green-200'
-                  }`}>
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className={`font-medium ${
-                        isDarkMode ? 'text-green-300' : 'text-green-700'
-                      }`}>
-                        Parabéns! Você foi aprovado neste questionário.
-                      </span>
-                    </div>
-                  </div>
-                )}
-
+  
                 {/* Warning if max attempts reached */}
                 {attemptCount >= activeQuestionnaire.maxAttempts && !hasPassedQuestionnaire && (
                   <div className={`p-4 border rounded-lg ${
@@ -400,11 +380,11 @@ export function CourseContent({
                 )}
 
                 {/* Action Button */}
-                <div className="pt-4 border-t">
+                <div className="pt-4">
                   <a
                     href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}`}
                     rel="noopener noreferrer"
-                    className={`block w-full py-3 px-4 rounded-lg font-medium transition-colors text-center ${
+                    className={`block w-fit py-3 px-4 rounded-lg font-medium transition-colors text-center ${
                       hasPassedQuestionnaire
                         ? isDarkMode 
                           ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
