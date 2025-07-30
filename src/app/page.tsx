@@ -15,7 +15,6 @@ import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list
 import { LoadingSpinner } from '@/components/loader'
 import { SearchComponent } from '@/components/search'
 import { Play, BookOpen, Headphones, TrendingUp } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
 
 
 type CourseDisplayData = {
@@ -45,7 +44,6 @@ type PodcastDisplayData = {
 
 export default function Home() {
   const { infoUser } = useProfile();
-  const { isDarkMode } = useTheme();
   const [enrolledCourses, setEnrolledCourses] = useState<CourseDisplayData[]>([]);
   const [availableCourses, setAvailableCourses] = useState<CourseDisplayData[]>([]);
   const [enrolledTrails, setEnrolledTrails] = useState<TrailDisplayData[]>([]);
