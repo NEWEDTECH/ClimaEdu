@@ -193,7 +193,7 @@ export default function Home() {
         <div className="min-h-screen flex items-center justify-center transition-all duration-300 dark:bg-black bg-gray-100">
           <div className="text-center space-y-4">
             <LoadingSpinner />
-            <div className="text-lg font-medium animate-pulse dark:text-white/80' : 'text-gray-700">
+            <div className="text-lg font-medium animate-pulse dark:text-white/80 text-gray-700">
               Carregando seu universo de aprendizado...
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function Home() {
                   <div className="max-w-2xl mx-auto">
                     <SearchComponent
                       placeholder="Buscar cursos, trilhas ou podcasts..."
-                      className="w-full backdrop-blur-sm dark:bg-white/10 dark:border-white/20 dark:text-white dark:placeholder:text-white/60 bg-white/80 border-gray-200/50 text-gray-800 placeholder:text-gray-500"
+                      className="w-full backdrop-blur-sm dark:bg-transparent dark:border-white/20 dark:text-white dark:placeholder:text-white/60 bg-white/80 border-gray-200/50 text-gray-800 placeholder:text-gray-500"
                       showFilters={true}
                     />
                   </div>
