@@ -17,6 +17,7 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Question } from '@/_core/modules/content/core/entities/Question';
 import { QuestionSubmission } from '@/_core/modules/content/core/entities/QuestionSubmission';
 import { QuestionnaireSubmission } from '@/_core/modules/content';
+import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { Class } from '@/_core/modules/enrollment/core/entities/Class';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
@@ -47,6 +48,7 @@ const C = {
   QUESTIONNAIRE_SUBMISSIONS: 'questionnaire_submissions',
   CERTIFICATES: 'certificates',
   CLASSES: 'classes',
+  ACTIVITIES: 'activities',
 };
 
 // --- Vídeos de exemplo ---
@@ -193,7 +195,7 @@ const createModulesAndLessons = async (courses: Course[]) => {
       const numLessons = randomInt(5, 8);
       for (let j = 0; j < numLessons; j++) {
         const lessonId = `les_${faker.string.uuid()}`;
-        const lesson = Lesson.create({ id: lessonId, moduleId: courseModule.id, title: faker.lorem.sentence(5), order: j });
+        const lesson = Lesson.create({ id: lessonId, moduleId: courseModule.id, title: faker.lorem.sentence(5), order: j, description: faker.lorem.paragraphs(30), coverImageUrl: faker.image.url() });
         
         const contentVideo = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.VIDEO, title: 'Vídeo Aula', url: VIDEOS[randomInt(0, VIDEOS.length - 1)] });
         const contentPdf = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.PDF, title: 'Material de Apoio', url: faker.internet.url() });
@@ -204,6 +206,26 @@ const createModulesAndLessons = async (courses: Course[]) => {
         
         lesson.addContent(contentVideo);
         lesson.addContent(contentPdf);
+
+        const activityId = `act_${faker.string.uuid()}`;
+        const activity = Activity.create({
+          id: activityId,
+          lessonId: lesson.id,
+          description: `Atividade para: ${lesson.title}`,
+          instructions: faker.lorem.paragraphs(4),
+          resourceUrl: faker.internet.url(),
+        });
+        lesson.attachActivity(activity);
+
+        const activityRef = firestore.collection(C.ACTIVITIES).doc(activity.id);
+        batch.set(activityRef, {
+          id: activity.id,
+          lessonId: activity.lessonId,
+          description: activity.description,
+          instructions: activity.instructions,
+          resourceUrl: activity.resourceUrl
+        });
+        operationCount++;
         
         const lessonPlain: { [key: string]: unknown } = {
           id: lesson.id,
@@ -214,8 +236,32 @@ const createModulesAndLessons = async (courses: Course[]) => {
           order: lesson.order,
           contents: lesson.contents.map((c: Content) => ({ ...c })),
         };
-        if (lesson.activity) lessonPlain.activity = lesson.activity;
-        if (lesson.questionnaire) lessonPlain.questionnaire = lesson.questionnaire;
+        
+        if (lesson.activity) {
+          lessonPlain.activity = {
+            id: lesson.activity.id,
+            lessonId: lesson.activity.lessonId,
+            description: lesson.activity.description,
+            instructions: lesson.activity.instructions,
+            resourceUrl: lesson.activity.resourceUrl
+          };
+        }
+
+        if (lesson.questionnaire) {
+          lessonPlain.questionnaire = {
+            id: lesson.questionnaire.id,
+            lessonId: lesson.questionnaire.lessonId,
+            title: lesson.questionnaire.title,
+            maxAttempts: lesson.questionnaire.maxAttempts,
+            passingScore: lesson.questionnaire.passingScore,
+            questions: lesson.questionnaire.questions.map(q => ({
+              id: q.id,
+              questionText: q.questionText,
+              options: q.options,
+              correctAnswerIndex: q.correctAnswerIndex
+            }))
+          };
+        }
         
         const lessonRef = firestore.collection(C.LESSONS).doc(lesson.id);
         batch.set(lessonRef, lessonPlain);
