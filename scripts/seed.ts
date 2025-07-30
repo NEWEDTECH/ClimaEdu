@@ -28,7 +28,7 @@ const NUM_TUTORS = 2;
 const NUM_STUDENTS = 20;
 const NUM_COURSES = 3;
 const CLASSES_PER_COURSE = 2;
-const INSTITUTION_NAME = 'ClimaEdu Tech';
+const INSTITUTION_NAME = 'EAD Tech';
 const BATCH_LIMIT = 499;
 
 // --- Nomes das Coleções ---
