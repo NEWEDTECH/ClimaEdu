@@ -8,6 +8,7 @@ import {
 } from "../ui/carousel/carousel";
 import { CardSubject } from "../ui/card";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/useTheme";
 
 interface ContentItem {
   id: string;
@@ -34,6 +35,7 @@ export function ContentCarousel({
   itemClassName = "",
   singleItemClassName = "w-[400px]"
 }: ContentCarouselProps) {
+  const { isDarkMode } = useTheme();
 
   if (items.length === 0) {
     return (
@@ -42,12 +44,16 @@ export function ContentCarousel({
         className
       )}>
         {title && (
-          <h2 className="text-2xl font-semibold mb-6 text-white">
+          <h2 className={`text-2xl font-semibold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>
             {title}
           </h2>
         )}
         <div className="text-center py-12">
-          <p className="text-white/60 text-lg animate-pulse">{emptyMessage}</p>
+          <p className={`text-lg animate-pulse ${
+            isDarkMode ? 'text-white/60' : 'text-gray-500'
+          }`}>{emptyMessage}</p>
         </div>
       </div>
     );
@@ -61,7 +67,9 @@ export function ContentCarousel({
         className
       )}>
         {title && (
-          <h2 className="text-2xl font-semibold mb-6 text-white">
+          <h2 className={`text-2xl font-semibold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>
             {title}
           </h2>
         )}
@@ -86,7 +94,9 @@ export function ContentCarousel({
       className
     )}>
       {title && (
-        <h2 className="text-2xl font-semibold mb-6 text-white">
+        <h2 className={`text-2xl font-semibold mb-6 ${
+          isDarkMode ? 'text-white' : 'text-gray-800'
+        }`}>
           {title}
         </h2>
       )}
@@ -127,12 +137,18 @@ export function ContentCarousel({
           
           <CarouselPrevious 
             className={cn(
-              "left-2 bg-black/50 border-white/20 text-white hover:bg-black/70 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100",
+              "left-2 transition-all duration-300 opacity-0 group-hover:opacity-100",
+              isDarkMode 
+                ? "bg-black/50 border-white/20 text-white hover:bg-black/70 hover:text-white" 
+                : "bg-white/90 border-gray-200/50 text-gray-800 hover:bg-white hover:text-gray-900 shadow-lg"
             )}
           />
           <CarouselNext 
             className={cn(
-              "right-2 bg-black/50 border-white/20 text-white hover:bg-black/70 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100",
+              "right-2 transition-all duration-300 opacity-0 group-hover:opacity-100",
+              isDarkMode 
+                ? "bg-black/50 border-white/20 text-white hover:bg-black/70 hover:text-white" 
+                : "bg-white/90 border-gray-200/50 text-gray-800 hover:bg-white hover:text-gray-900 shadow-lg"
             )}
           />
         </Carousel>

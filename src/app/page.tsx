@@ -15,6 +15,7 @@ import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list
 import { LoadingSpinner } from '@/components/loader'
 import { SearchComponent } from '@/components/search'
 import { Play, BookOpen, Headphones, Star, TrendingUp, Clock } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 
 type CourseDisplayData = {
@@ -44,6 +45,7 @@ type PodcastDisplayData = {
 
 export default function Home() {
   const { infoUser } = useProfile();
+  const { isDarkMode } = useTheme();
   const [enrolledCourses, setEnrolledCourses] = useState<CourseDisplayData[]>([]);
   const [availableCourses, setAvailableCourses] = useState<CourseDisplayData[]>([]);
   const [enrolledTrails, setEnrolledTrails] = useState<TrailDisplayData[]>([]);
@@ -181,72 +183,101 @@ export default function Home() {
       }
     };
 
+    
+
     loadCourseData();
   }, [infoUser.name, infoUser.id, infoUser.currentIdInstitution]);
+
 
   return (
     <DashboardLayout>
       {isLoading ? (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${isDarkMode
+            ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
+            : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'
+          }`}>
           <div className="text-center space-y-4">
             <LoadingSpinner />
-            <div className="text-white/80 text-lg font-medium animate-pulse">
+            <div className={`text-lg font-medium animate-pulse ${isDarkMode ? 'text-white/80' : 'text-gray-700'
+              }`}>
               Carregando seu universo de aprendizado...
             </div>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className={`min-h-screen transition-all duration-300 ${isDarkMode
+            ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
+            : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'
+          }`}>
           {/* Hero Section */}
           <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-3xl"></div>
+            <div className={`absolute inset-0 backdrop-blur-3xl ${isDarkMode
+                ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20'
+                : 'bg-gradient-to-r from-blue-200/30 to-purple-200/30'
+              }`}></div>
             <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-              
+
               <div className="flex flex-col text-center space-y-6">
 
-                <p className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+                <p className={`text-xl max-w-2xl mx-auto leading-relaxed ${isDarkMode ? 'text-white/80' : 'text-gray-700'
+                  }`}>
                   Continue sua jornada de aprendizado com conteúdos personalizados e experiências imersivas
                 </p>
-        
+
                 {/* Quick Stats */}
                 <div className="flex flex-wrap justify-center gap-6 mt-8">
 
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                    <div className="flex items-center space-x-2 text-white">
+                  <div className={`backdrop-blur-sm rounded-lg px-6 py-3 ${isDarkMode
+                      ? 'bg-white/10 border border-white/20'
+                      : 'bg-white/80 border border-gray-200/50 shadow-sm'
+                    }`}>
+                    <div className={`flex items-center space-x-2 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                      }`}>
                       <BookOpen className="w-5 h-5 text-blue-400" />
                       <span className="font-semibold">{enrolledCourses.length}</span>
-                      <span className="text-white/80">Cursos</span>
+                      <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Cursos</span>
                     </div>
                   </div>
 
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                    <div className="flex items-center space-x-2 text-white">
+                  <div className={`backdrop-blur-sm rounded-lg px-6 py-3 ${isDarkMode
+                      ? 'bg-white/10 border border-white/20'
+                      : 'bg-white/80 border border-gray-200/50 shadow-sm'
+                    }`}>
+                    <div className={`flex items-center space-x-2 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                      }`}>
                       <TrendingUp className="w-5 h-5 text-green-400" />
                       <span className="font-semibold">{enrolledTrails.length}</span>
-                      <span className="text-white/80">Trilhas</span>
+                      <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Trilhas</span>
                     </div>
                   </div>
 
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20">
-                    <div className="flex items-center space-x-2 text-white">
+                  <div className={`backdrop-blur-sm rounded-lg px-6 py-3 ${isDarkMode
+                      ? 'bg-white/10 border border-white/20'
+                      : 'bg-white/80 border border-gray-200/50 shadow-sm'
+                    }`}>
+                    <div className={`flex items-center space-x-2 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                      }`}>
                       <Headphones className="w-5 h-5 text-purple-400" />
                       <span className="font-semibold">{podcasts.length}</span>
-                      <span className="text-white/80">Podcasts</span>
+                      <span className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>Podcasts</span>
                     </div>
                   </div>
 
                 </div>
 
-          {/* Search Section */}
-          <div className="px-4 sm:px-6 lg:px-8 mt-8 relative z-10">
-            <div className="max-w-2xl mx-auto">
-              <SearchComponent 
-                placeholder="Buscar cursos, trilhas ou podcasts..."
-                className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60"
-                showFilters={true}
-              />
-            </div>
-          </div>
+                {/* Search Section */}
+                <div className="px-4 sm:px-6 lg:px-8 mt-8 relative z-10">
+                  <div className="max-w-2xl mx-auto">
+                    <SearchComponent
+                      placeholder="Buscar cursos, trilhas ou podcasts..."
+                      className={`w-full backdrop-blur-sm ${isDarkMode
+                          ? 'bg-white/10 border-white/20 text-white placeholder:text-white/60'
+                          : 'bg-white/80 border-gray-200/50 text-gray-800 placeholder:text-gray-500'
+                        }`}
+                      showFilters={true}
+                    />
+                  </div>
+                </div>
 
               </div>
 
@@ -273,7 +304,8 @@ export default function Home() {
               <section className="space-y-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center space-x-3">
+                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                    }`}>
                     <Play className="w-8 h-8 text-blue-400" />
                     <span>Continue Aprendendo</span>
                   </h2>
@@ -292,7 +324,8 @@ export default function Home() {
               <section className="space-y-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-1 h-8 bg-gradient-to-b from-green-400 to-blue-400 rounded-full"></div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center space-x-3">
+                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                    }`}>
                     <TrendingUp className="w-8 h-8 text-green-400" />
                     <span>Minhas Trilhas</span>
                   </h2>
@@ -311,7 +344,8 @@ export default function Home() {
               <section className="space-y-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-1 h-8 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center space-x-3">
+                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                    }`}>
                     <Headphones className="w-8 h-8 text-purple-400" />
                     <span>Podcasts Disponíveis</span>
                   </h2>
@@ -330,7 +364,8 @@ export default function Home() {
               <section className="space-y-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-1 h-8 bg-gradient-to-b from-orange-400 to-red-400 rounded-full"></div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center space-x-3">
+                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                    }`}>
                     <BookOpen className="w-8 h-8 text-orange-400" />
                     <span>Explore Novos Cursos</span>
                   </h2>
@@ -350,11 +385,14 @@ export default function Home() {
             {enrolledCourses.length === 0 && enrolledTrails.length === 0 && podcasts.length === 0 && availableCourses.length === 0 && (
               <div className="text-center py-20">
                 <div className="max-w-md mx-auto space-y-6">
-                  <div className="w-24 h-24 mx-auto bg-white/10 rounded-full flex items-center justify-center">
-                    <BookOpen className="w-12 h-12 text-white/60" />
+                  <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'
+                    }`}>
+                    <BookOpen className={`w-12 h-12 ${isDarkMode ? 'text-white/60' : 'text-gray-400'
+                      }`} />
                   </div>
-                  <h3 className="text-2xl font-bold text-white">Nenhum conteúdo disponível</h3>
-                  <p className="text-white/70">
+                  <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'
+                    }`}>Nenhum conteúdo disponível</h3>
+                  <p className={isDarkMode ? 'text-white/70' : 'text-gray-600'}>
                     Parece que ainda não há conteúdo disponível em sua instituição.
                     Entre em contato com seu administrador para mais informações.
                   </p>
@@ -364,7 +402,10 @@ export default function Home() {
           </div>
 
           {/* Footer Gradient */}
-          <div className="h-32 bg-gradient-to-t from-slate-900 to-transparent"></div>
+          <div className={`h-32 ${isDarkMode
+              ? 'bg-gradient-to-t from-slate-900 to-transparent'
+              : 'bg-gradient-to-t from-blue-50 to-transparent'
+            }`}></div>
         </div>
       )}
     </DashboardLayout>

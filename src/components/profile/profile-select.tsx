@@ -15,6 +15,7 @@ import { ProfileDropdownOptions } from './index'
 import { OptionsProfileProps } from '@/types/profile'
 import { ButtonLogout } from '@/components/logout'
 import { useProfile } from '@/context/zustand/useProfile';
+import { useThemeStore } from '@/context/zustand/useThemeStore';
 //import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 
 export interface ProfileSelectProps {
@@ -83,6 +84,7 @@ const OPTIONS_PROFILE: OptionsProfileProps[] = [
 
 export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
   const { infoUser } = useProfile();
+  const { isDarkMode } = useThemeStore();
   //const { infoUser, updateCurrentInstitution } = useProfile();
   //const { setLastInstitutionId } = useInstitutionStorage();
   //const isAdmin = infoUser.currentRole === 'LOCAL_ADMIN' || infoUser.currentRole === 'SYSTEM_ADMIN' || infoUser.currentRole === 'SUPER_ADMIN';
@@ -156,8 +158,8 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
           <RxAvatar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         )}
       </div>
-      
-      <span className="font-medium text-sm text-white">
+
+      <span className="font-medium text-sm dark:text-white text-black">
         {infoUser.name}
       </span>
 
