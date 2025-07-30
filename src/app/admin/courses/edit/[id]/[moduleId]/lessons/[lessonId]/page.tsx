@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
-import { FormSection } from '@/components/form'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
@@ -434,10 +433,10 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       }
       
       // Get the module and remove the lesson reference
-      const module = await moduleRepository.findById(moduleId)
-      if (module) {
-        module.lessons = module.lessons.filter(l => l.id !== lessonId)
-        await moduleRepository.save(module)
+      const moduleData = await moduleRepository.findById(moduleId)
+      if (moduleData) {
+        moduleData.lessons = moduleData.lessons.filter(l => l.id !== lessonId)
+        await moduleRepository.save(moduleData)
       }
       
       // Update loading toast to success

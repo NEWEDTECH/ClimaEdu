@@ -1,6 +1,5 @@
 import * as React from "react";
 import Link from "next/link";
-import { Card } from "./card";
 import { cn } from "@/lib/utils";
 import { Play, Lock, BookOpen, Headphones, TrendingUp } from "lucide-react";
 

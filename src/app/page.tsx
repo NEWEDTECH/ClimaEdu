@@ -14,7 +14,7 @@ import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-t
 import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case';
 import { LoadingSpinner } from '@/components/loader'
 import { SearchComponent } from '@/components/search'
-import { Play, BookOpen, Headphones, Star, TrendingUp, Clock } from 'lucide-react';
+import { Play, BookOpen, Headphones, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 

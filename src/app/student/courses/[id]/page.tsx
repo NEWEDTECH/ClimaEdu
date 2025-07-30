@@ -21,7 +21,6 @@ import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
 import { CourseSidebar, CourseContent } from '@/components/courses/student';
 import { ChatDropdown } from '@/components/courses/chat';
-import { useTheme } from '@/hooks/useTheme';
 
 
 export default function CoursePage() {
