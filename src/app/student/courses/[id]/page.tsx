@@ -20,13 +20,15 @@ import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infra
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
-import { CourseSidebar, CourseTabs } from '@/components/courses/student';
+import { CourseSidebar, CourseContent } from '@/components/courses/student';
 import { ChatDropdown } from '@/components/courses/chat';
+import { useTheme } from '@/hooks/useTheme';
 
 
 export default function CoursePage() {
     const params = useParams();
     const { infoUser } = useProfile();
+    const { isDarkMode } = useTheme();
     const courseId = params.id as string
 
     const [course, setCourse] = useState<Course | null>(null);
@@ -354,7 +356,9 @@ export default function CoursePage() {
                         <div className="text-red-500 text-center p-8">{error}</div>
                     ) : (
                         <div className="space-y-6">
-                            <h1 className="text-2xl font-bold">{course?.title}</h1>
+                            <h1 className={`text-2xl font-bold ${
+                              isDarkMode ? 'text-white' : 'text-gray-800'
+                            }`}>{course?.title}</h1>
 
 
                             <div className="w-full border-gray-300 pb-4 relative">
@@ -477,10 +481,8 @@ export default function CoursePage() {
                                 </div>
                             </div>
 
-                            {/* TABS AQUI*/}
-                            <CourseTabs
-                                activeTab={activeTab}
-                                setActiveTab={setActiveTab}
+                            {/* CONTEÚDO VERTICAL */}
+                            <CourseContent
                                 activeContent={activeContent}
                                 activeLesson={activeLesson}
                                 activeLessonData={activeLessonData}

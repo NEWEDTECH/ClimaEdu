@@ -20,8 +20,8 @@ export function Navbar() {
   return (
     <nav className={`h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between backdrop-blur-md shadow-lg relative z-50 transition-all duration-300 ${
       isDarkMode 
-        ? 'bg-gradient-to-r from-slate-900/95 via-purple-900/95 to-slate-900/95 border-b border-white/10' 
-        : 'bg-gradient-to-r from-white/95 via-blue-50/95 to-white/95 border-b border-gray-200/50'
+        ? 'bg-gray-800/80 border-b border-white/10' 
+        : 'bg-gray-100/80 border-b border-gray-200/50'
     }`}>
 
       <div className="flex items-center">
@@ -131,8 +131,8 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className={`md:hidden absolute top-20 left-0 right-0 backdrop-blur-md shadow-2xl z-40 ${
           isDarkMode 
-            ? 'bg-gradient-to-b from-slate-900/98 via-purple-900/98 to-slate-900/98 border-b border-white/10' 
-            : 'bg-gradient-to-b from-white/98 via-blue-50/98 to-white/98 border-b border-gray-200/50'
+            ? 'bg-gray-800/90 border-b border-white/10' 
+            : 'bg-gray-100/90 border-b border-gray-200/50'
         }`}>
           <div className="px-4 py-6">
             {/* Navigation buttons - Mobile */}

@@ -192,10 +192,9 @@ export default function Home() {
   return (
     <DashboardLayout>
       {isLoading ? (
-        <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${isDarkMode
-            ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
-            : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'
-          }`}>
+        <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
+          isDarkMode ? 'bg-black' : 'bg-gray-100'
+        }`}>
           <div className="text-center space-y-4">
             <LoadingSpinner />
             <div className={`text-lg font-medium animate-pulse ${isDarkMode ? 'text-white/80' : 'text-gray-700'
@@ -205,16 +204,14 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div className={`min-h-screen transition-all duration-300 ${isDarkMode
-            ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
-            : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'
-          }`}>
+        <div className={`min-h-screen transition-all duration-300 ${
+          isDarkMode ? 'bg-black' : 'bg-gray-100'
+        }`}>
           {/* Hero Section */}
           <div className="relative overflow-hidden">
-            <div className={`absolute inset-0 backdrop-blur-3xl ${isDarkMode
-                ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20'
-                : 'bg-gradient-to-r from-blue-200/30 to-purple-200/30'
-              }`}></div>
+            <div className={`absolute inset-0 backdrop-blur-3xl ${
+              isDarkMode ? 'bg-black' : 'bg-gray-200/30'
+            }`}></div>
             <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
 
               <div className="flex flex-col text-center space-y-6">
@@ -294,7 +291,7 @@ export default function Home() {
                   <p className="text-red-400 text-center font-medium">{error}</p>
                 </div>
               </div>
-            </div>
+            </div> 
           )}
 
           {/* Content Sections */}
@@ -400,12 +397,7 @@ export default function Home() {
               </div>
             )}
           </div>
-
-          {/* Footer Gradient */}
-          <div className={`h-32 ${isDarkMode
-              ? 'bg-gradient-to-t from-slate-900 to-transparent'
-              : 'bg-gradient-to-t from-blue-50 to-transparent'
-            }`}></div>
+          
         </div>
       )}
     </DashboardLayout>
