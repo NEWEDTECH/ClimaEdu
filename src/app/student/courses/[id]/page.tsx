@@ -13,7 +13,6 @@ import { Module } from '@/_core/modules/content/core/entities/Module';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
-import { Course } from '@/_core/modules/content/core/entities/Course';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
@@ -28,10 +27,8 @@ import { useTheme } from '@/hooks/useTheme';
 export default function CoursePage() {
     const params = useParams();
     const { infoUser } = useProfile();
-    const { isDarkMode } = useTheme();
     const courseId = params.id as string
 
-    const [course, setCourse] = useState<Course | null>(null);
     const [modules, setModules] = useState<Module[]>([]);
     const [activeLesson, setActiveLesson] = useState<string | null>(null);
     const [activeLessonData, setActiveLessonData] = useState<Lesson | null>(null);
@@ -42,7 +39,6 @@ export default function CoursePage() {
     const [hasPassedQuestionnaire, setHasPassedQuestionnaire] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<string>('content');
     const [showingEndAlert, setShowingEndAlert] = useState<boolean>(false);
     const [showNextVideoOverlay, setShowNextVideoOverlay] = useState<boolean>(false);
     const [overlayTimer, setOverlayTimer] = useState<NodeJS.Timeout | null>(null);
@@ -244,6 +240,24 @@ export default function CoursePage() {
         console.log('Lesson completed:', activeLesson);
     };
 
+    // Function to handle video progress and show next video overlay
+    const handleVideoProgress = ({ played, playedSeconds, loadedSeconds }: { played: number; playedSeconds: number; loadedSeconds: number }) => {
+        const totalDuration = loadedSeconds / played;
+        const remainingSeconds = totalDuration - playedSeconds;
+
+        if (remainingSeconds <= 20 && remainingSeconds > 0 && !showingEndAlert && totalDuration > 0) {
+            setShowingEndAlert(true);
+            setShowNextVideoOverlay(true);
+
+            // Set timer to hide overlay after 10 seconds
+            const timer = setTimeout(() => {
+                setShowNextVideoOverlay(false);
+            }, 10000);
+
+            setOverlayTimer(timer);
+        }
+    };
+
     useEffect(() => {
         const fetchCourseData = async () => {
             if (!courseId) return;
@@ -262,8 +276,6 @@ export default function CoursePage() {
                     setIsLoading(false);
                     return;
                 }
-
-                setCourse(courseData);
 
                 // Fetch modules for this course
                 const moduleRepository = container.get<ModuleRepository>(
@@ -339,7 +351,7 @@ export default function CoursePage() {
             />
 
             <div 
-                className="h-[calc(100vh-4rem)] overflow-y-auto p-4 transition-all duration-300"
+                className="h-[calc(100vh-4rem)] p-4 transition-all duration-300"
                 style={{
                     marginRight: sidebarMode !== 'hidden' 
                         ? sidebarMode === 'chat' 
@@ -356,10 +368,6 @@ export default function CoursePage() {
                         <div className="text-red-500 text-center p-8">{error}</div>
                     ) : (
                         <div className="space-y-6">
-                            <h1 className={`text-2xl font-bold ${
-                              isDarkMode ? 'text-white' : 'text-gray-800'
-                            }`}>{course?.title}</h1>
-
 
                             <div className="w-full border-gray-300 pb-4 relative">
                                 {activeContent && activeContent.type === ContentType.VIDEO ? (
@@ -369,22 +377,7 @@ export default function CoursePage() {
                                             autoPlay={true}
                                             showControls={true}
                                             onEnded={handleNextVideo}
-                                            handleProgress={({ played, playedSeconds, loadedSeconds }) => {
-                                                const totalDuration = loadedSeconds / played;
-                                                const remainingSeconds = totalDuration - playedSeconds;
-
-                                                if (remainingSeconds <= 20 && remainingSeconds > 0 && !showingEndAlert && totalDuration > 0) {
-                                                    setShowingEndAlert(true);
-                                                    setShowNextVideoOverlay(true);
-
-                                                    // Set timer to hide overlay after 10 seconds
-                                                    const timer = setTimeout(() => {
-                                                        setShowNextVideoOverlay(false);
-                                                    }, 10000);
-
-                                                    setOverlayTimer(timer);
-                                                }
-                                            }}
+                                            handleProgress={handleVideoProgress}
                                         />
 
                                         {/* Netflix-style Next Video Overlay */}
@@ -444,7 +437,7 @@ export default function CoursePage() {
                                         {/* Previous Button */}
                                         <button
                                             onClick={handlePreviousVideo}
-                                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={!activeLesson || modules.length === 0}
                                             title="Lição anterior"
                                         >
@@ -456,7 +449,7 @@ export default function CoursePage() {
                                         {/* Complete Button */}
                                         <button
                                             onClick={handleCompleteLesson}
-                                            className="flex items-center justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={!activeLesson}
                                             title="Concluir lição"
                                         >
@@ -469,7 +462,7 @@ export default function CoursePage() {
                                         {/* Next Button */}
                                         <button
                                             onClick={handleNextVideo}
-                                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={!activeLesson || modules.length === 0}
                                             title="Próxima lição"
                                         >
