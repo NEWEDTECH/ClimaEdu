@@ -46,7 +46,7 @@ export function SearchComponent({
   };
 
   return (
-    <div className={cn("flex items-center justify-center w-full", className)}>
+    <div className={cn("flex items-center justify-center rounded-full border-primary/50", className)}>
       <div className="relative w-full max-w-2xl">
         <div className="flex items-center gap-3">
           {/* Search Input Container */}
@@ -63,7 +63,7 @@ export function SearchComponent({
               onKeyDown={handleKeyDown}
               disabled={disabled}
               className={cn(
-                "pl-12 pr-12 h-12 text-base rounded-xl border-2 transition-all duration-200",
+                "pl-12 pr-12 h-12 text-base !rounded-full border-2 transition-all duration-200",
                 "focus:border-primary focus:ring-4 focus:ring-primary/10",
                 "border-primary/50",
                 disabled && "opacity-60 cursor-not-allowed"
@@ -96,8 +96,8 @@ export function SearchComponent({
               onClick={onFilter}
               disabled={disabled}
               className={cn(
-                "h-12 px-4 rounded-xl border-2 transition-all duration-200",
-                "hover:border-primary hover:bg-primary/5",
+                "h-12 px-4 !rounded-full border-2 transition-all duration-200",
+                "border-primary bg-primary/5",
                 disabled && "opacity-60 cursor-not-allowed"
               )}
             >
