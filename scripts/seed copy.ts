@@ -49,17 +49,6 @@ const C = {
   CLASSES: 'classes',
 };
 
-// --- Vídeos de exemplo ---
-const VIDEOS = [
-  'https://vimeo.com/347119375',
-  'https://vimeo.com/701057180',
-  'https://vimeo.com/358064547',
-  'https://vimeo.com/897818060',
-  'https://youtu.be/JGafRfs9cA0',
-  'https://youtu.be/BEcQjIh_V-c',
-  'https://youtu.be/gOJ_XJI4rms',
-]
-
 // --- Conexão com Firebase ---
 initializeFirebaseAdmin();
 const auth = getAdminAuth();
@@ -177,25 +166,17 @@ const createModulesAndLessons = async (courses: Course[]) => {
 
   for (const course of courses) {
     const numModules = randomInt(3, 5);
+    const courseModules = [];
     for (let i = 0; i < numModules; i++) {
       const moduleId = `mod_${faker.string.uuid()}`;
       const courseModule = Module.create({ id: moduleId, courseId: course.id, title: faker.lorem.sentence(3), order: i });
-      
-      const moduleRef = firestore.collection(C.MODULES).doc(courseModule.id);
-      batch.set(moduleRef, { 
-        id: courseModule.id, 
-        courseId: courseModule.courseId,
-        title: courseModule.title, 
-        order: courseModule.order 
-      });
-      operationCount++;
-
       const numLessons = randomInt(5, 8);
+      const lessons = [];
       for (let j = 0; j < numLessons; j++) {
         const lessonId = `les_${faker.string.uuid()}`;
         const lesson = Lesson.create({ id: lessonId, moduleId: courseModule.id, title: faker.lorem.sentence(5), order: j });
         
-        const contentVideo = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.VIDEO, title: 'Vídeo Aula', url: VIDEOS[randomInt(0, VIDEOS.length - 1)] });
+        const contentVideo = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.VIDEO, title: 'Vídeo Aula', url: faker.internet.url() });
         const contentPdf = Content.create({ id: `cont_${faker.string.uuid()}`, lessonId, type: ContentType.PDF, title: 'Material de Apoio', url: faker.internet.url() });
         
         batch.set(firestore.collection(C.CONTENTS).doc(contentVideo.id), { ...contentVideo });
@@ -216,10 +197,7 @@ const createModulesAndLessons = async (courses: Course[]) => {
         };
         if (lesson.activity) lessonPlain.activity = lesson.activity;
         if (lesson.questionnaire) lessonPlain.questionnaire = lesson.questionnaire;
-        
-        const lessonRef = firestore.collection(C.LESSONS).doc(lesson.id);
-        batch.set(lessonRef, lessonPlain);
-        operationCount++;
+        lessons.push(lessonPlain);
 
         for (let k = 0; k < 2; k++) {
           const questionnaireId = `qt_${faker.string.uuid()}`;
@@ -240,7 +218,14 @@ const createModulesAndLessons = async (courses: Course[]) => {
           operationCount++;
         }
       }
+      const moduleRef = firestore.collection(C.COURSES).doc(course.id).collection(C.MODULES).doc(courseModule.id);
+      batch.set(moduleRef, { id: courseModule.id, title: courseModule.title, order: courseModule.order, lessons });
+      operationCount++;
+      courseModules.push({ id: courseModule.id, title: courseModule.title, order: courseModule.order });
     }
+    const courseRef = firestore.collection(C.COURSES).doc(course.id);
+    batch.update(courseRef, { modules: courseModules });
+    operationCount++;
     console.log(`- ${numModules} módulos e suas lições criados para o curso "${course.title}"`);
 
     if (operationCount > BATCH_LIMIT - 100) {
@@ -301,21 +286,15 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
   let operationCount = 0;
 
   for (const enrollment of enrollments) {
-    const modulesQuery = firestore.collection(C.MODULES).where('courseId', '==', enrollment.courseId);
-    const modulesSnap = await modulesQuery.get();
+    const courseRef = firestore.collection(C.COURSES).doc(enrollment.courseId);
+    const modulesSnap = await courseRef.collection(C.MODULES).get();
     if (modulesSnap.empty) continue;
-
     let totalLessonsCompleted = 0;
     const shouldCompleteCourse = Math.random() > 0.5;
-
     for (const moduleDoc of modulesSnap.docs) {
       const moduleData = moduleDoc.data();
-      const lessonsQuery = firestore.collection(C.LESSONS).where('moduleId', '==', moduleData.id);
-      const lessonsSnap = await lessonsQuery.get();
-      if (lessonsSnap.empty) continue;
-
-      for (const lessonDoc of lessonsSnap.docs) {
-        const lesson = lessonDoc.data();
+      const lessons = moduleData.lessons || [];
+      for (const lesson of lessons) {
         const shouldCompleteLesson = shouldCompleteCourse || Math.random() > 0.3;
         if (shouldCompleteLesson) {
           const contentIds = lesson.contents?.map((c: { id: string }) => c.id) || [];
@@ -380,7 +359,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
                 id: q.id, questionId: q.questionId, selectedOptionIndex: q.selectedOptionIndex, isCorrect: q.isCorrect,
               })),
             };
-            const subRef = firestore.collection(C.QUESTIONNAIRES).doc(submission.id);
+            const subRef = firestore.collection(C.QUESTIONNAIRE_SUBMISSIONS).doc(submission.id);
             batch.set(subRef, submissionPlain);
             operationCount++;
           }

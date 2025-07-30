@@ -77,6 +77,7 @@ const clear = async () => {
     'user_institutions',
     'classes',
     'modules',
+    'lessons',
     'activities',
     'contents',
   ];
