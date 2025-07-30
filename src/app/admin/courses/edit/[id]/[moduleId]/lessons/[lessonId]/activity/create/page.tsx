@@ -15,6 +15,7 @@ import { Register } from '@/_core/shared/container';
 import { CreateActivityUseCase } from '@/_core/modules/content/core/use-cases/create-activity/create-activity.use-case';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
+import { showToast } from '@/components/toast';
 
 type FormData = {
   description: string;
@@ -78,7 +79,9 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Falha ao carregar dados');
+        const errorMessage = 'Falha ao carregar dados';
+        setError(errorMessage);
+        showToast.error(errorMessage);
         setIsLoading(false);
       }
     };
@@ -94,6 +97,9 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    // Show loading toast
+    const loadingToastId = showToast.loading('Criando atividade...');
     
     try {
       const createActivityUseCase = container.get<CreateActivityUseCase>(
@@ -119,10 +125,25 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
       
       await createActivityUseCase.execute(params);
       
-      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Atividade criada com sucesso!',
+        type: 'success'
+      });
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      }, 1000);
     } catch (error) {
       console.error('Erro ao criar atividade:', error);
-      alert(`Falha ao criar atividade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao criar atividade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error'
+      });
       setIsSubmitting(false);
     }
   };

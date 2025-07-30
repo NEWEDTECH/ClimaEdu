@@ -102,7 +102,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
 
   // Count total items to determine if overflow is needed
   const getTotalItemsCount = () => {
-    let count = OPTIONS_PROFILE.length + 1; // +1 for logout button
+    let count = OPTIONS_PROFILE.length + 1;
     sections.forEach(section => {
       if (hasAccessToSection(section.role)) {
         count += section.items.length;
@@ -156,7 +156,8 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
           <RxAvatar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         )}
       </div>
-      <span className="font-medium text-sm">
+
+      <span className="font-medium text-sm dark:text-white text-black">
         {infoUser.name}
       </span>
 

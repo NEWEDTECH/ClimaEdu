@@ -17,6 +17,7 @@ import { Content } from '@/_core/modules/content/core/entities/Content';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
+import { showToast } from '@/components/toast';
 
 export default function VideoUploadPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }>}) {
   const router = useRouter();
@@ -65,7 +66,9 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Falha ao carregar dados');
+        const errorMessage = 'Falha ao carregar dados';
+        setError(errorMessage);
+        showToast.error(errorMessage);
         setIsLoading(false);
       }
     };
@@ -78,16 +81,19 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     e.preventDefault();
     
     if (!title.trim()) {
-      alert('O título do vídeo não pode estar vazio');
+      showToast.warning('O título do vídeo não pode estar vazio');
       return;
     }
     
     if (!videoUrl.trim()) {
-      alert('Por favor, insira a URL do vídeo');
+      showToast.warning('Por favor, insira a URL do vídeo');
       return;
     }
     
     setIsSaving(true);
+    
+    // Show loading toast
+    const loadingToastId = showToast.loading('Adicionando vídeo à lição...');
     
     try {
 
@@ -136,12 +142,27 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       
       await lessonRepository.save(lesson);
       
-      console.log('Vídeo adicionado com sucesso à lição');
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Vídeo adicionado com sucesso à lição!',
+        type: 'success'
+      });
       
-      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      }, 1000);
     } catch (error) {
       console.error('Erro ao adicionar vídeo:', error);
-      alert(`Falha ao adicionar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao adicionar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error'
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
