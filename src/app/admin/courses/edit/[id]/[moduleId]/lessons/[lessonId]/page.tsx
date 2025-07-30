@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
-import { FormSection } from '@/components/form'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
@@ -19,6 +18,7 @@ import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
+import { showToast } from '@/components/toast'
 
 type LessonFormData = {
   id: string;
@@ -196,7 +196,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching lesson data:', error)
-        setError('Falha ao carregar dados da lição')
+        const errorMessage = 'Falha ao carregar dados da lição'
+        setError(errorMessage)
+        showToast.error(errorMessage)
         setIsLoading(false)
       }
     }
@@ -252,10 +254,10 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         questionnaire: undefined
       }))
       
-      alert('Questionário excluído com sucesso!')
+      showToast.success('Questionário excluído com sucesso!')
     } catch (error) {
       console.error('Erro ao excluir questionário:', error)
-      alert(`Falha ao excluir questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      showToast.error(`Falha ao excluir questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -297,10 +299,10 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         activity: undefined
       }))
       
-      alert('Atividade excluída com sucesso!')
+      showToast.success('Atividade excluída com sucesso!')
     } catch (error) {
       console.error('Erro ao excluir atividade:', error)
-      alert('Falha ao excluir atividade')
+      showToast.error('Falha ao excluir atividade')
     }
   }
 
@@ -340,10 +342,10 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         contents: prev.contents.filter(content => content.id !== contentId)
       }))
       
-      alert('Conteúdo excluído com sucesso!')
+      showToast.success('Conteúdo excluído com sucesso!')
     } catch (error) {
       console.error('Erro ao excluir conteúdo:', error)
-      alert(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      showToast.error(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     }
   }
 
@@ -363,21 +365,30 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       })
       
       setLessonDescription('')
-      alert('Descrição excluída com sucesso!')
+      showToast.success('Descrição excluída com sucesso!')
     } catch (error) {
       console.error('Erro ao excluir descrição:', error)
-      alert('Falha ao excluir descrição')
+      showToast.error('Falha ao excluir descrição')
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const handleDeleteLesson = async () => {
+    if (!confirm('Tem certeza que deseja excluir esta lição? Esta ação não pode ser desfeita e todos os conteúdos, atividades e questionários associados serão removidos.')) {
+      return
+    }
     
     try {
-
+      setIsSubmitting(true)
+      
+      // Show loading toast
+      const loadingToastId = showToast.loading('Excluindo lição...')
+      
       const lessonRepository = container.get<LessonRepository>(
         Register.content.repository.LessonRepository
+      )
+      
+      const moduleRepository = container.get<ModuleRepository>(
+        Register.content.repository.ModuleRepository
       )
       
       const activityRepository = container.get<ActivityRepository>(
@@ -388,32 +399,62 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         Register.content.repository.QuestionnaireRepository
       )
       
-
+      const contentRepository = container.get<ContentRepository>(
+        Register.content.repository.ContentRepository
+      )
+      
+      // Get the lesson to delete
       const lesson = await lessonRepository.findById(lessonId)
       
       if (!lesson) {
         throw new Error('Lição não encontrada')
       }
       
-      lesson.updateTitle(formData.title)
-      
-      const activity = await activityRepository.findByLessonId(lessonId)
-      if (activity && !lesson.activity) {
-
-        lesson.attachActivity(activity)
+      // Delete all associated content
+      for (const content of lesson.contents) {
+        await contentRepository.delete(content.id)
       }
       
-      const questionnaire = await questionnaireRepository.findByLessonId(lessonId)
-      if (questionnaire && !lesson.questionnaire) {
-        lesson.attachQuestionnaire(questionnaire)
+      // Delete associated activity if exists
+      if (lesson.activity) {
+        await activityRepository.delete(lesson.activity.id)
       }
       
-      await lessonRepository.save(lesson)
+      // Delete associated questionnaire if exists
+      if (lesson.questionnaire) {
+        await questionnaireRepository.delete(lesson.questionnaire.id)
+      }
       
-      router.push(`/admin/courses/edit/${courseId}/${moduleId}`)
+      // Delete the lesson itself
+      const deleted = await lessonRepository.delete(lessonId)
+      
+      if (!deleted) {
+        throw new Error('Não foi possível excluir a lição')
+      }
+      
+      // Get the module and remove the lesson reference
+      const moduleData = await moduleRepository.findById(moduleId)
+      if (moduleData) {
+        moduleData.lessons = moduleData.lessons.filter(l => l.id !== lessonId)
+        await moduleRepository.save(moduleData)
+      }
+      
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: 'Lição excluída com sucesso!',
+        type: 'success'
+      })
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push(`/admin/courses/edit/${courseId}/${moduleId}`)
+      }, 1000)
     } catch (error) {
-      console.error('Erro ao atualizar lição:', error)
-      alert(`Falha ao atualizar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      console.error('Erro ao excluir lição:', error)
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao excluir lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      showToast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -465,70 +506,69 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             <CardTitle>Informações da Lição</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <FormSection onSubmit={handleSubmit} error={error}>
-              <div className="space-y-2">
-                <label htmlFor="title" className="text-sm font-medium">
-                  Título da Lição
-                </label>
-                <InputText
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Digite o título da lição"
-                  required
-                />
-              </div>
-              
-              {/* Content Section */}
-              <ContentSection
-                contents={formData.contents}
-                courseId={courseId}
-                moduleId={moduleId}
-                lessonId={lessonId}
-                onDeleteContent={handleDeleteContent}
-                isSubmitting={isSubmitting}
+            <div className="space-y-2">
+              <label htmlFor="title" className="text-sm font-medium">
+                Título da Lição
+              </label>
+              <InputText
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Digite o título da lição"
+                readOnly
               />
+            </div>
+            
+            {/* Content Section */}
+            <ContentSection
+              contents={formData.contents}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              onDeleteContent={handleDeleteContent}
+              isSubmitting={isSubmitting}
+            />
 
-              {/* Description Section */}
-              <DescriptionSection
-                description={lessonDescription}
-                courseId={courseId}
-                moduleId={moduleId}
-                lessonId={lessonId}
-                onDelete={handleDeleteDescription}
-                isSubmitting={isSubmitting}
-              />
+            {/* Description Section */}
+            <DescriptionSection
+              description={lessonDescription}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              onDelete={handleDeleteDescription}
+              isSubmitting={isSubmitting}
+            />
 
-              {/* Activity Section */}
-              <ActivitySection
-                activity={formData.activity}
-                courseId={courseId}
-                moduleId={moduleId}
-                lessonId={lessonId}
-                onDelete={handleDeleteActivity}
-                isSubmitting={isSubmitting}
-              />
+            {/* Activity Section */}
+            <ActivitySection
+              activity={formData.activity}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              onDelete={handleDeleteActivity}
+              isSubmitting={isSubmitting}
+            />
 
-              {/* Questionnaire Section */}
-              <QuestionnaireSection
-                questionnaire={formData.questionnaire}
-                courseId={courseId}
-                moduleId={moduleId}
-                lessonId={lessonId}
-                onDelete={handleDeleteQuestionnaire}
-                isSubmitting={isSubmitting}
-              />
+            {/* Questionnaire Section */}
+            <QuestionnaireSection
+              questionnaire={formData.questionnaire}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              onDelete={handleDeleteQuestionnaire}
+              isSubmitting={isSubmitting}
+            />
 
-              <div className="flex justify-end gap-2 my-4">
-                <Link href={`/admin/courses/edit/${courseId}`}>
-                  <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
-                </Link>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-                </Button>
-              </div>
-            </FormSection>
+            <div className="flex justify-end gap-2 my-4">
+              <Button 
+                onClick={handleDeleteLesson} 
+                disabled={isSubmitting}
+                className="bg-destructive text-white shadow-xs hover:bg-destructive/90"
+              >
+                {isSubmitting ? 'Excluindo...' : 'Excluir Lição'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

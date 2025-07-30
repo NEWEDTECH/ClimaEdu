@@ -8,6 +8,7 @@ import {
 } from "../ui/carousel/carousel";
 import { CardSubject } from "../ui/card";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/useTheme";
 
 interface ContentItem {
   id: string;
@@ -34,17 +35,26 @@ export function ContentCarousel({
   itemClassName = "",
   singleItemClassName = "w-[400px]"
 }: ContentCarouselProps) {
+  const { isDarkMode } = useTheme();
 
   if (items.length === 0) {
     return (
       <div className={cn(
-        "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md",
+        "bg-transparent p-0",
         className
       )}>
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">
-          {title}
-        </h2>
-        <p className="text-center text-gray-500 animate-pulse">{emptyMessage}</p>
+        {title && (
+          <h2 className={`text-2xl font-semibold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>
+            {title}
+          </h2>
+        )}
+        <div className="text-center py-12">
+          <p className={`text-lg animate-pulse ${
+            isDarkMode ? 'text-white/60' : 'text-gray-500'
+          }`}>{emptyMessage}</p>
+        </div>
       </div>
     );
   }
@@ -53,13 +63,17 @@ export function ContentCarousel({
     const item = items[0];
     return (
       <div className={cn(
-        "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md",
+        "bg-transparent p-0",
         className
       )}>
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">
-          {title}
-        </h2>
-        <div>
+        {title && (
+          <h2 className={`text-2xl font-semibold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>
+            {title}
+          </h2>
+        )}
+        <div className="flex">
           <CardSubject
             className={cn(
               singleItemClassName,
@@ -76,24 +90,32 @@ export function ContentCarousel({
 
   return (
     <div className={cn(
-      "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md",
+      "bg-transparent p-0",
       className
     )}>
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">
-        {title}
-      </h2>
+      {title && (
+        <h2 className={`text-2xl font-semibold mb-6 ${
+          isDarkMode ? 'text-white' : 'text-gray-800'
+        }`}>
+          {title}
+        </h2>
+      )}
       <div className="relative group">
         <Carousel 
           className={cn(
             "w-full transition-all duration-300",
           )}
+          opts={{
+            align: "start",
+            loop: false,
+          }}
         >
-          <CarouselContent className="transition-transform duration-500 ease-out">
+          <CarouselContent className="transition-transform duration-500 ease-out -ml-2 md:-ml-4">
             {items.map((item, index) => (
               <CarouselItem 
                 key={item.id} 
                 className={cn(
-                  "md:basis-1/2 lg:basis-1/3 pl-4",
+                  "pl-2 md:pl-4 basis-[280px] sm:basis-[320px] md:basis-[360px] lg:basis-[400px]",
                   itemClassName
                 )}
                 style={{
@@ -101,7 +123,7 @@ export function ContentCarousel({
                   animationDuration: "600ms"
                 }}
               >
-                <div className="group/item h-full">
+                <div className="group/item h-full transform transition-all duration-300 hover:scale-105">
                   <CardSubject
                     title={item.title}
                     href={item.href}
@@ -115,12 +137,18 @@ export function ContentCarousel({
           
           <CarouselPrevious 
             className={cn(
-              "left-2 transition-all duration-300",
+              "left-2 transition-all duration-300 opacity-0 group-hover:opacity-100",
+              isDarkMode 
+                ? "bg-black/50 border-white/20 text-white hover:bg-black/70 hover:text-white" 
+                : "bg-white/90 border-gray-200/50 text-gray-800 hover:bg-white hover:text-gray-900 shadow-lg"
             )}
           />
           <CarouselNext 
             className={cn(
-              "right-2 transition-all duration-300",
+              "right-2 transition-all duration-300 opacity-0 group-hover:opacity-100",
+              isDarkMode 
+                ? "bg-black/50 border-white/20 text-white hover:bg-black/70 hover:text-white" 
+                : "bg-white/90 border-gray-200/50 text-gray-800 hover:bg-white hover:text-gray-900 shadow-lg"
             )}
           />
         </Carousel>

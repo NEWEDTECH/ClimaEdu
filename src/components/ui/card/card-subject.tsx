@@ -1,7 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
-import { Card } from "./card";
 import { cn } from "@/lib/utils";
+import { Play, Lock, BookOpen, Headphones, TrendingUp } from "lucide-react";
 
 interface CardSubjectProps {
   title: string;
@@ -15,92 +15,155 @@ interface CardSubjectProps {
 export function CardSubject({
   title,
   href,
-  imageUrl = "/vercel.svg",
+  imageUrl = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop",
   isBlocked = false,
   className,
 }: CardSubjectProps) {
   const [isHovered, setIsHovered] = React.useState(false);
 
+  // Determine content type based on href for appropriate icon
+  const getContentIcon = () => {
+    if (href.includes('/podcast/')) return Headphones;
+    if (href.includes('/trails/')) return TrendingUp;
+    return BookOpen;
+  };
+
+  const ContentIcon = getContentIcon();
+
   return (
     <Link
-      href={href}
-      className="block no-underline group"
+      href={isBlocked ? '#' : href}
+      className={cn(
+        "block no-underline group relative",
+        isBlocked && "cursor-not-allowed"
+      )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={(e) => {
+        if (isBlocked) {
+          e.preventDefault();
+        }
+      }}
     >
-      <Card className={cn(
-        "relative overflow-hidden h-80 w-full",
-        "border-2 border-transparent hover:border-blue-400/30",
-        "transform-gpu will-change-transform",
+      <div className={cn(
+        "streaming-card aspect-[2/3] w-full",
+        "bg-gradient-to-br from-slate-800 to-slate-900",
+        "border border-white/10 transition-all duration-500",
+        "shadow-lg hover:shadow-2xl hover:shadow-purple-500/20",
+        !isBlocked && "hover:border-purple-400/50 hover:scale-[1.02]",
+        isBlocked && "opacity-60",
         className
       )}>
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 bg-black">
-          {imageUrl && (
-            <div className={cn(
-              "relative h-full w-full transition-all duration-700",
-              isHovered ? "opacity-80 scale-110" : "opacity-60 scale-100"
-            )}>
-              <img
-                src={imageUrl}
-                alt={title || "Course thumbnail image"}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out"
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-          )}
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img
+            src={imageUrl}
+            alt={title || "Content thumbnail"}
+            className={cn(
+              "w-full h-full object-cover transition-all duration-700",
+              isHovered && !isBlocked ? "scale-110 brightness-110" : "scale-100 brightness-75"
+            )}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop";
+            }}
+          />
+          
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
           <div className={cn(
             "absolute inset-0 transition-all duration-500",
-            isHovered ? "bg-black/30 bg-gradient-to-t from-black/60 via-transparent to-black/20" : "bg-black/50"
+            isHovered && !isBlocked 
+              ? "bg-gradient-to-t from-purple-900/60 via-transparent to-blue-900/30" 
+              : "bg-black/30"
           )} />
         </div>
 
-        {/* Content */}
-        <div className="relative h-full flex flex-col justify-between p-6 text-white z-10">
-          {/* Title in the middle */}
-          <div className="flex-grow flex items-center justify-center">
+        {/* Content Type Icon */}
+        <div className="absolute top-4 left-4 z-20">
+          <div className="bg-black/50 backdrop-blur-sm rounded-full p-2 border border-white/20">
+            <ContentIcon className="w-4 h-4 text-white" />
+          </div>
+        </div>
+
+        {/* Blocked Icon */}
+        {isBlocked && (
+          <div className="absolute top-4 right-4 z-20">
+            <div className="bg-red-500/80 backdrop-blur-sm rounded-full p-2 border border-red-400/50">
+              <Lock className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        )}
+
+        {/* Play Button - Only show on hover for non-blocked content */}
+        {!isBlocked && (
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center z-10 transition-all duration-300",
+            isHovered ? "opacity-100 scale-100 animate-float" : "opacity-0 scale-75"
+          )}>
+            <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 border border-white/30 hover:bg-white/30 transition-all duration-200 hover:animate-glow">
+              <Play className="w-8 h-8 text-white fill-white" />
+            </div>
+          </div>
+        )}
+
+        {/* Content Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
+          <div className="space-y-2">
             <h3 className={cn(
-              "text-xl md:text-2xl font-bold text-center uppercase tracking-wider",
-              "drop-shadow-lg group-hover:drop-shadow-2xl",
-              isHovered && "animate-pulse"
+              "text-white font-bold text-lg leading-tight line-clamp-2",
+              "drop-shadow-lg transition-all duration-300 animate-fade-in",
+              isHovered && !isBlocked && "gradient-text-purple"
             )}>
               {title}
             </h3>
-          </div>
-
-          {/* Hover effect overlay */}
-
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm border border-white/30">
-              <svg
-                className="w-8 h-8 text-white animate-bounce"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-white/90 animate-fade-in">
-              {isBlocked ? "Conteúdo Bloqueado" : "Clique para acessar"}
-            </p>
-          </div>
-
-
-          {/* Blocked Status and Logos */}
-          {isBlocked && (
-            <div>
-              <p className={cn(
-                "text-center text-sm font-medium transition-all duration-300",
-                "group-hover:text-red-200"
+            
+            {/* Status Indicator */}
+            <div className="flex items-center justify-between">
+              <div className={cn(
+                "inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium",
+                isBlocked 
+                  ? "bg-red-500/20 text-red-300 border border-red-500/30" 
+                  : "bg-green-500/20 text-green-300 border border-green-500/30"
               )}>
-                Este conteúdo está bloqueado.
-              </p>
+                {isBlocked ? (
+                  <>
+                    <Lock className="w-3 h-3" />
+                    <span>Bloqueado</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3 h-3" />
+                    <span>Disponível</span>
+                  </>
+                )}
+              </div>
+
+              {/* Progress Bar Placeholder */}
+              {!isBlocked && (
+                <div className="flex-1 ml-3">
+                  <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.random() * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-      </Card>
+        {/* Hover Glow Effect */}
+        {!isBlocked && (
+          <div className={cn(
+            "absolute inset-0 rounded-xl transition-all duration-500 pointer-events-none",
+            isHovered 
+              ? "shadow-[0_0_30px_rgba(168,85,247,0.4)] ring-1 ring-purple-400/50" 
+              : "shadow-none"
+          )} />
+        )}
+      </div>
     </Link>
   );
 }

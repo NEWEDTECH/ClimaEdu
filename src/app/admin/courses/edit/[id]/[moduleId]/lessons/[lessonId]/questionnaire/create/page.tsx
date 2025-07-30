@@ -16,6 +16,7 @@ import { AddQuestionToQuestionnaireUseCase } from '@/_core/modules/content/core/
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
+import { showToast } from '@/components/toast';
 
 type QuestionFormData = {
   questionText: string;
@@ -113,7 +114,9 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Falha ao carregar dados');
+        const errorMessage = 'Falha ao carregar dados';
+        setError(errorMessage);
+        showToast.error(errorMessage);
         setIsLoading(false);
       }
     };

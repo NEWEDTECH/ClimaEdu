@@ -22,6 +22,7 @@ import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/re
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { User, UserRole } from '@/_core/modules/user/core/entities/User';
 import { X } from 'lucide-react';
+import { showToast } from '@/components/toast';
 
 type FieldOption = {
   value: string;
@@ -215,7 +216,9 @@ export default function CoursePage() {
         setError(null);
       } catch (err) {
         console.error(`Error fetching ${isEditMode ? 'course' : 'institutions'}:`, err);
-        setError(`Falha ao carregar ${isEditMode ? 'curso' : 'instituições'}. Por favor, tente novamente.`);
+        const errorMessage = `Falha ao carregar ${isEditMode ? 'curso' : 'instituições'}. Por favor, tente novamente.`;
+        setError(errorMessage);
+        showToast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -245,6 +248,11 @@ export default function CoursePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // Show loading toast
+    const loadingToastId = showToast.loading(
+      isEditMode ? 'Atualizando curso...' : 'Criando curso...'
+    );
 
     try {
       let newCourseId = '';
@@ -353,10 +361,25 @@ export default function CoursePage() {
         }
       }
 
-      router.push('/admin/courses');
+      // Update loading toast to success
+      showToast.update(loadingToastId, {
+        render: isEditMode ? 'Curso atualizado com sucesso!' : 'Curso criado com sucesso!',
+        type: 'success'
+      });
+
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        router.push('/admin/courses');
+      }, 1000);
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} course:`, error);
-      alert(`Falha ao ${isEditMode ? 'atualizar' : 'criar'} curso: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      
+      // Update loading toast to error
+      const errorMessage = `Falha ao ${isEditMode ? 'atualizar' : 'criar'} curso: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error'
+      });
     } finally {
       setIsSubmitting(false);
     }
