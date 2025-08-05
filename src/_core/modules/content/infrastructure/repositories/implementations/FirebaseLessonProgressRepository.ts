@@ -24,7 +24,7 @@ import { nanoid } from 'nanoid';
  */
 @injectable()
 export class FirebaseLessonProgressRepository implements LessonProgressRepository {
-  private readonly collectionName = 'lesson-progresses';
+  private readonly collectionName = 'lesson_progresses';
   private readonly idPrefix = 'lp_';
 
   /**

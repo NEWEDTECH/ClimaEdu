@@ -79,6 +79,35 @@ export class FirebaseQuestionnaireRepository implements QuestionnaireRepository 
   }
 
   /**
+   * Find questionnaires by a list of ids
+   * @param ids List of questionnaire ids
+   * @returns List of questionnaires
+   */
+  async findByIds(ids: string[]): Promise<Questionnaire[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const chunks = [];
+    for (let i = 0; i < ids.length; i += 30) {
+      chunks.push(ids.slice(i, i + 30));
+    }
+
+    const promises = chunks.map(async (chunk) => {
+      const questionnairesRef = collection(firestore, this.collectionName);
+      const q = query(questionnairesRef, where('id', 'in', chunk));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return this.mapToEntity({ id: doc.id, ...data });
+      });
+    });
+
+    const results = await Promise.all(promises);
+    return results.flat();
+  }
+
+  /**
    * Save a questionnaire
    * @param questionnaire Questionnaire to save
    * @returns Saved questionnaire

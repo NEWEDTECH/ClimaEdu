@@ -1,396 +1,106 @@
-'use client'
+"use client";
 
-import dynamic from 'next/dynamic'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
-import { Progress } from '@/components/ui/helpers/progress'
+import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ClassOverviewReport } from '@/components/reports/tutor/ClassOverviewReport';
+import { ClassAssessmentPerformanceReport } from '@/components/reports/tutor/ClassAssessmentPerformanceReport';
+import { EngagementRetentionReport } from '@/components/reports/tutor/EngagementRetentionReport';
+import { IndividualStudentTrackingReport } from '@/components/reports/tutor/IndividualStudentTrackingReport';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
+import { container } from '@/_core/shared/container';
+import { ListClassesUseCase } from '@/_core/modules/enrollment/core/use-cases/list-classes/list-classes.use-case';
+import { useProfile } from '@/context/zustand/useProfile';
+import { Class } from '@/_core/modules/enrollment/core/entities/Class';
+import { Register } from '@/_core/shared/container/symbols';
 
-const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false })
+export default function TutorReports() {
+  const { infoUser: user } = useProfile();
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('class-overview');
 
+  useEffect(() => {
+    if (!user) return;
 
-export default function ReportsPage() {
+    const fetchClasses = async () => {
+      const listClassesUseCase = container.get<ListClassesUseCase>(Register.enrollment.useCase.ListClassesUseCase);
+      const result = await listClassesUseCase.execute({ institutionId: user.currentIdInstitution });
+      setClasses(result.classes);
+    };
 
-  const progressChartOptions = {
-    chart: {
-      id: 'student-progress-chart',
-      toolbar: {
-        show: false,
-      },
-    },
-    xaxis: {
-      categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
-    },
-    colors: ['#0ea5e9'],
-    stroke: {
-      curve: 'smooth' as const,
-    },
-    markers: {
-      size: 5,
-    },
-  }
+    fetchClasses();
+  }, [user]);
 
-  const progressChartSeries = [
-    {
-      name: 'Progress (%)',
-      data: [10, 25, 30, 45, 60, 75, 80, 85],
-    },
-  ]
-
-  const assessmentChartOptions = {
-    chart: {
-      id: 'class-assessment-chart',
-      toolbar: {
-        show: false,
-      },
-    },
-    xaxis: {
-      categories: ['Quiz 1', 'Assignment 1', 'Quiz 2', 'Project', 'Quiz 3', 'Final Exam'],
-    },
-    colors: ['#0ea5e9', '#f97316'],
-    plotOptions: {
-      bar: {
-        borderRadius: 4,
-        horizontal: false,
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-  }
-
-  const assessmentChartSeries = [
-    {
-      name: 'Class Average (%)',
-      data: [75, 68, 82, 70, 85, 78],
-    },
-    {
-      name: 'Completion Rate (%)',
-      data: [95, 85, 90, 75, 80, 70],
-    },
-  ]
-
-  const activityChartOptions = {
-    chart: {
-      id: 'activity-distribution-chart',
-      toolbar: {
-        show: false,
-      },
-    },
-    labels: ['Videos', 'Readings', 'Quizzes', 'Assignments', 'Discussion'],
-    colors: ['#0ea5e9', '#f97316', '#8b5cf6', '#22c55e', '#f43f5e'],
-    legend: {
-      position: 'bottom' as const,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 300,
-          },
-          legend: {
-            position: 'bottom' as const,
-          },
-        },
-      },
-    ],
-  }
-
-  const activityChartSeries = [35, 20, 25, 15, 5]
-
-  const completionChartOptions = {
-    chart: {
-      id: 'completion-status-chart',
-      toolbar: {
-        show: false,
-      },
-    },
-    labels: ['Completed', 'In Progress', 'Not Started'],
-    colors: ['#22c55e', '#f97316', '#94a3b8'],
-    legend: {
-      position: 'bottom' as const,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 300,
-          },
-          legend: {
-            position: 'bottom' as const,
-          },
-        },
-      },
-    ],
-  }
-
-  const completionChartSeries = [65, 25, 10]
-
-  const studentDetails = {
-    progress: 85,
-    lastActivity: '2025-04-10',
-    completedModules: 7,
-    totalModules: 8,
-    averageScore: 78,
-    timeSpent: '32h 45m',
-  }
-
-  const classDetails = {
-    enrolledStudents: 28,
-    averageProgress: 72,
-    averageScore: 76,
-    completionRate: 65,
-    mostChallenging: 'Project Submission (Week 6)',
-  }
+  const handleClassSelect = (classId: string) => {
+    const selected = classes.find(c => c.id === classId);
+    if (selected) {
+      setSelectedClass(selected.id);
+      setSelectedCourse(selected.courseId);
+    }
+  };
 
   return (
     <ProtectedContent>
       <DashboardLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          <h1 className="text-3xl font-bold">Reports Dashboard</h1>
+        <div className="flex flex-col gap-4">
+          <h1 className="text-2xl font-bold">Relatórios da Turma</h1>
+          <p className="text-muted-foreground">
+            Acompanhe o desempenho, progresso e engajamento de seus alunos.
+          </p>
+        </div>
 
-          <Tabs defaultValue="student" className="w-full">
-            <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-              <TabsTrigger value="student">Student Progress</TabsTrigger>
-              <TabsTrigger value="class">Class Assessment</TabsTrigger>
-            </TabsList>
+        <div className="flex gap-4 my-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[280px] justify-between">
+                <span>{selectedClass ? classes.find(c => c.id === selectedClass)?.name : "Selecione uma turma"}</span>
+                <span>▼</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[280px]">
+              {classes.map((cls) => (
+                <DropdownMenuItem key={cls.id} onSelect={() => handleClassSelect(cls.id)}>
+                  {cls.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-            <TabsContent value="student" className="space-y-6">
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Course Progress</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{studentDetails.progress}%</div>
-                    <Progress value={studentDetails.progress} className="h-2 mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {studentDetails.completedModules} of {studentDetails.totalModules} modules completed
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{studentDetails.averageScore}%</div>
-                    <Progress value={studentDetails.averageScore} className="h-2 mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Based on all completed assessments
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Last Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{new Date(studentDetails.lastActivity).toLocaleDateString()}</div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {new Date().getDate() - new Date(studentDetails.lastActivity).getDate()} days ago
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Time Spent</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{studentDetails.timeSpent}</div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Total time in course
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Progress Over Time</CardTitle>
-                    <CardDescription>
-                      Students course completion progress
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px]">
-                      <ApexChart
-                        type="line"
-                        options={progressChartOptions}
-                        series={progressChartSeries}
-                        height="100%"
-                        width="100%"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Activity Distribution</CardTitle>
-                    <CardDescription>
-                      Time spent on different activities
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px]">
-                      <ApexChart
-                        type="pie"
-                        options={activityChartOptions}
-                        series={activityChartSeries}
-                        height="100%"
-                        width="100%"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="class" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Enrolled Students</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{classDetails.enrolledStudents}</div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Active in this course
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{classDetails.averageProgress}%</div>
-                    <Progress value={classDetails.averageProgress} className="h-2 mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Course completion rate
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{classDetails.averageScore}%</div>
-                    <Progress value={classDetails.averageScore} className="h-2 mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Across all assessments
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{classDetails.completionRate}%</div>
-                    <Progress value={classDetails.completionRate} className="h-2 mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Students who completed the course
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Assessment Performance</CardTitle>
-                    <CardDescription>
-                      Class average scores and completion rates
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px]">
-                      <ApexChart
-                        type="bar"
-                        options={assessmentChartOptions}
-                        series={assessmentChartSeries}
-                        height="100%"
-                        width="100%"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Completion Status</CardTitle>
-                    <CardDescription>
-                      Overall student progress status
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px]">
-                      <ApexChart
-                        type="donut"
-                        options={completionChartOptions}
-                        series={completionChartSeries}
-                        height="100%"
-                        width="100%"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Areas for Improvement</CardTitle>
-                  <CardDescription>
-                    Identified challenges based on class performance
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-medium">Most Challenging Content</h3>
-                      <p className="text-sm text-muted-foreground">{classDetails.mostChallenging}</p>
-                      <Progress value={45} className="h-2 mt-2" />
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium">Engagement Opportunities</h3>
-                      <p className="text-sm text-muted-foreground">
-                        25% of students havent participated in discussion forums
-                      </p>
-                      <Progress value={75} className="h-2 mt-2" />
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium">At-Risk Students</h3>
-                      <p className="text-sm text-muted-foreground">
-                        5 students havent logged in for more than 2 weeks
-                      </p>
-                      <div className="flex justify-end mt-2">
-                        <Button variant="outline" size="sm">
-                          Send Reminder
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+        <div className="mt-6">
+          <div>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full md:grid-cols-4">
+                <TabsTrigger value="class-overview">Visão Geral</TabsTrigger>
+                <TabsTrigger value="assessment-performance">Avaliações</TabsTrigger>
+                <TabsTrigger value="engagement-retention">Engajamento</TabsTrigger>
+                <TabsTrigger value="individual-tracking">Acompanhamento Individual</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="mt-4">
+            <div style={{ display: activeTab === 'class-overview' ? 'block' : 'none' }}>
+              <ClassOverviewReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+            <div style={{ display: activeTab === 'assessment-performance' ? 'block' : 'none' }}>
+              <ClassAssessmentPerformanceReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+            <div style={{ display: activeTab === 'engagement-retention' ? 'block' : 'none' }}>
+              <EngagementRetentionReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+            <div style={{ display: activeTab === 'individual-tracking' ? 'block' : 'none' }}>
+              <IndividualStudentTrackingReport courseId={selectedCourse} classId={selectedClass} />
+            </div>
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedContent>

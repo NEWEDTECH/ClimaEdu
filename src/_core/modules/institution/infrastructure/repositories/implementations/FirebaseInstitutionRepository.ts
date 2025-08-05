@@ -33,7 +33,8 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
     const settings = InstitutionSettings.create({
       logoUrl: data.settings?.logoUrl,
       primaryColor: data.settings?.primaryColor,
-      secondaryColor: data.settings?.secondaryColor
+      secondaryColor: data.settings?.secondaryColor,
+      settings: data.settings
     });
     
     // Convert Firestore timestamps to Date objects
@@ -108,7 +109,8 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
       settings: {
         logoUrl: institution.settings.logoUrl,
         primaryColor: institution.settings.primaryColor,
-        secondaryColor: institution.settings.secondaryColor
+        secondaryColor: institution.settings.secondaryColor,
+        settings: institution.settings.settings
       },
       createdAt: institution.createdAt,
       updatedAt: institution.updatedAt

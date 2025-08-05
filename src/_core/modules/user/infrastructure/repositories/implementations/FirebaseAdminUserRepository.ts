@@ -35,6 +35,10 @@ export class FirebaseAdminUserRepository implements UserRepository {
     // Initialize Firebase Admin SDK
     initializeFirebaseAdmin();
   }
+  findByIds(ids: string[]): Promise<User[]> {
+    console.log(ids)
+    throw new Error('Method not implemented.');
+  }
 
   /**
    * Generate a new unique ID for a user

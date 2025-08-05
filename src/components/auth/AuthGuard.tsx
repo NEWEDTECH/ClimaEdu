@@ -27,7 +27,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   const initializeUserData = useCallback(async (userId: string) => {
     try {
-      console.log('🚀 AuthGuard: Initializing user data for:', userId);
+      // console.log('🚀 AuthGuard: Initializing user data for:', userId);
       setIsLoading(true);
       setInitializationError(null);
 
@@ -39,7 +39,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         throw new Error('Usuário não encontrado no banco de dados');
       }
 
-      console.log('✅ AuthGuard: User found:', user.name);
+      // console.log('✅ AuthGuard: User found:', user.name);
 
       let currentInstitutionId = null;
 
@@ -59,7 +59,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           roleInstitution: null
         }));
 
-        console.log('✅ AuthGuard: User associations found:', institutionsRoleData.length);
+        // console.log('✅ AuthGuard: User associations found:', institutionsRoleData.length);
 
         // Salvar no context/zustand: infoInstitutionsRole
         setInfoInstitutionsRole(institutionsRoleData);
@@ -82,14 +82,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         const institutionRepository = container.get<InstitutionRepository>(
           Register.institution.repository.InstitutionRepository
         );
-        console.log('🔍 AuthGuard: Fetching institution with ID:', currentInstitutionId);
+        // console.log('🔍 AuthGuard: Fetching institution with ID:', currentInstitutionId);
         const institution = await institutionRepository.findById(currentInstitutionId);
 
         if (!institution) {
           throw new Error('Instituição não encontrada');
         }
 
-        console.log('✅ AuthGuard: Institution found:', institution.name);
+        // console.log('✅ AuthGuard: Institution found:', institution.name);
 
         // Passo 5: Salvar os dados da instituição
         setInfoInstitutions({
@@ -117,7 +117,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         setLastInstitutionId(currentInstitutionId);
       }
 
-      console.log('✅ AuthGuard: User data initialization completed');
+      // console.log('✅ AuthGuard: User data initialization completed');
       setIsLoading(false);
       setIsInitialized(true);
 
@@ -129,7 +129,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearUserData = useCallback(() => {
-    console.log('🧹 AuthGuard: Clearing user data on logout');
+    // console.log('🧹 AuthGuard: Clearing user data on logout');
     setInfoUser({
       id: '',
       name: '',
@@ -149,30 +149,30 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     setIsLoading(false); // ✅ Reset loading state
     setInitializationError(null);
     
-    console.log('✅ AuthGuard: User data cleared, ready for new login');
+    // console.log('✅ AuthGuard: User data cleared, ready for new login');
   }, [setInfoUser, setInfoInstitutions, setInfoInstitutionsRole]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      console.log('🔄 AuthGuard: Auth state changed', { 
-        hasUser: !!user, 
-        userId: user?.uid,
-        isInitialized, 
-        isLoading 
-      });
+      // console.log('🔄 AuthGuard: Auth state changed', { 
+      //   hasUser: !!user, 
+      //   userId: user?.uid,
+      //   isInitialized, 
+      //   isLoading 
+      // });
 
       if (user && typeof user.uid === "string") {
-        console.log("🙋‍♂️ AuthGuard: User authenticated:", { id: user.uid, name: user.displayName });
+        // console.log("🙋‍♂️ AuthGuard: User authenticated:", { id: user.uid, name: user.displayName });
         
         // Só inicializar se ainda não foi inicializado e não está carregando
         if (!isInitialized && !isLoading) {
-          console.log('🚀 AuthGuard: Starting user data initialization...');
+          // console.log('🚀 AuthGuard: Starting user data initialization...');
           await initializeUserData(user.uid);
         } else {
-          console.log('⏭️ AuthGuard: Skipping initialization', { isInitialized, isLoading });
+          // console.log('⏭️ AuthGuard: Skipping initialization', { isInitialized, isLoading });
         }
       } else {
-        console.log("🙋‍♂️ AuthGuard: User not authenticated - clearing data");
+        // console.log("🙋‍♂️ AuthGuard: User not authenticated - clearing data");
         clearUserData();
       }
     });

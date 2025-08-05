@@ -43,7 +43,8 @@ const studentItems: DropdownItem[] = [
   { label: 'Atividades', href: '/student/activities', icon: <FiActivity /> },
   { label: 'Tutoria', href: '/student/tutoring', icon: <FiUserCheck /> },
   { label: 'Questionários', href: '/student/questionnaire', icon: <FiFileText /> },
-  { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> }
+  { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> },
+  { label: 'Relatórios', href: '/student/reports', icon: <FiBarChart /> }
 ];
 
 const teacherItems: DropdownItem[] = [

@@ -58,6 +58,11 @@ curl -X POST https://your-app.vercel.app/api/setup/super-admin \
 }
 ```
 
+**Exemple**
+```
+curl -X POST localhost:3000/api/setup/super-admin -H "X-Setup-Key: clima-edu-super-admin-setup-2025" -H "Content-Type: application/json" -d '{"email":"admin2@empresa.com","name":"Super Admin 2","password":"senha123"}'
+```
+
 ## Environment Variables
 
 Add to your `.env.local` (development) or environment configuration (production):

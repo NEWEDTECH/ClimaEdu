@@ -86,6 +86,35 @@ export class FirebaseUserRepository implements UserRepository {
   }
 
   /**
+   * Find users by a list of ids
+   * @param ids List of user ids
+   * @returns List of users
+   */
+  async findByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const chunks = [];
+    for (let i = 0; i < ids.length; i += 30) {
+      chunks.push(ids.slice(i, i + 30));
+    }
+
+    const promises = chunks.map(async (chunk) => {
+      const usersRef = collection(firestore, this.collectionName);
+      const q = query(usersRef, where('id', 'in', chunk));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return this.mapToEntity({ id: doc.id, ...data });
+      });
+    });
+
+    const results = await Promise.all(promises);
+    return results.flat();
+  }
+
+  /**
    * Find a user by email
    * @param email User email
    * @returns User or null if not found

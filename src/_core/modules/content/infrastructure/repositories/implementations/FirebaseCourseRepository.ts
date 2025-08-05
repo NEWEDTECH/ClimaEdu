@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, Timestamp } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
-import { Course } from '../../../core/entities/Course';
+import { Course, Module, Lesson } from '../../../core/entities';
 import type { CourseRepository } from '../CourseRepository';
 import { nanoid } from 'nanoid';
 
@@ -38,13 +38,33 @@ export class FirebaseCourseRepository implements CourseRepository {
       : new Date(data.updatedAt);
     
     // Create and return a Course entity
+    const modules = (data.modules || []).map((moduleData: { id: string; title: string; order: number; lessons: { id: string; title: string; order: number }[] }) => {
+      const lessons = (moduleData.lessons || []).map((lessonData: { id: string; title: string; order: number }) => {
+        return Lesson.create({
+          id: lessonData.id,
+          moduleId: moduleData.id,
+          title: lessonData.title,
+          order: lessonData.order,
+          // Map other lesson properties as needed
+        });
+      });
+      return Module.create({
+        id: moduleData.id,
+        courseId: data.id,
+        title: moduleData.title,
+        order: moduleData.order,
+        lessons,
+        // Map other module properties as needed
+      });
+    });
+
     return Course.create({
       id: data.id,
       institutionId: data.institutionId,
       title: data.title,
       description: data.description,
       coverImageUrl: data.coverImageUrl,
-      modules: data.modules || [],
+      modules,
       createdAt,
       updatedAt
     });

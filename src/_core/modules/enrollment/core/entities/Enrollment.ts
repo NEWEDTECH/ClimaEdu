@@ -54,7 +54,7 @@ export class Enrollment {
     // enrolledAt defaults to now if not provided
     const enrolledAt = params.enrolledAt ?? new Date();
 
-    const uuid = crypto.randomUUID();
+    const uuid = params.id || crypto.randomUUID();
 
     return new Enrollment(
       uuid,
