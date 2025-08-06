@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { useProfile } from '@/context/zustand/useProfile';
-import { HeaderSideBar } from '@/components/courses/header'
 import { GetChatRoomByClassUseCase } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.use-case';
 import { GetChatRoomByClassInput } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.input';
 import { CreateChatRoomForClassUseCase } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.use-case';
@@ -275,7 +274,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   return (
     <>
       {isEmbedded && (
-        <div className="h-full flex flex-col" style={{ height: 'calc(100vh - 11rem)' }}>
+        <div className="h-full flex flex-col bg-red-600" style={{ height: 'calc(100vh - 11.5rem)' }}>
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {isInitializing ? (
