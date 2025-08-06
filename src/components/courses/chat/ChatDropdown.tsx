@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { useProfile } from '@/context/zustand/useProfile';
+import { HeaderSideBar } from '@/components/courses/header'
 import { GetChatRoomByClassUseCase } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.use-case';
 import { GetChatRoomByClassInput } from '@/_core/modules/chat/core/use-cases/get-chat-room-by-class/get-chat-room-by-class.input';
 import { CreateChatRoomForClassUseCase } from '@/_core/modules/chat/core/use-cases/create-chat-room-for-class/create-chat-room-for-class.use-case';
@@ -57,7 +58,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       return unsubscribe;
     } catch (error) {
       console.error('Error subscribing to messages:', error);
-      return () => {};
+      return () => { };
     }
   }, []);
 
@@ -103,7 +104,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
       setChatRoom(currentChatRoom);
       // Subscribe to real-time messages
       const unsubscribe = subscribeToMessages(currentChatRoom.id);
-      
+
       // Store unsubscribe function for cleanup
       return unsubscribe;
     } catch (error) {
@@ -238,7 +239,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     if (!date || isNaN(new Date(date).getTime())) {
       return '--:--';
     }
-    
+
     return new Intl.DateTimeFormat('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -250,96 +251,31 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
     if (!date || isNaN(new Date(date).getTime())) {
       return 'Data inválida';
     }
-    
+
     const today = new Date();
     const messageDate = new Date(date);
-    
+
     if (messageDate.toDateString() === today.toDateString()) {
       return 'Hoje';
     }
-    
+
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (messageDate.toDateString() === yesterday.toDateString()) {
       return 'Ontem';
     }
-    
+
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
     }).format(messageDate);
   };
 
-  // Render embedded chat interface
-  if (isEmbedded) {
-    return null;
-  }
-
-  // Render dropdown chat interface
   return (
-    <div className="fixed top-20 right-4 z-50">
-      {/* Chat Toggle Button */}
-      <button
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (!isOpen && !chatRoom) {
-            initializeChatRoom().then((unsubscribe) => {
-              if (unsubscribe) {
-                unsubscribeRef.current = unsubscribe;
-              }
-            });
-          }
-        }}
-        className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
-          isOpen
-            ? 'bg-blue-600 text-white transform scale-110'
-            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-        }`}
-        aria-label="Toggle chat"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-      </button>
-
-      {/* Chat Dropdown Panel */}
-      {isOpen && (
-        <div className="absolute top-16 right-0 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col animate-in slide-in-from-top-2 duration-300" style={{ height: 'calc(100vh - 10rem)' }}>
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Chat da Turma</h3>
-                <p className="text-xs text-gray-500">Converse com seus colegas</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
+    <>
+      {isEmbedded && (
+        <div className="h-full flex flex-col" style={{ height: 'calc(100vh - 11rem)' }}>
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {isInitializing ? (
@@ -357,7 +293,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
             ) : (
               messages.map((message, index) => {
                 const isOwnMessage = message.userId === userId;
-                const showDate = index === 0 || 
+                const showDate = index === 0 ||
                   formatDate(messages[index - 1].sentAt) !== formatDate(message.sentAt);
 
                 return (
@@ -371,11 +307,10 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                     )}
                     <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                       <div
-                        className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                          isOwnMessage
-                            ? 'bg-blue-500 text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                        }`}
+                        className={`max-w-xs px-3 py-2 rounded-lg text-sm ${isOwnMessage
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                          }`}
                       >
                         {!isOwnMessage && (
                           <p className="text-xs font-medium mb-1 opacity-70">
@@ -392,11 +327,11 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                 );
               })
             )}
-            <div ref={messagesEndRef} />
+
           </div>
 
           {/* Input Area */}
-          <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
             <div className="flex space-x-2">
               <input
                 ref={inputRef}
@@ -425,6 +360,6 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

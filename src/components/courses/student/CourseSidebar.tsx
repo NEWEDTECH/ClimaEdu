@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Module } from '@/_core/modules/content/core/entities/Module';
 import { ChatDropdown } from '@/components/courses/chat';
+import { HeaderSideBar } from '@/components/courses/header'
 
 type CourseSidebarProps = {
   modules: Module[];
@@ -163,11 +164,10 @@ export function CourseSidebar({
         {/* Chat Icon */}
         <button
           onClick={handleChatClick}
-          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
-            sidebarMode === 'chat'
-              ? 'bg-blue-600 text-white transform scale-110'
-              : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-          }`}
+          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'chat'
+            ? 'bg-blue-600 text-white transform scale-110'
+            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
+            }`}
           aria-label="Toggle chat"
         >
           <svg
@@ -189,11 +189,10 @@ export function CourseSidebar({
         {/* Modules Icon */}
         <button
           onClick={handleModulesClick}
-          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
-            sidebarMode === 'modules'
-              ? 'bg-indigo-600 text-white transform scale-110'
-              : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
-          }`}
+          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'modules'
+            ? 'bg-indigo-600 text-white transform scale-110'
+            : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
+            }`}
           aria-label="Toggle modules"
         >
           <svg
@@ -215,14 +214,15 @@ export function CourseSidebar({
 
       {/* Sidebar Panel */}
       {sidebarMode !== 'hidden' && (
-        <div 
-          className={`fixed top-20 bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-30 transition-all duration-300 rounded-lg w-96`}
-          style={{ 
-            right: '100px', // Posiciona ao lado direito dos ícones (80px de largura + 20px de margem)
-            height: 'calc(100vh - 6rem)' // Altura ajustada para não sobrepor o header
+        <div
+          className={`fixed top-20 bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-30 transition-all duration-300 rounded-lg ${sidebarMode === 'chat' ? 'w-96' : 'w-96'
+            }`}
+          style={{
+            right: '100px',
+            height: 'calc(100vh - 6rem)'
           }}
         >
-          {/* Close Button */}
+
           <button
             onClick={() => setSidebarMode('hidden')}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors z-10"
@@ -232,36 +232,52 @@ export function CourseSidebar({
             </svg>
           </button>
 
+          {sidebarMode === 'chat' && (
+            <>
+              <HeaderSideBar
+                title='Chat da Turma'
+                subTitle='Converse com seus colegas'
+                icon={
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z" />
+                  </svg>
+                }
+              />
+              <div className="flex-1 relative">
+                <ChatDropdown
+                  courseId={courseId}
+                  classId={courseId}
+                  userId={userId}
+                  userName={userName}
+                  isEmbedded={true}
+                />
+              </div>
+            </>
+          )}
 
           {sidebarMode === 'modules' && (
             <div className="h-full flex flex-col overflow-hidden">
-              {/* Modules Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">Conteúdo do Curso</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'}
-                    </p>
-                  </div>
-                </div>
-              </div>
+
+              <HeaderSideBar
+                title='Conteúdo do Curso'
+                subTitle={`${modules.length} ${modules.length === 1 ? 'módulo' : 'módulos'}`}
+                icon={
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                }
+              />
 
               {/* Modules Content */}
               <div className="flex-1 overflow-y-auto p-4">

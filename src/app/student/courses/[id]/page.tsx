@@ -334,7 +334,6 @@ export default function CoursePage() {
 
     return (
         <DashboardLayout>
-
             {/* New Sidebar Component */}
             <CourseSidebar
                 modules={modules}
@@ -353,10 +352,12 @@ export default function CoursePage() {
             <div
                 className="h-[calc(100vh-4rem)] p-4 transition-all duration-300"
                 style={{
-                    width: sidebarMode !== 'hidden' 
-                        ? 'calc(100% - 120px - 500px)' 
-                        : 'calc(100% - 120px)', 
-                    marginRight: '0px'
+                    marginRight: sidebarMode !== 'hidden'
+                        ? sidebarMode === 'chat'
+                            ? '500px'
+                            : '500px'
+                        : '0px',
+                    width: sidebarMode === 'hidden' ? '100%' : 'auto'
                 }}
             >
                 {isLoading ? (
