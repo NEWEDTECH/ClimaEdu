@@ -349,15 +349,23 @@ export default function CoursePage() {
                 onSidebarModeChange={setSidebarMode}
             />
 
+            {/* Invisible div for spacing when sidebar is closed */}
+            {sidebarMode === 'hidden' && (
+                <div 
+                    className="fixed top-0 right-0 h-full bg-transparent pointer-events-none z-10"
+                    style={{ width: '120px' }}
+                />
+            )}
+
             <div
                 className="h-[calc(100vh-4rem)] p-4 transition-all duration-300"
                 style={{
                     marginRight: sidebarMode !== 'hidden'
                         ? sidebarMode === 'chat'
                             ? '500px'
-                            : '580px'
+                            : '500px'
                         : '0px',
-                    width: sidebarMode === 'hidden' ? '100%' : 'auto'
+                    width: sidebarMode === 'hidden' ? 'calc(100% - 120px)' : 'auto'
                 }}
             >
                 {isLoading ? (
