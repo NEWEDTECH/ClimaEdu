@@ -232,34 +232,6 @@ export function CourseSidebar({
             </svg>
           </button>
 
-          {sidebarMode === 'chat' && (
-            <div className="h-full flex flex-col">
-              {/* Chat Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">Chat da Turma</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Converse com seus colegas</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 relative">
-                <ChatDropdown
-                  courseId={courseId}
-                  classId={courseId}
-                  userId={userId}
-                  userName={userName}
-                  isEmbedded={true}
-                />
-              </div>
-            </div>
-          )}
 
           {sidebarMode === 'modules' && (
             <div className="h-full flex flex-col overflow-hidden">

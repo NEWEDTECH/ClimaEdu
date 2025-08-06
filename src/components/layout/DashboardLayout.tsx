@@ -16,7 +16,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Navbar />
       <ToastContainer />
       
-      <main className="flex-1 overflow-y-auto bg-transparent">
+      <main className="flex-1 bg-transparent">
         {children}
       </main>
     </div>

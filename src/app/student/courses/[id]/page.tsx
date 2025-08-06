@@ -354,8 +354,8 @@ export default function CoursePage() {
                 className="h-[calc(100vh-4rem)] p-4 transition-all duration-300"
                 style={{
                     width: sidebarMode !== 'hidden' 
-                        ? 'calc(100% - 120px - 500px)' // Full width - ícones - sidebar (384px + 100px + 16px)
-                        : 'calc(100% - 120px)', // Full width - ícones apenas
+                        ? 'calc(100% - 120px - 500px)' 
+                        : 'calc(100% - 120px)', 
                     marginRight: '0px'
                 }}
             >
