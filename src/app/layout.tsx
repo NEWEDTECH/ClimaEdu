@@ -33,7 +33,7 @@ export default function RootLayout({
         <ContainerProvider>
           <AuthGuard>
             <ToastProvider>
-              <main className="min-h-screen">
+              <main className=" overflow-y-auto min-h-screen">
                 {children}
               </main>
               <footer className="bg-white dark:bg-gray-900 border-t py-6">
