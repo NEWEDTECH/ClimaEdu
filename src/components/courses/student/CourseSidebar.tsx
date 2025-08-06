@@ -216,9 +216,7 @@ export function CourseSidebar({
       {/* Sidebar Panel */}
       {sidebarMode !== 'hidden' && (
         <div 
-          className={`fixed top-20 bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-30 transition-all duration-300 rounded-lg ${
-            sidebarMode === 'chat' ? 'w-80' : 'w-96'
-          }`}
+          className={`fixed top-20 bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-30 transition-all duration-300 rounded-lg w-96`}
           style={{ 
             right: '100px', // Posiciona ao lado direito dos ícones (80px de largura + 20px de margem)
             height: 'calc(100vh - 6rem)' // Altura ajustada para não sobrepor o header
