@@ -48,7 +48,6 @@ export const TutoringConfig = {
     invalidSessionId: 'Session ID is required and must be valid',
     invalidStudentId: 'Student ID is required and must be valid',
     invalidTutorId: 'Tutor ID is required and must be valid',
-    invalidSubjectId: 'Subject ID is required and must be valid',
     invalidCourseId: 'Course ID is required and must be valid',
     invalidScheduledDate: 'Scheduled date is required and must be in the future',
     invalidDuration: 'Duration must be between {min} and {max} minutes',
@@ -63,9 +62,6 @@ export const TutoringConfig = {
     tutorConflict: 'Tutor is not available at the requested time',
     studentConflict: 'You already have a session scheduled at this time',
     
-    // Subject errors
-    subjectNotFound: 'Subject not found',
-    subjectInactive: 'Subject is not available for tutoring',
     
     // State transition errors
     cannotSchedule: 'Only requested sessions can be scheduled',

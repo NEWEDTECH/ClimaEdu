@@ -42,13 +42,6 @@ export interface TutoringSessionRepository {
    */
   findByTutorId(tutorId: string, status?: TutoringSessionStatus): Promise<TutoringSession[]>;
 
-  /**
-   * Finds all tutoring sessions for a specific subject
-   * @param subjectId The subject's ID
-   * @param status Optional status filter
-   * @returns Promise<TutoringSession[]> Array of sessions
-   */
-  findBySubjectId(subjectId: string, status?: TutoringSessionStatus): Promise<TutoringSession[]>;
 
   /**
    * Finds all tutoring sessions for a specific course

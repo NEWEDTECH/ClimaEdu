@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols';
 import { TutoringSession, TutoringSessionStatus } from '../../../entities/TutoringSession';
 import type { TutoringSessionRepository } from '../../../../infrastructure/repositories/TutoringSessionRepository';
-import type { SubjectRepository } from '../../../../infrastructure/repositories/SubjectRepository';
 import { GetSessionDetailsInput } from './get-session-details.input';
 import { GetSessionDetailsOutput } from './get-session-details.output';
 
@@ -15,9 +14,7 @@ import { GetSessionDetailsOutput } from './get-session-details.output';
 export class GetSessionDetailsUseCase {
   constructor(
     @inject(TutoringSymbols.repositories.TutoringSessionRepository)
-    private readonly tutoringSessionRepository: TutoringSessionRepository,
-    @inject(TutoringSymbols.repositories.SubjectRepository)
-    private readonly subjectRepository: SubjectRepository
+    private readonly tutoringSessionRepository: TutoringSessionRepository
   ) {}
 
   /**
@@ -41,12 +38,6 @@ export class GetSessionDetailsUseCase {
       throw new Error('You are not authorized to view this session');
     }
 
-    // Get subject information
-    const subject = await this.subjectRepository.findById(session.subjectId);
-    if (!subject) {
-      throw new Error('Subject not found');
-    }
-
     // Determine user permissions
     const isTutor = session.tutorId === input.userId;
     const isStudent = session.studentId === input.userId;
@@ -56,7 +47,6 @@ export class GetSessionDetailsUseCase {
 
     return {
       session,
-      subject,
       ...permissions
     };
   }

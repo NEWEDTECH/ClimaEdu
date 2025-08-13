@@ -2,8 +2,9 @@ import { inject, injectable } from 'inversify';
 import { TutoringSession } from '../../../entities/TutoringSession';
 import { TutoringConfig } from '../../../config/tutoring-config';
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols';
+import { ContentSymbols } from '@/_core/shared/container/modules/content/symbols';
 import type { TutoringSessionRepository } from '../../../../infrastructure/repositories/TutoringSessionRepository';
-import type { SubjectRepository } from '../../../../infrastructure/repositories/SubjectRepository';
+import type { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
 import { ScheduleTutoringSessionInput } from './schedule-tutoring-session.input';
 import { ScheduleTutoringSessionOutput } from './schedule-tutoring-session.output';
 
@@ -17,8 +18,8 @@ export class ScheduleTutoringSessionUseCase {
   constructor(
     @inject(TutoringSymbols.repositories.TutoringSessionRepository)
     private readonly tutoringSessionRepository: TutoringSessionRepository,
-    @inject(TutoringSymbols.repositories.SubjectRepository)
-    private readonly subjectRepository: SubjectRepository
+    @inject(ContentSymbols.repositories.CourseTutorRepository)
+    private readonly courseTutorRepository: CourseTutorRepository
   ) {}
 
   /**
@@ -27,11 +28,11 @@ export class ScheduleTutoringSessionUseCase {
    * @returns Promise<ScheduleTutoringSessionOutput> The result of the operation
    */
   async execute(input: ScheduleTutoringSessionInput): Promise<ScheduleTutoringSessionOutput> {
-    // Check for scheduling conflicts
-    await this.checkForConflicts(input);
+    // Find the tutor for the course
+    const tutorId = await this.findTutorByCourseId(input.courseId);
 
-    // Verify subject exists and is active
-    await this.verifySubject(input.subjectId);
+    // Check for scheduling conflicts
+    await this.checkForConflicts(input, tutorId);
 
     // Generate session ID
     const sessionId = await this.tutoringSessionRepository.generateId();
@@ -40,8 +41,7 @@ export class ScheduleTutoringSessionUseCase {
     const session = TutoringSession.create({
       id: sessionId,
       studentId: input.studentId,
-      tutorId: input.tutorId,
-      subjectId: input.subjectId,
+      tutorId: tutorId,
       courseId: input.courseId,
       scheduledDate: input.scheduledDate,
       duration: input.duration,
@@ -61,12 +61,29 @@ export class ScheduleTutoringSessionUseCase {
 
 
   /**
+   * Finds the tutor ID for a given course ID
+   * @param courseId The course ID
+   * @returns The tutor ID
+   * @throws Error if no tutor is found for the course
+   */
+  private async findTutorByCourseId(courseId: string): Promise<string> {
+    const courseTutors = await this.courseTutorRepository.findByCourseId(courseId);
+    
+    if (courseTutors.length === 0) {
+      throw new Error(`No tutor found for course ${courseId}`);
+    }
+
+    // Return the first tutor (assuming one tutor per course)
+    return courseTutors[0].userId;
+  }
+
+  /**
    * Checks for scheduling conflicts with existing sessions
    */
-  private async checkForConflicts(input: ScheduleTutoringSessionInput): Promise<void> {
+  private async checkForConflicts(input: ScheduleTutoringSessionInput, tutorId: string): Promise<void> {
     // Check for tutor conflicts
     const tutorConflicts = await this.tutoringSessionRepository.findConflictingSessions(
-      input.tutorId,
+      tutorId,
       input.scheduledDate,
       input.duration
     );
@@ -97,18 +114,4 @@ export class ScheduleTutoringSessionUseCase {
     }
   }
 
-  /**
-   * Verifies that the subject exists and is active
-   */
-  private async verifySubject(subjectId: string): Promise<void> {
-    const subject = await this.subjectRepository.findById(subjectId);
-    
-    if (!subject) {
-      throw new Error(TutoringConfig.errors.subjectNotFound);
-    }
-
-    if (!subject.isActive) {
-      throw new Error(TutoringConfig.errors.subjectInactive);
-    }
-  }
 }

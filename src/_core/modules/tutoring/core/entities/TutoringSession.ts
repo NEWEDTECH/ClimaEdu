@@ -30,7 +30,6 @@ export class TutoringSession {
     readonly id: string,
     readonly studentId: string,
     readonly tutorId: string,
-    readonly subjectId: string,
     readonly courseId: string,
     public scheduledDate: Date,
     public duration: number, // in minutes
@@ -55,7 +54,6 @@ export class TutoringSession {
     id: string;
     studentId: string;
     tutorId: string;
-    subjectId: string;
     courseId: string;
     scheduledDate: Date;
     duration: number;
@@ -72,7 +70,6 @@ export class TutoringSession {
       params.id,
       params.studentId,
       params.tutorId,
-      params.subjectId,
       params.courseId,
       params.scheduledDate,
       params.duration,
@@ -81,6 +78,47 @@ export class TutoringSession {
       params.priority ?? SessionPriority.MEDIUM,
       params.createdAt ?? now,
       params.updatedAt ?? now
+    );
+  }
+
+  /**
+   * Creates a TutoringSession instance from existing data (e.g., from database)
+   * @param params Complete TutoringSession data
+   * @returns A TutoringSession instance with all fields preserved
+   */
+  public static fromData(params: {
+    id: string;
+    studentId: string;
+    tutorId: string;
+    courseId: string;
+    scheduledDate: Date;
+    duration: number;
+    status: TutoringSessionStatus;
+    studentQuestion: string;
+    priority: SessionPriority;
+    createdAt: Date;
+    updatedAt: Date;
+    tutorNotes?: string;
+    sessionSummary?: string;
+    materials?: string[];
+    cancelReason?: string;
+  }): TutoringSession {
+    return new TutoringSession(
+      params.id,
+      params.studentId,
+      params.tutorId,
+      params.courseId,
+      params.scheduledDate,
+      params.duration,
+      params.status,
+      params.studentQuestion,
+      params.priority,
+      params.createdAt,
+      params.updatedAt,
+      params.tutorNotes,
+      params.sessionSummary,
+      params.materials,
+      params.cancelReason
     );
   }
 
@@ -243,7 +281,6 @@ export class TutoringSession {
     id: string;
     studentId: string;
     tutorId: string;
-    subjectId: string;
     courseId: string;
     scheduledDate: Date;
     duration: number;
@@ -253,7 +290,6 @@ export class TutoringSession {
     TutoringValidation.validateRequiredString(params.id, 'Session ID');
     TutoringValidation.validateRequiredString(params.studentId, 'Student ID');
     TutoringValidation.validateRequiredString(params.tutorId, 'Tutor ID');
-    TutoringValidation.validateRequiredString(params.subjectId, 'Subject ID');
     TutoringValidation.validateRequiredString(params.courseId, 'Course ID');
     
     if (!params.scheduledDate) {

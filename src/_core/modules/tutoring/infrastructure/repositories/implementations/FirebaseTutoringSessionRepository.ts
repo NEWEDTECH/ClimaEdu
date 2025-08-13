@@ -54,19 +54,23 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
       ? data.updatedAt.toDate() 
       : new Date(data.updatedAt);
     
-    // Create and return a TutoringSession entity
-    return TutoringSession.create({
+    // Create and return a TutoringSession entity preserving all fields including status
+    return TutoringSession.fromData({
       id: data.id,
       studentId: data.studentId,
       tutorId: data.tutorId,
-      subjectId: data.subjectId,
       courseId: data.courseId,
       scheduledDate,
       duration: data.duration,
+      status: data.status || TutoringSessionStatus.REQUESTED,
       studentQuestion: data.studentQuestion,
       priority: data.priority || SessionPriority.MEDIUM,
       createdAt,
-      updatedAt
+      updatedAt,
+      tutorNotes: data.tutorNotes || undefined,
+      sessionSummary: data.sessionSummary || undefined,
+      materials: data.materials || undefined,
+      cancelReason: data.cancelReason || undefined
     });
   }
 
@@ -80,7 +84,6 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
       id: session.id,
       studentId: session.studentId,
       tutorId: session.tutorId,
-      subjectId: session.subjectId,
       courseId: session.courseId,
       scheduledDate: session.scheduledDate,
       duration: session.duration,
@@ -196,35 +199,6 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     });
   }
 
-  /**
-   * Finds all tutoring sessions for a specific subject
-   * @param subjectId The subject's ID
-   * @param status Optional status filter
-   * @returns Promise<TutoringSession[]> Array of sessions
-   */
-  async findBySubjectId(subjectId: string, status?: TutoringSessionStatus): Promise<TutoringSession[]> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(
-      sessionsRef, 
-      where('subjectId', '==', subjectId),
-      orderBy('scheduledDate', 'desc')
-    );
-
-    if (status) {
-      q = query(
-        sessionsRef,
-        where('subjectId', '==', subjectId),
-        where('status', '==', status),
-        orderBy('scheduledDate', 'desc')
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
-  }
 
   /**
    * Finds all tutoring sessions for a specific course

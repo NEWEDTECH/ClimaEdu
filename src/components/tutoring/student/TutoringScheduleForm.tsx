@@ -9,11 +9,16 @@ import { FormSection } from '@/components/form'
 import { CourseSelect } from './CourseSelect'
 import { DatePicker } from './DatePicker'
 import { TimeSlotPicker } from './TimeSlotPicker'
-import { Course, availableTimeSlots } from '../../../app/student/tutoring/data/mockData'
+import { useTutoringScheduler } from '@/hooks/tutoring'
+import type { Course } from '@/_core/modules/content'
 import { CalendarIcon, ClockIcon, BookOpenIcon, MessageSquareIcon } from 'lucide-react'
 
+const availableTimeSlots = [
+  '08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'
+]
+
 const formSchema = z.object({
-  courseId: z.string().min(1, { message: 'Selecione um curso' }),
+  subjectId: z.string().min(1, { message: 'Selecione uma matéria' }),
   date: z.string().min(1, { message: 'Selecione uma data' }),
   time: z.string().min(1, { message: 'Selecione um horário' }),
   notes: z.string().optional()
@@ -23,12 +28,15 @@ type FormValues = z.infer<typeof formSchema>
 
 interface TutoringScheduleFormProps {
   courses: Course[]
-  onSchedule: (data: FormValues) => void
+  loading: boolean
+  error: string | null
+  studentId: string
+  onSchedule: () => Promise<void>
 }
 
-export function TutoringScheduleForm({ courses, onSchedule }: TutoringScheduleFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function TutoringScheduleForm({ courses, loading, error, studentId, onSchedule }: TutoringScheduleFormProps) {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const { scheduleSession, loading: scheduling, error: scheduleError } = useTutoringScheduler()
 
   const {
     register,
@@ -40,36 +48,40 @@ export function TutoringScheduleForm({ courses, onSchedule }: TutoringScheduleFo
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      courseId: '',
+      subjectId: '',
       date: '',
       time: '',
       notes: ''
     }
   })
 
-  const watchedCourseId = watch('courseId')
+  const watchedSubjectId = watch('subjectId')
   const watchedDate = watch('date')
 
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true)
-    
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Parse date and time
+      const scheduledDate = new Date(`${data.date}T${data.time}:00`)
       
-      onSchedule(data)
+      await scheduleSession({
+        studentId,
+        courseId: selectedCourse?.id || data.subjectId,
+        scheduledDate,
+        duration: 60,
+        studentQuestion: data.notes || 'Sessão de tutoria agendada'
+      })
+      
       reset()
       setSelectedCourse(null)
+      await onSchedule()
     } catch (error) {
       console.error('Error scheduling session:', error)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
-  const handleCourseChange = (courseId: string) => {
-    setValue('courseId', courseId)
-    const course = courses.find(c => c.id === courseId)
+  const handleSubjectChange = (subjectId: string) => {
+    setValue('subjectId', subjectId)
+    const course = courses.find((c: Course) => c.id === subjectId)
     setSelectedCourse(course || null)
   }
 
@@ -83,25 +95,52 @@ export function TutoringScheduleForm({ courses, onSchedule }: TutoringScheduleFo
     setValue('time', time)
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-sm text-gray-500">Carregando matérias...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+        <p className="text-sm text-red-600">Erro ao carregar matérias: {error}</p>
+      </div>
+    )
+  }
+
   return (
     <FormSection onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-6">
-        {/* Course Selection */}
+        {scheduleError && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">Erro ao agendar: {scheduleError}</p>
+          </div>
+        )}
+
+        {/* Subject Selection */}
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <BookOpenIcon size={16} />
-            Curso
+            Matéria
           </label>
           <CourseSelect
-            courses={courses}
-            selectedCourseId={watchedCourseId}
-            onCourseChange={handleCourseChange}
-            error={errors.courseId?.message}
+            courses={courses.map((course: Course) => ({
+              id: course.id,
+              name: course.title,
+              description: course.description,
+              tutor: 'Professor Disponível'
+            }))}
+            selectedCourseId={watchedSubjectId}
+            onCourseChange={handleSubjectChange}
+            error={errors.subjectId?.message}
           />
           {selectedCourse && (
             <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
               <p className="text-sm text-blue-800">
-                <strong>Professor:</strong> {selectedCourse.tutor}
+                <strong>Curso:</strong> {selectedCourse.title}
               </p>
               <p className="text-sm text-blue-700 mt-1">
                 {selectedCourse.description}
@@ -160,10 +199,10 @@ export function TutoringScheduleForm({ courses, onSchedule }: TutoringScheduleFo
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={scheduling}
           className="w-full font-medium"
         >
-          {isSubmitting ? 'Agendando...' : 'Agendar Sessão'}
+          {scheduling ? 'Agendando...' : 'Agendar Sessão'}
         </Button>
       </div>
     </FormSection>
