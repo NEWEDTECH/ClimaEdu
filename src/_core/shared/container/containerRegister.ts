@@ -12,6 +12,7 @@ import { registerPodcastModule } from './modules/podcast/register';
 import { registerSocialModule } from './modules/social/register';
 import { registerReportModule } from './modules/report/register';
 import { registerCertificateModule } from './modules/certificate/register';
+import { registerTutoringModule } from './modules/tutoring/register';
 
 /**
  * Register all dependencies in the container
@@ -29,4 +30,5 @@ export function registerDependencies(): void {
   registerSocialModule(container);
   registerReportModule(container);
   registerCertificateModule(container);
+  registerTutoringModule(container);
 }
