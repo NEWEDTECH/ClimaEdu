@@ -41,7 +41,8 @@ export class TutoringSession {
     public tutorNotes?: string,
     public sessionSummary?: string,
     public materials?: string[],
-    public cancelReason?: string
+    public cancelReason?: string,
+    public meetingUrl?: string
   ) {}
 
   /**
@@ -102,6 +103,7 @@ export class TutoringSession {
     sessionSummary?: string;
     materials?: string[];
     cancelReason?: string;
+    meetingUrl?: string;
   }): TutoringSession {
     return new TutoringSession(
       params.id,
@@ -118,7 +120,8 @@ export class TutoringSession {
       params.tutorNotes,
       params.sessionSummary,
       params.materials,
-      params.cancelReason
+      params.cancelReason,
+      params.meetingUrl
     );
   }
 
@@ -210,6 +213,22 @@ export class TutoringSession {
     }
     
     this.tutorNotes = notes;
+    this.touch();
+  }
+
+  /**
+   * Sets the meeting URL for the session
+   * @param url Meeting URL (optional)
+   */
+  public setMeetingUrl(url?: string): void {
+    if (url) {
+      // Use centralized validation
+      TutoringValidation.validateMeetingUrl(url);
+      this.meetingUrl = url.trim();
+    } else {
+      this.meetingUrl = undefined;
+    }
+    
     this.touch();
   }
 

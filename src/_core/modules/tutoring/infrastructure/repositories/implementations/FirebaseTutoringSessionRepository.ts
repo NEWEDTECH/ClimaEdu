@@ -70,7 +70,8 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
       tutorNotes: data.tutorNotes || undefined,
       sessionSummary: data.sessionSummary || undefined,
       materials: data.materials || undefined,
-      cancelReason: data.cancelReason || undefined
+      cancelReason: data.cancelReason || undefined,
+      meetingUrl: data.meetingUrl || undefined
     });
   }
 
@@ -95,7 +96,8 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
       tutorNotes: session.tutorNotes || null,
       sessionSummary: session.sessionSummary || null,
       materials: session.materials || null,
-      cancelReason: session.cancelReason || null
+      cancelReason: session.cancelReason || null,
+      meetingUrl: session.meetingUrl || null
     };
   }
 

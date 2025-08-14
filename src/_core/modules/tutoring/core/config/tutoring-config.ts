@@ -190,4 +190,23 @@ export const TutoringValidation = {
     }
     return true;
   },
+
+  /**
+   * Validates meeting URL format
+   * @param url The URL to validate
+   * @returns True if valid, throws error if invalid
+   */
+  validateMeetingUrl(url: string): boolean {
+    if (!url || url.trim() === '') {
+      return true; // URL is optional
+    }
+
+    // Basic URL format validation
+    const urlPattern = /^https?:\/\/.+/i;
+    if (!urlPattern.test(url.trim())) {
+      throw new Error('URL da reunião deve ser um link válido (começando com http:// ou https://)');
+    }
+
+    return true;
+  },
 };

@@ -1,7 +1,8 @@
 'use client'
 
 import type { TutoringSession } from '@/_core/modules/tutoring'
-import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react'
+import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, CheckCircleIcon, XCircleIcon, LinkIcon, ExternalLinkIcon } from 'lucide-react'
+import { MeetingUrlUtils } from '../shared/tutoring-utils'
 
 interface SessionCardProps {
   session: TutoringSession
@@ -11,6 +12,14 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session, isUpcoming, onCancel, cancelling }: SessionCardProps) {
+  // Debug: Log session data to check if meetingUrl is present
+  console.log('SessionCard - session data:', {
+    id: session.id,
+    status: session.status,
+    meetingUrl: session.meetingUrl,
+    hasUrl: !!session.meetingUrl
+  })
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       weekday: 'long',
@@ -137,8 +146,28 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
         )}
       </div>
 
-      {isUpcoming && (session.status === 'REQUESTED' || session.status === 'SCHEDULED') && onCancel && (
+      {/* Meeting URL for active sessions */}
+      {session.meetingUrl && (session.status === 'SCHEDULED' || session.status === 'IN_PROGRESS') && (
         <div className="mt-3 pt-3 border-t border-gray-100">
+          <a
+            href={session.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
+          >
+            <LinkIcon size={16} />
+            <span>Entrar na Reunião</span>
+            <ExternalLinkIcon size={14} />
+          </a>
+          <p className="text-xs text-gray-500 text-center mt-1">
+            {MeetingUrlUtils.getMeetingPlatform(session.meetingUrl)}
+          </p>
+        </div>
+      )}
+
+      {/* Cancel button for upcoming sessions */}
+      {isUpcoming && (session.status === 'REQUESTED' || session.status === 'SCHEDULED') && onCancel && (
+        <div className={`mt-3 pt-3 border-t border-gray-100 ${session.meetingUrl ? 'mt-2 pt-2' : ''}`}>
           <div className="flex gap-2">
             <button 
               onClick={onCancel}

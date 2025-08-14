@@ -1,8 +1,8 @@
 'use client'
 
 import { TutoringSession } from '@/_core/modules/tutoring'
-import { TutoringStatusUtils, SessionPriorityUtils, TutoringDateUtils } from '../shared/tutoring-utils'
-import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, AlertCircleIcon } from 'lucide-react'
+import { TutoringStatusUtils, SessionPriorityUtils, TutoringDateUtils, MeetingUrlUtils } from '../shared/tutoring-utils'
+import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, AlertCircleIcon, LinkIcon, ExternalLinkIcon } from 'lucide-react'
 
 interface TutorSessionCardProps {
   session: TutoringSession
@@ -72,9 +72,25 @@ export function TutorSessionCard({ session, onClick }: TutorSessionCardProps) {
           <span>student-{session.studentId.slice(-4)}@email.com</span>
         </div>
         
-        <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
-          Ver detalhes →
-        </button>
+        <div className="flex items-center gap-2">
+          {session.meetingUrl && (
+            <a
+              href={session.meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded hover:bg-green-200 transition-colors"
+              title={`Entrar na reunião - ${MeetingUrlUtils.getMeetingPlatform(session.meetingUrl)}`}
+            >
+              <LinkIcon size={12} />
+              <ExternalLinkIcon size={10} />
+            </a>
+          )}
+          
+          <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+            Ver detalhes →
+          </button>
+        </div>
       </div>
     </div>
   )

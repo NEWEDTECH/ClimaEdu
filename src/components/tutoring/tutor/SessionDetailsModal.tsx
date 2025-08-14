@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { TutoringSession, TutoringSessionStatus } from '@/_core/modules/tutoring'
-import { SessionPriorityUtils, TutoringDateUtils } from '../shared/tutoring-utils'
+import { SessionPriorityUtils, TutoringDateUtils, MeetingUrlUtils } from '../shared/tutoring-utils'
 import { Button } from '@/components/button'
 import { 
   CalendarIcon, 
@@ -14,7 +14,8 @@ import {
   EditIcon,
   CheckIcon,
   PlayIcon,
-  FileTextIcon
+  FileTextIcon,
+  LinkIcon
 } from 'lucide-react'
 
 interface SessionDetailsModalProps {
@@ -27,8 +28,10 @@ interface SessionDetailsModalProps {
 export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate }: SessionDetailsModalProps) {
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [isEditingSummary, setIsEditingSummary] = useState(false)
+  const [isEditingMeetingUrl, setIsEditingMeetingUrl] = useState(false)
   const [tutorNotes, setTutorNotes] = useState(session.tutorNotes || '')
   const [sessionSummary, setSessionSummary] = useState(session.sessionSummary || '')
+  const [meetingUrl, setMeetingUrl] = useState(session.meetingUrl || '')
 
   if (!isOpen) return null
 
@@ -92,6 +95,19 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
       setIsEditingSummary(false)
     } catch (error) {
       console.error('Error saving summary:', error)
+    }
+  }
+
+  const handleSaveMeetingUrl = async () => {
+    try {
+      // Use entity method to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      updatedSession.setMeetingUrl(meetingUrl || undefined)
+      
+      await onSessionUpdate(updatedSession)
+      setIsEditingMeetingUrl(false)
+    } catch (error) {
+      console.error('Error saving meeting URL:', error)
     }
   }
 
@@ -234,6 +250,84 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
                   <p className="text-gray-800">{session.tutorNotes}</p>
                 ) : (
                   <p className="text-gray-500 italic">Nenhuma anotação adicionada ainda.</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Meeting URL */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Link da Reunião
+              </label>
+              {!isEditingMeetingUrl && (
+                <button
+                  onClick={() => setIsEditingMeetingUrl(true)}
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                >
+                  <EditIcon size={14} />
+                  Editar
+                </button>
+              )}
+            </div>
+            
+            {isEditingMeetingUrl ? (
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  value={meetingUrl}
+                  onChange={(e) => setMeetingUrl(e.target.value)}
+                  placeholder="https://zoom.us/j/123456789 ou https://meet.google.com/abc-defg-hij"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {meetingUrl && !MeetingUrlUtils.validateUrl(meetingUrl) && (
+                  <p className="text-sm text-red-600">Por favor, insira uma URL válida (deve começar com http:// ou https://)</p>
+                )}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleSaveMeetingUrl} 
+                    className="text-sm"
+                    disabled={!!meetingUrl && !MeetingUrlUtils.validateUrl(meetingUrl)}
+                  >
+                    <CheckIcon size={14} className="mr-1" />
+                    Salvar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsEditingMeetingUrl(false)
+                      setMeetingUrl(session.meetingUrl || '')
+                    }}
+                    className="text-sm border border-gray-300 bg-white hover:bg-gray-50"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                {session.meetingUrl ? (
+                  <div className="flex items-center gap-2">
+                    <LinkIcon size={16} className="text-purple-600 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 mb-1">
+                        {MeetingUrlUtils.getMeetingPlatform(session.meetingUrl)}
+                      </p>
+                      <a 
+                        href={session.meetingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 underline break-all"
+                      >
+                        {MeetingUrlUtils.formatUrlForDisplay(session.meetingUrl, 60)}
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <LinkIcon size={16} className="text-gray-400" />
+                    <p className="text-gray-500 italic">Nenhum link de reunião adicionado ainda.</p>
+                  </div>
                 )}
               </div>
             )}

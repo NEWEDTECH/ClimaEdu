@@ -12,14 +12,14 @@ export default function TutoringPage() {
   const { infoUser } = useProfile()
   const studentId = infoUser.id
   
-  const { courses, loading: coursesLoading, error: coursesError } = useStudentEnrolledCourses({ studentId: studentId || '' })
+  const { courses, loading: coursesLoading, error: coursesError } = useStudentEnrolledCourses({ studentId: studentId })
   const { 
     sessions, 
     loading: sessionsLoading, 
     error: sessionsError, 
     refetch: refetchSessions 
   } = useStudentSessions({ 
-    studentId: studentId || '',
+    studentId: studentId,
     autoRefresh: false 
   })
   

@@ -175,3 +175,50 @@ export const TutoringDateUtils = {
     { value: 'past', label: 'Passadas' }
   ]
 }
+
+/**
+ * URL utilities for meeting links
+ */
+export const MeetingUrlUtils = {
+  /**
+   * Validates if a URL is valid
+   */
+  validateUrl: (url: string): boolean => {
+    if (!url || url.trim() === '') return true // Optional field
+    
+    try {
+      const urlObj = new URL(url)
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
+    } catch {
+      return false
+    }
+  },
+
+  /**
+   * Gets the meeting platform from URL
+   */
+  getMeetingPlatform: (url: string): string => {
+    if (!url) return 'Link'
+    
+    const lowerUrl = url.toLowerCase()
+    
+    if (lowerUrl.includes('zoom.us')) return 'Zoom'
+    if (lowerUrl.includes('meet.google.com')) return 'Google Meet'
+    if (lowerUrl.includes('teams.microsoft.com')) return 'Teams'
+    if (lowerUrl.includes('whereby.com')) return 'Whereby'
+    if (lowerUrl.includes('jitsi')) return 'Jitsi'
+    
+    return 'Reunião'
+  },
+
+  /**
+   * Formats URL for display (truncates if too long)
+   */
+  formatUrlForDisplay: (url: string, maxLength: number = 50): string => {
+    if (!url) return ''
+    
+    if (url.length <= maxLength) return url
+    
+    return url.substring(0, maxLength - 3) + '...'
+  }
+}
