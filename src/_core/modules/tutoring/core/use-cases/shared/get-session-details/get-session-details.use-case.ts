@@ -85,11 +85,6 @@ export class GetSessionDetailsUseCase {
     if (isTutor) {
       // Tutor permissions
       switch (session.status) {
-        case TutoringSessionStatus.REQUESTED:
-          canEdit = true; // Can approve/reject
-          canCancel = true;
-          break;
-
         case TutoringSessionStatus.SCHEDULED:
           canEdit = true; // Can add notes, reschedule
           canCancel = true;
@@ -114,10 +109,6 @@ export class GetSessionDetailsUseCase {
     } else if (isStudent) {
       // Student permissions
       switch (session.status) {
-        case TutoringSessionStatus.REQUESTED:
-          canCancel = true; // Can cancel before tutor approval
-          break;
-
         case TutoringSessionStatus.SCHEDULED:
           canCancel = true; // Can cancel scheduled sessions
           break;

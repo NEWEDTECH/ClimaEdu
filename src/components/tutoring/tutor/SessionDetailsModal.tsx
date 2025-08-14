@@ -41,9 +41,6 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
       const updatedSession = TutoringSession.fromData({ ...session })
       
       switch (newStatus) {
-        case TutoringSessionStatus.SCHEDULED:
-          updatedSession.schedule()
-          break
         case TutoringSessionStatus.IN_PROGRESS:
           updatedSession.start()
           break
@@ -111,10 +108,9 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
     }
   }
 
-  const canStartSession = session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED
+  const canStartSession = session.status === TutoringSessionStatus.SCHEDULED
   const canCompleteSession = session.status === TutoringSessionStatus.IN_PROGRESS
-  const canCancelSession = session.status === TutoringSessionStatus.REQUESTED || 
-                           session.status === TutoringSessionStatus.SCHEDULED || 
+  const canCancelSession = session.status === TutoringSessionStatus.SCHEDULED || 
                            session.status === TutoringSessionStatus.IN_PROGRESS
 
   return (

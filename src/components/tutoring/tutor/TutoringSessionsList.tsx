@@ -47,7 +47,6 @@ export function TutoringSessionsList({ sessions, onSessionClick }: TutoringSessi
 
   // Group sessions by status for better organization using enums
   const groupedSessions = {
-    [TutoringSessionStatus.REQUESTED]: sortedSessions.filter(s => s.status === TutoringSessionStatus.REQUESTED),
     [TutoringSessionStatus.SCHEDULED]: sortedSessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED),
     [TutoringSessionStatus.IN_PROGRESS]: sortedSessions.filter(s => s.status === TutoringSessionStatus.IN_PROGRESS),
     [TutoringSessionStatus.COMPLETED]: sortedSessions.filter(s => s.status === TutoringSessionStatus.COMPLETED),

@@ -41,7 +41,7 @@ export function ScheduledSessionsList({ sessions, loading, error, studentId }: S
   const now = new Date()
   const upcomingSessions = sortedSessions.filter(session => {
     return session.scheduledDate > now && 
-           (session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED)
+           session.status === TutoringSessionStatus.SCHEDULED
   })
 
   const pastSessions = sortedSessions.filter(session => {
@@ -103,7 +103,7 @@ export function ScheduledSessionsList({ sessions, loading, error, studentId }: S
             <CalendarIcon size={16} />
             Sessões Anteriores ({pastSessions.length})
           </h3>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-3 overflow-y-auto">
             {pastSessions.map((session) => (
               <SessionCard 
                 key={session.id} 

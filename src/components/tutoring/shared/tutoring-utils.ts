@@ -1,5 +1,5 @@
 import { TutoringSessionStatus, SessionPriority } from '@/_core/modules/tutoring'
-import { ClockIcon, CheckCircleIcon, XCircleIcon, PlayIcon, AlertCircleIcon } from 'lucide-react'
+import { ClockIcon, CheckCircleIcon, XCircleIcon, PlayIcon } from 'lucide-react'
 
 /**
  * Utilities for TutoringSessionStatus enum
@@ -10,8 +10,6 @@ export const TutoringStatusUtils = {
    */
   getLabel: (status: TutoringSessionStatus): string => {
     switch (status) {
-      case TutoringSessionStatus.REQUESTED:
-        return 'Solicitada'
       case TutoringSessionStatus.SCHEDULED:
         return 'Agendada'
       case TutoringSessionStatus.IN_PROGRESS:
@@ -32,8 +30,6 @@ export const TutoringStatusUtils = {
    */
   getColor: (status: TutoringSessionStatus): string => {
     switch (status) {
-      case TutoringSessionStatus.REQUESTED:
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case TutoringSessionStatus.SCHEDULED:
         return 'bg-blue-100 text-blue-800 border-blue-200'
       case TutoringSessionStatus.IN_PROGRESS:
@@ -54,8 +50,6 @@ export const TutoringStatusUtils = {
    */
   getIcon: (status: TutoringSessionStatus) => {
     switch (status) {
-      case TutoringSessionStatus.REQUESTED:
-        return AlertCircleIcon
       case TutoringSessionStatus.SCHEDULED:
         return ClockIcon
       case TutoringSessionStatus.IN_PROGRESS:
@@ -75,7 +69,6 @@ export const TutoringStatusUtils = {
    */
   getAllOptions: (): Array<{ value: TutoringSessionStatus | 'all', label: string }> => [
     { value: 'all', label: 'Todos os Status' },
-    { value: TutoringSessionStatus.REQUESTED, label: TutoringStatusUtils.getLabel(TutoringSessionStatus.REQUESTED) },
     { value: TutoringSessionStatus.SCHEDULED, label: TutoringStatusUtils.getLabel(TutoringSessionStatus.SCHEDULED) },
     { value: TutoringSessionStatus.IN_PROGRESS, label: TutoringStatusUtils.getLabel(TutoringSessionStatus.IN_PROGRESS) },
     { value: TutoringSessionStatus.COMPLETED, label: TutoringStatusUtils.getLabel(TutoringSessionStatus.COMPLETED) },
@@ -87,7 +80,6 @@ export const TutoringStatusUtils = {
    * Get grouped status labels for organization
    */
   getGroupLabels: (): Record<TutoringSessionStatus, string> => ({
-    [TutoringSessionStatus.REQUESTED]: 'Solicitadas',
     [TutoringSessionStatus.SCHEDULED]: 'Agendadas', 
     [TutoringSessionStatus.IN_PROGRESS]: 'Em Andamento',
     [TutoringSessionStatus.COMPLETED]: 'Concluídas',

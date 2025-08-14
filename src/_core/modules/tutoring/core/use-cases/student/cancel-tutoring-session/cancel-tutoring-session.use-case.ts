@@ -79,13 +79,8 @@ export class CancelTutoringSessionUseCase {
    * Validates business rules for cancellation
    */
   private validateCancellationRules(session: TutoringSession): void {
-    // Students can only cancel REQUESTED or SCHEDULED sessions
-    const cancellableStatuses = [
-      TutoringSessionStatus.REQUESTED,
-      TutoringSessionStatus.SCHEDULED
-    ];
-
-    if (!cancellableStatuses.includes(session.status)) {
+    // Students can only cancel SCHEDULED sessions
+    if (session.status !== TutoringSessionStatus.SCHEDULED) {
       throw new Error('This session cannot be cancelled in its current state');
     }
 
@@ -96,7 +91,7 @@ export class CancelTutoringSessionUseCase {
     const hoursUntilSession = timeDifference / (1000 * 60 * 60);
 
     // Allow cancellation if session is more than minimum advance notice away
-    if (hoursUntilSession < TutoringConfig.scheduling.minAdvanceHours && session.status === TutoringSessionStatus.SCHEDULED) {
+    if (hoursUntilSession < TutoringConfig.scheduling.minAdvanceHours) {
       throw new Error(`Sessions can only be cancelled at least ${TutoringConfig.scheduling.minAdvanceHours} hour(s) in advance`);
     }
   }

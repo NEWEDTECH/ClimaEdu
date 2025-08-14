@@ -18,7 +18,7 @@ const availableTimeSlots = [
 ]
 
 const formSchema = z.object({
-  subjectId: z.string().min(1, { message: 'Selecione uma matéria' }),
+  subjectId: z.string().min(1, { message: 'Selecione um curso' }),
   date: z.string().min(1, { message: 'Selecione uma data' }),
   time: z.string().min(1, { message: 'Selecione um horário' }),
   notes: z.string().optional()
@@ -98,7 +98,7 @@ export function TutoringScheduleForm({ courses, loading, error, studentId, onSch
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-sm text-gray-500">Carregando matérias...</div>
+        <div className="text-sm text-gray-500">Carregando cursos...</div>
       </div>
     )
   }
@@ -106,7 +106,7 @@ export function TutoringScheduleForm({ courses, loading, error, studentId, onSch
   if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-        <p className="text-sm text-red-600">Erro ao carregar matérias: {error}</p>
+        <p className="text-sm text-red-600">Erro ao carregar cursos: {error}</p>
       </div>
     )
   }
@@ -124,7 +124,7 @@ export function TutoringScheduleForm({ courses, loading, error, studentId, onSch
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <BookOpenIcon size={16} />
-            Matéria
+            Curso
           </label>
           <CourseSelect
             courses={courses.map((course: Course) => ({

@@ -48,7 +48,6 @@ export class GetTutorSessionsUseCase {
 
     // Group sessions by status
     const groupedSessions = {
-      requested: limitedSessions.filter(s => s.status === TutoringSessionStatus.REQUESTED),
       scheduled: limitedSessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED),
       inProgress: limitedSessions.filter(s => s.status === TutoringSessionStatus.IN_PROGRESS),
       completed: limitedSessions.filter(s => s.status === TutoringSessionStatus.COMPLETED),
@@ -130,17 +129,12 @@ export class GetTutorSessionsUseCase {
    * Sorts sessions within each status group
    */
   private sortSessionGroups(groupedSessions: {
-    requested: TutoringSession[];
     scheduled: TutoringSession[];
     inProgress: TutoringSession[];
     completed: TutoringSession[];
     cancelled: TutoringSession[];
   }): void {
-    // Sort requested, scheduled and in-progress by date (earliest first)
-    groupedSessions.requested.sort((a: TutoringSession, b: TutoringSession) => 
-      a.scheduledDate.getTime() - b.scheduledDate.getTime()
-    );
-    
+    // Sort scheduled and in-progress by date (earliest first)
     groupedSessions.scheduled.sort((a: TutoringSession, b: TutoringSession) => 
       a.scheduledDate.getTime() - b.scheduledDate.getTime()
     );

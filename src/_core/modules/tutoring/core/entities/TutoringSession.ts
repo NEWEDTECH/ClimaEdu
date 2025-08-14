@@ -4,7 +4,6 @@ import { TutoringConfig, TutoringValidation } from '../config/tutoring-config';
  * Enum representing the status of a tutoring session
  */
 export enum TutoringSessionStatus {
-  REQUESTED = 'REQUESTED',
   SCHEDULED = 'SCHEDULED',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
@@ -74,7 +73,7 @@ export class TutoringSession {
       params.courseId,
       params.scheduledDate,
       params.duration,
-      TutoringSessionStatus.REQUESTED,
+      TutoringSessionStatus.SCHEDULED,
       params.studentQuestion,
       params.priority ?? SessionPriority.MEDIUM,
       params.createdAt ?? now,
@@ -125,17 +124,6 @@ export class TutoringSession {
     );
   }
 
-  /**
-   * Schedules the session (confirms the request)
-   */
-  public schedule(): void {
-    if (this.status !== TutoringSessionStatus.REQUESTED) {
-      throw new Error(TutoringConfig.errors.cannotSchedule);
-    }
-    
-    this.status = TutoringSessionStatus.SCHEDULED;
-    this.touch();
-  }
 
   /**
    * Starts the tutoring session

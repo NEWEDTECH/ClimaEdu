@@ -105,7 +105,7 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
       )}
 
       {/* Cancel button for upcoming sessions */}
-      {isUpcoming && (session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED) && onCancel && (
+      {isUpcoming && session.status === TutoringSessionStatus.SCHEDULED && onCancel && (
         <div className={`mt-3 pt-3 border-t border-gray-100 ${session.meetingUrl ? 'mt-2 pt-2' : ''}`}>
           <div className="flex gap-2">
             <button 

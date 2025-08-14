@@ -2,7 +2,7 @@
 
 import { TutoringSession, TutoringSessionStatus } from '@/_core/modules/tutoring'
 import { Card, CardContent } from '@/components/ui/card/card'
-import { CalendarIcon, ClockIcon, CheckCircleIcon, XCircleIcon, AlertCircleIcon, UserIcon } from 'lucide-react'
+import { CalendarIcon, ClockIcon, CheckCircleIcon, XCircleIcon, UserIcon } from 'lucide-react'
 
 interface TutoringStatsProps {
   sessions: TutoringSession[]
@@ -10,7 +10,6 @@ interface TutoringStatsProps {
 
 export function TutoringStats({ sessions }: TutoringStatsProps) {
   // Calculate stats using enums
-  const requestedSessions = sessions.filter(s => s.status === TutoringSessionStatus.REQUESTED).length
   const scheduledSessions = sessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED).length
   const completedSessions = sessions.filter(s => s.status === TutoringSessionStatus.COMPLETED).length
   const inProgressSessions = sessions.filter(s => s.status === TutoringSessionStatus.IN_PROGRESS).length
@@ -26,7 +25,7 @@ export function TutoringStats({ sessions }: TutoringStatsProps) {
     const sessionDate = new Date(s.scheduledDate)
     sessionDate.setHours(0, 0, 0, 0)
     return sessionDate.getTime() === today.getTime() && 
-           (s.status === TutoringSessionStatus.REQUESTED || s.status === TutoringSessionStatus.SCHEDULED)
+           (s.status === TutoringSessionStatus.SCHEDULED)
   }).length
 
   const stats = [
@@ -37,14 +36,6 @@ export function TutoringStats({ sessions }: TutoringStatsProps) {
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'
-    },
-    {
-      title: 'Solicitadas',
-      value: requestedSessions,
-      icon: <AlertCircleIcon size={20} />,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200'
     },
     {
       title: 'Agendadas',

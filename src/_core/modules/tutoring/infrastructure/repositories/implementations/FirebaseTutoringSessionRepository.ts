@@ -62,7 +62,7 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
       courseId: data.courseId,
       scheduledDate,
       duration: data.duration,
-      status: data.status || TutoringSessionStatus.REQUESTED,
+      status: data.status || TutoringSessionStatus.SCHEDULED,
       studentQuestion: data.studentQuestion,
       priority: data.priority || SessionPriority.MEDIUM,
       createdAt,
@@ -297,7 +297,7 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     let q = query(
       sessionsRef,
       where('scheduledDate', '>', now),
-      where('status', 'in', [TutoringSessionStatus.REQUESTED, TutoringSessionStatus.SCHEDULED]),
+      where('status', 'in', [TutoringSessionStatus.SCHEDULED]),
       orderBy('scheduledDate', 'asc')
     );
 
@@ -306,7 +306,7 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
         sessionsRef,
         where('tutorId', '==', tutorId),
         where('scheduledDate', '>', now),
-        where('status', 'in', [TutoringSessionStatus.REQUESTED, TutoringSessionStatus.SCHEDULED]),
+        where('status', 'in', [TutoringSessionStatus.SCHEDULED]),
         orderBy('scheduledDate', 'asc')
       );
     } else if (studentId) {
@@ -314,7 +314,7 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
         sessionsRef,
         where('studentId', '==', studentId),
         where('scheduledDate', '>', now),
-        where('status', 'in', [TutoringSessionStatus.REQUESTED, TutoringSessionStatus.SCHEDULED]),
+        where('status', 'in', [TutoringSessionStatus.SCHEDULED]),
         orderBy('scheduledDate', 'asc')
       );
     }
@@ -391,7 +391,6 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
       where('scheduledDate', '>=', dayStart),
       where('scheduledDate', '<=', dayEnd),
       where('status', 'in', [
-        TutoringSessionStatus.REQUESTED,
         TutoringSessionStatus.SCHEDULED,
         TutoringSessionStatus.IN_PROGRESS
       ])

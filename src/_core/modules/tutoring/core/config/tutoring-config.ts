@@ -64,7 +64,6 @@ export const TutoringConfig = {
     
     
     // State transition errors
-    cannotSchedule: 'Only requested sessions can be scheduled',
     cannotStart: 'Only scheduled sessions can be started',
     cannotComplete: 'Only in-progress sessions can be completed',
     cannotCancelCompleted: 'Completed sessions cannot be cancelled',
