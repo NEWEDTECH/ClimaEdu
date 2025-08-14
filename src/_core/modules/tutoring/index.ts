@@ -32,6 +32,9 @@ export * from './core/use-cases/tutor/update-session-status/update-session-statu
 export * from './core/use-cases/tutor/add-session-notes/add-session-notes.use-case';
 export * from './core/use-cases/tutor/add-session-notes/add-session-notes.input';
 export * from './core/use-cases/tutor/add-session-notes/add-session-notes.output';
+export * from './core/use-cases/tutor/update-tutoring-session/update-tutoring-session.use-case';
+export * from './core/use-cases/tutor/update-tutoring-session/update-tutoring-session.input';
+export * from './core/use-cases/tutor/update-tutoring-session/update-tutoring-session.output';
 
 // Re-export use cases - Shared
 export * from './core/use-cases/shared/get-session-details/get-session-details.use-case';

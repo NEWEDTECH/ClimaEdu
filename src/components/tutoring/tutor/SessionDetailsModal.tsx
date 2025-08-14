@@ -32,36 +32,67 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
 
   if (!isOpen) return null
 
-  const handleStatusChange = (newStatus: TutoringSessionStatus) => {
-    // Create updated session with new status
-    const updatedSession = TutoringSession.fromData({
-      ...session,
-      status: newStatus,
-      updatedAt: new Date()
-    })
-    onSessionUpdate(updatedSession)
+  const handleStatusChange = async (newStatus: TutoringSessionStatus) => {
+    try {
+      // Use entity methods to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      
+      switch (newStatus) {
+        case TutoringSessionStatus.SCHEDULED:
+          updatedSession.schedule()
+          break
+        case TutoringSessionStatus.IN_PROGRESS:
+          updatedSession.start()
+          break
+        case TutoringSessionStatus.COMPLETED:
+          updatedSession.complete(sessionSummary || 'Sessão concluída')
+          break
+        case TutoringSessionStatus.CANCELLED:
+          updatedSession.cancel('Cancelado pelo tutor')
+          break
+        case TutoringSessionStatus.NO_SHOW:
+          updatedSession.markAsNoShow()
+          break
+      }
+      
+      await onSessionUpdate(updatedSession)
+    } catch (error) {
+      console.error('Error changing status:', error)
+    }
   }
 
-  const handleSaveNotes = () => {
-    // Create updated session with new notes
-    const updatedSession = TutoringSession.fromData({
-      ...session,
-      tutorNotes,
-      updatedAt: new Date()
-    })
-    onSessionUpdate(updatedSession)
-    setIsEditingNotes(false)
+  const handleSaveNotes = async () => {
+    try {
+      // Use entity method to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      updatedSession.addTutorNotes(tutorNotes)
+      
+      await onSessionUpdate(updatedSession)
+      setIsEditingNotes(false)
+    } catch (error) {
+      console.error('Error saving notes:', error)
+    }
   }
 
-  const handleSaveSummary = () => {
-    // Create updated session with new summary
-    const updatedSession = TutoringSession.fromData({
-      ...session,
-      sessionSummary,
-      updatedAt: new Date()
-    })
-    onSessionUpdate(updatedSession)
-    setIsEditingSummary(false)
+  const handleSaveSummary = async () => {
+    try {
+      // Use entity method to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      
+      if (updatedSession.status === TutoringSessionStatus.COMPLETED) {
+        // For completed sessions, we can update the summary directly
+        updatedSession.sessionSummary = sessionSummary
+        updatedSession.updatedAt = new Date()
+      } else {
+        // For other sessions, complete them with the summary
+        updatedSession.complete(sessionSummary)
+      }
+      
+      await onSessionUpdate(updatedSession)
+      setIsEditingSummary(false)
+    } catch (error) {
+      console.error('Error saving summary:', error)
+    }
   }
 
   const canStartSession = session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED

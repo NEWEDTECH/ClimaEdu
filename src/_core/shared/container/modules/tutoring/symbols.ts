@@ -18,6 +18,7 @@ export const TutoringSymbols = {
     // Tutor use cases
     GetTutorSessionsUseCase: Symbol.for('GetTutorSessionsUseCase'),
     UpdateSessionStatusUseCase: Symbol.for('UpdateSessionStatusUseCase'),
+    UpdateTutoringSessionUseCase: Symbol.for('UpdateTutoringSessionUseCase'),
     AddSessionNotesUseCase: Symbol.for('AddSessionNotesUseCase'),
     SetAvailabilityUseCase: Symbol.for('SetAvailabilityUseCase'),
     

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { container } from '@/_core/shared/container/container'
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols'
-import { GetTutorSessionsUseCase, UpdateSessionStatusUseCase, AddSessionNotesUseCase } from '@/_core/modules/tutoring'
+import { GetTutorSessionsUseCase, UpdateSessionStatusUseCase, AddSessionNotesUseCase, UpdateTutoringSessionUseCase } from '@/_core/modules/tutoring'
 import type { TutoringSession, TutoringSessionStatus, SessionPriority } from '@/_core/modules/tutoring'
 
 interface UseTutorSessionsState {
@@ -115,6 +115,34 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
     }
   }
 
+  const updateSession = async (updatedSession: TutoringSession) => {
+    try {
+      setState(prev => ({ ...prev, updating: true, error: null }))
+
+      const useCase = container.get<UpdateTutoringSessionUseCase>(
+        TutoringSymbols.useCases.UpdateTutoringSessionUseCase
+      )
+
+      await useCase.execute({
+        sessionId: updatedSession.id,
+        tutorId: options.tutorId,
+        updatedSession
+      })
+
+      // Refresh sessions after update
+      await fetchSessions()
+
+      setState(prev => ({ ...prev, updating: false }))
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        updating: false,
+        error: error instanceof Error ? error.message : 'Erro ao atualizar sessão'
+      }))
+      throw error
+    }
+  }
+
   useEffect(() => {
     if (options.tutorId) {
       fetchSessions()
@@ -133,6 +161,7 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
     ...state,
     refetch: fetchSessions,
     updateSessionStatus,
-    addSessionNotes
+    addSessionNotes,
+    updateSession
   }
 }

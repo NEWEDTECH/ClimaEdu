@@ -19,7 +19,7 @@ export default function TutorTutoringPage() {
     sessions, 
     loading, 
     error, 
-    updateSessionStatus,
+    updateSession,
     refetch
   } = useTutorSessions({ 
     tutorId: tutorId,
@@ -36,7 +36,7 @@ export default function TutorTutoringPage() {
 
   const handleSessionUpdate = async (updatedSession: TutoringSession) => {
     try {
-      await updateSessionStatus(updatedSession.id, updatedSession.status)
+      await updateSession(updatedSession)
       setSelectedSession(updatedSession)
     } catch (error) {
       console.error('Error updating session:', error)
