@@ -32,13 +32,14 @@ export class GetTutorSessionsUseCase {
       input.status
     );
 
+
     // Apply priority filter if specified
     if (input.priority) {
       sessions = sessions.filter(session => session.priority === input.priority);
     }
 
     // Apply date filter if specified
-    if (input.dateFilter && input.dateFilter !== 'all') {
+    if (input.dateFilter) {
       sessions = this.applyDateFilter(sessions, input.dateFilter);
     }
 
@@ -47,6 +48,7 @@ export class GetTutorSessionsUseCase {
 
     // Group sessions by status
     const groupedSessions = {
+      requested: limitedSessions.filter(s => s.status === TutoringSessionStatus.REQUESTED),
       scheduled: limitedSessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED),
       inProgress: limitedSessions.filter(s => s.status === TutoringSessionStatus.IN_PROGRESS),
       completed: limitedSessions.filter(s => s.status === TutoringSessionStatus.COMPLETED),
@@ -67,6 +69,7 @@ export class GetTutorSessionsUseCase {
     if (input.includeStats) {
       stats = await this.tutoringSessionRepository.getSessionStats(input.tutorId);
     }
+
 
     return {
       sessions: sortedSessions,
@@ -127,12 +130,17 @@ export class GetTutorSessionsUseCase {
    * Sorts sessions within each status group
    */
   private sortSessionGroups(groupedSessions: {
+    requested: TutoringSession[];
     scheduled: TutoringSession[];
     inProgress: TutoringSession[];
     completed: TutoringSession[];
     cancelled: TutoringSession[];
   }): void {
-    // Sort scheduled and in-progress by date (earliest first)
+    // Sort requested, scheduled and in-progress by date (earliest first)
+    groupedSessions.requested.sort((a: TutoringSession, b: TutoringSession) => 
+      a.scheduledDate.getTime() - b.scheduledDate.getTime()
+    );
+    
     groupedSessions.scheduled.sort((a: TutoringSession, b: TutoringSession) => 
       a.scheduledDate.getTime() - b.scheduledDate.getTime()
     );

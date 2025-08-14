@@ -1,24 +1,33 @@
 'use client'
 
-import { TutorSession } from '@/app/tutor/tutoring/data/mockTutorData'
-import { Card, CardContent,  } from '@/components/ui/card/card'
+import { TutoringSession, TutoringSessionStatus } from '@/_core/modules/tutoring'
+import { Card, CardContent } from '@/components/ui/card/card'
 import { CalendarIcon, ClockIcon, CheckCircleIcon, XCircleIcon, AlertCircleIcon, UserIcon } from 'lucide-react'
 
 interface TutoringStatsProps {
-  sessions: TutorSession[]
+  sessions: TutoringSession[]
 }
 
 export function TutoringStats({ sessions }: TutoringStatsProps) {
-  // Calculate stats
-  const scheduledSessions = sessions.filter(s => s.status === 'scheduled').length
-  const completedSessions = sessions.filter(s => s.status === 'completed').length
-  const inProgressSessions = sessions.filter(s => s.status === 'in_progress').length
-  const cancelledSessions = sessions.filter(s => s.status === 'cancelled' || s.status === 'no_show').length
-  const highPrioritySessions = sessions.filter(s => s.priority === 'high' && s.status === 'scheduled').length
+  // Calculate stats using enums
+  const requestedSessions = sessions.filter(s => s.status === TutoringSessionStatus.REQUESTED).length
+  const scheduledSessions = sessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED).length
+  const completedSessions = sessions.filter(s => s.status === TutoringSessionStatus.COMPLETED).length
+  const inProgressSessions = sessions.filter(s => s.status === TutoringSessionStatus.IN_PROGRESS).length
+  const cancelledSessions = sessions.filter(s => 
+    s.status === TutoringSessionStatus.CANCELLED || 
+    s.status === TutoringSessionStatus.NO_SHOW
+  ).length
 
   // Get today's sessions
-  const today = new Date().toISOString().split('T')[0]
-  const todaySessions = sessions.filter(s => s.date === today && s.status === 'scheduled').length
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todaySessions = sessions.filter(s => {
+    const sessionDate = new Date(s.scheduledDate)
+    sessionDate.setHours(0, 0, 0, 0)
+    return sessionDate.getTime() === today.getTime() && 
+           (s.status === TutoringSessionStatus.REQUESTED || s.status === TutoringSessionStatus.SCHEDULED)
+  }).length
 
   const stats = [
     {
@@ -28,6 +37,14 @@ export function TutoringStats({ sessions }: TutoringStatsProps) {
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'
+    },
+    {
+      title: 'Solicitadas',
+      value: requestedSessions,
+      icon: <AlertCircleIcon size={20} />,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
+      borderColor: 'border-yellow-200'
     },
     {
       title: 'Agendadas',
@@ -60,14 +77,6 @@ export function TutoringStats({ sessions }: TutoringStatsProps) {
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
-    },
-    {
-      title: 'Alta Prioridade',
-      value: highPrioritySessions,
-      icon: <AlertCircleIcon size={20} />,
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50',
-      borderColor: 'border-amber-200'
     }
   ]
 

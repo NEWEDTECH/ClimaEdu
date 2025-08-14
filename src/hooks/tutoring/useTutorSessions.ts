@@ -40,7 +40,7 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
         tutorId: options.tutorId,
         status: options.status,
         priority: options.priority,
-        dateFilter: 'all',
+        dateFilter: undefined, // No date filter by default
         includeStats: false
       })
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { TutorSession } from '@/app/tutor/tutoring/data/mockTutorData'
+import { TutoringSession, TutoringSessionStatus } from '@/_core/modules/tutoring'
+import { SessionPriorityUtils, TutoringDateUtils } from '../shared/tutoring-utils'
 import { Button } from '@/components/button'
 import { 
   CalendarIcon, 
@@ -17,10 +18,10 @@ import {
 } from 'lucide-react'
 
 interface SessionDetailsModalProps {
-  session: TutorSession
+  session: TutoringSession
   isOpen: boolean
   onClose: () => void
-  onSessionUpdate: (session: TutorSession) => void
+  onSessionUpdate: (session: TutoringSession) => void
 }
 
 export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate }: SessionDetailsModalProps) {
@@ -31,53 +32,43 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
 
   if (!isOpen) return null
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+  const handleStatusChange = (newStatus: TutoringSessionStatus) => {
+    // Create updated session with new status
+    const updatedSession = TutoringSession.fromData({
+      ...session,
+      status: newStatus,
+      updatedAt: new Date()
     })
-  }
-
-  const formatTime = (timeString: string) => {
-    return timeString
-  }
-
-  const getPriorityColor = (priority: TutorSession['priority']) => {
-    switch (priority) {
-      case 'high':
-        return 'text-red-600 bg-red-50 border-red-200'
-      case 'medium':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 'low':
-        return 'text-green-600 bg-green-50 border-green-200'
-      default:
-        return 'text-gray-600 bg-gray-50 border-gray-200'
-    }
-  }
-
-  const handleStatusChange = (newStatus: TutorSession['status']) => {
-    const updatedSession = { ...session, status: newStatus, updatedAt: new Date().toISOString() }
     onSessionUpdate(updatedSession)
   }
 
   const handleSaveNotes = () => {
-    const updatedSession = { ...session, tutorNotes, updatedAt: new Date().toISOString() }
+    // Create updated session with new notes
+    const updatedSession = TutoringSession.fromData({
+      ...session,
+      tutorNotes,
+      updatedAt: new Date()
+    })
     onSessionUpdate(updatedSession)
     setIsEditingNotes(false)
   }
 
   const handleSaveSummary = () => {
-    const updatedSession = { ...session, sessionSummary, updatedAt: new Date().toISOString() }
+    // Create updated session with new summary
+    const updatedSession = TutoringSession.fromData({
+      ...session,
+      sessionSummary,
+      updatedAt: new Date()
+    })
     onSessionUpdate(updatedSession)
     setIsEditingSummary(false)
   }
 
-  const canStartSession = session.status === 'scheduled'
-  const canCompleteSession = session.status === 'in_progress'
-  const canCancelSession = session.status === 'scheduled' || session.status === 'in_progress'
+  const canStartSession = session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED
+  const canCompleteSession = session.status === TutoringSessionStatus.IN_PROGRESS
+  const canCancelSession = session.status === TutoringSessionStatus.REQUESTED || 
+                           session.status === TutoringSessionStatus.SCHEDULED || 
+                           session.status === TutoringSessionStatus.IN_PROGRESS
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -105,16 +96,16 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               </label>
               <div className="flex items-center gap-2 text-gray-900">
                 <UserIcon size={16} />
-                <span className="font-medium">{session.studentName}</span>
+                <span className="font-medium">Estudante {session.studentId.slice(-4)}</span>
               </div>
-              <p className="text-sm text-gray-600 mt-1">{session.studentEmail}</p>
+              <p className="text-sm text-gray-600 mt-1">student-{session.studentId.slice(-4)}@email.com</p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Curso
               </label>
-              <p className="text-gray-900 font-medium">{session.courseName}</p>
+              <p className="text-gray-900 font-medium">Curso {session.courseId.slice(-4)}</p>
             </div>
           </div>
 
@@ -126,7 +117,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               </label>
               <div className="flex items-center gap-2 text-gray-900">
                 <CalendarIcon size={16} />
-                <span className="capitalize">{formatDate(session.date)}</span>
+                <span className="capitalize">{TutoringDateUtils.formatDate(session.scheduledDate)}</span>
               </div>
             </div>
             
@@ -136,7 +127,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               </label>
               <div className="flex items-center gap-2 text-gray-900">
                 <ClockIcon size={16} />
-                <span>{formatTime(session.time)} ({session.duration}min)</span>
+                <span>{TutoringDateUtils.formatTime(session.scheduledDate)} ({session.duration}min)</span>
               </div>
             </div>
 
@@ -144,9 +135,9 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Prioridade
               </label>
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(session.priority)}`}>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${SessionPriorityUtils.getColor(session.priority)} bg-opacity-10`}>
                 <AlertCircleIcon size={14} />
-                {session.priority === 'high' ? 'Alta' : session.priority === 'medium' ? 'Média' : 'Baixa'}
+                {SessionPriorityUtils.getLabel(session.priority)}
               </div>
             </div>
           </div>
@@ -218,13 +209,13 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
           </div>
 
           {/* Session Summary (only for completed sessions) */}
-          {(session.status === 'completed' || isEditingSummary) && (
+          {(session.status === TutoringSessionStatus.COMPLETED || isEditingSummary) && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Resumo da Sessão
                 </label>
-                {!isEditingSummary && session.status === 'completed' && (
+                {!isEditingSummary && session.status === TutoringSessionStatus.COMPLETED && (
                   <button
                     onClick={() => setIsEditingSummary(true)}
                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
@@ -295,7 +286,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
           <div className="flex gap-2">
             {canStartSession && (
               <Button 
-                onClick={() => handleStatusChange('in_progress')}
+                onClick={() => handleStatusChange(TutoringSessionStatus.IN_PROGRESS)}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <PlayIcon size={16} className="mr-1" />
@@ -305,7 +296,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
             
             {canCompleteSession && (
               <Button 
-                onClick={() => handleStatusChange('completed')}
+                onClick={() => handleStatusChange(TutoringSessionStatus.COMPLETED)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <CheckIcon size={16} className="mr-1" />
@@ -315,7 +306,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
             
             {canCancelSession && (
               <Button 
-                onClick={() => handleStatusChange('cancelled')}
+                onClick={() => handleStatusChange(TutoringSessionStatus.CANCELLED)}
                 className="bg-red-600 hover:bg-red-700"
               >
                 <XIcon size={16} className="mr-1" />

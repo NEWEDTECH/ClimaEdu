@@ -7,6 +7,7 @@ import type { SessionStats } from '../../../../infrastructure/repositories/Tutor
 export interface GetTutorSessionsOutput {
   sessions: TutoringSession[];
   groupedSessions: {
+    requested: TutoringSession[];
     scheduled: TutoringSession[];
     inProgress: TutoringSession[];
     completed: TutoringSession[];

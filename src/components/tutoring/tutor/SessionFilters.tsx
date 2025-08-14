@@ -1,13 +1,15 @@
 'use client'
 
 import { FilterIcon, ChevronDownIcon } from 'lucide-react'
+import { TutoringSessionStatus, SessionPriority } from '@/_core/modules/tutoring'
+import { TutoringStatusUtils, SessionPriorityUtils, TutoringDateUtils } from '../shared/tutoring-utils'
 
 interface SessionFiltersProps {
-  statusFilter: string
-  priorityFilter: string
+  statusFilter: TutoringSessionStatus | 'all'
+  priorityFilter: SessionPriority | 'all'
   dateFilter: string
-  onStatusChange: (status: string) => void
-  onPriorityChange: (priority: string) => void
+  onStatusChange: (status: TutoringSessionStatus | 'all') => void
+  onPriorityChange: (priority: SessionPriority | 'all') => void
   onDateChange: (date: string) => void
 }
 
@@ -19,28 +21,9 @@ export function SessionFilters({
   onPriorityChange,
   onDateChange
 }: SessionFiltersProps) {
-  const statusOptions = [
-    { value: 'all', label: 'Todos os Status' },
-    { value: 'scheduled', label: 'Agendadas' },
-    { value: 'in_progress', label: 'Em Andamento' },
-    { value: 'completed', label: 'Concluídas' },
-    { value: 'cancelled', label: 'Canceladas' },
-    { value: 'no_show', label: 'Faltaram' }
-  ]
-
-  const priorityOptions = [
-    { value: 'all', label: 'Todas as Prioridades' },
-    { value: 'high', label: 'Alta Prioridade' },
-    { value: 'medium', label: 'Média Prioridade' },
-    { value: 'low', label: 'Baixa Prioridade' }
-  ]
-
-  const dateOptions = [
-    { value: 'all', label: 'Todas as Datas' },
-    { value: 'today', label: 'Hoje' },
-    { value: 'upcoming', label: 'Próximas' },
-    { value: 'past', label: 'Passadas' }
-  ]
+  const statusOptions = TutoringStatusUtils.getAllOptions()
+  const priorityOptions = SessionPriorityUtils.getAllOptions()
+  const dateOptions = TutoringDateUtils.getDateFilterOptions()
 
   return (
     <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border">
@@ -53,7 +36,7 @@ export function SessionFilters({
       <div className="relative">
         <select
           value={statusFilter}
-          onChange={(e) => onStatusChange(e.target.value)}
+          onChange={(e) => onStatusChange(e.target.value as TutoringSessionStatus | 'all')}
           className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           {statusOptions.map((option) => (
@@ -72,7 +55,7 @@ export function SessionFilters({
       <div className="relative">
         <select
           value={priorityFilter}
-          onChange={(e) => onPriorityChange(e.target.value)}
+          onChange={(e) => onPriorityChange(e.target.value as SessionPriority | 'all')}
           className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           {priorityOptions.map((option) => (
