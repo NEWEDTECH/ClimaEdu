@@ -1,8 +1,9 @@
 'use client'
 
 import type { TutoringSession } from '@/_core/modules/tutoring'
-import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, CheckCircleIcon, XCircleIcon, LinkIcon, ExternalLinkIcon } from 'lucide-react'
-import { MeetingUrlUtils } from '../shared/tutoring-utils'
+import { TutoringSessionStatus } from '@/_core/modules/tutoring'
+import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, LinkIcon, ExternalLinkIcon } from 'lucide-react'
+import { TutoringStatusUtils, MeetingUrlUtils } from '../shared/tutoring-utils'
 
 interface SessionCardProps {
   session: TutoringSession
@@ -12,14 +13,6 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session, isUpcoming, onCancel, cancelling }: SessionCardProps) {
-  // Debug: Log session data to check if meetingUrl is present
-  console.log('SessionCard - session data:', {
-    id: session.id,
-    status: session.status,
-    meetingUrl: session.meetingUrl,
-    hasUrl: !!session.meetingUrl
-  })
-
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       weekday: 'long',
@@ -36,62 +29,8 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
     })
   }
 
-  const getStatusColor = (status: TutoringSession['status']) => {
-    switch (status) {
-      case 'REQUESTED':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'SCHEDULED':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'IN_PROGRESS':
-        return 'bg-purple-100 text-purple-800 border-purple-200'
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'NO_SHOW':
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
-  const getStatusIcon = (status: TutoringSession['status']) => {
-    switch (status) {
-      case 'REQUESTED':
-        return <ClockIcon size={12} />
-      case 'SCHEDULED':
-        return <ClockIcon size={12} />
-      case 'IN_PROGRESS':
-        return <ClockIcon size={12} />
-      case 'COMPLETED':
-        return <CheckCircleIcon size={12} />
-      case 'CANCELLED':
-        return <XCircleIcon size={12} />
-      case 'NO_SHOW':
-        return <XCircleIcon size={12} />
-      default:
-        return <ClockIcon size={12} />
-    }
-  }
-
-  const getStatusText = (status: TutoringSession['status']) => {
-    switch (status) {
-      case 'REQUESTED':
-        return 'Solicitada'
-      case 'SCHEDULED':
-        return 'Agendada'
-      case 'IN_PROGRESS':
-        return 'Em Andamento'
-      case 'COMPLETED':
-        return 'Concluída'
-      case 'CANCELLED':
-        return 'Cancelada'
-      case 'NO_SHOW':
-        return 'Não Compareceu'
-      default:
-        return 'Agendada'
-    }
-  }
+  // Get icon component for status
+  const StatusIcon = TutoringStatusUtils.getIcon(session.status)
 
   return (
     <div className={`
@@ -113,10 +52,10 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
         </div>
         <div className={`
           px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1
-          ${getStatusColor(session.status)}
+          ${TutoringStatusUtils.getColor(session.status)}
         `}>
-          {getStatusIcon(session.status)}
-          {getStatusText(session.status)}
+          <StatusIcon size={12} />
+          {TutoringStatusUtils.getLabel(session.status)}
         </div>
       </div>
 
@@ -147,7 +86,7 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
       </div>
 
       {/* Meeting URL for active sessions */}
-      {session.meetingUrl && (session.status === 'SCHEDULED' || session.status === 'IN_PROGRESS') && (
+      {session.meetingUrl && (session.status === TutoringSessionStatus.SCHEDULED || session.status === TutoringSessionStatus.IN_PROGRESS) && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <a
             href={session.meetingUrl}
@@ -166,7 +105,7 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
       )}
 
       {/* Cancel button for upcoming sessions */}
-      {isUpcoming && (session.status === 'REQUESTED' || session.status === 'SCHEDULED') && onCancel && (
+      {isUpcoming && (session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED) && onCancel && (
         <div className={`mt-3 pt-3 border-t border-gray-100 ${session.meetingUrl ? 'mt-2 pt-2' : ''}`}>
           <div className="flex gap-2">
             <button 

@@ -3,6 +3,7 @@
 import { SessionCard } from './SessionCard'
 import { useStudentSessions } from '@/hooks/tutoring'
 import type { TutoringSession } from '@/_core/modules/tutoring'
+import { TutoringSessionStatus } from '@/_core/modules/tutoring'
 import { CalendarIcon } from 'lucide-react'
 
 interface ScheduledSessionsListProps {
@@ -40,14 +41,14 @@ export function ScheduledSessionsList({ sessions, loading, error, studentId }: S
   const now = new Date()
   const upcomingSessions = sortedSessions.filter(session => {
     return session.scheduledDate > now && 
-           (session.status === 'REQUESTED' || session.status === 'SCHEDULED')
+           (session.status === TutoringSessionStatus.REQUESTED || session.status === TutoringSessionStatus.SCHEDULED)
   })
 
   const pastSessions = sortedSessions.filter(session => {
     return session.scheduledDate <= now || 
-           session.status === 'COMPLETED' || 
-           session.status === 'CANCELLED' ||
-           session.status === 'NO_SHOW'
+           session.status === TutoringSessionStatus.COMPLETED || 
+           session.status === TutoringSessionStatus.CANCELLED ||
+           session.status === TutoringSessionStatus.NO_SHOW
   })
 
   const handleCancelSession = async (sessionId: string) => {
