@@ -3,9 +3,11 @@ import { TutoringSymbols } from './symbols';
 
 // Import repository interfaces
 import type { TutoringSessionRepository } from '@/_core/modules/tutoring/infrastructure/repositories/TutoringSessionRepository';
+import type { TimeSlotRepository } from '@/_core/modules/tutoring/infrastructure/repositories/TimeSlotRepository';
 
 // Import repository implementations
 import { FirebaseTutoringSessionRepository } from '@/_core/modules/tutoring/infrastructure/repositories/implementations/FirebaseTutoringSessionRepository';
+import { FirebaseTimeSlotRepository } from '@/_core/modules/tutoring/infrastructure/repositories/implementations/FirebaseTimeSlotRepository';
 
 // Import use cases
 import { ScheduleTutoringSessionUseCase } from '@/_core/modules/tutoring/core/use-cases/student/schedule-tutoring-session/schedule-tutoring-session.use-case';
@@ -17,6 +19,8 @@ import { UpdateTutoringSessionUseCase } from '@/_core/modules/tutoring/core/use-
 import { AddSessionNotesUseCase } from '@/_core/modules/tutoring/core/use-cases/tutor/add-session-notes/add-session-notes.use-case';
 import { GetStudentEnrolledCoursesUseCase } from '@/_core/modules/tutoring/core/use-cases/student/get-student-enrolled-courses/get-student-enrolled-courses.use-case';
 import { GetSessionDetailsUseCase } from '@/_core/modules/tutoring/core/use-cases/shared/get-session-details/get-session-details.use-case';
+import { CreateTimeSlotUseCase } from '@/_core/modules/tutoring/core/use-cases/tutor/create-time-slot/create-time-slot.use-case';
+import { FindAvailableTimeSlotsUseCase } from '@/_core/modules/tutoring/core/use-cases/student/find-available-time-slots/find-available-time-slots.use-case';
 
 /**
  * Registers all tutoring module dependencies in the DI container
@@ -29,6 +33,10 @@ export function registerTutoringModule(container: Container): void {
     .to(FirebaseTutoringSessionRepository)
     .inSingletonScope();
 
+  container
+    .bind<TimeSlotRepository>(TutoringSymbols.repositories.TimeSlotRepository)
+    .to(FirebaseTimeSlotRepository)
+    .inSingletonScope();
 
   // Register use cases
   container
@@ -74,6 +82,16 @@ export function registerTutoringModule(container: Container): void {
   container
     .bind<GetSessionDetailsUseCase>(TutoringSymbols.useCases.GetSessionDetailsUseCase)
     .to(GetSessionDetailsUseCase)
+    .inTransientScope();
+
+  container
+    .bind<CreateTimeSlotUseCase>(TutoringSymbols.useCases.CreateTimeSlotUseCase)
+    .to(CreateTimeSlotUseCase)
+    .inTransientScope();
+
+  container
+    .bind<FindAvailableTimeSlotsUseCase>(TutoringSymbols.useCases.FindAvailableTimeSlotsUseCase)
+    .to(FindAvailableTimeSlotsUseCase)
     .inTransientScope();
 
   // Additional use cases and repositories will be registered here as they are implemented

@@ -21,6 +21,9 @@ export * from './core/use-cases/student/cancel-tutoring-session/cancel-tutoring-
 export * from './core/use-cases/student/get-student-enrolled-courses/get-student-enrolled-courses.use-case';
 export * from './core/use-cases/student/get-student-enrolled-courses/get-student-enrolled-courses.input';
 export * from './core/use-cases/student/get-student-enrolled-courses/get-student-enrolled-courses.output';
+export * from './core/use-cases/student/find-available-time-slots/find-available-time-slots.use-case';
+export * from './core/use-cases/student/find-available-time-slots/find-available-time-slots.input';
+export * from './core/use-cases/student/find-available-time-slots/find-available-time-slots.output';
 
 // Re-export use cases - Tutor
 export * from './core/use-cases/tutor/get-tutor-sessions/get-tutor-sessions.use-case';
@@ -35,6 +38,9 @@ export * from './core/use-cases/tutor/add-session-notes/add-session-notes.output
 export * from './core/use-cases/tutor/update-tutoring-session/update-tutoring-session.use-case';
 export * from './core/use-cases/tutor/update-tutoring-session/update-tutoring-session.input';
 export * from './core/use-cases/tutor/update-tutoring-session/update-tutoring-session.output';
+export * from './core/use-cases/tutor/create-time-slot/create-time-slot.use-case';
+export * from './core/use-cases/tutor/create-time-slot/create-time-slot.input';
+export * from './core/use-cases/tutor/create-time-slot/create-time-slot.output';
 
 // Re-export use cases - Shared
 export * from './core/use-cases/shared/get-session-details/get-session-details.use-case';
@@ -48,3 +54,4 @@ export * from './infrastructure/repositories/SessionReviewRepository';
 
 // Re-export repository implementations
 export * from './infrastructure/repositories/implementations/FirebaseTutoringSessionRepository';
+export * from './infrastructure/repositories/implementations/FirebaseTimeSlotRepository';

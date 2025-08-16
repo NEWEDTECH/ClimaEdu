@@ -14,6 +14,7 @@ export const TutoringSymbols = {
     GetStudentSessionsUseCase: Symbol.for('GetStudentSessionsUseCase'),
     GetStudentEnrolledCoursesUseCase: Symbol.for('GetStudentEnrolledCoursesUseCase'),
     ReviewTutorUseCase: Symbol.for('ReviewTutorUseCase'),
+    FindAvailableTimeSlotsUseCase: Symbol.for('FindAvailableTimeSlotsUseCase'),
     
     // Tutor use cases
     GetTutorSessionsUseCase: Symbol.for('GetTutorSessionsUseCase'),
@@ -21,6 +22,7 @@ export const TutoringSymbols = {
     UpdateTutoringSessionUseCase: Symbol.for('UpdateTutoringSessionUseCase'),
     AddSessionNotesUseCase: Symbol.for('AddSessionNotesUseCase'),
     SetAvailabilityUseCase: Symbol.for('SetAvailabilityUseCase'),
+    CreateTimeSlotUseCase: Symbol.for('CreateTimeSlotUseCase'),
     
     // Shared use cases
     GetSessionDetailsUseCase: Symbol.for('GetSessionDetailsUseCase'),
