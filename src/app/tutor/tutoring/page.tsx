@@ -1,15 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
+import { Button } from '@/components/button'
 import { TutoringSessionsList } from '@/components/tutoring/tutor/TutoringSessionsList'
 import { SessionDetailsModal } from '@/components/tutoring/tutor/SessionDetailsModal'
 import { TutoringStats } from '@/components/tutoring/tutor/TutoringStats'
 import { useTutorSessions } from '@/hooks/tutoring'
 import { useProfile } from '@/context/zustand/useProfile'
 import type { TutoringSession } from '@/_core/modules/tutoring'
+import { CalendarIcon } from 'lucide-react'
 
 export default function TutorTutoringPage() {
   const { infoUser } = useProfile()
@@ -100,11 +103,19 @@ export default function TutorTutoringPage() {
     <ProtectedContent>
       <DashboardLayout>
         <div className="container mx-auto p-6 space-y-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Sessões de Tutoria</h1>
-            <p className="text-gray-600 mt-2">
-              Gerencie suas sessões de tutoria e ajude os alunos com suas dúvidas.
-            </p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Sessões de Tutoria</h1>
+              <p className="text-gray-600 mt-2">
+                Gerencie suas sessões de tutoria e ajude os alunos com suas dúvidas.
+              </p>
+            </div>
+            <Link href="/tutor/availability">
+              <Button className="flex items-center gap-2">
+                <CalendarIcon size={16} />
+                Configurar Disponibilidade
+              </Button>
+            </Link>
           </div>
 
           {/* Stats Overview */}

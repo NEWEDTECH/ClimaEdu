@@ -40,10 +40,6 @@ export class UpdateSessionStatusUseCase {
 
     // Apply status change based on new status
     switch (input.newStatus) {
-      case TutoringSessionStatus.SCHEDULED:
-        session.schedule();
-        break;
-
       case TutoringSessionStatus.IN_PROGRESS:
         session.start();
         break;

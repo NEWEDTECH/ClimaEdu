@@ -1,8 +1,10 @@
 import { inject, injectable } from 'inversify';
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols';
+import { ContentSymbols } from '@/_core/shared/container/modules/content/symbols';
 import { DayOfWeek } from '../../../entities/TimeSlot';
 import type { TimeSlotRepository } from '../../../../infrastructure/repositories/TimeSlotRepository';
 import type { TutoringSessionRepository } from '../../../../infrastructure/repositories/TutoringSessionRepository';
+import type { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
 import { FindAvailableTimeSlotsInput } from './find-available-time-slots.input';
 import { FindAvailableTimeSlotsOutput, AvailableTimeSlot } from './find-available-time-slots.output';
 
@@ -17,7 +19,9 @@ export class FindAvailableTimeSlotsUseCase {
     @inject(TutoringSymbols.repositories.TimeSlotRepository)
     private readonly timeSlotRepository: TimeSlotRepository,
     @inject(TutoringSymbols.repositories.TutoringSessionRepository)
-    private readonly sessionRepository: TutoringSessionRepository
+    private readonly sessionRepository: TutoringSessionRepository,
+    @inject(ContentSymbols.repositories.CourseTutorRepository)
+    private readonly courseTutorRepository: CourseTutorRepository
   ) {}
 
   /**
@@ -32,9 +36,32 @@ export class FindAvailableTimeSlotsUseCase {
     // Get day of week from the requested date
     const dayOfWeek = input.date.getDay() as DayOfWeek;
 
-    // Find available time slots for the day
+    // Step 1: Find tutors associated with the course
+    const courseTutors = await this.courseTutorRepository.findByCourseId(input.courseId);
+    const tutorIds = courseTutors.map(ct => ct.userId);
+
+    if (tutorIds.length === 0) {
+      // No tutors associated with this course
+      return {
+        availableSlots: [],
+        requestedDate: input.date,
+        requestedDuration: input.duration,
+        totalSlotsFound: 0
+      };
+    }
+
+    // Step 2: Find available time slots for the day, filtered by course tutors
     let availableTimeSlots;
     if (input.tutorId) {
+      // Check if the specific tutor is associated with the course
+      if (!tutorIds.includes(input.tutorId)) {
+        return {
+          availableSlots: [],
+          requestedDate: input.date,
+          requestedDuration: input.duration,
+          totalSlotsFound: 0
+        };
+      }
       // Find slots for specific tutor
       availableTimeSlots = await this.timeSlotRepository.findByTutorAndDay(
         input.tutorId,
@@ -42,11 +69,12 @@ export class FindAvailableTimeSlotsUseCase {
         true // activeOnly
       );
     } else {
-      // Find all active slots for the day
-      availableTimeSlots = await this.timeSlotRepository.findAllActive(dayOfWeek);
+      // Find all active slots for the day, then filter by course tutors
+      const allActiveSlots = await this.timeSlotRepository.findAllActive(dayOfWeek);
+      availableTimeSlots = allActiveSlots.filter(slot => tutorIds.includes(slot.tutorId));
     }
 
-    // Filter slots that can accommodate the requested duration and check for conflicts
+    // Step 3: Filter slots that can accommodate the requested duration and check for conflicts
     const availableSlots: AvailableTimeSlot[] = [];
 
     for (const timeSlot of availableTimeSlots) {
