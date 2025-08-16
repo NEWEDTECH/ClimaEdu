@@ -1,34 +1,45 @@
 'use client'
 
-import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
 import { TutoringScheduleForm } from '@/components/tutoring/student/TutoringScheduleForm'
 import { ScheduledSessionsList } from '@/components/tutoring/student/ScheduledSessionsList'
-import { mockCourses, mockScheduledSessions } from './data/mockData'
+import { useStudentEnrolledCourses, useStudentSessions } from '@/hooks/tutoring'
+import { useProfile } from '@/context/zustand/useProfile'
 
 export default function TutoringPage() {
-  const [scheduledSessions, setScheduledSessions] = useState(mockScheduledSessions)
+  const { infoUser } = useProfile()
+  const studentId = infoUser.id
+  
+  const { courses, loading: coursesLoading, error: coursesError } = useStudentEnrolledCourses({ studentId: studentId })
+  const { 
+    sessions, 
+    loading: sessionsLoading, 
+    error: sessionsError, 
+    refetch: refetchSessions 
+  } = useStudentSessions({ 
+    studentId: studentId,
+    autoRefresh: false 
+  })
+  
+  if (!studentId) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando informações do usuário...</p>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-  const handleScheduleSession = (sessionData: {
-    courseId: string
-    date: string
-    time: string
-    notes?: string
-  }) => {
-    const newSession = {
-      id: `session-${Date.now()}`,
-      courseId: sessionData.courseId,
-      courseName: mockCourses.find(course => course.id === sessionData.courseId)?.name || '',
-      date: sessionData.date,
-      time: sessionData.time,
-      status: 'scheduled' as const,
-      tutorName: 'Prof. João Silva', // Mock tutor name
-      notes: sessionData.notes
-    }
-
-    setScheduledSessions(prev => [...prev, newSession])
+  const handleScheduleSession = async () => {
+    // After successful scheduling, refetch sessions
+    await refetchSessions()
   }
 
   return (
@@ -53,8 +64,11 @@ export default function TutoringPage() {
               </CardHeader>
               <CardContent>
                 <TutoringScheduleForm 
-                  courses={mockCourses}
+                  courses={courses}
+                  loading={coursesLoading}
+                  error={coursesError}
                   onSchedule={handleScheduleSession}
+                  studentId={studentId}
                 />
               </CardContent>
             </Card>
@@ -68,7 +82,12 @@ export default function TutoringPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ScheduledSessionsList sessions={scheduledSessions} />
+                <ScheduledSessionsList 
+                  sessions={sessions}
+                  loading={sessionsLoading}
+                  error={sessionsError}
+                  studentId={studentId}
+                />
               </CardContent>
             </Card>
           </div>

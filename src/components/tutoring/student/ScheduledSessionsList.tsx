@@ -1,32 +1,63 @@
 'use client'
 
-import { ScheduledSession } from '../../../app/student/tutoring/data/mockData'
 import { SessionCard } from './SessionCard'
+import { useStudentSessions } from '@/hooks/tutoring'
+import type { TutoringSession } from '@/_core/modules/tutoring'
+import { TutoringSessionStatus } from '@/_core/modules/tutoring'
 import { CalendarIcon } from 'lucide-react'
 
 interface ScheduledSessionsListProps {
-  sessions: ScheduledSession[]
+  sessions: TutoringSession[]
+  loading: boolean
+  error: string | null
+  studentId: string
 }
 
-export function ScheduledSessionsList({ sessions }: ScheduledSessionsListProps) {
-  // Sort sessions by date and time
+export function ScheduledSessionsList({ sessions, loading, error, studentId }: ScheduledSessionsListProps) {
+  const { cancelSession, cancelling } = useStudentSessions({ studentId })
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-sm text-gray-500">Carregando sessões...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+        <p className="text-sm text-red-600">Erro ao carregar sessões: {error}</p>
+      </div>
+    )
+  }
+
+  // Sort sessions by scheduled date
   const sortedSessions = [...sessions].sort((a, b) => {
-    const dateA = new Date(`${a.date}T${a.time}`)
-    const dateB = new Date(`${b.date}T${b.time}`)
-    return dateA.getTime() - dateB.getTime()
+    return a.scheduledDate.getTime() - b.scheduledDate.getTime()
   })
 
   // Separate upcoming and past sessions
   const now = new Date()
   const upcomingSessions = sortedSessions.filter(session => {
-    const sessionDateTime = new Date(`${session.date}T${session.time}`)
-    return sessionDateTime > now && session.status !== 'cancelled'
+    return session.scheduledDate > now && 
+           session.status === TutoringSessionStatus.SCHEDULED
   })
 
   const pastSessions = sortedSessions.filter(session => {
-    const sessionDateTime = new Date(`${session.date}T${session.time}`)
-    return sessionDateTime <= now || session.status === 'completed' || session.status === 'cancelled'
+    return session.scheduledDate <= now || 
+           session.status === TutoringSessionStatus.COMPLETED || 
+           session.status === TutoringSessionStatus.CANCELLED ||
+           session.status === TutoringSessionStatus.NO_SHOW
   })
+
+  const handleCancelSession = async (sessionId: string) => {
+    try {
+      await cancelSession(sessionId, 'Cancelado pelo estudante')
+    } catch (error) {
+      console.error('Error cancelling session:', error)
+    }
+  }
 
   if (sessions.length === 0) {
     return (
@@ -57,6 +88,8 @@ export function ScheduledSessionsList({ sessions }: ScheduledSessionsListProps) 
                 key={session.id} 
                 session={session} 
                 isUpcoming={true}
+                onCancel={() => handleCancelSession(session.id)}
+                cancelling={cancelling}
               />
             ))}
           </div>
@@ -70,12 +103,14 @@ export function ScheduledSessionsList({ sessions }: ScheduledSessionsListProps) 
             <CalendarIcon size={16} />
             Sessões Anteriores ({pastSessions.length})
           </h3>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-3 overflow-y-auto">
             {pastSessions.map((session) => (
               <SessionCard 
                 key={session.id} 
                 session={session} 
                 isUpcoming={false}
+                onCancel={() => handleCancelSession(session.id)}
+                cancelling={cancelling}
               />
             ))}
           </div>

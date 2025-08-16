@@ -1,6 +1,6 @@
 'use client'
 
-import { Course } from '@/app/student/tutoring/data/mockData'
+import { Course } from '@/_core/modules/content'
 import { ChevronDownIcon } from 'lucide-react'
 
 interface CourseSelectProps {
@@ -27,7 +27,7 @@ export function CourseSelect({ courses, selectedCourseId, onCourseChange, error 
           <option value="">Selecione um curso</option>
           {courses.map((course) => (
             <option key={course.id} value={course.id}>
-              {course.name} - {course.tutor}
+              {course.title}
             </option>
           ))}
         </select>

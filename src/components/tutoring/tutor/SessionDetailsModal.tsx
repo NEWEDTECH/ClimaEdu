@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { TutorSession } from '@/app/tutor/tutoring/data/mockTutorData'
+import { TutoringSession, TutoringSessionStatus } from '@/_core/modules/tutoring'
+import { SessionPriorityUtils, TutoringDateUtils, MeetingUrlUtils } from '../shared/tutoring-utils'
 import { Button } from '@/components/button'
 import { 
   CalendarIcon, 
@@ -13,71 +14,104 @@ import {
   EditIcon,
   CheckIcon,
   PlayIcon,
-  FileTextIcon
+  FileTextIcon,
+  LinkIcon
 } from 'lucide-react'
 
 interface SessionDetailsModalProps {
-  session: TutorSession
+  session: TutoringSession
   isOpen: boolean
   onClose: () => void
-  onSessionUpdate: (session: TutorSession) => void
+  onSessionUpdate: (session: TutoringSession) => void
 }
 
 export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate }: SessionDetailsModalProps) {
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [isEditingSummary, setIsEditingSummary] = useState(false)
+  const [isEditingMeetingUrl, setIsEditingMeetingUrl] = useState(false)
   const [tutorNotes, setTutorNotes] = useState(session.tutorNotes || '')
   const [sessionSummary, setSessionSummary] = useState(session.sessionSummary || '')
+  const [meetingUrl, setMeetingUrl] = useState(session.meetingUrl || '')
 
   if (!isOpen) return null
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const formatTime = (timeString: string) => {
-    return timeString
-  }
-
-  const getPriorityColor = (priority: TutorSession['priority']) => {
-    switch (priority) {
-      case 'high':
-        return 'text-red-600 bg-red-50 border-red-200'
-      case 'medium':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 'low':
-        return 'text-green-600 bg-green-50 border-green-200'
-      default:
-        return 'text-gray-600 bg-gray-50 border-gray-200'
+  const handleStatusChange = async (newStatus: TutoringSessionStatus) => {
+    try {
+      // Use entity methods to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      
+      switch (newStatus) {
+        case TutoringSessionStatus.IN_PROGRESS:
+          updatedSession.start()
+          break
+        case TutoringSessionStatus.COMPLETED:
+          updatedSession.complete(sessionSummary || 'Sessão concluída')
+          break
+        case TutoringSessionStatus.CANCELLED:
+          updatedSession.cancel('Cancelado pelo tutor')
+          break
+        case TutoringSessionStatus.NO_SHOW:
+          updatedSession.markAsNoShow()
+          break
+      }
+      
+      await onSessionUpdate(updatedSession)
+    } catch (error) {
+      console.error('Error changing status:', error)
     }
   }
 
-  const handleStatusChange = (newStatus: TutorSession['status']) => {
-    const updatedSession = { ...session, status: newStatus, updatedAt: new Date().toISOString() }
-    onSessionUpdate(updatedSession)
+  const handleSaveNotes = async () => {
+    try {
+      // Use entity method to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      updatedSession.addTutorNotes(tutorNotes)
+      
+      await onSessionUpdate(updatedSession)
+      setIsEditingNotes(false)
+    } catch (error) {
+      console.error('Error saving notes:', error)
+    }
   }
 
-  const handleSaveNotes = () => {
-    const updatedSession = { ...session, tutorNotes, updatedAt: new Date().toISOString() }
-    onSessionUpdate(updatedSession)
-    setIsEditingNotes(false)
+  const handleSaveSummary = async () => {
+    try {
+      // Use entity method to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      
+      if (updatedSession.status === TutoringSessionStatus.COMPLETED) {
+        // For completed sessions, we can update the summary directly
+        updatedSession.sessionSummary = sessionSummary
+        updatedSession.updatedAt = new Date()
+      } else {
+        // For other sessions, complete them with the summary
+        updatedSession.complete(sessionSummary)
+      }
+      
+      await onSessionUpdate(updatedSession)
+      setIsEditingSummary(false)
+    } catch (error) {
+      console.error('Error saving summary:', error)
+    }
   }
 
-  const handleSaveSummary = () => {
-    const updatedSession = { ...session, sessionSummary, updatedAt: new Date().toISOString() }
-    onSessionUpdate(updatedSession)
-    setIsEditingSummary(false)
+  const handleSaveMeetingUrl = async () => {
+    try {
+      // Use entity method to apply business rules
+      const updatedSession = TutoringSession.fromData({ ...session })
+      updatedSession.setMeetingUrl(meetingUrl || undefined)
+      
+      await onSessionUpdate(updatedSession)
+      setIsEditingMeetingUrl(false)
+    } catch (error) {
+      console.error('Error saving meeting URL:', error)
+    }
   }
 
-  const canStartSession = session.status === 'scheduled'
-  const canCompleteSession = session.status === 'in_progress'
-  const canCancelSession = session.status === 'scheduled' || session.status === 'in_progress'
+  const canStartSession = session.status === TutoringSessionStatus.SCHEDULED
+  const canCompleteSession = session.status === TutoringSessionStatus.IN_PROGRESS
+  const canCancelSession = session.status === TutoringSessionStatus.SCHEDULED || 
+                           session.status === TutoringSessionStatus.IN_PROGRESS
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -105,16 +139,16 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               </label>
               <div className="flex items-center gap-2 text-gray-900">
                 <UserIcon size={16} />
-                <span className="font-medium">{session.studentName}</span>
+                <span className="font-medium">Estudante {session.studentId.slice(-4)}</span>
               </div>
-              <p className="text-sm text-gray-600 mt-1">{session.studentEmail}</p>
+              <p className="text-sm text-gray-600 mt-1">student-{session.studentId.slice(-4)}@email.com</p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Curso
               </label>
-              <p className="text-gray-900 font-medium">{session.courseName}</p>
+              <p className="text-gray-900 font-medium">Curso {session.courseId.slice(-4)}</p>
             </div>
           </div>
 
@@ -126,7 +160,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               </label>
               <div className="flex items-center gap-2 text-gray-900">
                 <CalendarIcon size={16} />
-                <span className="capitalize">{formatDate(session.date)}</span>
+                <span className="capitalize">{TutoringDateUtils.formatDate(session.scheduledDate)}</span>
               </div>
             </div>
             
@@ -136,7 +170,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               </label>
               <div className="flex items-center gap-2 text-gray-900">
                 <ClockIcon size={16} />
-                <span>{formatTime(session.time)} ({session.duration}min)</span>
+                <span>{TutoringDateUtils.formatTime(session.scheduledDate)} ({session.duration}min)</span>
               </div>
             </div>
 
@@ -144,9 +178,9 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Prioridade
               </label>
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(session.priority)}`}>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${SessionPriorityUtils.getColor(session.priority)} bg-opacity-10`}>
                 <AlertCircleIcon size={14} />
-                {session.priority === 'high' ? 'Alta' : session.priority === 'medium' ? 'Média' : 'Baixa'}
+                {SessionPriorityUtils.getLabel(session.priority)}
               </div>
             </div>
           </div>
@@ -217,14 +251,92 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
             )}
           </div>
 
+          {/* Meeting URL */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Link da Reunião
+              </label>
+              {!isEditingMeetingUrl && (
+                <button
+                  onClick={() => setIsEditingMeetingUrl(true)}
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                >
+                  <EditIcon size={14} />
+                  Editar
+                </button>
+              )}
+            </div>
+            
+            {isEditingMeetingUrl ? (
+              <div className="space-y-2">
+                <input
+                  type="url"
+                  value={meetingUrl}
+                  onChange={(e) => setMeetingUrl(e.target.value)}
+                  placeholder="https://zoom.us/j/123456789 ou https://meet.google.com/abc-defg-hij"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {meetingUrl && !MeetingUrlUtils.validateUrl(meetingUrl) && (
+                  <p className="text-sm text-red-600">Por favor, insira uma URL válida (deve começar com http:// ou https://)</p>
+                )}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleSaveMeetingUrl} 
+                    className="text-sm"
+                    disabled={!!meetingUrl && !MeetingUrlUtils.validateUrl(meetingUrl)}
+                  >
+                    <CheckIcon size={14} className="mr-1" />
+                    Salvar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsEditingMeetingUrl(false)
+                      setMeetingUrl(session.meetingUrl || '')
+                    }}
+                    className="text-sm border border-gray-300 bg-white hover:bg-gray-50"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                {session.meetingUrl ? (
+                  <div className="flex items-center gap-2">
+                    <LinkIcon size={16} className="text-purple-600 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 mb-1">
+                        {MeetingUrlUtils.getMeetingPlatform(session.meetingUrl)}
+                      </p>
+                      <a 
+                        href={session.meetingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 underline break-all"
+                      >
+                        {MeetingUrlUtils.formatUrlForDisplay(session.meetingUrl, 60)}
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <LinkIcon size={16} className="text-gray-400" />
+                    <p className="text-gray-500 italic">Nenhum link de reunião adicionado ainda.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Session Summary (only for completed sessions) */}
-          {(session.status === 'completed' || isEditingSummary) && (
+          {(session.status === TutoringSessionStatus.COMPLETED || isEditingSummary) && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Resumo da Sessão
                 </label>
-                {!isEditingSummary && session.status === 'completed' && (
+                {!isEditingSummary && session.status === TutoringSessionStatus.COMPLETED && (
                   <button
                     onClick={() => setIsEditingSummary(true)}
                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
@@ -295,7 +407,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
           <div className="flex gap-2">
             {canStartSession && (
               <Button 
-                onClick={() => handleStatusChange('in_progress')}
+                onClick={() => handleStatusChange(TutoringSessionStatus.IN_PROGRESS)}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <PlayIcon size={16} className="mr-1" />
@@ -305,7 +417,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
             
             {canCompleteSession && (
               <Button 
-                onClick={() => handleStatusChange('completed')}
+                onClick={() => handleStatusChange(TutoringSessionStatus.COMPLETED)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <CheckIcon size={16} className="mr-1" />
@@ -315,7 +427,7 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
             
             {canCancelSession && (
               <Button 
-                onClick={() => handleStatusChange('cancelled')}
+                onClick={() => handleStatusChange(TutoringSessionStatus.CANCELLED)}
                 className="bg-red-600 hover:bg-red-700"
               >
                 <XIcon size={16} className="mr-1" />

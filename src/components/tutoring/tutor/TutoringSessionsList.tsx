@@ -1,19 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { TutorSession } from '@/app/tutor/tutoring/data/mockTutorData'
+import { TutoringSession, TutoringSessionStatus, SessionPriority } from '@/_core/modules/tutoring'
 import { TutorSessionCard } from './TutorSessionCard'
 import { SessionFilters } from './SessionFilters'
+import { TutoringStatusUtils } from '../shared/tutoring-utils'
 import { CalendarIcon } from 'lucide-react'
 
 interface TutoringSessionsListProps {
-  sessions: TutorSession[]
-  onSessionClick: (session: TutorSession) => void
+  sessions: TutoringSession[]
+  onSessionClick: (session: TutoringSession) => void
 }
 
 export function TutoringSessionsList({ sessions, onSessionClick }: TutoringSessionsListProps) {
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [priorityFilter, setPriorityFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<TutoringSessionStatus | 'all'>('all')
+  const [priorityFilter, setPriorityFilter] = useState<SessionPriority | 'all'>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
 
   // Filter sessions based on selected filters
@@ -23,40 +24,39 @@ export function TutoringSessionsList({ sessions, onSessionClick }: TutoringSessi
     
     let dateMatch = true
     if (dateFilter === 'today') {
-      const today = new Date().toISOString().split('T')[0]
-      dateMatch = session.date === today
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const sessionDate = new Date(session.scheduledDate)
+      sessionDate.setHours(0, 0, 0, 0)
+      dateMatch = sessionDate.getTime() === today.getTime()
     } else if (dateFilter === 'upcoming') {
-      const today = new Date().toISOString().split('T')[0]
-      dateMatch = session.date >= today && session.status === 'scheduled'
+      const now = new Date()
+      dateMatch = session.scheduledDate >= now && session.isActive()
     } else if (dateFilter === 'past') {
-      const today = new Date().toISOString().split('T')[0]
-      dateMatch = session.date < today || session.status === 'completed'
+      const now = new Date()
+      dateMatch = session.scheduledDate < now || session.isFinished()
     }
 
     return statusMatch && priorityMatch && dateMatch
   })
 
-  // Sort sessions by date and time
+  // Sort sessions by scheduled date
   const sortedSessions = [...filteredSessions].sort((a, b) => {
-    const dateA = new Date(`${a.date}T${a.time}`)
-    const dateB = new Date(`${b.date}T${b.time}`)
-    return dateA.getTime() - dateB.getTime()
+    return a.scheduledDate.getTime() - b.scheduledDate.getTime()
   })
 
-  // Group sessions by status for better organization
+  // Group sessions by status for better organization using enums
   const groupedSessions = {
-    scheduled: sortedSessions.filter(s => s.status === 'scheduled'),
-    in_progress: sortedSessions.filter(s => s.status === 'in_progress'),
-    completed: sortedSessions.filter(s => s.status === 'completed'),
-    cancelled: sortedSessions.filter(s => s.status === 'cancelled' || s.status === 'no_show')
+    [TutoringSessionStatus.SCHEDULED]: sortedSessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED),
+    [TutoringSessionStatus.IN_PROGRESS]: sortedSessions.filter(s => s.status === TutoringSessionStatus.IN_PROGRESS),
+    [TutoringSessionStatus.COMPLETED]: sortedSessions.filter(s => s.status === TutoringSessionStatus.COMPLETED),
+    [TutoringSessionStatus.CANCELLED]: sortedSessions.filter(s => 
+      s.status === TutoringSessionStatus.CANCELLED || 
+      s.status === TutoringSessionStatus.NO_SHOW
+    )
   }
 
-  const statusLabels = {
-    scheduled: 'Agendadas',
-    in_progress: 'Em Andamento',
-    completed: 'Concluídas',
-    cancelled: 'Canceladas/Faltaram'
-  }
+  const statusLabels = TutoringStatusUtils.getGroupLabels()
 
   if (sortedSessions.length === 0) {
     return (
