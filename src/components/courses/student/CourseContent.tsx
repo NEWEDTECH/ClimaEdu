@@ -5,6 +5,8 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { useTheme } from '@/hooks/useTheme';
+import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
+import { ScormPlayer } from '@/components/scorm/ScormPlayer';
 
 type CourseContentProps = {
   activeContent: Content | null;
@@ -18,6 +20,7 @@ type CourseContentProps = {
 };
 
 export function CourseContent({
+  activeContent,
   activeLesson,
   activeLessonData,
   activeActivity,
@@ -44,7 +47,9 @@ export function CourseContent({
           </h2>
         </div>
 
-        {activeLessonData && activeLessonData.description ? (
+        {activeContent && activeContent.type === ContentType.SCORM ? (
+          <ScormPlayer contentId={activeContent.id} />
+        ) : activeLessonData && activeLessonData.description ? (
           <div className={`p-6 rounded-lg shadow border ${
             isDarkMode 
               ? 'bg-[#272727] border-gray-700' 
@@ -78,7 +83,7 @@ export function CourseContent({
           <div className={`text-center py-8 ${
             isDarkMode ? 'text-gray-400' : 'text-gray-500'
           }`}>
-            <p>Nenhuma descrição disponível para esta lição.</p>
+            <p>Nenhum conteúdo disponível para esta lição.</p>
           </div>
         )}
       </section>

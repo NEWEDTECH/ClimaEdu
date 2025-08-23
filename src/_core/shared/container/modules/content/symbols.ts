@@ -10,6 +10,7 @@ export const repositories = {
   QuestionnaireSubmissionRepository: Symbol.for('QuestionnaireSubmissionRepository'),
   LessonProgressRepository: Symbol.for('LessonProgressRepository'),
   TrailRepository: Symbol.for('TrailRepository'),
+  ScormContentClientRepository: Symbol.for('ScormContentClientRepository'),
 };
 
 export const useCases = {

@@ -12,6 +12,7 @@ import type { QuestionnaireRepository } from '@/_core/modules/content/infrastruc
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { LessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/LessonProgressRepository';
 import type { TrailRepository } from '@/_core/modules/content/infrastructure/repositories/TrailRepository';
+import type { IScormContentClientRepository } from '@/_core/modules/content/infrastructure/repositories/ScormContentClientRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { FirebaseCourseRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseRepository';
 import { FirebaseCourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseTutorRepository';
@@ -22,6 +23,7 @@ import { FirebaseQuestionnaireRepository } from '@/_core/modules/content/infrast
 import { FirebaseQuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
 import { FirebaseLessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonProgressRepository';
 import { FirebaseTrailRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseTrailRepository';
+import { ScormContentAPIRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/ScormContentAPIRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
@@ -68,6 +70,7 @@ export function registerContentModule(container: Container): void {
   container.bind<QuestionnaireSubmissionRepository>(repositories.QuestionnaireSubmissionRepository).to(FirebaseQuestionnaireSubmissionRepository);
   container.bind<LessonProgressRepository>(repositories.LessonProgressRepository).to(FirebaseLessonProgressRepository);
   container.bind<TrailRepository>(repositories.TrailRepository).to(FirebaseTrailRepository);
+  container.bind<IScormContentClientRepository>(repositories.ScormContentClientRepository).to(ScormContentAPIRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);

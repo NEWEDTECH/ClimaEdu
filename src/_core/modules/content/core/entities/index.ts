@@ -12,3 +12,4 @@ export * from './Question';
 export * from './Questionnaire';
 export * from './QuestionSubmission';
 export * from './QuestionnaireSubmission';
+export * from './ScormContent';
