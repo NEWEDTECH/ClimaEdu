@@ -5,10 +5,10 @@ import { Readable } from 'stream';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; filePath: string[] } }
+  { params }: { params: Promise<{ id: string; filePath: string[] }> }
 ) {
   try {
-    const { id: courseId, filePath } = params;
+    const { id: courseId, filePath } = await params;
     const fullPath = filePath.join('/');
 
     const storage = getAdminStorage();
