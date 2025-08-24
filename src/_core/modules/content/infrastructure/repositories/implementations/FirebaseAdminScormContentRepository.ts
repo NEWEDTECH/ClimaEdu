@@ -75,4 +75,24 @@ export class FirebaseAdminScormContentRepository
       updatedAt: data.updatedAt.toDate(),
     } as ScormContent;
   }
+
+  async findByInstitutionId(institutionId: string): Promise<ScormContent[]> {
+    const snapshot = await this.firestore
+      .collection('scorm_content')
+      .where('institutionId', '==', institutionId)
+      .get();
+
+    if (snapshot.empty) {
+      return [];
+    }
+
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        ...data,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as ScormContent;
+    });
+  }
 }

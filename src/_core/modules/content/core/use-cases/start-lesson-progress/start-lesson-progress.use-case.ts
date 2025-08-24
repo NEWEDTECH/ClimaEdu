@@ -13,8 +13,10 @@ import type { StartLessonProgressOutput } from './start-lesson-progress.output';
 @injectable()
 export class StartLessonProgressUseCase {
   constructor(
-    @inject('LessonProgressRepository') private lessonProgressRepository: LessonProgressRepository,
-    @inject('LessonRepository') private lessonRepository: LessonRepository
+    @inject('LessonProgressRepository')
+    private lessonProgressRepository: LessonProgressRepository,
+    @inject('LessonRepository')
+    private lessonRepository: LessonRepository
   ) {}
 
   /**

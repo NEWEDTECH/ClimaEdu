@@ -8,7 +8,7 @@ import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
-import { ActivitySection, ContentSection, DescriptionSection, QuestionnaireSection } from '@/components/courses/admin'
+import { ActivitySection, ContentSection, DescriptionSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -17,6 +17,7 @@ import { ActivityRepository } from '@/_core/modules/content/infrastructure/repos
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository'
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case'
+import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use-cases/remove-content-from-lesson/remove-content-from-lesson.use-case'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 import { showToast } from '@/components/toast'
 
@@ -307,45 +308,27 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleDeleteContent = async (contentId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este conteúdo?')) {
+    if (!confirm('Tem certeza que deseja remover este conteúdo da lição?')) {
       return
     }
-    
+
     try {
-      const contentRepository = container.get<ContentRepository>(
-        Register.content.repository.ContentRepository
-      )
-      
-      const lessonRepository = container.get<LessonRepository>(
-        Register.content.repository.LessonRepository
-      )
-      
-      const deleted = await contentRepository.delete(contentId)
-      
-      if (!deleted) {
-        throw new Error('Conteúdo não encontrado')
-      }
-      
-      const lesson = await lessonRepository.findById(lessonId)
-      
-      if (!lesson) {
-        throw new Error('Lição não encontrada')
-      }
-      
-      lesson.contents = lesson.contents.filter(content => content.id !== contentId)
-      
-      await lessonRepository.save(lesson)
-      
+      const removeContentUseCase = container.get<RemoveContentFromLessonUseCase>(
+        Register.content.useCase.RemoveContentFromLessonUseCase
+      );
+
+      await removeContentUseCase.execute({ lessonId, contentId });
+
       // Update UI state
       setFormData(prev => ({
         ...prev,
         contents: prev.contents.filter(content => content.id !== contentId)
-      }))
-      
-      showToast.success('Conteúdo excluído com sucesso!')
+      }));
+
+      showToast.success('Conteúdo removido com sucesso!');
     } catch (error) {
-      console.error('Erro ao excluir conteúdo:', error)
-      showToast.error(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      console.error('Erro ao remover conteúdo:', error);
+      showToast.error(`Falha ao remover conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   }
 
@@ -522,6 +505,16 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             
             {/* Content Section */}
             <ContentSection
+              contents={formData.contents}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              onDeleteContent={handleDeleteContent}
+              isSubmitting={isSubmitting}
+            />
+
+            {/* Scorm Section */}
+            <ScormSection
               contents={formData.contents}
               courseId={courseId}
               moduleId={moduleId}
