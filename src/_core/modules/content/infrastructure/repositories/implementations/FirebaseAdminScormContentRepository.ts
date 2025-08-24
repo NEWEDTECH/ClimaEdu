@@ -26,9 +26,13 @@ export class FirebaseAdminScormContentRepository
     content: Omit<ScormContent, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<ScormContent> {
     const docRef = this.firestore.collection('scorm_content').doc();
+    const contentId = docRef.id;
+    const storageBasePath = `scorm_courses/${contentId}`;
+
     const newContent: ScormContent = {
-      id: docRef.id,
+      id: contentId,
       ...content,
+      storageBasePath,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -36,7 +40,7 @@ export class FirebaseAdminScormContentRepository
     const zip = await unzipper.Open.buffer(file);
 
     const uploadPromises = zip.files.map((zipEntry) => {
-      const filePath = `${content.storageBasePath}/${zipEntry.path}`;
+      const filePath = `${storageBasePath}/${zipEntry.path}`;
       const file = this.storage.file(filePath);
       const stream = zipEntry.stream();
       const passthrough = new PassThrough();

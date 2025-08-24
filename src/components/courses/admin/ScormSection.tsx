@@ -9,6 +9,7 @@ import {
   getContentTypeLabel,
   getContentTypeColor,
 } from './utils'
+import { ScormPlayer } from '@/components/scorm/ScormPlayer'
 
 interface ContentData {
   id: string
@@ -80,19 +81,24 @@ export function ScormSection({
             </h3>
           </div>
         ) : (
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${getContentTypeColor(scormContent.type)} flex items-center justify-center shadow-md flex-shrink-0`}>
-                <div className="text-white">
-                  {getContentTypeIcon(scormContent.type)}
+          <div className="space-y-4">
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${getContentTypeColor(scormContent.type)} flex items-center justify-center shadow-md flex-shrink-0`}>
+                  <div className="text-white">
+                    {getContentTypeIcon(scormContent.type)}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold">{scormContent.title}</h3>
+                  <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                    {getContentTypeLabel(scormContent.type)}
+                  </span>
                 </div>
               </div>
-              <div>
-                <h3 className="font-semibold">{scormContent.title}</h3>
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                  {getContentTypeLabel(scormContent.type)}
-                </span>
-              </div>
+            </div>
+            <div className="aspect-video">
+              <ScormPlayer contentId={scormContent.url} />
             </div>
           </div>
         )}

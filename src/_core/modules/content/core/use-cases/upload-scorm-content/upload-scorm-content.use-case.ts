@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import type { IScormContentRepository } from '../../../infrastructure/repositories/ScormContentRepository';
 import { UploadScormContentInput } from './upload-scorm-content.input';
 import { UploadScormContentOutput } from './upload-scorm-content.output';
-import { randomUUID } from 'crypto';
 import unzipper from 'unzipper';
 import { parseStringPromise } from 'xml2js';
 
@@ -17,9 +16,6 @@ export class UploadScormContentUseCase {
     input: UploadScormContentInput
   ): Promise<UploadScormContentOutput> {
     const { file, name, institutionId } = input;
-
-    const contentId = randomUUID();
-    const storageBasePath = `scorm_courses/${contentId}`;
 
     const zip = await unzipper.Open.buffer(file);
     const manifestEntry = zip.files.find(
@@ -40,7 +36,7 @@ export class UploadScormContentUseCase {
       name,
       institutionId,
       launchUrl,
-      storageBasePath,
+      storageBasePath: '', // Será definido no repositório
     };
 
     const savedContent = await this.scormContentRepository.save(
