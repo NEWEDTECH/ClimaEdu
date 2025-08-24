@@ -53,6 +53,9 @@ import { AddCourseToTrailUseCase } from '@/_core/modules/content/core/use-cases/
 import { RemoveCourseFromTrailUseCase } from '@/_core/modules/content/core/use-cases/remove-course-from-trail/remove-course-from-trail.use-case';
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case';
 import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use-cases/remove-content-from-lesson/remove-content-from-lesson.use-case';
+import { UploadActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/upload-activity-files/upload-activity-files.use-case';
+import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
+import { DeleteActivityFileUseCase } from '@/_core/modules/content/core/use-cases/delete-activity-file/delete-activity-file.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -103,5 +106,8 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.RemoveCourseFromTrailUseCase).to(RemoveCourseFromTrailUseCase);
   container.bind(useCases.UpdateLessonDescriptionUseCase).to(UpdateLessonDescriptionUseCase);
   container.bind(useCases.RemoveContentFromLessonUseCase).to(RemoveContentFromLessonUseCase);
+  container.bind(useCases.UploadActivityFilesUseCase).to(UploadActivityFilesUseCase);
+  container.bind(useCases.ListActivityFilesUseCase).to(ListActivityFilesUseCase);
+  container.bind(useCases.DeleteActivityFileUseCase).to(DeleteActivityFileUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

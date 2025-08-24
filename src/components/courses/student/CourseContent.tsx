@@ -7,6 +7,8 @@ import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { useTheme } from '@/hooks/useTheme';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { ScormPlayer } from '@/components/scorm/ScormPlayer';
+import { ActivityFileUpload } from './ActivityFileUpload';
+import { useProfile } from '@/context/zustand/useProfile';
 
 type CourseContentProps = {
   activeContent: Content | null;
@@ -17,6 +19,7 @@ type CourseContentProps = {
   attemptCount: number;
   hasPassedQuestionnaire: boolean;
   courseId: string;
+  institutionId: string;
 };
 
 export function CourseContent({
@@ -27,9 +30,11 @@ export function CourseContent({
   activeQuestionnaire,
   attemptCount,
   hasPassedQuestionnaire,
-  courseId
+  courseId,
+  institutionId
 }: CourseContentProps) {
   const { isDarkMode } = useTheme();
+  const { infoUser } = useProfile();
 
   return (
     <div className={`space-y-8 ${isDarkMode ? 'bg-black' : 'bg-white'} rounded-lg`}>
@@ -235,6 +240,22 @@ export function CourseContent({
                       </div>
                     </div>
                   </div>
+
+                  {/* File Upload Section */}
+                  {activeActivity && activeLesson && (
+                    <div>
+                      <h5 className={`text-lg font-medium mb-4 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        Envio de Arquivos
+                      </h5>
+                      <ActivityFileUpload
+                        activityId={activeActivity.id}
+                        studentId={infoUser.id}
+                        institutionId={institutionId}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

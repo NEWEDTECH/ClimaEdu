@@ -378,6 +378,7 @@ export default function CoursePage() {
                             attemptCount={attemptCount}
                             hasPassedQuestionnaire={hasPassedQuestionnaire}
                             courseId={courseId}
+                            institutionId={infoUser.currentIdInstitution || ''}
                         />
                     </div>
                 )}
