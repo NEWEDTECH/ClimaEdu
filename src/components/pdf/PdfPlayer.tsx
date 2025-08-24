@@ -6,7 +6,7 @@ interface PdfPlayerProps {
 
 export function PdfPlayer({ url }: PdfPlayerProps) {
   return (
-    <div className="w-full aspect-[4/3]">
+    <div className="w-full" style={{ height: 'calc(100vh - 200px)' }}>
       <iframe
         src={url}
         title="PDF Viewer"

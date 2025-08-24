@@ -18,7 +18,6 @@ import { ActivityRepository } from '@/_core/modules/content/infrastructure/repos
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
 import { CourseSidebar, CourseContent, ContentRenderer } from '@/components/courses/student';
-import { ChatDropdown } from '@/components/courses/chat';
 
 
 export default function CoursePage() {
@@ -37,7 +36,6 @@ export default function CoursePage() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
-    const [sidebarMode, setSidebarMode] = useState<'hidden' | 'chat' | 'modules'>('hidden');
 
 
     // Function to load lesson activity
@@ -299,40 +297,9 @@ export default function CoursePage() {
 
     return (
         <DashboardLayout>
-            {/* New Sidebar Component */}
-            <CourseSidebar
-                modules={modules}
-                activeLesson={activeLesson}
-                onLessonSelect={handleLessonSelect}
-                courseId={courseId}
-                userId={infoUser.id}
-                userName={infoUser.name || 'Usuário'}
-                isLoading={isLoading}
-                error={error}
-                openModules={openModules}
-                setOpenModules={setOpenModules}
-                onSidebarModeChange={setSidebarMode}
-            />
-
-            {/* Invisible div for spacing when sidebar is closed */}
-            {sidebarMode === 'hidden' && (
-                <div 
-                    className="fixed top-0 right-0 h-full bg-transparent pointer-events-none z-10"
-                    style={{ width: '120px' }}
-                />
-            )}
-
-            <div
-                className="h-[calc(100vh-4rem)] p-4 transition-all duration-300"
-                style={{
-                    marginRight: sidebarMode !== 'hidden'
-                        ? sidebarMode === 'chat'
-                            ? '500px'
-                            : '500px'
-                        : '0px',
-                    width: sidebarMode === 'hidden' ? 'calc(100% - 120px)' : 'auto'
-                }}
-            >
+            <div className="flex h-[calc(100vh-4rem)]">
+                {/* Main Content Column */}
+                <div className="flex-1 p-4 transition-all duration-300 overflow-auto scrollbar-thin">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -342,7 +309,7 @@ export default function CoursePage() {
                 ) : (
                     <div className="space-y-6">
 
-                        <div className="w-full border-gray-300 pb-4 relative space-y-8">
+                        <div className="w-full border-gray-300 pb-4 relative space-y-4">
                             {activeLessonData && activeLessonData.contents.length > 0 ? (
                                 activeLessonData.contents.map(content => (
                                     <ContentRenderer
@@ -414,17 +381,22 @@ export default function CoursePage() {
                         />
                     </div>
                 )}
-            </div>
+                </div>
 
-            {/* Chat Dropdown - Fixed position */}
-            {courseId && infoUser.id && (
-                <ChatDropdown
+                {/* Sidebar Column */}
+                <CourseSidebar
+                    modules={modules}
+                    activeLesson={activeLesson}
+                    onLessonSelect={handleLessonSelect}
                     courseId={courseId}
-                    classId={courseId} // Using courseId as classId for now
                     userId={infoUser.id}
                     userName={infoUser.name || 'Usuário'}
+                    isLoading={isLoading}
+                    error={error}
+                    openModules={openModules}
+                    setOpenModules={setOpenModules}
                 />
-            )}
+            </div>
         </DashboardLayout>
     );
 }

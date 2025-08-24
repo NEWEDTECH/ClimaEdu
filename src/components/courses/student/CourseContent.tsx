@@ -32,7 +32,7 @@ export function CourseContent({
   const { isDarkMode } = useTheme();
 
   return (
-    <div className={`space-y-8 ${isDarkMode ? 'bg-black' : 'bg-white'} p-6 rounded-lg`}>
+    <div className={`space-y-8 ${isDarkMode ? 'bg-black' : 'bg-white'} rounded-lg`}>
       
       {/* Conteúdo Section */}
       <section className="space-y-4">

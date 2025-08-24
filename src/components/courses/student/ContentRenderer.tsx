@@ -16,7 +16,7 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
   switch (content.type) {
     case ContentType.VIDEO:
       return (
-        <div className="aspect-video">
+        // <div className="aspect-video">
           <VideoPlayer
             url={content.url}
             autoPlay={true}
@@ -24,13 +24,13 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
             onEnded={onEnded}
             handleProgress={handleProgress}
           />
-        </div>
+        // </div>
       );
     case ContentType.SCORM:
       return (
-        <div className="aspect-video">
+        // <div className="aspect-video">
           <ScormPlayer contentId={content.url} />
-        </div>
+        // </div>
       );
     case ContentType.PDF:
       return <PdfPlayer url={content.url} />;
