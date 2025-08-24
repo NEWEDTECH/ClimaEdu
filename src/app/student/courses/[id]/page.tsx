@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
-import { VideoPlayer } from '@/components/video';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
@@ -12,14 +11,13 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { Module } from '@/_core/modules/content/core/entities/Module';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
-import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { useProfile } from '@/context/zustand/useProfile';
-import { CourseSidebar, CourseContent } from '@/components/courses/student';
+import { CourseSidebar, CourseContent, ContentRenderer } from '@/components/courses/student';
 import { ChatDropdown } from '@/components/courses/chat';
 
 
@@ -38,9 +36,6 @@ export default function CoursePage() {
     const [hasPassedQuestionnaire, setHasPassedQuestionnaire] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [showingEndAlert, setShowingEndAlert] = useState<boolean>(false);
-    const [showNextVideoOverlay, setShowNextVideoOverlay] = useState<boolean>(false);
-    const [overlayTimer, setOverlayTimer] = useState<NodeJS.Timeout | null>(null);
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
     const [sidebarMode, setSidebarMode] = useState<'hidden' | 'chat' | 'modules'>('hidden');
 
@@ -105,9 +100,6 @@ export default function CoursePage() {
     // Function to load lesson content
     const loadLessonContent = useCallback(async (lessonId: string) => {
         try {
-            // Reset the end alert state for new video
-            setShowingEndAlert(false);
-
             // Fetch content for this lesson
             const lessonRepository = container.get<LessonRepository>(
                 Register.content.repository.LessonRepository
@@ -119,23 +111,9 @@ export default function CoursePage() {
                 // Set the lesson data for the tabs
                 setActiveLessonData(fullLesson);
 
-                if (fullLesson.contents.length > 0) {
-                    const videoContent = fullLesson.contents.find(c => c.type === ContentType.VIDEO);
-                    if (videoContent) {
-                        // Reset the active content to ensure the video reloads
-                        setActiveContent(null);
-
-                        // Use setTimeout to ensure the state update happens before setting the new content
-                        setTimeout(() => {
-                            setActiveContent(videoContent);
-                        }, 50);
-                    } else {
-                        // If no video content, use the first content
-                        setActiveContent(fullLesson.contents[0]);
-                    }
-                } else {
-                    setActiveContent(null);
-                }
+                // A lógica de "conteúdo ativo" não é mais necessária,
+                // pois vamos renderizar todos os conteúdos da lição.
+                setActiveContent(null); // Manter nulo ou remover o estado
             } else {
                 setActiveLessonData(null);
                 setActiveContent(null);
@@ -240,21 +218,8 @@ export default function CoursePage() {
     };
 
     // Function to handle video progress and show next video overlay
-    const handleVideoProgress = ({ played, playedSeconds, loadedSeconds }: { played: number; playedSeconds: number; loadedSeconds: number }) => {
-        const totalDuration = loadedSeconds / played;
-        const remainingSeconds = totalDuration - playedSeconds;
-
-        if (remainingSeconds <= 20 && remainingSeconds > 0 && !showingEndAlert && totalDuration > 0) {
-            setShowingEndAlert(true);
-            setShowNextVideoOverlay(true);
-
-            // Set timer to hide overlay after 10 seconds
-            const timer = setTimeout(() => {
-                setShowNextVideoOverlay(false);
-            }, 10000);
-
-            setOverlayTimer(timer);
-        }
+    const handleVideoProgress = ({}: { played: number; playedSeconds: number; loadedSeconds: number }) => {
+        // Lógica de overlay removida por enquanto para simplificar
     };
 
     useEffect(() => {
@@ -377,65 +342,19 @@ export default function CoursePage() {
                 ) : (
                     <div className="space-y-6">
 
-                        <div className="w-full border-gray-300 pb-4 relative">
-                            {activeContent && activeContent.type === ContentType.VIDEO ? (
-                                <>
-                                    <VideoPlayer
-                                        url={activeContent.url}
-                                        autoPlay={true}
-                                        showControls={true}
+                        <div className="w-full border-gray-300 pb-4 relative space-y-8">
+                            {activeLessonData && activeLessonData.contents.length > 0 ? (
+                                activeLessonData.contents.map(content => (
+                                    <ContentRenderer
+                                        key={content.id}
+                                        content={content}
                                         onEnded={handleNextVideo}
                                         handleProgress={handleVideoProgress}
                                     />
-
-                                    {/* Netflix-style Next Video Overlay */}
-                                    {showNextVideoOverlay && (
-                                        <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg max-w-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex-shrink-0">
-                                                    <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium">Próximo vídeo em breve</p>
-                                                    <p className="text-xs text-gray-300">Deseja continuar?</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex space-x-2 mt-3">
-                                                <button
-                                                    onClick={() => {
-                                                        handleNextVideo();
-                                                        setShowNextVideoOverlay(false);
-                                                        if (overlayTimer) {
-                                                            clearTimeout(overlayTimer);
-                                                            setOverlayTimer(null);
-                                                        }
-                                                    }}
-                                                    className="flex-1 bg-white text-black px-3 py-2 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
-                                                >
-                                                    Sim, continuar
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setShowNextVideoOverlay(false);
-                                                        if (overlayTimer) {
-                                                            clearTimeout(overlayTimer);
-                                                            setOverlayTimer(null);
-                                                        }
-                                                    }}
-                                                    className="flex-1 bg-gray-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-gray-700 transition-colors"
-                                                >
-                                                    Não
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
+                                ))
                             ) : (
                                 <div className="flex justify-center items-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                    <p className="text-gray-500">Nenhum conteúdo de vídeo disponível</p>
+                                    <p className="text-gray-500">Nenhum conteúdo disponível para esta lição.</p>
                                 </div>
                             )}
 
