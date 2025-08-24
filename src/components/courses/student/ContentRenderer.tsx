@@ -4,6 +4,7 @@ import { Content } from '@/_core/modules/content/core/entities/Content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { VideoPlayer } from '@/components/video';
 import { ScormPlayer } from '@/components/scorm/ScormPlayer';
+import { PdfPlayer } from '@/components/pdf/PdfPlayer';
 
 interface ContentRendererProps {
   content: Content;
@@ -31,6 +32,8 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
           <ScormPlayer contentId={content.url} />
         </div>
       );
+    case ContentType.PDF:
+      return <PdfPlayer url={content.url} />;
     // Adicionar outros tipos de conteúdo aqui (PDF, etc.)
     default:
       return (
