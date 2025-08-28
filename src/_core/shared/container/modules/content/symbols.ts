@@ -10,6 +10,7 @@ export const repositories = {
   QuestionnaireSubmissionRepository: Symbol.for('QuestionnaireSubmissionRepository'),
   LessonProgressRepository: Symbol.for('LessonProgressRepository'),
   TrailRepository: Symbol.for('TrailRepository'),
+  ScormContentClientRepository: Symbol.for('ScormContentClientRepository'),
 };
 
 export const useCases = {
@@ -42,6 +43,10 @@ export const useCases = {
   GetLessonProgressUseCase: Symbol.for('GetLessonProgressUseCase'),
   CompleteLessonProgressUseCase: Symbol.for('CompleteLessonProgressUseCase'),
   UpdateLessonDescriptionUseCase: Symbol.for('UpdateLessonDescriptionUseCase'),
+  RemoveContentFromLessonUseCase: Symbol.for('RemoveContentFromLessonUseCase'),
+  UploadActivityFilesUseCase: Symbol.for('UploadActivityFilesUseCase'),
+  ListActivityFilesUseCase: Symbol.for('ListActivityFilesUseCase'),
+  DeleteActivityFileUseCase: Symbol.for('DeleteActivityFileUseCase'),
 };
 
 // Export all symbols for this module

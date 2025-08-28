@@ -5,6 +5,10 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { useTheme } from '@/hooks/useTheme';
+import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
+import { ScormPlayer } from '@/components/scorm/ScormPlayer';
+import { ActivityFileUpload } from './ActivityFileUpload';
+import { useProfile } from '@/context/zustand/useProfile';
 
 type CourseContentProps = {
   activeContent: Content | null;
@@ -15,21 +19,25 @@ type CourseContentProps = {
   attemptCount: number;
   hasPassedQuestionnaire: boolean;
   courseId: string;
+  institutionId: string;
 };
 
 export function CourseContent({
+  activeContent,
   activeLesson,
   activeLessonData,
   activeActivity,
   activeQuestionnaire,
   attemptCount,
   hasPassedQuestionnaire,
-  courseId
+  courseId,
+  institutionId
 }: CourseContentProps) {
   const { isDarkMode } = useTheme();
+  const { infoUser } = useProfile();
 
   return (
-    <div className={`space-y-8 ${isDarkMode ? 'bg-black' : 'bg-white'} p-6 rounded-lg`}>
+    <div className={`space-y-8 ${isDarkMode ? 'bg-black' : 'bg-white'} rounded-lg`}>
       
       {/* Conteúdo Section */}
       <section className="space-y-4">
@@ -44,7 +52,9 @@ export function CourseContent({
           </h2>
         </div>
 
-        {activeLessonData && activeLessonData.description ? (
+        {activeContent && activeContent.type === ContentType.SCORM ? (
+          <ScormPlayer contentId={activeContent.id} />
+        ) : activeLessonData && activeLessonData.description ? (
           <div className={`p-6 rounded-lg shadow border ${
             isDarkMode 
               ? 'bg-[#272727] border-gray-700' 
@@ -78,7 +88,7 @@ export function CourseContent({
           <div className={`text-center py-8 ${
             isDarkMode ? 'text-gray-400' : 'text-gray-500'
           }`}>
-            <p>Nenhuma descrição disponível para esta lição.</p>
+            <p>Nenhum conteúdo disponível para esta lição.</p>
           </div>
         )}
       </section>
@@ -230,6 +240,22 @@ export function CourseContent({
                       </div>
                     </div>
                   </div>
+
+                  {/* File Upload Section */}
+                  {activeActivity && activeLesson && (
+                    <div>
+                      <h5 className={`text-lg font-medium mb-4 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        Envio de Arquivos
+                      </h5>
+                      <ActivityFileUpload
+                        activityId={activeActivity.id}
+                        studentId={infoUser.id}
+                        institutionId={institutionId}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

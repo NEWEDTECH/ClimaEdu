@@ -16,7 +16,6 @@ type CourseSidebarProps = {
   error: string | null;
   openModules: Set<string>;
   setOpenModules: (modules: Set<string>) => void;
-  onSidebarModeChange?: (mode: SidebarMode) => void;
 };
 
 type SidebarMode = 'hidden' | 'chat' | 'modules';
@@ -131,14 +130,12 @@ export function CourseSidebar({
   userName,
   isLoading,
   error,
-  openModules,
-  onSidebarModeChange
+  openModules
 }: CourseSidebarProps) {
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('hidden');
 
   const handleSidebarModeChange = (newMode: SidebarMode) => {
     setSidebarMode(newMode);
-    onSidebarModeChange?.(newMode);
   };
 
   const handleChatClick = () => {
@@ -158,92 +155,31 @@ export function CourseSidebar({
   };
 
   return (
-    <>
-      {/* Right Column with Icons */}
-      <div className="fixed top-20 right-4 z-40 flex flex-col gap-3">
-        {/* Chat Icon */}
-        <button
-          onClick={handleChatClick}
-          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'chat'
-            ? 'bg-blue-600 text-white transform scale-110'
-            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-            }`}
-          aria-label="Toggle chat"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-        </button>
-
-        {/* Modules Icon */}
-        <button
-          onClick={handleModulesClick}
-          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'modules'
-            ? 'bg-indigo-600 text-white transform scale-110'
-            : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
-            }`}
-          aria-label="Toggle modules"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Sidebar Panel */}
+    <div 
+      className={`flex transition-all duration-300 ${
+        sidebarMode === 'hidden' 
+          ? 'w-20' 
+          : sidebarMode === 'chat' 
+            ? 'w-96' 
+            : 'w-96'
+      }`}
+    >
+      {/* Sidebar Panel - Left side */}
       {sidebarMode !== 'hidden' && (
-        <div
-          className={`fixed top-20 bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-30 transition-all duration-300 rounded-lg ${sidebarMode === 'chat' ? 'w-96' : 'w-96'
-            }`}
-          style={{
-            right: '100px',
-            height: 'calc(100vh - 6rem)'
-          }}
-        >
-
-          <button
-            onClick={() => setSidebarMode('hidden')}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors z-10"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
+        <div className="flex-1 bg-white dark:bg-gray-900 shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 rounded-lg overflow-hidden">
           {sidebarMode === 'chat' && (
             <>
               <HeaderSideBar
                 title='Chat da Turma'
                 subTitle='Converse com seus colegas'
+                onClose={() => setSidebarMode('hidden')}
                 icon={
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z" />
                   </svg>
                 }
               />
-              <div className="flex-1 relative">
+              <div className="flex-1 overflow-hidden">
                 <ChatDropdown
                   courseId={courseId}
                   classId={courseId}
@@ -257,10 +193,10 @@ export function CourseSidebar({
 
           {sidebarMode === 'modules' && (
             <div className="h-full flex flex-col overflow-hidden">
-
               <HeaderSideBar
                 title='Conteúdo do Curso'
                 subTitle={`${modules.length} ${modules.length === 1 ? 'módulo' : 'módulos'}`}
+                onClose={() => setSidebarMode('hidden')}
                 icon={
                   <svg
                     className="w-5 h-5 text-white"
@@ -280,7 +216,7 @@ export function CourseSidebar({
               />
 
               {/* Modules Content */}
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
                 {isLoading ? (
                   <div className="flex flex-col justify-center items-center h-32 space-y-3">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
@@ -310,10 +246,61 @@ export function CourseSidebar({
               </div>
             </div>
           )}
-
         </div>
       )}
 
-    </>
+      {/* Toggle Icons - Right side */}
+      <div className="flex flex-col gap-3 p-4 border-l border-gray-200 dark:border-gray-700 items-center">
+        {/* Chat Icon */}
+        <button
+          onClick={handleChatClick}
+          className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'chat'
+            ? 'bg-blue-600 text-white transform scale-110'
+            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
+            }`}
+          aria-label="Toggle chat"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
+
+        {/* Modules Icon */}
+        <button
+          onClick={handleModulesClick}
+          className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'modules'
+            ? 'bg-indigo-600 text-white transform scale-110'
+            : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
+            }`}
+          aria-label="Toggle modules"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 }

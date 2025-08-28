@@ -12,6 +12,7 @@ import type { QuestionnaireRepository } from '@/_core/modules/content/infrastruc
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { LessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/LessonProgressRepository';
 import type { TrailRepository } from '@/_core/modules/content/infrastructure/repositories/TrailRepository';
+import type { IScormContentClientRepository } from '@/_core/modules/content/infrastructure/repositories/ScormContentClientRepository';
 import { FirebaseContentRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseContentRepository';
 import { FirebaseCourseRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseRepository';
 import { FirebaseCourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseCourseTutorRepository';
@@ -22,6 +23,7 @@ import { FirebaseQuestionnaireRepository } from '@/_core/modules/content/infrast
 import { FirebaseQuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
 import { FirebaseLessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonProgressRepository';
 import { FirebaseTrailRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseTrailRepository';
+import { ScormContentAPIRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/ScormContentAPIRepository';
 import { CreateContentUseCase } from '@/_core/modules/content/core/use-cases/create-content/create-content.use-case';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
@@ -50,6 +52,10 @@ import { DeleteTrailUseCase } from '@/_core/modules/content/core/use-cases/delet
 import { AddCourseToTrailUseCase } from '@/_core/modules/content/core/use-cases/add-course-to-trail/add-course-to-trail.use-case';
 import { RemoveCourseFromTrailUseCase } from '@/_core/modules/content/core/use-cases/remove-course-from-trail/remove-course-from-trail.use-case';
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case';
+import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use-cases/remove-content-from-lesson/remove-content-from-lesson.use-case';
+import { UploadActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/upload-activity-files/upload-activity-files.use-case';
+import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
+import { DeleteActivityFileUseCase } from '@/_core/modules/content/core/use-cases/delete-activity-file/delete-activity-file.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -68,6 +74,7 @@ export function registerContentModule(container: Container): void {
   container.bind<QuestionnaireSubmissionRepository>(repositories.QuestionnaireSubmissionRepository).to(FirebaseQuestionnaireSubmissionRepository);
   container.bind<LessonProgressRepository>(repositories.LessonProgressRepository).to(FirebaseLessonProgressRepository);
   container.bind<TrailRepository>(repositories.TrailRepository).to(FirebaseTrailRepository);
+  container.bind<IScormContentClientRepository>(repositories.ScormContentClientRepository).to(ScormContentAPIRepository);
   
   // Register use cases
   container.bind(useCases.CreateContentUseCase).to(CreateContentUseCase);
@@ -98,5 +105,9 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.AddCourseToTrailUseCase).to(AddCourseToTrailUseCase);
   container.bind(useCases.RemoveCourseFromTrailUseCase).to(RemoveCourseFromTrailUseCase);
   container.bind(useCases.UpdateLessonDescriptionUseCase).to(UpdateLessonDescriptionUseCase);
+  container.bind(useCases.RemoveContentFromLessonUseCase).to(RemoveContentFromLessonUseCase);
+  container.bind(useCases.UploadActivityFilesUseCase).to(UploadActivityFilesUseCase);
+  container.bind(useCases.ListActivityFilesUseCase).to(ListActivityFilesUseCase);
+  container.bind(useCases.DeleteActivityFileUseCase).to(DeleteActivityFileUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }
