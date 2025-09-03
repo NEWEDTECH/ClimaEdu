@@ -260,6 +260,10 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         return 'PDF';
       case ContentType.PODCAST:
         return 'Podcast';
+      case ContentType.SCORM:
+        return 'SCORM';
+      case ContentType.AUDIO:
+        return 'Áudio';
       default:
         return 'Conteúdo';
     }
@@ -301,7 +305,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             />
           </svg>
         );
-      case ContentType.PODCAST:
+      case ContentType.AUDIO:
         return (
           <svg
             className="w-4 h-4"

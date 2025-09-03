@@ -6,4 +6,5 @@ export enum ContentType {
   PDF = 'PDF',
   PODCAST = 'PODCAST',
   SCORM = 'SCORM',
+  AUDIO = 'AUDIO',
 }

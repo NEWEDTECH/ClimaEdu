@@ -9,7 +9,7 @@ import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
-import { ActivitySection, ContentSection, DescriptionSection, PdfUploadSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
+import { ActivitySection, ContentSection, DescriptionSection, Mp3UploadSection, PdfUploadSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -527,6 +527,18 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
             {/* PDF Upload Section */}
             <PdfUploadSection
+              contents={formData.contents}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              institutionId={infoUser?.currentIdInstitution || 'default'}
+              onDeleteContent={handleDeleteContent}
+              onContentAdded={() => window.location.reload()}
+              isSubmitting={isSubmitting}
+            />
+
+            {/* MP3 Upload Section */}
+            <Mp3UploadSection
               contents={formData.contents}
               courseId={courseId}
               moduleId={moduleId}

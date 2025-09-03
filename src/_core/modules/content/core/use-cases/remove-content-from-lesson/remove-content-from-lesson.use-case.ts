@@ -32,8 +32,8 @@ export class RemoveContentFromLessonUseCase {
       throw new Error('Content not found in this lesson.');
     }
 
-    // Delete file from Firebase Storage if it's a PDF
-    if (contentToRemove.type === ContentType.PDF) {
+    // Delete file from Firebase Storage if it's a PDF or MP3
+    if (contentToRemove.type === ContentType.PDF || contentToRemove.type === ContentType.PODCAST) {
       try {
         await this.deleteFileFromStorage(contentToRemove.url);
       } catch (error) {
