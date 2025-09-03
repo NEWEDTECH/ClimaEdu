@@ -1,5 +1,7 @@
 export { ActivitySection } from './ActivitySection'
 export { ContentSection } from './ContentSection'
 export { DescriptionSection } from './DescriptionSection'
+export { Mp3UploadSection } from './Mp3UploadSection'
+export { PdfUploadSection } from './PdfUploadSection'
 export { QuestionnaireSection } from './QuestionnaireSection'
 export { ScormSection } from './ScormSection'
