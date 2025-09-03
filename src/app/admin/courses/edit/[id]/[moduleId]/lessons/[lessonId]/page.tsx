@@ -3,12 +3,13 @@
 import React, { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useProfile } from '@/context/zustand/useProfile'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
-import { ActivitySection, ContentSection, DescriptionSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
+import { ActivitySection, ContentSection, DescriptionSection, PdfUploadSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -62,6 +63,7 @@ type QuestionData = {
 
 export default function EditLessonPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter()
+  const { infoUser } = useProfile()
 
   const resolvedParams = 'then' in params ? use(params) : params
   const { id: courseId, moduleId, lessonId } = resolvedParams
@@ -520,6 +522,18 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               moduleId={moduleId}
               lessonId={lessonId}
               onDeleteContent={handleDeleteContent}
+              isSubmitting={isSubmitting}
+            />
+
+            {/* PDF Upload Section */}
+            <PdfUploadSection
+              contents={formData.contents}
+              courseId={courseId}
+              moduleId={moduleId}
+              lessonId={lessonId}
+              institutionId={infoUser?.currentIdInstitution || 'default'}
+              onDeleteContent={handleDeleteContent}
+              onContentAdded={() => window.location.reload()}
               isSubmitting={isSubmitting}
             />
 

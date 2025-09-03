@@ -47,6 +47,8 @@ export const useCases = {
   UploadActivityFilesUseCase: Symbol.for('UploadActivityFilesUseCase'),
   ListActivityFilesUseCase: Symbol.for('ListActivityFilesUseCase'),
   DeleteActivityFileUseCase: Symbol.for('DeleteActivityFileUseCase'),
+  UploadPdfToLessonUseCase: Symbol.for('UploadPdfToLessonUseCase'),
+  DeletePdfFromLessonUseCase: Symbol.for('DeletePdfFromLessonUseCase'),
 };
 
 // Export all symbols for this module
