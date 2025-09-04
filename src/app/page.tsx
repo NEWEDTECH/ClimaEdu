@@ -71,7 +71,7 @@ export default function Home() {
 
         const enrollmentsResult = await listEnrollmentsUseCase.execute({
           userId: infoUser.id,
-          status: EnrollmentStatus.ENROLLED,
+          status: [EnrollmentStatus.ENROLLED, EnrollmentStatus.COMPLETED],
           institutionId: infoUser.currentIdInstitution
         });
 
