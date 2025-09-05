@@ -7,6 +7,8 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
+import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
+import { CompleteLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
 import { Module } from '@/_core/modules/content/core/entities/Module';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
@@ -16,9 +18,10 @@ import { Activity } from '@/_core/modules/content/core/entities/Activity';
 interface UseCourseDataProps {
   courseId: string;
   userId?: string;
+  institutionId?: string;
 }
 
-export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
+export const useCourseData = ({ courseId, userId, institutionId }: UseCourseDataProps) => {
   const [modules, setModules] = useState<Module[]>([]);
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [activeLessonData, setActiveLessonData] = useState<Lesson | null>(null);
@@ -30,6 +33,7 @@ export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [openModules, setOpenModules] = useState<Set<string>>(new Set());
+  const [initialLessonLoaded, setInitialLessonLoaded] = useState<boolean>(false);
 
   const loadLessonActivity = useCallback(async (lessonId: string) => {
     try {
@@ -83,6 +87,27 @@ export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
     }
   }, [userId, courseId]);
 
+  const startLessonProgress = useCallback(async (lessonId: string) => {
+    if (!userId || !institutionId) {
+      console.warn('Cannot start lesson progress: missing userId or institutionId');
+      return;
+    }
+
+    try {
+      const startLessonUseCase = container.get<StartLessonProgressUseCase>(
+        Register.content.useCase.StartLessonProgressUseCase
+      );
+
+      await startLessonUseCase.execute({
+        userId,
+        lessonId,
+        institutionId
+      });
+    } catch (error) {
+      console.error('Error starting lesson progress:', error);
+    }
+  }, [userId, institutionId]);
+
   const loadLessonContent = useCallback(async (lessonId: string) => {
     try {
       const lessonRepository = container.get<LessonRepository>(
@@ -104,20 +129,59 @@ export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
         loadLessonQuestionnaire(lessonId),
         loadLessonActivity(lessonId)
       ]);
+
+      // Auto-start lesson progress after loading content
+      await startLessonProgress(lessonId);
     } catch (error) {
       console.error('Error loading lesson content:', error);
     }
-  }, [loadLessonQuestionnaire, loadLessonActivity]);
+  }, [loadLessonQuestionnaire, loadLessonActivity, startLessonProgress]);
 
   const handleLessonSelect = useCallback(async (lessonId: string) => {
     setActiveLesson(lessonId);
     await loadLessonContent(lessonId);
   }, [loadLessonContent]);
 
-  const handleCompleteLesson = useCallback(() => {
-    // TODO: Implement lesson completion logic
-    console.log('Lesson completed:', activeLesson);
-  }, [activeLesson]);
+  const handleCompleteLesson = useCallback(async () => {
+    if (!activeLesson || !userId) {
+      console.warn('Cannot complete lesson: missing activeLesson or userId');
+      return;
+    }
+
+    try {
+      const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
+        Register.content.useCase.CompleteLessonProgressUseCase
+      );
+
+      const result = await completeLessonUseCase.execute({
+        userId,
+        lessonId: activeLesson
+      });
+
+      console.log('Lesson completed successfully:', result);
+    } catch (error) {
+      console.error('Error completing lesson:', error);
+      // Lesson might not be started yet, try to start it first
+      if (error instanceof Error && error.message.includes('not found')) {
+        await startLessonProgress(activeLesson);
+        // Retry completion after starting
+        try {
+          const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
+            Register.content.useCase.CompleteLessonProgressUseCase
+          );
+          
+          const result = await completeLessonUseCase.execute({
+            userId,
+            lessonId: activeLesson
+          });
+          
+          console.log('Lesson completed successfully after starting:', result);
+        } catch (retryError) {
+          console.error('Error completing lesson after starting:', retryError);
+        }
+      }
+    }
+  }, [activeLesson, userId, startLessonProgress]);
 
   const handleVideoProgress = useCallback(({}: { played: number; playedSeconds: number; loadedSeconds: number }) => {
     // Video progress logic can be implemented here if needed
@@ -130,6 +194,7 @@ export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
       try {
         setIsLoading(true);
         setError(null);
+        setInitialLessonLoaded(false); // Reset flag when fetching new course
 
         // Fetch course details
         const courseRepository = container.get<CourseRepository>(
@@ -174,13 +239,6 @@ export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
 
         setModules(modulesWithLessons);
 
-        // Set the first lesson as active if available
-        if (modulesWithLessons.length > 0 && modulesWithLessons[0].lessons.length > 0) {
-          const firstLesson = modulesWithLessons[0].lessons[0];
-          setActiveLesson(firstLesson.id);
-          await loadLessonContent(firstLesson.id);
-        }
-
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching course data:', error);
@@ -190,7 +248,16 @@ export const useCourseData = ({ courseId, userId }: UseCourseDataProps) => {
     };
 
     fetchCourseData();
-  }, [courseId, loadLessonContent]);
+  }, [courseId]);
+
+  // Effect to handle initial lesson selection after modules are loaded
+  useEffect(() => {
+    if (modules.length > 0 && modules[0].lessons.length > 0 && !activeLesson && !initialLessonLoaded) {
+      const firstLesson = modules[0].lessons[0];
+      setInitialLessonLoaded(true);
+      handleLessonSelect(firstLesson.id);
+    }
+  }, [modules, activeLesson, handleLessonSelect, initialLessonLoaded]);
 
   return {
     // State

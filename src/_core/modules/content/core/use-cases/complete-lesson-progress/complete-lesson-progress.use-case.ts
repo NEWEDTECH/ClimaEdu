@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import type { LessonProgressRepository } from '../../../infrastructure/repositories/LessonProgressRepository';
 import type { CompleteLessonProgressInput } from './complete-lesson-progress.input';
 import type { CompleteLessonProgressOutput } from './complete-lesson-progress.output';
+import { Register } from '@/_core/shared/container';
 
 /**
  * Use case for forcefully completing lesson progress
@@ -11,7 +12,8 @@ import type { CompleteLessonProgressOutput } from './complete-lesson-progress.ou
 @injectable()
 export class CompleteLessonProgressUseCase {
   constructor(
-    @inject('LessonProgressRepository') private lessonProgressRepository: LessonProgressRepository
+    @inject(Register.content.repository.LessonProgressRepository)
+    private lessonProgressRepository: LessonProgressRepository
   ) {}
 
   /**

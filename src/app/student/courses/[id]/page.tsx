@@ -32,7 +32,8 @@ export default function CoursePage() {
         handleVideoProgress
     } = useCourseData({ 
         courseId, 
-        userId: infoUser.id 
+        userId: infoUser.id,
+        institutionId: infoUser.currentIdInstitution || ''
     });
 
     const {
@@ -44,7 +45,8 @@ export default function CoursePage() {
         modules,
         activeLesson,
         setOpenModules,
-        onLessonSelect: handleLessonSelect
+        onLessonSelect: handleLessonSelect,
+        onCompleteLesson: handleCompleteLesson
     });
 
 

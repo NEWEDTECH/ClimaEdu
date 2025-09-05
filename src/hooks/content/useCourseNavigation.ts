@@ -6,13 +6,15 @@ interface UseCourseNavigationProps {
   activeLesson: string | null;
   setOpenModules: (modules: Set<string>) => void;
   onLessonSelect: (lessonId: string) => Promise<void>;
+  onCompleteLesson?: () => Promise<void>;
 }
 
 export const useCourseNavigation = ({
   modules,
   activeLesson,
   setOpenModules,
-  onLessonSelect
+  onLessonSelect,
+  onCompleteLesson
 }: UseCourseNavigationProps) => {
   const findCurrentLessonPosition = useCallback(() => {
     if (!activeLesson || modules.length === 0) {
@@ -35,46 +37,64 @@ export const useCourseNavigation = ({
     return { moduleIndex: -1, lessonIndex: -1, module: null };
   }, [activeLesson, modules]);
 
-  const handleNextVideo = useCallback(() => {
+  const handleNextVideo = useCallback(async () => {
     const { moduleIndex, lessonIndex, module } = findCurrentLessonPosition();
     
     if (moduleIndex === -1 || lessonIndex === -1 || !module) return;
+
+    // Complete current lesson before navigating
+    if (onCompleteLesson) {
+      try {
+        await onCompleteLesson();
+      } catch (error) {
+        console.error('Error completing lesson before navigation:', error);
+      }
+    }
 
     // Check if there's another lesson in the current module
     if (lessonIndex < module.lessons.length - 1) {
       // Go to next lesson in current module
       const nextLesson = module.lessons[lessonIndex + 1];
-      onLessonSelect(nextLesson.id);
+      await onLessonSelect(nextLesson.id);
     } else if (moduleIndex < modules.length - 1) {
       // Go to first lesson of next module
       const nextModule = modules[moduleIndex + 1];
       if (nextModule.lessons.length > 0) {
         setOpenModules(prev => new Set([...prev, nextModule.id]));
-        onLessonSelect(nextModule.lessons[0].id);
+        await onLessonSelect(nextModule.lessons[0].id);
       }
     }
-  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules]);
+  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules, onCompleteLesson]);
 
-  const handlePreviousVideo = useCallback(() => {
+  const handlePreviousVideo = useCallback(async () => {
     const { moduleIndex, lessonIndex, module } = findCurrentLessonPosition();
     
     if (moduleIndex === -1 || lessonIndex === -1 || !module) return;
+
+    // Complete current lesson before navigating
+    if (onCompleteLesson) {
+      try {
+        await onCompleteLesson();
+      } catch (error) {
+        console.error('Error completing lesson before navigation:', error);
+      }
+    }
 
     // Check if there's a previous lesson in the current module
     if (lessonIndex > 0) {
       // Go to previous lesson in current module
       const previousLesson = module.lessons[lessonIndex - 1];
-      onLessonSelect(previousLesson.id);
+      await onLessonSelect(previousLesson.id);
     } else if (moduleIndex > 0) {
       // Go to last lesson of previous module
       const previousModule = modules[moduleIndex - 1];
       if (previousModule.lessons.length > 0) {
         setOpenModules(prev => new Set([...prev, previousModule.id]));
         const lastLesson = previousModule.lessons[previousModule.lessons.length - 1];
-        onLessonSelect(lastLesson.id);
+        await onLessonSelect(lastLesson.id);
       }
     }
-  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules]);
+  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules, onCompleteLesson]);
 
   const canNavigatePrevious = useCallback(() => {
     const { moduleIndex, lessonIndex } = findCurrentLessonPosition();
