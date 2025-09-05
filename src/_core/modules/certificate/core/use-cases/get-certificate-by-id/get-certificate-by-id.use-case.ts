@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import type { CertificateRepository } from '../../../infrastructure/repositories/CertificateRepository';
 import type { GetCertificateByIdInput } from './get-certificate-by-id.input';
 import type { GetCertificateByIdOutput } from './get-certificate-by-id.output';
+import { Register } from '@/_core/shared/container';
 
 /**
  * Use case for getting a certificate by its ID
@@ -10,7 +11,8 @@ import type { GetCertificateByIdOutput } from './get-certificate-by-id.output';
 @injectable()
 export class GetCertificateByIdUseCase {
   constructor(
-    @inject('CertificateRepository') private certificateRepository: CertificateRepository
+    @inject(Register.certificate.repository.CertificateRepository)
+    private certificateRepository: CertificateRepository
   ) {}
 
   /**
