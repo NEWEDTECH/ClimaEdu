@@ -18,6 +18,7 @@ export const useCases = {
     'RemoveEnrollmentFromClassUseCase'
   ),
   EnrollInTrailUseCase: Symbol.for('EnrollInTrailUseCase'),
+  CompleteCourseUseCase: Symbol.for('CompleteCourseUseCase'),
 };
 
 // Export all symbols for this module

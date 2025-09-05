@@ -22,5 +22,5 @@ export interface ListEnrollmentsInput {
   /**
    * Optional status to filter enrollments by status
    */
-  status?: EnrollmentStatus;
+  status?: EnrollmentStatus[];
 }

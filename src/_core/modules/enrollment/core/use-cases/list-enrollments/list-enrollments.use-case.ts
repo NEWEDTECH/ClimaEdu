@@ -21,30 +21,32 @@ export class ListEnrollmentsUseCase {
    * @param input Input data with optional filters
    * @returns Output data with the list of enrollments
    */
-  async execute(input: ListEnrollmentsInput): Promise<ListEnrollmentsOutput> {
+  async execute({userId, courseId, institutionId, status}: ListEnrollmentsInput): Promise<ListEnrollmentsOutput> {
     let enrollments: Enrollment[] = [];
 
     // If userId is provided, filter by user
-    if (input.userId) {
-      enrollments = await this.enrollmentRepository.listByUser(input.userId);
+    if (userId) {
+      enrollments = await this.enrollmentRepository.listByUser(userId);
     }
     // If courseId is provided, filter by course
-    else if (input.courseId) {
-      enrollments = await this.enrollmentRepository.listByCourse(input.courseId);
+    else if (courseId) {
+      enrollments = await this.enrollmentRepository.listByCourse(courseId);
     }
     // If institutionId is provided, filter by institution
-    else if (input.institutionId) {
-      enrollments = await this.enrollmentRepository.listByInstitution(input.institutionId);
+    else if (institutionId) {
+      enrollments = await this.enrollmentRepository.listByInstitution(institutionId);
     }
     // If no filter is provided, throw an error
     else {
       throw new Error('At least one filter (userId, courseId, or institutionId) must be provided');
     }
 
+
     // If status is provided, filter the results by status
-    if (input.status) {
-      enrollments = enrollments.filter(enrollment => enrollment.status === input.status);
+    if (status) {
+      enrollments = enrollments.filter(enrollment => status.includes(enrollment.status));
     }
+
 
     return {
       enrollments

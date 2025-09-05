@@ -4,7 +4,9 @@ export const repositories = {
 };
 
 export const useCases = {
-  // Certificate use cases will be added here when needed
+  GenerateCertificateUseCase: Symbol.for('GenerateCertificateUseCase'),
+  GetUserCertificatesUseCase: Symbol.for('GetUserCertificatesUseCase'),
+  GetCertificateByIdUseCase: Symbol.for('GetCertificateByIdUseCase'),
 };
 
 // Export all symbols for this module
