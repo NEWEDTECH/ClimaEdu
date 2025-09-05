@@ -136,6 +136,7 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
         courseId: certificateDetail.courseId,
         institutionId: infoUser!.currentIdInstitution || '',
         courseName: certificateDetail.courseTitle || 'Curso',
+        studentName: infoUser!.name || 'Nome do Estudante',
         instructorName: certificateDetail.instructorName || 'Instrutor do Curso',
         hoursCompleted: certificateDetail.hoursCompleted || 40,
         grade: certificateDetail.grade || 85,

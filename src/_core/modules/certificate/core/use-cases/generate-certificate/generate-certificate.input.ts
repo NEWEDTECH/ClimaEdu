@@ -6,6 +6,7 @@ export interface GenerateCertificateInput {
   courseId: string;
   institutionId: string;
   courseName: string;
+  studentName?: string;
   instructorName?: string;
   hoursCompleted?: number;
   grade?: number;

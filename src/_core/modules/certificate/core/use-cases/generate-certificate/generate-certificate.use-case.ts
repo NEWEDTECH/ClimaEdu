@@ -80,6 +80,7 @@ export class GenerateCertificateUseCase {
         courseId: input.courseId,
         institutionId: input.institutionId,
         courseName: input.courseName,
+        studentName: input.studentName,
         instructorName: input.instructorName,
         hoursCompleted: input.hoursCompleted,
         grade: input.grade,

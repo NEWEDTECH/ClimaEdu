@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { certificatesContainer } from '../container';
+import { PdfGeneratorService } from '../services/PdfGeneratorService';
+import { StorageService } from '../services/StorageService';
 
 /**
  * API route for generating certificate PDF
- * This is a simulated implementation that returns a fixed PDF URL
- * In the future, this will be replaced with actual PDF generation using libraries like puppeteer
+ * Generates real PDF certificates and uploads them to Firebase Storage
  */
+
+// Vercel function configuration for serverless environment
+export const config = {
+  maxDuration: 60, // 60 seconds - requires paid Vercel plan for >10s
+};
 
 interface GeneratePDFRequest {
   userId: string;
@@ -15,6 +22,7 @@ interface GeneratePDFRequest {
   hoursCompleted?: number;
   grade?: number;
   completionDate?: string;
+  studentName?: string;
 }
 
 interface GeneratePDFResponse {
@@ -39,29 +47,44 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateP
       );
     }
 
-    // Log the certificate data for debugging (in real implementation, this would be used to generate the PDF)
-    console.log('Generating certificate PDF for:', {
-      userId: body.userId,
-      courseId: body.courseId,
-      institutionId: body.institutionId,
+    // Get services from container
+    const pdfGeneratorService = certificatesContainer.get(PdfGeneratorService);
+    const storageService = certificatesContainer.get(StorageService);
+
+    // Generate certificate number
+    const certificateNumber = `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    
+    // Format issue date
+    const issueDate = new Date().toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
+    // Generate PDF
+    const pdfBuffer = await pdfGeneratorService.generateCertificatePdf({
+      studentName: body.studentName || 'Nome do Estudante',
       courseName: body.courseName,
+      institutionName: 'ClimaEdu', // You might want to get this from a database
       instructorName: body.instructorName,
       hoursCompleted: body.hoursCompleted,
       grade: body.grade,
-      completionDate: body.completionDate
+      issueDate,
+      certificateNumber,
     });
 
-    // Simulate PDF generation delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Return simulated certificate URL
-    // TODO: Replace this with actual PDF generation and upload to Firebase Storage
-    const simulatedCertificateUrl = "https://www.cra-ba.org.br/Adm/FCKimagens/Registro/MODELO%20CERTIFICADO%20IES_2010.pdf";
+    // Upload to Firebase Storage
+    const uploadResult = await storageService.uploadCertificate({
+      pdfBuffer,
+      userId: body.userId,
+      courseId: body.courseId,
+      institutionId: body.institutionId,
+    });
 
     return NextResponse.json({
-      certificateUrl: simulatedCertificateUrl,
+      certificateUrl: uploadResult.certificateUrl,
       success: true,
-      message: 'Certificate PDF generated successfully (simulated)'
+      message: 'Certificate PDF generated and uploaded successfully'
     });
 
   } catch (error) {
@@ -71,7 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateP
       {
         certificateUrl: '',
         success: false,
-        message: 'Internal server error while generating certificate PDF'
+        message: `Internal server error while generating certificate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
       },
       { status: 500 }
     );
