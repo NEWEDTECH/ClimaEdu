@@ -17,7 +17,6 @@ import { container, Register } from '@/_core/shared/container';
 // Extended type for unified certificate list
 type CertificateListItem = CertificateWithDetails & { 
   hasCertificate: boolean;
-  skills?: string[];
 };
 
 export default function CertificadosPage() {
@@ -106,7 +105,6 @@ export default function CertificadosPage() {
       instructorName: 'Instrutor do Curso', // TODO: Get from course or instructor data
       hoursCompleted: 40, // TODO: Get from course metadata
       grade: 85, // TODO: Get from enrollment/progress data
-      skills: ['Programação', 'Desenvolvimento'], // TODO: Get from course metadata
       completionDate: cert.issuedAt, // Use issuedAt as completion date for now
       hasCertificate: true
     };
@@ -135,7 +133,6 @@ export default function CertificadosPage() {
           instructorName: 'Instrutor do Curso', // TODO: Get from course or instructor data
           hoursCompleted: 40, // TODO: Get from course metadata
           grade: 85, // TODO: Get from enrollment/progress data
-          skills: ['Programação', 'Desenvolvimento'], // TODO: Get from course metadata
           completionDate: new Date(), // TODO: Get actual completion date from enrollment
           hasCertificate: false
         });
@@ -294,17 +291,6 @@ export default function CertificadosPage() {
                           <span className="text-gray-600 dark:text-gray-400">Nota Final:</span>
                           <span>{certificate.grade}%</span>
                         </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {certificate.skills?.map((skill, index) => (
-                          <span 
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full"
-                          >
-                            {skill}
-                          </span>
-                        ))}
                       </div>
                     </CardContent>
                     <CardFooter>

@@ -16,7 +16,6 @@ import { container, Register } from '@/_core/shared/container';
 // Extended type for certificate details with generation capability
 type CertificateDetailItem = CertificateWithDetails & { 
   hasCertificate: boolean;
-  skills?: string[];
 };
 
 interface CertificateDetailPageProps {
@@ -76,7 +75,6 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
             instructorName: 'Instrutor do Curso',
             hoursCompleted: 40,
             grade: 85,
-            skills: ['Programação', 'Desenvolvimento'],
             completionDate: new Date(),
             hasCertificate: false
           });
@@ -103,7 +101,6 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
           instructorName: 'Instrutor do Curso',
           hoursCompleted: 40,
           grade: 85,
-          skills: ['Programação', 'Desenvolvimento'],
           completionDate: certificate.issuedAt,
           hasCertificate: true
         });
@@ -161,7 +158,6 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
         instructorName: certificateDetail.instructorName,
         hoursCompleted: certificateDetail.hoursCompleted,
         grade: certificateDetail.grade,
-        skills: certificateDetail.skills,
         completionDate: certificateDetail.completionDate,
         hasCertificate: true
       });
@@ -189,18 +185,21 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
     window.open(certificateUrl, '_blank');
   };
 
-  const handleShareCertificate = (certificateId: string) => {
-    const shareUrl = `${window.location.origin}/student/certificates/${certificateId}`;
-    
+  const handleShareCertificate = (certificateUrl: string, courseName: string) => {
     if (navigator.share) {
       navigator.share({
         title: 'Meu Certificado',
-        text: 'Confira meu certificado de conclusão de curso!',
-        url: shareUrl,
+        text: `Confira meu certificado do curso "${courseName}"!`,
+        url: certificateUrl,
       })
       .catch((error) => console.log('Erro ao compartilhar:', error));
     } else {
-      alert(`Link para compartilhamento: ${shareUrl}`);
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(certificateUrl).then(() => {
+        alert(`Link do certificado copiado para a área de transferência:\n${certificateUrl}`);
+      }).catch(() => {
+        alert(`Link do certificado:\n${certificateUrl}`);
+      });
     }
   };
 
@@ -373,24 +372,6 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card className="flex-1">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Competências Adquiridas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {certificateDetail.skills?.map((skill, index) => (
-                        <span 
-                          key={index}
-                          className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
 
               <div className="flex flex-col md:flex-row gap-4">
@@ -419,7 +400,8 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
                     <Button 
                       variant="outline"
                       className="flex-1"
-                      onClick={() => handleShareCertificate(certificateDetail.id)}
+                      onClick={() => certificateDetail.certificateUrl && certificateDetail.courseTitle && handleShareCertificate(certificateDetail.certificateUrl, certificateDetail.courseTitle)}
+                      disabled={!certificateDetail.certificateUrl || !certificateDetail.hasCertificate}
                     >
                       <svg 
                         className="w-4 h-4 mr-2" 
