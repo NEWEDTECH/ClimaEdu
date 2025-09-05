@@ -24,8 +24,7 @@ export class PdfGeneratorService {
     
     try {
       // Configure chromium for serverless environments
-      chromium.setHeadlessMode = true;
-      chromium.setGraphicsMode = false;
+      // Note: setHeadlessMode and setGraphicsMode are handled automatically by @sparticuz/chromium
       
       // Chrome arguments for serverless environment
       const chromeArgs = [
@@ -52,7 +51,6 @@ export class PdfGeneratorService {
       browser = await puppeteer.launch({
         args: chromeArgs,
         executablePath: await chromium.executablePath(),
-        ignoreHTTPSErrors: true,
         headless: true,
       });
       
