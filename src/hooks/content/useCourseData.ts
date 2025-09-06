@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
@@ -9,6 +9,7 @@ import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/
 import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
 import { CompleteLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
+import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
 import { Module } from '@/_core/modules/content/core/entities/Module';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
@@ -34,6 +35,9 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
   const [error, setError] = useState<string | null>(null);
   const [openModules, setOpenModules] = useState<Set<string>>(new Set());
   const [initialLessonLoaded, setInitialLessonLoaded] = useState<boolean>(false);
+  
+  // Refs for throttling progress updates
+  const progressUpdateTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const loadLessonActivity = useCallback(async (lessonId: string) => {
     try {
@@ -148,6 +152,15 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
       return;
     }
 
+    // Create content types map from current lesson data
+    let contentTypesMap: Map<string, import('@/_core/modules/content/core/entities/ContentType').ContentType> | undefined;
+    if (activeLessonData?.contents) {
+      contentTypesMap = new Map();
+      activeLessonData.contents.forEach(content => {
+        contentTypesMap!.set(content.id, content.type);
+      });
+    }
+
     try {
       const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
         Register.content.useCase.CompleteLessonProgressUseCase
@@ -155,7 +168,8 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
 
       const result = await completeLessonUseCase.execute({
         userId,
-        lessonId: activeLesson
+        lessonId: activeLesson,
+        contentTypesMap
       });
 
       console.log('Lesson completed successfully:', result);
@@ -172,7 +186,8 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
           
           const result = await completeLessonUseCase.execute({
             userId,
-            lessonId: activeLesson
+            lessonId: activeLesson,
+            contentTypesMap
           });
           
           console.log('Lesson completed successfully after starting:', result);
@@ -181,11 +196,83 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
         }
       }
     }
-  }, [activeLesson, userId, startLessonProgress]);
+  }, [activeLesson, userId, activeLessonData, startLessonProgress]);
 
-  const handleVideoProgress = useCallback(({}: { played: number; playedSeconds: number; loadedSeconds: number }) => {
-    // Video progress logic can be implemented here if needed
-  }, []);
+  const updateContentProgress = useCallback(async (
+    contentId: string, 
+    progressPercentage: number, 
+    timeSpent?: number, 
+    lastPosition?: number
+  ) => {
+    if (!activeLesson || !userId) {
+      console.warn('Cannot update content progress: missing activeLesson or userId');
+      return;
+    }
+
+    try {
+      const updateContentUseCase = container.get<UpdateContentProgressUseCase>(
+        Register.content.useCase.UpdateContentProgressUseCase
+      );
+
+      await updateContentUseCase.execute({
+        userId,
+        lessonId: activeLesson,
+        contentId,
+        progressPercentage,
+        timeSpent,
+        lastPosition
+      });
+
+      console.log(`Content progress updated: ${contentId} - ${progressPercentage}%`);
+    } catch (error) {
+      console.error('Error updating content progress:', error);
+    }
+  }, [activeLesson, userId]);
+
+  const handleVideoProgress = useCallback((data: { 
+    played: number; 
+    playedSeconds: number; 
+    loadedSeconds: number;
+    contentId?: string;
+  }) => {
+    if (!data.contentId) {
+      console.warn('Content ID not provided for progress tracking');
+      return;
+    }
+
+    const progressPercentage = Math.round(data.played * 100);
+    const lastPosition = data.playedSeconds;
+    
+    // Throttle progress updates to avoid excessive API calls
+    const timerId = progressUpdateTimers.current.get(data.contentId);
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+
+    const newTimerId = setTimeout(() => {
+      updateContentProgress(
+        data.contentId!,
+        progressPercentage,
+        undefined, // timeSpent will be calculated by the use case
+        lastPosition
+      );
+      progressUpdateTimers.current.delete(data.contentId!);
+    }, 5000); // Throttle to 5 seconds
+
+    progressUpdateTimers.current.set(data.contentId, newTimerId);
+
+    // Immediately save if video ended (100% progress)
+    if (progressPercentage >= 100) {
+      clearTimeout(newTimerId);
+      progressUpdateTimers.current.delete(data.contentId);
+      updateContentProgress(
+        data.contentId,
+        100,
+        undefined,
+        lastPosition
+      );
+    }
+  }, [updateContentProgress]);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -278,6 +365,7 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
     handleLessonSelect,
     handleCompleteLesson,
     handleVideoProgress,
+    updateContentProgress,
     
     // Loading functions (exposed for potential external use)
     loadLessonContent,

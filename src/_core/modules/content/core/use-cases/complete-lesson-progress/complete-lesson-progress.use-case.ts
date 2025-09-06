@@ -42,8 +42,13 @@ export class CompleteLessonProgressUseCase {
     // Check if lesson was already completed
     const wasAlreadyCompleted = lessonProgress.isCompleted();
 
-    // Force complete the lesson (marks all contents as completed)
-    lessonProgress.forceComplete();
+    // Complete the lesson using content-type-specific logic if provided
+    if (input.contentTypesMap) {
+      lessonProgress.completeWithContentTypeLogic(input.contentTypesMap);
+    } else {
+      // Fallback to force complete (marks all contents as 100%)
+      lessonProgress.forceComplete();
+    }
 
     // Save the updated lesson progress
     const savedProgress = await this.lessonProgressRepository.save(lessonProgress);

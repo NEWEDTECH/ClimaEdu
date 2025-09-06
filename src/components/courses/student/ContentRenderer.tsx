@@ -9,10 +9,19 @@ import { PdfPlayer } from '@/components/pdf/PdfPlayer';
 interface ContentRendererProps {
   content: Content;
   onEnded?: () => void;
-  handleProgress?: (progress: { played: number; playedSeconds: number; loadedSeconds: number }) => void;
+  handleProgress?: (progress: { played: number; playedSeconds: number; loadedSeconds: number; contentId?: string }) => void;
 }
 
 export function ContentRenderer({ content, onEnded, handleProgress }: ContentRendererProps) {
+  const enhancedHandleProgress = (progress: { played: number; playedSeconds: number; loadedSeconds: number }) => {
+    if (handleProgress) {
+      handleProgress({
+        ...progress,
+        contentId: content.id
+      });
+    }
+  };
+
   switch (content.type) {
     case ContentType.VIDEO:
       return (
@@ -22,7 +31,7 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
             autoPlay={true}
             showControls={true}
             onEnded={onEnded}
-            handleProgress={handleProgress}
+            handleProgress={enhancedHandleProgress}
           />
         // </div>
       );

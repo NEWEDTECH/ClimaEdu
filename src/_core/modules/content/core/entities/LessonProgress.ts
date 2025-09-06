@@ -1,5 +1,6 @@
 import { ContentProgress } from './ContentProgress';
 import { LessonProgressStatus, ContentProgressStatus } from './ProgressStatus';
+import { ContentType } from './ContentType';
 import { nanoid } from 'nanoid';
 
 /**
@@ -147,6 +148,28 @@ export class LessonProgress {
    */
   public forceComplete(): void {
     this.contentProgresses.forEach(cp => cp.markAsCompleted());
+    this.status = LessonProgressStatus.COMPLETED;
+    this.completedAt = new Date();
+    this.lastAccessedAt = new Date();
+    this.updatedAt = new Date();
+  }
+
+  /**
+   * Completes the lesson with content-type-specific logic
+   * Videos/Audio: Maintain current progress percentage
+   * Other types (PDF, SCORM, etc.): Set to 100%
+   */
+  public completeWithContentTypeLogic(contentTypesMap: Map<string, ContentType>): void {
+    this.contentProgresses.forEach(cp => {
+      const contentType = contentTypesMap.get(cp.contentId);
+      if (contentType) {
+        cp.completeBasedOnType(contentType);
+      } else {
+        // Fallback: if content type is unknown, use default completion
+        cp.markAsCompleted();
+      }
+    });
+
     this.status = LessonProgressStatus.COMPLETED;
     this.completedAt = new Date();
     this.lastAccessedAt = new Date();
