@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, Timestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, deleteDoc, query, where, DocumentData, Timestamp } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Institution } from '../../../core/entities/Institution';
 import { InstitutionSettings } from '../../../core/entities/InstitutionSettings';
@@ -29,12 +29,21 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
    * @returns Institution entity
    */
   private mapToEntity(data: DocumentData): Institution {
+    // Extract advanced settings from the flattened settings object
+    const advancedSettings: any = {};
+    if (data.settings?.riskLevels) advancedSettings.riskLevels = data.settings.riskLevels;
+    if (data.settings?.participationLevels) advancedSettings.participationLevels = data.settings.participationLevels;
+    if (data.settings?.performanceRatings) advancedSettings.performanceRatings = data.settings.performanceRatings;
+    if (data.settings?.inactivityThreshold !== undefined) advancedSettings.inactivityThreshold = data.settings.inactivityThreshold;
+    if (data.settings?.profileCompleteness !== undefined) advancedSettings.profileCompleteness = data.settings.profileCompleteness;
+    if (data.settings?.courseNavigation) advancedSettings.courseNavigation = data.settings.courseNavigation;
+
     // Convert settings object to InstitutionSettings value object
     const settings = InstitutionSettings.create({
       logoUrl: data.settings?.logoUrl,
       primaryColor: data.settings?.primaryColor,
       secondaryColor: data.settings?.secondaryColor,
-      settings: data.settings
+      settings: Object.keys(advancedSettings).length > 0 ? advancedSettings : undefined
     });
     
     // Convert Firestore timestamps to Date objects
@@ -100,32 +109,49 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
    */
   async save(institution: Institution): Promise<Institution> {
     const institutionRef = doc(firestore, this.collectionName, institution.id);
+
+    console.log('💾 Saving institution:', institution);
     
+    // Helper function to remove undefined values
+    const removeUndefined = (obj: any): any => {
+      if (obj === null || obj === undefined) return null;
+      if (typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(removeUndefined);
+      
+      const cleaned: any = {};
+      Object.keys(obj).forEach(key => {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = removeUndefined(value);
+        }
+      });
+      return cleaned;
+    };
+
     // Prepare the institution data for Firestore
-    const institutionData = {
+    const institutionData: any = {
       id: institution.id,
       name: institution.name,
       domain: institution.domain,
-      settings: {
+      settings: removeUndefined({
         logoUrl: institution.settings.logoUrl,
         primaryColor: institution.settings.primaryColor,
         secondaryColor: institution.settings.secondaryColor,
-        settings: institution.settings.settings
-      },
+        // Flatten the advanced settings into the main settings object
+        ...(institution.settings.settings && {
+          riskLevels: institution.settings.settings.riskLevels,
+          participationLevels: institution.settings.settings.participationLevels,
+          performanceRatings: institution.settings.settings.performanceRatings,
+          inactivityThreshold: institution.settings.settings.inactivityThreshold,
+          profileCompleteness: institution.settings.settings.profileCompleteness,
+          courseNavigation: institution.settings.settings.courseNavigation
+        })
+      }),
       createdAt: institution.createdAt,
       updatedAt: institution.updatedAt
     };
 
-    // Check if the institution already exists
-    const institutionDoc = await getDoc(institutionRef);
-    
-    if (institutionDoc.exists()) {
-      // Update existing institution
-      await updateDoc(institutionRef, institutionData);
-    } else {
-      // Create new institution
-      await setDoc(institutionRef, institutionData);
-    }
+    await setDoc(institutionRef, institutionData, { merge: true });
 
     return institution;
   }
