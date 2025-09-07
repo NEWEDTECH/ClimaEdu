@@ -6,15 +6,13 @@ interface UseCourseNavigationProps {
   activeLesson: string | null;
   setOpenModules: (modules: Set<string>) => void;
   onLessonSelect: (lessonId: string) => Promise<void>;
-  onCompleteLesson?: () => Promise<void>;
 }
 
 export const useCourseNavigation = ({
   modules,
   activeLesson,
   setOpenModules,
-  onLessonSelect,
-  onCompleteLesson
+  onLessonSelect
 }: UseCourseNavigationProps) => {
   const findCurrentLessonPosition = useCallback(() => {
     if (!activeLesson || modules.length === 0) {
@@ -40,45 +38,37 @@ export const useCourseNavigation = ({
   const handleNextVideo = useCallback(async () => {
     const { moduleIndex, lessonIndex, module } = findCurrentLessonPosition();
     
-    if (moduleIndex === -1 || lessonIndex === -1 || !module) return;
-
-    // Complete current lesson before navigating
-    if (onCompleteLesson) {
-      try {
-        await onCompleteLesson();
-      } catch (error) {
-        console.error('Error completing lesson before navigation:', error);
-      }
+    if (moduleIndex === -1 || lessonIndex === -1 || !module) {
+      console.warn('Navigation: Unable to find current lesson position');
+      return;
     }
+
+    console.log(`Navigation: Current position - Module ${moduleIndex}, Lesson ${lessonIndex}`);
 
     // Check if there's another lesson in the current module
     if (lessonIndex < module.lessons.length - 1) {
       // Go to next lesson in current module
       const nextLesson = module.lessons[lessonIndex + 1];
+      console.log(`Navigation: Going to next lesson in same module: ${nextLesson.id}`);
       await onLessonSelect(nextLesson.id);
     } else if (moduleIndex < modules.length - 1) {
       // Go to first lesson of next module
       const nextModule = modules[moduleIndex + 1];
       if (nextModule.lessons.length > 0) {
+        console.log(`Navigation: Going to first lesson of next module: ${nextModule.lessons[0].id}`);
         setOpenModules(prev => new Set([...prev, nextModule.id]));
         await onLessonSelect(nextModule.lessons[0].id);
       }
+    } else {
+      console.log('Navigation: Reached end of course, no next lesson available');
     }
-  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules, onCompleteLesson]);
+  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules]);
+
 
   const handlePreviousVideo = useCallback(async () => {
     const { moduleIndex, lessonIndex, module } = findCurrentLessonPosition();
     
     if (moduleIndex === -1 || lessonIndex === -1 || !module) return;
-
-    // Complete current lesson before navigating
-    if (onCompleteLesson) {
-      try {
-        await onCompleteLesson();
-      } catch (error) {
-        console.error('Error completing lesson before navigation:', error);
-      }
-    }
 
     // Check if there's a previous lesson in the current module
     if (lessonIndex > 0) {
@@ -94,7 +84,7 @@ export const useCourseNavigation = ({
         await onLessonSelect(lastLesson.id);
       }
     }
-  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules, onCompleteLesson]);
+  }, [findCurrentLessonPosition, modules, onLessonSelect, setOpenModules]);
 
   const canNavigatePrevious = useCallback(() => {
     const { moduleIndex, lessonIndex } = findCurrentLessonPosition();

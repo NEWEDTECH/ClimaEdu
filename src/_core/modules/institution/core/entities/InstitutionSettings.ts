@@ -60,6 +60,23 @@ export class InstitutionSettings {
     return this.settings?.profileCompleteness ?? defaultInstitutionSettings.settings.profileCompleteness;
   }
 
+  get courseNavigationSettings() {
+    return {
+      ...defaultInstitutionSettings.settings.courseNavigation,
+      ...this.settings?.courseNavigation,
+    };
+  }
+
+  get requireSequentialProgress() {
+    return this.settings?.courseNavigation?.requireSequentialProgress ?? 
+           defaultInstitutionSettings.settings.courseNavigation.requireSequentialProgress;
+  }
+
+  get allowSkipLesson() {
+    return this.settings?.courseNavigation?.allowSkipLesson ?? 
+           defaultInstitutionSettings.settings.courseNavigation.allowSkipLesson;
+  }
+
   /**
    * Updates the logo URL
    * @param newLogoUrl The new logo URL

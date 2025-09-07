@@ -16,6 +16,10 @@ export interface InstitutionSettings {
     };
     inactivityThreshold: number;
     profileCompleteness: number;
+    courseNavigation: {
+      requireSequentialProgress: boolean;
+      allowSkipLesson: boolean;
+    };
   };
 }
 
@@ -37,5 +41,9 @@ export const defaultInstitutionSettings: InstitutionSettings = {
     },
     inactivityThreshold: 7,
     profileCompleteness: 85,
+    courseNavigation: {
+      requireSequentialProgress: true,
+      allowSkipLesson: false,
+    },
   },
 };

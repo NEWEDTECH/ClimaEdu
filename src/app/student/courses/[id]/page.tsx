@@ -3,9 +3,10 @@
 import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
 import { useProfile } from '@/context/zustand/useProfile';
-import { CourseSidebar, CourseContent, ContentRenderer } from '@/components/courses/student';
+import { CourseSidebar, CourseContent, ContentRenderer, AutoNavigationModal } from '@/components/courses/student';
 import { useCourseData } from '@/hooks/content/useCourseData';
 import { useCourseNavigation } from '@/hooks/content/useCourseNavigation';
+import { useAutoNavigation } from '@/hooks/content/useAutoNavigation';
 
 
 export default function CoursePage() {
@@ -26,6 +27,7 @@ export default function CoursePage() {
         isLoading,
         error,
         openModules,
+        lessonAccess,
         setOpenModules,
         handleLessonSelect,
         handleCompleteLesson,
@@ -46,8 +48,34 @@ export default function CoursePage() {
         activeLesson,
         setOpenModules,
         onLessonSelect: handleLessonSelect,
-        onCompleteLesson: handleCompleteLesson
     });
+
+    // Auto-navigation hook for video completion
+    const {
+        isActive: showAutoNav,
+        countdown,
+        isNavigating,
+        startAutoNavigation,
+        cancelAutoNavigation,
+    } = useAutoNavigation({
+        onNavigate: handleNextVideo,
+        countdownSeconds: 5
+    });
+
+    // Handle video ended with auto-navigation
+    const handleVideoEnded = async () => {
+        try {
+            const completed = await handleCompleteLesson();
+            console.log('🙋‍♂️ Video ended, lesson completion status:', completed);
+            if (completed) {
+                startAutoNavigation();
+            } else {
+                console.warn('Failed to complete lesson, auto-navigation cancelled');
+            }
+        } catch (error) {
+            console.error('Error during video end handling:', error);
+        }
+    };
 
 
 
@@ -71,7 +99,7 @@ export default function CoursePage() {
                                     <ContentRenderer
                                         key={content.id}
                                         content={content}
-                                        onEnded={handleNextVideo}
+                                        onEnded={handleVideoEnded}
                                         handleProgress={handleVideoProgress}
                                     />
                                 ))
@@ -152,6 +180,16 @@ export default function CoursePage() {
                     error={error}
                     openModules={openModules}
                     setOpenModules={setOpenModules}
+                    lessonAccess={lessonAccess}
+                />
+
+                {/* Auto-navigation modal */}
+                <AutoNavigationModal
+                    isOpen={showAutoNav}
+                    countdown={countdown}
+                    isNavigating={isNavigating}
+                    onCancel={cancelAutoNavigation}
+                    onProceed={handleNextVideo}
                 />
             </div>
         </DashboardLayout>

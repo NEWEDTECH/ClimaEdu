@@ -51,6 +51,7 @@ export class CompleteLessonProgressUseCase {
     }
 
     // Save the updated lesson progress
+    console.log('🔎 Saving completed lesson progress:', lessonProgress);
     const savedProgress = await this.lessonProgressRepository.save(lessonProgress);
 
     return {

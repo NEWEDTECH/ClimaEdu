@@ -10,6 +10,7 @@ import { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infra
 import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
 import { CompleteLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
 import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
+import { CanAccessLessonUseCase } from '@/_core/modules/content/core/use-cases/can-access-lesson/can-access-lesson.use-case';
 import { Module } from '@/_core/modules/content/core/entities/Module';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
@@ -38,6 +39,16 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
   
   // Refs for throttling progress updates
   const progressUpdateTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const currentProgressData = useRef<Map<string, { progressPercentage: number; lastPosition: number }>>(new Map());
+  
+  // Lesson accessibility tracking
+  const [lessonAccess, setLessonAccess] = useState<Map<string, {
+    canAccess: boolean;
+    hasStarted: boolean;
+    isCompleted: boolean;
+    reason?: string;
+    isSkippable?: boolean;
+  }>>(new Map());
 
   const loadLessonActivity = useCallback(async (lessonId: string) => {
     try {
@@ -141,63 +152,6 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
     }
   }, [loadLessonQuestionnaire, loadLessonActivity, startLessonProgress]);
 
-  const handleLessonSelect = useCallback(async (lessonId: string) => {
-    setActiveLesson(lessonId);
-    await loadLessonContent(lessonId);
-  }, [loadLessonContent]);
-
-  const handleCompleteLesson = useCallback(async () => {
-    if (!activeLesson || !userId) {
-      console.warn('Cannot complete lesson: missing activeLesson or userId');
-      return;
-    }
-
-    // Create content types map from current lesson data
-    let contentTypesMap: Map<string, import('@/_core/modules/content/core/entities/ContentType').ContentType> | undefined;
-    if (activeLessonData?.contents) {
-      contentTypesMap = new Map();
-      activeLessonData.contents.forEach(content => {
-        contentTypesMap!.set(content.id, content.type);
-      });
-    }
-
-    try {
-      const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
-        Register.content.useCase.CompleteLessonProgressUseCase
-      );
-
-      const result = await completeLessonUseCase.execute({
-        userId,
-        lessonId: activeLesson,
-        contentTypesMap
-      });
-
-      console.log('Lesson completed successfully:', result);
-    } catch (error) {
-      console.error('Error completing lesson:', error);
-      // Lesson might not be started yet, try to start it first
-      if (error instanceof Error && error.message.includes('not found')) {
-        await startLessonProgress(activeLesson);
-        // Retry completion after starting
-        try {
-          const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
-            Register.content.useCase.CompleteLessonProgressUseCase
-          );
-          
-          const result = await completeLessonUseCase.execute({
-            userId,
-            lessonId: activeLesson,
-            contentTypesMap
-          });
-          
-          console.log('Lesson completed successfully after starting:', result);
-        } catch (retryError) {
-          console.error('Error completing lesson after starting:', retryError);
-        }
-      }
-    }
-  }, [activeLesson, userId, activeLessonData, startLessonProgress]);
-
   const updateContentProgress = useCallback(async (
     contentId: string, 
     progressPercentage: number, 
@@ -229,6 +183,215 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
     }
   }, [activeLesson, userId]);
 
+  const saveCurrentVideoProgress = useCallback(() => {
+    // Force save any pending progress updates before navigation
+    const timers = progressUpdateTimers.current;
+    const progressData = currentProgressData.current;
+    
+    timers.forEach((timerId, contentId) => {
+      clearTimeout(timerId);
+      
+      // Get the current progress data and save it immediately
+      const data = progressData.get(contentId);
+      if (data) {
+        updateContentProgress(
+          contentId,
+          data.progressPercentage,
+          undefined,
+          data.lastPosition
+        );
+        progressData.delete(contentId);
+      }
+      
+      timers.delete(contentId);
+    });
+  }, [updateContentProgress]);
+
+  const checkLessonAccess = useCallback(async (lessonId: string): Promise<boolean> => {
+    if (!userId || !institutionId || !courseId) {
+      console.warn('Cannot check lesson access: missing required parameters');
+      return false;
+    }
+
+    try {
+      const canAccessUseCase = container.get<CanAccessLessonUseCase>(
+        Register.content.useCase.CanAccessLessonUseCase
+      );
+
+      const result = await canAccessUseCase.execute({
+        userId,
+        lessonId,
+        institutionId,
+        courseId
+      });
+
+      // Update lesson access map
+      setLessonAccess(prev => {
+        const newMap = new Map(prev);
+        newMap.set(lessonId, {
+          canAccess: result.canAccess,
+          hasStarted: result.hasStarted,
+          isCompleted: result.isCompleted,
+          reason: result.reason,
+          isSkippable: result.isSkippable
+        });
+        return newMap;
+      });
+
+      return result.canAccess;
+    } catch (error) {
+      console.error('Error checking lesson access:', error);
+      return false;
+    }
+  }, [userId, institutionId, courseId]);
+
+  // Check access for all lessons when modules are loaded
+  const checkAllLessonsAccess = useCallback(async () => {
+    if (!userId || !institutionId || !courseId || modules.length === 0) return;
+
+    console.log('Checking access for all lessons...');
+    
+    const accessPromises = modules.flatMap(module => 
+      module.lessons.map(lesson => checkLessonAccess(lesson.id))
+    );
+
+    await Promise.all(accessPromises);
+    console.log('All lesson access checks completed');
+  }, [modules, userId, institutionId, courseId, checkLessonAccess]);
+
+  const handleCompleteLesson = useCallback(async () => {
+    if (!activeLesson || !userId) {
+      console.warn('Cannot complete lesson: missing activeLesson or userId');
+      return false;
+    }
+
+    // Check if lesson is already completed to avoid duplicate completion
+    const currentAccess = lessonAccess.get(activeLesson);
+    if (currentAccess?.isCompleted) {
+      console.log('Lesson already completed, skipping completion');
+      return true;
+    }
+
+    // Create content types map from current lesson data
+    let contentTypesMap: Map<string, import('@/_core/modules/content/core/entities/ContentType').ContentType> | undefined;
+    if (activeLessonData?.contents) {
+      contentTypesMap = new Map();
+      activeLessonData.contents.forEach(content => {
+        contentTypesMap!.set(content.id, content.type);
+      });
+    }
+
+    try {
+      const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
+        Register.content.useCase.CompleteLessonProgressUseCase
+      );
+
+      console.log('🙋‍♂️ Attempting to complete lesson:', activeLesson);
+      const result = await completeLessonUseCase.execute({
+        userId,
+        lessonId: activeLesson,
+        contentTypesMap
+      });
+
+      console.log('Lesson completed successfully:', result);
+      
+      // Force invalidate cache for current lesson to reflect completion immediately
+      setLessonAccess(prev => {
+        const newMap = new Map(prev);
+        const currentAccess = newMap.get(activeLesson);
+        if (currentAccess) {
+          newMap.set(activeLesson, {
+            ...currentAccess,
+            isCompleted: true
+          });
+        }
+        return newMap;
+      });
+      
+      // Synchronously revalidate lesson access after successful completion
+      await checkAllLessonsAccess();
+      
+      return true;
+    } catch (error) {
+      console.error('Error completing lesson:', error);
+      // Lesson might not be started yet, try to start it first
+      if (error instanceof Error && error.message.includes('not found')) {
+        try {
+          await startLessonProgress(activeLesson);
+          
+          // Retry completion after starting
+          const completeLessonUseCase = container.get<CompleteLessonProgressUseCase>(
+            Register.content.useCase.CompleteLessonProgressUseCase
+          );
+          
+          const result = await completeLessonUseCase.execute({
+            userId,
+            lessonId: activeLesson,
+            contentTypesMap
+          });
+          
+          console.log('Lesson completed successfully after starting:', result);
+          
+          // Force invalidate cache for current lesson to reflect completion immediately
+          setLessonAccess(prev => {
+            const newMap = new Map(prev);
+            const currentAccess = newMap.get(activeLesson);
+            if (currentAccess) {
+              newMap.set(activeLesson, {
+                ...currentAccess,
+                isCompleted: true
+              });
+            }
+            return newMap;
+          });
+          
+          // Synchronously revalidate lesson access after successful completion
+          await checkAllLessonsAccess();
+          
+          return true;
+        } catch (retryError) {
+          console.error('Error completing lesson after starting:', retryError);
+          return false;
+        }
+      }
+      return false;
+    }
+  }, [activeLesson, userId, activeLessonData, startLessonProgress, checkAllLessonsAccess, lessonAccess]);
+
+  const handleLessonSelect = useCallback(async (lessonId: string) => {
+    console.log(`Attempting to navigate to lesson: ${lessonId}`);
+    
+    // Check if lesson is accessible before allowing navigation
+    let canAccess = await checkLessonAccess(lessonId);
+    
+    // If access is denied, wait a bit and try once more (for race condition scenarios)
+    if (!canAccess) {
+      console.log(`Initial access denied to lesson ${lessonId}, retrying after brief delay...`);
+      
+      // Brief delay to allow DB propagation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Force refresh access for this specific lesson
+      canAccess = await checkLessonAccess(lessonId);
+      
+      if (!canAccess) {
+        console.warn(`Access denied to lesson ${lessonId} after retry`);
+        return; // Simply return without user interaction
+      }
+    }
+
+    console.log(`Access granted to lesson: ${lessonId}, proceeding with navigation`);
+
+    // Save current video progress before navigating away
+    saveCurrentVideoProgress();
+
+    setActiveLesson(lessonId);
+    await loadLessonContent(lessonId);
+    
+    console.log(`Navigation to lesson ${lessonId} completed`);
+  }, [loadLessonContent, checkLessonAccess, saveCurrentVideoProgress]);
+
+
   const handleVideoProgress = useCallback((data: { 
     played: number; 
     playedSeconds: number; 
@@ -242,6 +405,9 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
 
     const progressPercentage = Math.round(data.played * 100);
     const lastPosition = data.playedSeconds;
+    
+    // Store current progress data for potential forced saving
+    currentProgressData.current.set(data.contentId, { progressPercentage, lastPosition });
     
     // Throttle progress updates to avoid excessive API calls
     const timerId = progressUpdateTimers.current.get(data.contentId);
@@ -257,6 +423,7 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
         lastPosition
       );
       progressUpdateTimers.current.delete(data.contentId!);
+      currentProgressData.current.delete(data.contentId!);
     }, 5000); // Throttle to 5 seconds
 
     progressUpdateTimers.current.set(data.contentId, newTimerId);
@@ -265,6 +432,7 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
     if (progressPercentage >= 100) {
       clearTimeout(newTimerId);
       progressUpdateTimers.current.delete(data.contentId);
+      currentProgressData.current.delete(data.contentId);
       updateContentProgress(
         data.contentId,
         100,
@@ -337,11 +505,21 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
     fetchCourseData();
   }, [courseId]);
 
+  // Effect to check lesson access when modules are loaded
+  useEffect(() => {
+    if (modules.length > 0) {
+      checkAllLessonsAccess();
+    }
+  }, [modules, checkAllLessonsAccess]);
+
   // Effect to handle initial lesson selection after modules are loaded
   useEffect(() => {
     if (modules.length > 0 && modules[0].lessons.length > 0 && !activeLesson && !initialLessonLoaded) {
       const firstLesson = modules[0].lessons[0];
       setInitialLessonLoaded(true);
+      
+      // First lesson should always be accessible, so we can select it directly
+      // The access check will be done in handleLessonSelect
       handleLessonSelect(firstLesson.id);
     }
   }, [modules, activeLesson, handleLessonSelect, initialLessonLoaded]);
@@ -359,6 +537,7 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
     isLoading,
     error,
     openModules,
+    lessonAccess,
     
     // Actions
     setOpenModules,
