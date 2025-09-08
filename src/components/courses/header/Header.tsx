@@ -10,7 +10,7 @@ type HeaderSidebar = {
 
 
 
-export function HeaderSideBar({ title, subTitle, color, icon, onClose }: HeaderSidebar) {
+export function HeaderSideBar({ title, subTitle, icon, onClose }: HeaderSidebar) {
 
     return (
 

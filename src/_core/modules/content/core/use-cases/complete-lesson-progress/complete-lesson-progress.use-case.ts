@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import type { LessonProgressRepository } from '../../../infrastructure/repositories/LessonProgressRepository';
 import type { CompleteLessonProgressInput } from './complete-lesson-progress.input';
 import type { CompleteLessonProgressOutput } from './complete-lesson-progress.output';
+import { Register } from '@/_core/shared/container';
 
 /**
  * Use case for forcefully completing lesson progress
@@ -11,7 +12,8 @@ import type { CompleteLessonProgressOutput } from './complete-lesson-progress.ou
 @injectable()
 export class CompleteLessonProgressUseCase {
   constructor(
-    @inject('LessonProgressRepository') private lessonProgressRepository: LessonProgressRepository
+    @inject(Register.content.repository.LessonProgressRepository)
+    private lessonProgressRepository: LessonProgressRepository
   ) {}
 
   /**
@@ -40,10 +42,16 @@ export class CompleteLessonProgressUseCase {
     // Check if lesson was already completed
     const wasAlreadyCompleted = lessonProgress.isCompleted();
 
-    // Force complete the lesson (marks all contents as completed)
-    lessonProgress.forceComplete();
+    // Complete the lesson using content-type-specific logic if provided
+    if (input.contentTypesMap) {
+      lessonProgress.completeWithContentTypeLogic(input.contentTypesMap);
+    } else {
+      // Fallback to force complete (marks all contents as 100%)
+      lessonProgress.forceComplete();
+    }
 
     // Save the updated lesson progress
+    console.log('🔎 Saving completed lesson progress:', lessonProgress);
     const savedProgress = await this.lessonProgressRepository.save(lessonProgress);
 
     return {

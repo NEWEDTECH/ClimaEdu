@@ -44,6 +44,7 @@ import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cas
 import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
 import { GetLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/get-lesson-progress/get-lesson-progress.use-case';
 import { CompleteLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/complete-lesson-progress/complete-lesson-progress.use-case';
+import { CanAccessLessonUseCase } from '@/_core/modules/content/core/use-cases/can-access-lesson/can-access-lesson.use-case';
 import { CreateTrailUseCase } from '@/_core/modules/content/core/use-cases/create-trail/create-trail.use-case';
 import { UpdateTrailUseCase } from '@/_core/modules/content/core/use-cases/update-trail/update-trail.use-case';
 import { GetTrailUseCase } from '@/_core/modules/content/core/use-cases/get-trail/get-trail.use-case';
@@ -100,6 +101,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.UpdateContentProgressUseCase).to(UpdateContentProgressUseCase);
   container.bind(useCases.GetLessonProgressUseCase).to(GetLessonProgressUseCase);
   container.bind(useCases.CompleteLessonProgressUseCase).to(CompleteLessonProgressUseCase);
+  container.bind(useCases.CanAccessLessonUseCase).to(CanAccessLessonUseCase);
   container.bind(useCases.CreateTrailUseCase).to(CreateTrailUseCase);
   container.bind(useCases.UpdateTrailUseCase).to(UpdateTrailUseCase);
   container.bind(useCases.GetTrailUseCase).to(GetTrailUseCase);

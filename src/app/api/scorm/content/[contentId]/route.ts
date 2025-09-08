@@ -4,10 +4,10 @@ import { GetScormContentUseCase } from '../../../../../_core/modules/content/cor
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { contentId: string } }
+  { params }: { params: Promise<{ contentId: string }> }
 ) {
   try {
-    const { contentId } = params;
+    const { contentId } = await params;
 
     if (!contentId) {
       return NextResponse.json(

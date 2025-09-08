@@ -23,6 +23,7 @@ interface ScormSectionProps {
   courseId: string
   moduleId: string
   lessonId: string
+  institutionId: string
   onDeleteContent: (contentId: string) => void
   isSubmitting: boolean
 }

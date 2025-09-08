@@ -115,11 +115,22 @@ export default function SocialPage() {
                   </Button>
                 </div>
 
-                {/* Filters */}
+                {/* Search and Filters */}
                 <div className="backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-lg p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
-                    <h3 className="text-lg font-semibold dark:text-white text-gray-800">Filtros</h3>
+                    <h3 className="text-lg font-semibold dark:text-white text-gray-800">Buscar e Filtrar</h3>
+                  </div>
+                  
+                  {/* Search Input */}
+                  <div className="mb-6">
+                    <input
+                      type="text"
+                      placeholder="Buscar posts..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg backdrop-blur-sm dark:bg-white/5 dark:border dark:border-white/20 dark:text-white dark:placeholder-white/50 bg-white/80 border border-gray-200/50 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200"
+                    />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button

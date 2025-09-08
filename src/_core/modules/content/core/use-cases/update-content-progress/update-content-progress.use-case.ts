@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import type { LessonProgressRepository } from '../../../infrastructure/repositories/LessonProgressRepository';
 import type { UpdateContentProgressInput } from './update-content-progress.input';
 import type { UpdateContentProgressOutput } from './update-content-progress.output';
+import { Register } from '@/_core/shared/container';
 
 /**
  * Use case for updating content progress within a lesson
@@ -11,7 +12,7 @@ import type { UpdateContentProgressOutput } from './update-content-progress.outp
 @injectable()
 export class UpdateContentProgressUseCase {
   constructor(
-    @inject('LessonProgressRepository') private lessonProgressRepository: LessonProgressRepository
+    @inject(Register.content.repository.LessonProgressRepository) private lessonProgressRepository: LessonProgressRepository
   ) {}
 
   /**

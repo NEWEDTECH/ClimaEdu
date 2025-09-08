@@ -105,7 +105,7 @@ export class UploadActivityFilesUseCase {
       .toLowerCase();
   }
 
-  private async saveMetadata(basePath: string, metadata: any): Promise<void> {
+  private async saveMetadata(basePath: string, metadata: Record<string, unknown>): Promise<void> {
     const metadataBlob = new Blob([JSON.stringify(metadata, null, 2)], {
       type: 'application/json'
     });

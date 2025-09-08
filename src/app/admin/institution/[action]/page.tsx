@@ -13,6 +13,8 @@ import {
   Institution,
   UpdateInstitutionSettingsUseCase,
   UpdateInstitutionSettingsInput,
+  UpdateInstitutionAdvancedSettingsUseCase,
+  UpdateInstitutionAdvancedSettingsInput,
   AssociateUserToInstitutionUseCase,
   UserInstitution
 } from '@/_core/modules/institution';
@@ -23,11 +25,13 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { FormSection } from '@/components/form'
 import { Button } from "@/components/button";
 import { InputText } from '@/components/ui/input/input-text/InputText';
+import { AdvancedSettingsSection } from '@/components/institution/AdvancedSettingsSection';
 import { ArrowLeftIcon, X } from 'lucide-react';
 import { Tooltip } from '@/components/tooltip';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import type { InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
 
 type InputFieldMeta = {
   label: string;
@@ -118,6 +122,7 @@ export default function InstitutionPage() {
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [selectedAdministrators, setSelectedAdministrators] = useState<Array<{id: string, email: string}>>([]);
   const [originalAdministrators, setOriginalAdministrators] = useState<Array<{id: string, email: string}>>([]);
+  const [advancedSettings, setAdvancedSettings] = useState<Partial<GlobalSettings['settings']>>({});
 
   const {
     register,
@@ -222,6 +227,9 @@ export default function InstitutionPage() {
           setSelectedAdministrators(admins);
           setOriginalAdministrators(admins);
           
+          // Load advanced settings
+          setAdvancedSettings(fetchedInstitution.settings.settings || {});
+          
         } catch (err: unknown) {
           console.error('Error fetching institution data:', err);
           const errorMessage = err instanceof Error 
@@ -278,6 +286,20 @@ export default function InstitutionPage() {
         };
 
         await updateSettingsUseCase.execute(settingsInput);
+
+        // Update advanced settings if changed
+        if (Object.keys(advancedSettings).length > 0) {
+          const updateAdvancedSettingsUseCase = container.get<UpdateInstitutionAdvancedSettingsUseCase>(
+            Register.institution.useCase.UpdateInstitutionAdvancedSettingsUseCase
+          );
+
+          const advancedSettingsInput: UpdateInstitutionAdvancedSettingsInput = {
+            institutionId: institution.id,
+            advancedSettings
+          };
+
+          await updateAdvancedSettingsUseCase.execute(advancedSettingsInput);
+        }
         
         newInstitutionId = institution.id;
       } else {
@@ -296,6 +318,20 @@ export default function InstitutionPage() {
 
         const result = await createInstitutionUseCase.execute(input);
         newInstitutionId = result.institution.id;
+
+        // Create advanced settings for new institution if provided
+        if (Object.keys(advancedSettings).length > 0) {
+          const updateAdvancedSettingsUseCase = container.get<UpdateInstitutionAdvancedSettingsUseCase>(
+            Register.institution.useCase.UpdateInstitutionAdvancedSettingsUseCase
+          );
+
+          const advancedSettingsInput: UpdateInstitutionAdvancedSettingsInput = {
+            institutionId: newInstitutionId,
+            advancedSettings
+          };
+
+          await updateAdvancedSettingsUseCase.execute(advancedSettingsInput);
+        }
       }
 
       // Handle administrator associations
@@ -553,6 +589,14 @@ export default function InstitutionPage() {
                   <p className="text-gray-500 text-xs">
                     Selecione administradores para associar a esta instituição
                   </p>
+                </div>
+
+                {/* Advanced Settings Section */}
+                <div className="col-span-full">
+                  <AdvancedSettingsSection
+                    settings={advancedSettings}
+                    onChange={setAdvancedSettings}
+                  />
                 </div>
               </CardContent>
               

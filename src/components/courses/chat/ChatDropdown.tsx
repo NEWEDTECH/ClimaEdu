@@ -26,7 +26,7 @@ type ChatDropdownProps = {
 
 export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: ChatDropdownProps) {
   const { infoUser } = useProfile();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen] = useState<boolean>(false);
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');

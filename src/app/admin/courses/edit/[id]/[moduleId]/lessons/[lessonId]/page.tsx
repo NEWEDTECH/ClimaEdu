@@ -521,6 +521,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               courseId={courseId}
               moduleId={moduleId}
               lessonId={lessonId}
+              institutionId={infoUser?.currentIdInstitution}
               onDeleteContent={handleDeleteContent}
               isSubmitting={isSubmitting}
             />
@@ -531,7 +532,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               courseId={courseId}
               moduleId={moduleId}
               lessonId={lessonId}
-              institutionId={infoUser?.currentIdInstitution || 'default'}
+              institutionId={infoUser?.currentIdInstitution}
               onDeleteContent={handleDeleteContent}
               onContentAdded={() => window.location.reload()}
               isSubmitting={isSubmitting}
@@ -543,7 +544,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               courseId={courseId}
               moduleId={moduleId}
               lessonId={lessonId}
-              institutionId={infoUser?.currentIdInstitution || 'default'}
+              institutionId={infoUser?.currentIdInstitution}
               onDeleteContent={handleDeleteContent}
               onContentAdded={() => window.location.reload()}
               isSubmitting={isSubmitting}
