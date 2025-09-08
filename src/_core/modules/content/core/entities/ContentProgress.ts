@@ -1,4 +1,5 @@
 import { ContentProgressStatus } from './ProgressStatus';
+import { ContentType } from './ContentType';
 
 /**
  * ContentProgress value object representing the progress of a specific content within a lesson
@@ -108,6 +109,33 @@ export class ContentProgress {
     this.progressPercentage = 100;
     this.completedAt = new Date();
     this.updatedAt = new Date();
+  }
+
+  /**
+   * Completes content based on its type
+   * Videos/Audio: Maintain current progress percentage
+   * Other types (PDF, SCORM, etc.): Set to 100%
+   */
+  public completeBasedOnType(contentType: ContentType): void {
+    this.status = ContentProgressStatus.COMPLETED;
+    this.completedAt = new Date();
+    this.updatedAt = new Date();
+
+    // For videos and audio, maintain current progress percentage
+    // For other content types, set to 100%
+    switch (contentType) {
+      case ContentType.VIDEO:
+      case ContentType.AUDIO:
+      case ContentType.PODCAST:
+        // Keep current progressPercentage - don't override it for media content
+        break;
+      case ContentType.PDF:
+      case ContentType.SCORM:
+      default:
+        // Set to 100% for non-media content
+        this.progressPercentage = 100;
+        break;
+    }
   }
 
   /**
