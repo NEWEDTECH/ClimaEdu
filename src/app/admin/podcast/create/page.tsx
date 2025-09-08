@@ -105,8 +105,8 @@ export default function CreatePodcastPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">🎧 Criar Novo Podcast</h1>
             <Link href="/admin/podcast">
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
-                ← Voltar
+              <Button variant='primary'>
+                Voltar
               </Button>
             </Link>
           </div>
@@ -132,8 +132,8 @@ export default function CreatePodcastPage() {
                     {...register('mediaType')}
                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                   >
-                    <option value="AUDIO">🎧 Podcast de Áudio</option>
-                    <option value="VIDEO">📹 Vídeo Podcast</option>
+                    <option value="AUDIO" className='dark:text-black'>🎧 Podcast de Áudio</option>
+                    <option value="VIDEO" className='dark:text-black'>📹 Vídeo Podcast</option>
                   </select>
                   {errors.mediaType && (
                     <p className="text-sm text-red-600">{errors.mediaType.message}</p>
@@ -237,7 +237,8 @@ export default function CreatePodcastPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    className="w-full"
+                    variant='primary'
                   >
                     {isSubmitting 
                       ? 'Criando podcast...' 

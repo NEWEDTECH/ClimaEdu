@@ -51,9 +51,6 @@ export default function InstitutionsPage() {
             <h1 className="text-2xl font-bold">Instituições</h1>
             <Link href="/admin/institution/create-edit">
               <Button
-                className="cursor-pointer"
-                icon={<PlusIcon size={16} />}
-                iconPosition='start'
               >
                 Nova Instituição
               </Button>
@@ -100,7 +97,7 @@ export default function InstitutionsPage() {
                     <div className="flex justify-end gap-2">
                       <Link href={'/admin/courses'}>
                         <Button
-                          className="cursor-pointer"
+                          variant='primary'
                           icon={<LibraryBig size={16} />}
                           iconPosition='start'
                         >
@@ -109,7 +106,7 @@ export default function InstitutionsPage() {
                       </Link>
                       <Link href={`/admin/institution/create-edit/${institution.id}`}>
                         <Button
-                          className="cursor-pointer"
+                          variant='secondary'
                           icon={<PencilIcon size={16} />}
                           iconPosition='start'
                         >

@@ -207,7 +207,7 @@ export default function StudentPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Configuração de estudantes</h1>
             <Link href="/admin/student/create-edit">
-              <Button className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'>Inscrever estudante em um curso</Button>
+              <Button variant='primary'>Inscrever estudante em um curso</Button>
             </Link>
           </div>
 
@@ -480,7 +480,7 @@ export default function StudentPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex justify-end gap-2">
                               <Link href={`/admin/student/create-edit/${student.id}`}>
-                                <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Editar</Button>
+                                <Button variant='primary'>Editar</Button>
                               </Link>
                             </div>
                           </td>

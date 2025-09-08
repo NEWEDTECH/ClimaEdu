@@ -137,7 +137,7 @@ export default function TutorPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Configuração do tutor</h1>
             <Link href="/admin/tutor/create">
-              <Button className='hover:bg-white'>Adicionar tutor a um curso</Button>
+              <Button variant='primary'>Adicionar tutor a um curso</Button>
             </Link>
           </div>
 
@@ -164,7 +164,7 @@ export default function TutorPage() {
                   <div className="flex space-x-1 rounded-md bg-muted p-1">
                     <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
-                        statusFilter === 'all' ? 'bg-white shadow-sm' : 'hover:bg-background/50'
+                        statusFilter === 'all' ? 'bg-white shadow-sm text-foreground dark:text-black' : 'hover:bg-primary/60'
                       }`}
                       onClick={() => setStatusFilter('all')}
                     >
@@ -172,7 +172,7 @@ export default function TutorPage() {
                     </Button>
                     <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
-                        statusFilter === 'active' ? 'bg-white shadow-sm' : 'hover:bg-background/50'
+                        statusFilter === 'active' ? 'bg-primary shadow-sm' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
                       }`}
                       onClick={() => setStatusFilter('active')}
                     >
@@ -180,7 +180,7 @@ export default function TutorPage() {
                     </Button>
                     <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
-                        statusFilter === 'inactive' ? 'bg-white shadow-sm' : 'hover:bg-background/50'
+                        statusFilter === 'inactive' ? 'bg-primary shadow-sm' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
                       }`}
                       onClick={() => setStatusFilter('inactive')}
                     >
@@ -239,7 +239,7 @@ export default function TutorPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex justify-end gap-2">
                               <Link href={`/admin/tutor/${tutor.id}`}>
-                                <Button className="hover:bg-gray-100">Editar</Button>
+                                <Button variant='primary'>Editar</Button>
                               </Link>                       
                             </div>
                           </td>

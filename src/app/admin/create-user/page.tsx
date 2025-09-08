@@ -200,6 +200,7 @@ export default function CreateUserPage() {
           <div className="mb-6">
             <Button
               icon={<ArrowLeftIcon size={16} />}
+              variant='primary'
               iconPosition="start"
               onClick={() => router.push('/')}
             >
@@ -307,15 +308,15 @@ export default function CreateUserPage() {
                 <CardFooter className="flex justify-end gap-2">
                   <Button
                     type="button"
-                    onClick={() => router.push('/admin')}
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    onClick={() => router.push('/')}
+                    variant='secondary'
                   >
                     Cancelar
                   </Button>
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    variant='primary'
                   >
                     {isSubmitting ? 'Criando...' : 'Criar Usuário'}
                   </Button>

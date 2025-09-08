@@ -173,7 +173,7 @@ export default function TurmasPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Turmas</h1>
             <Link href="/admin/turmas/create">
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+              <Button variant='primary'>
                 Criar nova turma
               </Button>
             </Link>
@@ -205,9 +205,9 @@ export default function TurmasPage() {
                     onChange={(e) => setSelectedInstitutionId(e.target.value)}
                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                   >
-                    <option value="">Selecione uma instituição</option>
+                    <option value="" className='dark:text-black'>Selecione uma instituição</option>
                     {institutions.map(institution => (
-                      <option key={institution.id} value={institution.id}>
+                      <option key={institution.id} value={institution.id} className='dark:text-black'>
                         {institution.name}
                       </option>
                     ))}
@@ -259,14 +259,14 @@ export default function TurmasPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex gap-2">
                               <Link href={`/admin/turmas/edit/${classItem.id}`}>
-                                <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                                <Button variant='primary'>
                                   Editar
                                 </Button>
                               </Link>
                               <Button 
                                 onClick={() => handleDeleteClass(classItem.id)}
                                 disabled={deleting === classItem.id}
-                                className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                                variant='secondary'
                               >
                                 {deleting === classItem.id ? 'Excluindo...' : 'Excluir'}
                               </Button>

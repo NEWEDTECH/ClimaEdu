@@ -311,7 +311,7 @@ export default function EditTurmaPage() {
             <h1 className="text-3xl font-bold">Editar Turma</h1>
             <Button 
               onClick={() => router.push('/admin/turmas')}
-              className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+              variant='primary'
             >
               Voltar
             </Button>
@@ -381,14 +381,14 @@ export default function EditTurmaPage() {
                     <Button
                       type="submit"
                       disabled={submitting}
-                      className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                      variant='primary'
                     >
                       {submitting ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
                     <Button
                       type="button"
                       onClick={() => router.push('/admin/turmas')}
-                      className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                      variant='secondary'
                     >
                       Cancelar
                     </Button>

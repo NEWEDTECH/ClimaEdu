@@ -160,7 +160,6 @@ export default function AtividadesPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
             onClick={handleBackToList}
             className="mb-4"
           >

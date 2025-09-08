@@ -77,9 +77,6 @@ export default function TutorEditCoursePage({ params }: { params: Promise<{ id: 
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Editar Curso</h1>
-          <Link href="/admin/courses">
-            <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
-          </Link>
         </div>
 
         <Card>

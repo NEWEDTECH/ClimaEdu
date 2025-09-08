@@ -50,10 +50,7 @@ export function QuestionnaireSection({
               <span>Questionário</span>
             </CardTitle>
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
+              <Button variant='primary'>
                 Adicionar Questionário
               </Button>
             </Link>
@@ -76,7 +73,7 @@ export function QuestionnaireSection({
               Crie um questionário para avaliar o conhecimento dos estudantes sobre esta lição.
             </p>
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+              <Button variant='primary'>
                 Criar Primeiro Questionário
               </Button>
             </Link>

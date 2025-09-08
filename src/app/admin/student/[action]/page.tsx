@@ -506,7 +506,7 @@ export default function StudentEnrollmentPage() {
               {id ? 'Editar Estudante' : 'Inscrever Estudante em Curso'}
             </h1>
             <Link href="/admin/student">
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
+              <Button variant='primary'>Voltar</Button>
             </Link>
           </div>
 
@@ -742,12 +742,13 @@ export default function StudentEnrollmentPage() {
 
               <CardFooter className="flex justify-end gap-2">
                 <Link href="/admin/student">
-                  <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3" type="button">
+                  <Button variant='secondary' type="button">
                     Cancelar
                   </Button>
                 </Link>
                 <Button
                   type="submit"
+                  variant='primary'
                   //disabled={
                   //  isSubmitting ||
                   //  (!isEditingStudent

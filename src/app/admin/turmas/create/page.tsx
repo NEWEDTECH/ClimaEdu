@@ -204,7 +204,7 @@ export default function CreateTurmaPage() {
             <h1 className="text-3xl font-bold">Criar Nova Turma</h1>
             <Button
               onClick={() => router.push('/admin/turmas')}
-              className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+              variant='primary'
             >
               Voltar
             </Button>
@@ -253,9 +253,9 @@ export default function CreateTurmaPage() {
                       className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                       required
                     >
-                      <option value="">Selecione uma instituição</option>
+                      <option value="" className='dark:text-black'>Selecione uma instituição</option>
                       {institutions.map(institution => (
-                        <option key={institution.id} value={institution.id}>
+                        <option key={institution.id} value={institution.id} className='dark:text-black'>
                           {institution.name}
                         </option>
                       ))}
@@ -343,14 +343,14 @@ export default function CreateTurmaPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    variant='primary'
                   >
                     {submitting ? 'Criando...' : 'Criar Turma'}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => router.push('/admin/turmas')}
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    variant='secondary'
                   >
                     Cancelar
                   </Button>

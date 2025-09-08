@@ -189,7 +189,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
             <div className="text-center py-8">
               <p className="text-red-500">Podcast não encontrado.</p>
               <Link href="/admin/podcast">
-                <Button className="mt-4">← Voltar</Button>
+                <Button variant='primary'>Voltar</Button>
               </Link>
             </div>
           </div>
@@ -205,8 +205,8 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">✏️ Editar Podcast</h1>
             <Link href="/admin/podcast">
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
-                ← Voltar
+              <Button variant='primary'>
+                Voltar
               </Button>
             </Link>
           </div>
@@ -352,7 +352,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    variant='primary'
                   >
                     {isSubmitting
                       ? 'Salvando alterações...'
@@ -363,9 +363,9 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                   <Button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 bg-red-600 hover:bg-red-700 text-white"
+                    variant='secondary'
                   >
-                    🗑️ Excluir Podcast
+                    Excluir Podcast
                   </Button>
                 </div>
               </FormSection>

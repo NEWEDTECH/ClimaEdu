@@ -177,7 +177,7 @@ export default function CoursesPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Cursos Existentes</h1>
             <Link href="/admin/courses/create-edit">
-              <Button className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'>Criar novo curso</Button>
+              <Button variant='primary'>Criar novo curso</Button>
             </Link>
           </div>
 
@@ -267,10 +267,10 @@ export default function CoursesPage() {
                       <td className="py-3 px-4 text-right">
                         <div className="flex  gap-2">
                         <Link href={`/admin/courses/edit/${course.id}`}>
-                            <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Módulos</Button>
+                            <Button variant='primary'>Módulos</Button>
                           </Link>
                           <Link href={`/admin/courses/create-edit/${course.id}`}>
-                            <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Editar</Button>
+                            <Button variant='secondary'>Editar</Button>
                           </Link>
                         </div>
                       </td>

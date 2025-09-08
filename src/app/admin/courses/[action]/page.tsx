@@ -473,7 +473,7 @@ export default function CoursePage() {
               {isEditMode ? 'Editar Curso' : 'Criar novo curso'}
             </h1>
             <Link href="/admin/courses">
-              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
+              <Button variant='primary'>Voltar</Button>
             </Link>
           </div>
 
@@ -619,13 +619,13 @@ export default function CoursePage() {
               <CardFooter className="flex justify-end gap-2 mt-4">
                 <Link href="/admin/courses">
                   <Button
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                    variant='secondary'>
                     Cancelar
                   </Button>
                 </Link>
                 <Button
                   type="submit"
-                  className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                  variant='primary'
                   disabled={isSubmitting}
                 >
                   {isSubmitting
