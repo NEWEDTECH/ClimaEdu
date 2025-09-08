@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList } from "@/components/ui/tabs";
+import { TabsTrigger } from '@/components/tabs/TabsTrigger';
 import { ClassOverviewReport } from '@/components/reports/tutor/ClassOverviewReport';
 import { ClassAssessmentPerformanceReport } from '@/components/reports/tutor/ClassAssessmentPerformanceReport';
 import { EngagementRetentionReport } from '@/components/reports/tutor/EngagementRetentionReport';

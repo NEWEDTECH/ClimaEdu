@@ -464,7 +464,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
               <p className="mb-4">{error}</p>
               <Link href={`/admin/courses/edit/${courseId}`}>
-                <Button>Voltar para o Curso</Button>
+                <Button>Voltar</Button>
               </Link>
             </CardContent>
           </Card>
@@ -482,7 +482,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             <p className="text-gray-500">Módulo: {moduleName}</p>
           </div>
           <Link href={`/admin/courses/edit/${courseId}`}>
-            <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Curso</Button>
+            <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
           </Link>
         </div>
 

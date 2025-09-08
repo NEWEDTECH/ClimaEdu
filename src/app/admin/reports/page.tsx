@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs/tabs'
+import { TabsTrigger } from '@/components/tabs/TabsTrigger'
 import { Progress } from '@/components/ui/helpers/progress'
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';

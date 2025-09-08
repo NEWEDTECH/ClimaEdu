@@ -460,14 +460,14 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                       <Button
                         type="button"
                         onClick={() => handleEditModule(module.id, module.title)}
-                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-2 rounded-lg transition-colors"
+                        className="flex-1 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                       >
                         Editar
                       </Button>
                       <Button
                         type="button"
                         onClick={() => handleAddLesson(module.id)}
-                        className="flex-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs py-2 rounded-lg transition-colors"
+                        className="flex-1 hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                       >
                         + Lição
                       </Button>

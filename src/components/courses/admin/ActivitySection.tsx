@@ -42,7 +42,7 @@ export function ActivitySection({
               <span>Atividade</span>
             </CardTitle>
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
-              <Button className="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-2">
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -92,7 +92,7 @@ export function ActivitySection({
           </CardTitle>
           <div className="flex gap-2">
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
-              <Button className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1">
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -100,7 +100,7 @@ export function ActivitySection({
               </Button>
             </Link>
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/edit`}>
-              <Button className="border border-green-300 bg-white hover:bg-green-50 text-green-700 text-xs px-3 py-1">
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -108,7 +108,7 @@ export function ActivitySection({
               </Button>
             </Link>
             <Button 
-              className="border border-red-300 text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+              className="bhover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
               onClick={onDelete}
               disabled={isSubmitting}
             >

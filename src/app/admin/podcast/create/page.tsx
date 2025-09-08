@@ -105,8 +105,8 @@ export default function CreatePodcastPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">🎧 Criar Novo Podcast</h1>
             <Link href="/admin/podcast">
-              <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 rounded-md gap-1.5 px-3">
-                ← Voltar para Podcasts
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                ← Voltar
               </Button>
             </Link>
           </div>
@@ -237,7 +237,7 @@ export default function CreatePodcastPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50"
+                    className="w-full hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                   >
                     {isSubmitting 
                       ? 'Criando podcast...' 

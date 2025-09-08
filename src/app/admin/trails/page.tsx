@@ -157,7 +157,7 @@ export default function TrailsPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Trilhas Existentes</h1>
             <Link href="/admin/trails/create">
-              <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">Criar nova trilha</Button>
+              <Button className="hover:bg-white ">Criar nova trilha</Button>
             </Link>
           </div>
 
@@ -229,11 +229,11 @@ export default function TrailsPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex gap-2">
                               <Link href={`/admin/trails/edit/${trail.id}`}>
-                                <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Editar</Button>
+                                <Button className="hover:bg-white h-8 rounded-md gap-1.5 px-3">Editar</Button>
                               </Link>
                               <Button 
                                 onClick={() => handleDeleteTrail(trail.id)}
-                                className="border bg-red-50 text-red-600 shadow-xs hover:bg-red-100 hover:text-red-700 h-8 rounded-md gap-1.5 px-3"
+                                className="hover:bg-white hover:text-red-700 h-8 rounded-md gap-1.5 px-3"
                               >
                                 Excluir
                               </Button>

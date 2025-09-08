@@ -19,11 +19,11 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
 import { showToast } from '@/components/toast';
 
-export default function VideoUploadPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }>}) {
+export default function VideoUploadPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter();
   const unwrappedParams = use(params);
   const { id: courseId, moduleId, lessonId } = unwrappedParams;
-  
+
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
@@ -37,31 +37,31 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         );
-        
+
         const moduleRepository = container.get<ModuleRepository>(
           Register.content.repository.ModuleRepository
         );
-        
+
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
           setError('Lição não encontrada');
           setIsLoading(false);
           return;
         }
-        
+
         setLessonTitle(lesson.title);
-        
+
         const moduleData = await moduleRepository.findById(moduleId);
         if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
-        
+
         setModuleName(moduleData.title);
         setIsLoading(false);
       } catch (error) {
@@ -72,42 +72,42 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [lessonId, moduleId]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) {
       showToast.warning('O título do vídeo não pode estar vazio');
       return;
     }
-    
+
     if (!videoUrl.trim()) {
       showToast.warning('Por favor, insira a URL do vídeo');
       return;
     }
-    
+
     setIsSaving(true);
-    
+
     // Show loading toast
     const loadingToastId = showToast.loading('Adicionando vídeo à lição...');
-    
+
     try {
 
       const contentRepository = container.get<ContentRepository>(
         Register.content.repository.ContentRepository
       );
-      
+
       const lessonRepository = container.get<LessonRepository>(
         Register.content.repository.LessonRepository
       );
-      
+
 
       const contentId = await contentRepository.generateId();
-      
+
       const content = Content.create({
         id: contentId,
         lessonId: lessonId,
@@ -115,16 +115,16 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         title,
         url: videoUrl
       });
-      
+
 
       const savedContent = await contentRepository.save(content);
 
       const lesson = await lessonRepository.findById(lessonId);
-      
+
       if (!lesson) {
         throw new Error('Lição não encontrada');
       }
-      
+
       const contentData = {
         id: savedContent.id,
         lessonId: savedContent.lessonId,
@@ -132,29 +132,29 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         title: savedContent.title,
         url: savedContent.url
       };
-      
+
       const currentContents = lesson.contents || [];
-      
+
       const updatedContents = [...currentContents, contentData];
-      
+
       // @ts-expect-error - We're manually setting the contents array
       lesson.contents = updatedContents;
-      
+
       await lessonRepository.save(lesson);
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Vídeo adicionado com sucesso à lição!',
         type: 'success'
       });
-      
+
       // Navigate after a short delay to show the success message
       setTimeout(() => {
         router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
       }, 1000);
     } catch (error) {
       console.error('Erro ao adicionar vídeo:', error);
-      
+
       // Update loading toast to error
       const errorMessage = `Falha ao adicionar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
       showToast.update(loadingToastId, {
@@ -168,7 +168,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
 
   const handleCancel = () => {
-    router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+    router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
   };
 
   if (isLoading) {
@@ -267,12 +267,13 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                 <div className="flex justify-end space-x-3">
                   <Button
                     type="button"
-                    className="border bg-white hover:bg-gray-100"
+                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                     onClick={handleCancel}
                   >
                     Cancelar
                   </Button>
                   <Button
+                    className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
                     type="submit"
                     disabled={isSaving}
                   >

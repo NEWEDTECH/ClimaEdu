@@ -51,7 +51,7 @@ export function ContentSection({
           </CardTitle>
           <div className="flex gap-2">
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1">
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -60,7 +60,7 @@ export function ContentSection({
             </Link>
             {videoContent && (
               <Button
-                className="border border-red-300 text-xs px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+                className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                 onClick={() => onDeleteContent(videoContent.id)}
                 disabled={isSubmitting}
               >

@@ -189,7 +189,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
             <div className="text-center py-8">
               <p className="text-red-500">Podcast não encontrado.</p>
               <Link href="/admin/podcast">
-                <Button className="mt-4">← Voltar para Podcasts</Button>
+                <Button className="mt-4">← Voltar</Button>
               </Link>
             </div>
           </div>
@@ -205,8 +205,8 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">✏️ Editar Podcast</h1>
             <Link href="/admin/podcast">
-              <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 rounded-md gap-1.5 px-3">
-                ← Voltar para Podcasts
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                ← Voltar
               </Button>
             </Link>
           </div>
@@ -248,8 +248,8 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                     {...register('mediaType')}
                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                   >
-                    <option value="AUDIO">🎧 Podcast de Áudio</option>
-                    <option value="VIDEO">📹 Vídeo Podcast</option>
+                    <option value="AUDIO" className='dark:text-black'>🎧 Podcast de Áudio</option>
+                    <option value="VIDEO" className='dark:text-black'>📹 Vídeo Podcast</option>
                   </select>
                   {errors.mediaType && (
                     <p className="text-sm text-red-600">{errors.mediaType.message}</p>
@@ -352,7 +352,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50"
+                    className="w-full hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                   >
                     {isSubmitting
                       ? 'Salvando alterações...'
@@ -363,7 +363,7 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                   <Button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 bg-red-600 hover:bg-red-700 text-white"
                   >
                     🗑️ Excluir Podcast
                   </Button>

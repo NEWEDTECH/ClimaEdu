@@ -3,7 +3,8 @@
 import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
+import { TabsTrigger } from '@/components/tabs/TabsTrigger';
 import { AssessmentPerformanceReport } from '@/components/reports/student/AssessmentPerformanceReport';
 import { CourseProgressReport } from '@/components/reports/student/CourseProgressReport';
 import { BadgesReport } from '@/components/reports/student/BadgesReport';

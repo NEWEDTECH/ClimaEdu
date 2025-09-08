@@ -190,7 +190,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/tutor/courses/edit/${courseId}`}>
-                  <Button>Voltar para o Curso</Button>
+                  <Button>Voltar</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -210,7 +210,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
               <p className="text-gray-500">Curso: {courseName}</p>
             </div>
             <Link href={`/tutor/courses/edit/${courseId}`}>
-              <Button className="border bg-transparent hover:bg-gray-100">Voltar para o Curso</Button>
+              <Button className="border bg-transparent hover:bg-gray-100">Voltar</Button>
             </Link>
           </div>
 

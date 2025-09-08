@@ -100,7 +100,7 @@ const additionalFieldsConfig: Record<string, FieldConfig> = {
 export default function CoursePage() {
   const router = useRouter();
   const params = useParams();
-  
+
 
   const id = params.id as string;
   const isEditMode = !!id;
@@ -123,13 +123,13 @@ export default function CoursePage() {
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [tutors, setTutors] = useState<User[]>([]);
   const [filteredTutors, setFilteredTutors] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [selectedTutors, setSelectedTutors] = useState<Array<{id: string, email: string}>>([]);
-  const [originalTutors, setOriginalTutors] = useState<Array<{id: string, email: string}>>([]);
+  const [selectedTutors, setSelectedTutors] = useState<Array<{ id: string, email: string }>>([]);
+  const [originalTutors, setOriginalTutors] = useState<Array<{ id: string, email: string }>>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -149,11 +149,11 @@ export default function CoursePage() {
         }));
 
         setInstitutions(institutionsForDropdown);
-        
+
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         );
-        
+
         const tutorUsers = await userRepository.listByType(UserRole.TUTOR);
         console.log(tutorUsers)
         setTutors(tutorUsers);
@@ -183,15 +183,15 @@ export default function CoursePage() {
               createdAt: course.createdAt instanceof Date ? course.createdAt.toISOString() : String(course.createdAt),
               updatedAt: course.updatedAt instanceof Date ? course.updatedAt.toISOString() : String(course.updatedAt)
             });
-            
+
             // Fetch tutors associated with this course
             const courseTutorRepository = container.get<CourseTutorRepository>(
               Register.content.repository.CourseTutorRepository
             );
-            
+
             // Get all course-tutor associations for this course
             const courseTutors = await courseTutorRepository.findByCourseId(courseId);
-            
+
             // For each association, fetch the user details
             const tutorPromises = courseTutors.map(async (courseTutor) => {
               const user = await userRepository.findById(courseTutor.userId);
@@ -200,10 +200,10 @@ export default function CoursePage() {
               }
               return null;
             });
-            
+
             const tutors = (await Promise.all(tutorPromises))
-              .filter((tutor): tutor is {id: string, email: string} => tutor !== null);
-            
+              .filter((tutor): tutor is { id: string, email: string } => tutor !== null);
+
             setSelectedTutors(tutors);
             setOriginalTutors(tutors);
           } else {
@@ -226,13 +226,13 @@ export default function CoursePage() {
 
     fetchData();
   }, [isEditMode, courseId]);
-  
+
   // Filter tutors based on search term
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredTutors(tutors);
     } else {
-      const filtered = tutors.filter(tutor => 
+      const filtered = tutors.filter(tutor =>
         tutor.email.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tutor.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -256,7 +256,7 @@ export default function CoursePage() {
 
     try {
       let newCourseId = '';
-      
+
       if (isEditMode && formData.id) {
         // Update course
         const updateCourseUseCase = container.get<UpdateCourseUseCase>(
@@ -269,7 +269,7 @@ export default function CoursePage() {
           description: formData.description,
           coverImageUrl: formData.coverImageUrl
         });
-        
+
         newCourseId = formData.id;
       } else {
         // Create course
@@ -283,39 +283,39 @@ export default function CoursePage() {
           description: formData.description,
           coverImageUrl: formData.coverImageUrl
         });
-        
+
         newCourseId = result.course.id;
       }
-      
+
       // Handle tutor associations
       if (isEditMode) {
         const courseTutorRepository = container.get<CourseTutorRepository>(
           Register.content.repository.CourseTutorRepository
         );
-        
+
         const associateTutorToCourseUseCase = container.get<AssociateTutorToCourseUseCase>(
           Register.content.useCase.AssociateTutorToCourseUseCase
         );
-        
+
         // Find tutors to remove (in original list but not in new list)
         const tutorsToRemove = originalTutors.filter(
           original => !selectedTutors.some(selected => selected.id === original.id)
         );
-        
+
         // Find tutors to add (in new list but not in original list)
         const tutorsToAdd = selectedTutors.filter(
           selected => !originalTutors.some(original => original.id === selected.id)
         );
-        
+
         // Remove tutors
         for (const tutorToRemove of tutorsToRemove) {
           try {
             // Find the course-tutor association
             const association = await courseTutorRepository.findByUserAndCourse(
-              tutorToRemove.id, 
+              tutorToRemove.id,
               newCourseId
             );
-            
+
             if (association) {
               // Delete the association
               await courseTutorRepository.delete(association.id);
@@ -326,7 +326,7 @@ export default function CoursePage() {
             // Continue even if removal fails
           }
         }
-        
+
         // Add new tutors
         for (const tutorToAdd of tutorsToAdd) {
           try {
@@ -345,7 +345,7 @@ export default function CoursePage() {
         const associateTutorToCourseUseCase = container.get<AssociateTutorToCourseUseCase>(
           Register.content.useCase.AssociateTutorToCourseUseCase
         );
-        
+
         // Add each selected tutor
         for (const tutorToAdd of selectedTutors) {
           try {
@@ -373,7 +373,7 @@ export default function CoursePage() {
       }, 1000);
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} course:`, error);
-      
+
       // Update loading toast to error
       const errorMessage = `Falha ao ${isEditMode ? 'atualizar' : 'criar'} curso: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
       showToast.update(loadingToastId, {
@@ -473,7 +473,7 @@ export default function CoursePage() {
               {isEditMode ? 'Editar Curso' : 'Criar novo curso'}
             </h1>
             <Link href="/admin/courses">
-              <Button className="border border-gray-300 bg-transparent hover:bg-gray-100">Cancelar</Button>
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
             </Link>
           </div>
 
@@ -526,13 +526,13 @@ export default function CoursePage() {
                   required: true,
                   rows: 4
                 })}
-                
+
                 {/* Instructor/Tutor selection */}
                 <div className="space-y-2">
                   <label htmlFor="tutorSearch" className="block text-sm font-medium text-gray-700 mt-4">
                     Instrutor
                   </label>
-                  
+
                   <div className="flex flex-wrap mb-2">
                     {selectedTutors.map((tutor) => (
                       <div key={tutor.id} className="relative">
@@ -541,7 +541,7 @@ export default function CoursePage() {
                           type="button"
                           onClick={() => {
                             // Only update the UI, backend changes will be made on save
-                            setSelectedTutors(prev => 
+                            setSelectedTutors(prev =>
                               prev.filter(t => t.id !== tutor.id)
                             );
                           }}
@@ -553,7 +553,7 @@ export default function CoursePage() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="relative">
                     <InputText
                       id="tutorSearch"
@@ -567,7 +567,7 @@ export default function CoursePage() {
                       onFocus={() => setShowDropdown(true)}
                       className="mb-2"
                     />
-                    
+
                     {showDropdown && searchTerm.trim() !== '' && filteredTutors.length > 0 && (
                       <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                         {filteredTutors
@@ -578,7 +578,7 @@ export default function CoursePage() {
                               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                               onClick={() => {
                                 setSelectedTutors(prev => [
-                                  ...prev, 
+                                  ...prev,
                                   { id: tutor.id, email: tutor.email.value }
                                 ]);
                                 setSearchTerm('');
@@ -615,38 +615,19 @@ export default function CoursePage() {
                   </p>
                 </div>
 
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <h3 className="text-sm font-medium mb-2">Informações Adicionais</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(additionalFieldsConfig)
-                      .filter(([fieldName]) => {
-                        if (fieldName === 'status') return isEditMode;
-                        return true;
-                      })
-                      .map(([fieldName, fieldConfig]) => (
-                        renderFormField(fieldName, fieldConfig)
-                      ))
-                    }
-                  </div>
-
-                  {isEditMode && formData.enrolledStudents !== undefined && (
-                    <div className="mt-4">
-                      <h3 className="text-sm font-medium mb-2">Informações de Matrícula</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Alunos matriculados atualmente: <span className="font-semibold">{formData.enrolledStudents}</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2 mt-4">
                 <Link href="/admin/courses">
-                  <Button className="border border-gray-300 bg-transparent hover:bg-gray-100" type="button">
+                  <Button
+                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                     Cancelar
                   </Button>
                 </Link>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting
                     ? (isEditMode ? 'Salvando...' : 'Criando...')
                     : (isEditMode ? 'Salvar Alterações' : 'Criar Curso')

@@ -45,7 +45,7 @@ export function Navbar() {
             className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
           >
             <FiHome className="w-4 h-4" />
-            <span className="text-sm font-medium">Início3</span>
+            <span className="text-sm font-medium">Início</span>
           </Link>
 
           <Link
@@ -73,7 +73,7 @@ export function Navbar() {
       <div className='flex items-center justify-end'>
 
         <div className="hidden md:flex items-center gap-4">
-          <ProfileSelect
+           <ProfileSelect
             onLogout={() => console.log('Logout clicked')}
           />
         </div>

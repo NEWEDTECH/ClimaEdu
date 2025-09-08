@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { cn } from "@/lib/utils"
 import { Slot } from "@radix-ui/react-slot";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 type ButtonProps = {
   children: ReactNode;
@@ -21,13 +22,18 @@ export function Button({
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
+  const { primaryColor, secondaryColor } = useThemeColors();
 
   return (
     <Comp
       onClick={onClick}
       className={cn(
         "cursor-pointer font-bold",
-        "inline-flex items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-gray-100 transition-colors dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20",
+        "bg-primary text-primary-foreground",
+        "text-foreground",
+        "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm hover:bg-primary/90 transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        "disabled:pointer-events-none disabled:opacity-50",
         className
       )}
       {...props}

@@ -331,13 +331,14 @@ export default function CreateUserPage() {
                 <Button
                   type="button"
                   onClick={() => router.push('/admin')}
-                  className="border border-gray-300 bg-white hover:bg-gray-50"
+                  className="hover:bg-gray-50"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
+                  className="hover:bg-gray-50"
                 >
                   {isSubmitting ? 'Criando...' : 'Criar Usuário'}
                 </Button>

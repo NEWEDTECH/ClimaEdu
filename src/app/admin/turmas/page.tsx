@@ -173,7 +173,7 @@ export default function TurmasPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Turmas</h1>
             <Link href="/admin/turmas/create">
-              <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
+              <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                 Criar nova turma
               </Button>
             </Link>
@@ -259,14 +259,14 @@ export default function TurmasPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex gap-2">
                               <Link href={`/admin/turmas/edit/${classItem.id}`}>
-                                <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                                <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
                                   Editar
                                 </Button>
                               </Link>
                               <Button 
                                 onClick={() => handleDeleteClass(classItem.id)}
                                 disabled={deleting === classItem.id}
-                                className="border bg-red-50 text-red-600 shadow-xs hover:bg-red-100 hover:text-red-700 h-8 rounded-md gap-1.5 px-3 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+                                className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                               >
                                 {deleting === classItem.id ? 'Excluindo...' : 'Excluir'}
                               </Button>

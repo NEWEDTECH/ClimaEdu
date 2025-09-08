@@ -353,7 +353,7 @@ export default function AssociateTutorToCoursePage() {
               {isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
             </h1>
             <Link href="/admin/tutor">
-              <Button className="border bg-white hover:bg-gray-100">Cancelar</Button>
+              <Button className="hover:bg-gray-100">Cancelar</Button>
             </Link>
           </div>
 
@@ -538,12 +538,15 @@ export default function AssociateTutorToCoursePage() {
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
                 <Link href="/admin/tutor">
-                  <Button className="border bg-white hover:bg-gray-100" type="button">Cancelar</Button>
+                  <Button className="hover:bg-gray-100" type="button">Cancelar</Button>
                 </Link>
-                <Button type="submit" disabled={isSubmitting || loading}>
+                <Button 
+                className='hover:bg-gray-100'
+                type="submit" 
+                disabled={isSubmitting || loading}>
                   {isSubmitting 
-                    ? (isEditMode ? 'Atualizando...' : 'Associando...') 
-                    : (isEditMode ? 'Atualizar Associações' : 'Associar Tutor a Cursos')
+                    ? (isEditMode ? 'Salvando...' : 'Associando...') 
+                    : (isEditMode ? 'Salvar' : 'Associar Tutor a Cursos')
                   }
                 </Button>
               </CardFooter>

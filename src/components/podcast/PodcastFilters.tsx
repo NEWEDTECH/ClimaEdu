@@ -39,9 +39,9 @@ export function PodcastFilters({
           onChange={(e) => onMediaTypeChange(e.target.value)}
           className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
         >
-          <option value="all">Todos os tipos</option>
-          <option value={PodcastMediaType.AUDIO}>🎧 Podcasts de Áudio</option>
-          <option value={PodcastMediaType.VIDEO}>📹 Vídeo Podcasts</option>
+          <option value="all" className='dark:text-black'>Todos os tipos</option>
+          <option value={PodcastMediaType.AUDIO} className='dark:text-black'>🎧 Podcasts de Áudio</option>
+          <option value={PodcastMediaType.VIDEO} className='dark:text-black'>📹 Vídeo Podcasts</option>
         </select>
       </div>
       
