@@ -4,10 +4,10 @@ import { ListScormsByInstitutionUseCase } from '../../../../../_core/modules/con
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { institutionId: string } }
+  { params }: { params: Promise<{ institutionId: string }> }
 ) {
   try {
-    const { institutionId } = params;
+    const { institutionId } = await params;
 
     if (!institutionId) {
       return NextResponse.json(

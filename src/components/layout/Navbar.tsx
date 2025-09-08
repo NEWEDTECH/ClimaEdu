@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ProfileSelect } from '@/components/profile';
 import { IoMdMenu } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
-import { FiHome, FiHeart, FiUsers, FiSun, FiMoon } from "react-icons/fi";
+import { FiHome, FiUsers, FiSun, FiMoon } from "react-icons/fi";
 import { useProfile } from '@/context/zustand/useProfile';
 import { useThemeStore } from '@/context/zustand/useThemeStore';
 

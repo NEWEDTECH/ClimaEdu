@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, Dispatch, SetStateAction } from 'react';
 import { Module } from '@/_core/modules/content/core/entities/Module';
 
 interface UseCourseNavigationProps {
   modules: Module[];
   activeLesson: string | null;
-  setOpenModules: (modules: Set<string>) => void;
+  setOpenModules: Dispatch<SetStateAction<Set<string>>>;
   onLessonSelect: (lessonId: string) => Promise<void>;
 }
 

@@ -7,7 +7,7 @@ import { usePosts } from '@/hooks/social/usePosts';
 import { useFormValidation, postSchema } from '@/components/social/validation/SocialValidation';
 import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
-import { PenTool, Save, Send, ArrowLeft, Lightbulb, Sparkles, Edit3 } from 'lucide-react';
+import { Save, Send, ArrowLeft, Lightbulb } from 'lucide-react';
 
 export default function CreatePostPage() {
   const router = useRouter();

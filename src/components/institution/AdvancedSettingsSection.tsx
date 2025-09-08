@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/c
 import { ThresholdSlider } from './ThresholdSlider';
 import { NumericInput } from './NumericInput';
 import { ToggleSettings } from './ToggleSettings';
-import { Button } from '@/components/button';
+import { Button } from "@/components/ui/button/button";
 import { RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import type { InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
 import { defaultInstitutionSettings } from '@/_core/shared/config/settings.config';
@@ -51,7 +51,7 @@ export function AdvancedSettingsSection({ settings = {}, onChange }: AdvancedSet
     const updated = {
       ...currentSettings,
       [parentKey]: {
-        ...(currentSettings[parentKey] as any || {}),
+        ...(currentSettings[parentKey] as Record<string, unknown> || {}),
         [childKey]: value
       }
     };

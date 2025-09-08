@@ -30,7 +30,7 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
    */
   private mapToEntity(data: DocumentData): Institution {
     // Extract advanced settings from the flattened settings object
-    const advancedSettings: any = {};
+    const advancedSettings: Record<string, unknown> = {};
     if (data.settings?.riskLevels) advancedSettings.riskLevels = data.settings.riskLevels;
     if (data.settings?.participationLevels) advancedSettings.participationLevels = data.settings.participationLevels;
     if (data.settings?.performanceRatings) advancedSettings.performanceRatings = data.settings.performanceRatings;
@@ -113,14 +113,15 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
     console.log('💾 Saving institution:', institution);
     
     // Helper function to remove undefined values
-    const removeUndefined = (obj: any): any => {
+    const removeUndefined = (obj: unknown): unknown => {
       if (obj === null || obj === undefined) return null;
       if (typeof obj !== 'object') return obj;
       if (Array.isArray(obj)) return obj.map(removeUndefined);
       
-      const cleaned: any = {};
-      Object.keys(obj).forEach(key => {
-        const value = obj[key];
+      const cleaned: Record<string, unknown> = {};
+      const objRecord = obj as Record<string, unknown>;
+      Object.keys(objRecord).forEach(key => {
+        const value = objRecord[key];
         if (value !== undefined) {
           cleaned[key] = removeUndefined(value);
         }
@@ -129,7 +130,7 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
     };
 
     // Prepare the institution data for Firestore
-    const institutionData: any = {
+    const institutionData: Record<string, unknown> = {
       id: institution.id,
       name: institution.name,
       domain: institution.domain,

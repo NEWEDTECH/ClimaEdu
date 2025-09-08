@@ -36,7 +36,7 @@ export class ListActivityFilesUseCase {
     }
   }
 
-  private async loadMetadata(basePath: string): Promise<any | null> {
+  private async loadMetadata(basePath: string): Promise<Record<string, unknown> | null> {
     try {
       const metadataRef = ref(storage, `${basePath}/metadata.json`);
       const metadataUrl = await getDownloadURL(metadataRef);
@@ -46,16 +46,23 @@ export class ListActivityFilesUseCase {
         return await response.json();
       }
       return null;
-    } catch (error) {
+    } catch {
       // Metadata não existe, tudo bem
       return null;
     }
   }
 
-  private async listFilesFromMetadata(basePath: string, metadata: any): Promise<ListActivityFilesOutput> {
+  private async listFilesFromMetadata(basePath: string, metadata: Record<string, unknown>): Promise<ListActivityFilesOutput> {
     const files: ActivityFile[] = [];
 
-    for (const fileInfo of metadata.files || []) {
+    const metadataFiles = metadata.files as Array<{
+      storagePath: string;
+      originalName: string;
+      uploadedAt: string;
+      sizeBytes: number;
+    }> || [];
+
+    for (const fileInfo of metadataFiles) {
       try {
         const fileRef = ref(storage, fileInfo.storagePath);
         const downloadUrl = await getDownloadURL(fileRef);
@@ -67,7 +74,7 @@ export class ListActivityFilesUseCase {
           sizeBytes: fileInfo.sizeBytes,
           storagePath: fileInfo.storagePath
         });
-      } catch (error) {
+      } catch {
         // Arquivo pode ter sido deletado, continuar com os outros
         console.warn(`File ${fileInfo.originalName} not found in storage`);
       }
@@ -104,7 +111,7 @@ export class ListActivityFilesUseCase {
           sizeBytes: metadata.size,
           storagePath: itemRef.fullPath
         });
-      } catch (error) {
+      } catch {
         console.warn(`Failed to get info for file ${itemRef.name}`);
       }
     }

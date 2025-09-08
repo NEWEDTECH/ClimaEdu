@@ -103,8 +103,8 @@ const ModuleDropdown = ({
             const accessInfo = lessonAccess?.get(lesson.id);
             const canAccess = accessInfo?.canAccess ?? true;
             const isCompleted = accessInfo?.isCompleted ?? false;
-            const hasStarted = accessInfo?.hasStarted ?? false;
-            const isSkippable = accessInfo?.isSkippable ?? false;
+            // const hasStarted = accessInfo?.hasStarted ?? false;
+            // const isSkippable = accessInfo?.isSkippable ?? false;
             
             const handleLessonClick = () => {
               if (canAccess) {

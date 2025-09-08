@@ -7,7 +7,7 @@ import { PostCard, PostCardSkeleton } from '@/components/social/post/PostCard';
 import { useSocialStore } from '@/context/zustand/useSocialStore';
 import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
-import { FileText, Edit3, Send, Archive, Trash2, ArrowLeft, BarChart3, Heart, MessageCircle, Eye, Plus } from 'lucide-react';
+import { FileText, Edit3, Send, Archive, Trash2, ArrowLeft, BarChart3, Plus } from 'lucide-react';
 
 type PostStatus = 'all' | 'published' | 'draft' | 'archived';
 

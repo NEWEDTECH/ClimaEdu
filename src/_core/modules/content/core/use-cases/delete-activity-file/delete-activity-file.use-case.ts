@@ -56,8 +56,9 @@ export class DeleteActivityFileUseCase {
       
       if (metadata && metadata.files) {
         // Filtrar o arquivo deletado
-        const updatedFiles = metadata.files.filter(
-          (file: any) => file.storagePath !== deletedFilePath
+        const files = metadata.files as Array<{ storagePath: string; originalName: string; uploadedAt: string; sizeBytes: number }>;
+        const updatedFiles = files.filter(
+          (file: { storagePath: string }) => file.storagePath !== deletedFilePath
         );
 
         // Atualizar metadata
@@ -82,7 +83,7 @@ export class DeleteActivityFileUseCase {
     }
   }
 
-  private async loadMetadata(basePath: string): Promise<any | null> {
+  private async loadMetadata(basePath: string): Promise<Record<string, unknown> | null> {
     try {
       const metadataRef = ref(storage, `${basePath}/metadata.json`);
       const metadataUrl = await getDownloadURL(metadataRef);
@@ -92,7 +93,7 @@ export class DeleteActivityFileUseCase {
         return await response.json();
       }
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -101,10 +102,11 @@ export class DeleteActivityFileUseCase {
     try {
       const metadata = await this.loadMetadata(basePath);
       if (metadata && metadata.files) {
-        return metadata.files.length;
+        const files = metadata.files as Array<unknown>;
+        return files.length;
       }
       return 0;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
