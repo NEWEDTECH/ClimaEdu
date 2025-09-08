@@ -311,7 +311,7 @@ export default function EditTurmaPage() {
             <h1 className="text-3xl font-bold">Editar Turma</h1>
             <Button 
               onClick={() => router.push('/admin/turmas')}
-              className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
+              variant='primary'
             >
               Voltar
             </Button>
@@ -381,14 +381,14 @@ export default function EditTurmaPage() {
                     <Button
                       type="submit"
                       disabled={submitting}
-                      className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+                      variant='primary'
                     >
                       {submitting ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
                     <Button
                       type="button"
                       onClick={() => router.push('/admin/turmas')}
-                      className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
+                      variant='secondary'
                     >
                       Cancelar
                     </Button>
@@ -423,9 +423,9 @@ export default function EditTurmaPage() {
                       onChange={(e) => setNewEnrollmentId(e.target.value)}
                       className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                     >
-                      <option value="">Selecione um estudante</option>
+                      <option value="" className='dark:text-black'>Selecione um estudante</option>
                       {availableStudents.map(student => (
-                        <option key={student.id} value={student.id}>
+                        <option key={student.id} value={student.id} className='dark:text-black'>
                           {student.email}
                         </option>
                       ))}

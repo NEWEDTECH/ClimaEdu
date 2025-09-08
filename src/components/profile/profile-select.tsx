@@ -38,13 +38,11 @@ type DropdownSection = {
 };
 
 const studentItems: DropdownItem[] = [
-  { label: 'Conteúdos', href: '/student/contents', icon: <FiBook /> },
   { label: 'Social', href: '/social', icon: <FiUsers /> },
   { label: 'Atividades', href: '/student/activities', icon: <FiActivity /> },
   { label: 'Tutoria', href: '/student/tutoring', icon: <FiUserCheck /> },
   { label: 'Questionários', href: '/student/questionnaire', icon: <FiFileText /> },
   { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> },
-  { label: 'Relatórios', href: '/student/reports', icon: <FiBarChart /> }
 ];
 
 const teacherItems: DropdownItem[] = [

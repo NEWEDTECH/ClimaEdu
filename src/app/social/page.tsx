@@ -7,6 +7,7 @@ import { PostCard, PostCardSkeleton } from '@/components/social/post/PostCard';
 import { useProfile } from '@/context/zustand/useProfile';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout';
+import { Button } from '@/components/button'
 import { Globe, TrendingUp, Clock, Heart, MessageCircle, Plus, Sparkles, RefreshCw, Edit3 } from 'lucide-react';
 
 export default function SocialPage() {
@@ -103,7 +104,7 @@ export default function SocialPage() {
                       <span>Meus Posts</span>
                     </div>
                   </Link>
-                  <button
+                  <Button
                     onClick={refreshPosts}
                     className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
                   >
@@ -111,7 +112,7 @@ export default function SocialPage() {
                       <RefreshCw className="w-5 h-5 group-hover:scale-110 transition-transform" />
                       <span>Atualizar</span>
                     </div>
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Search and Filters */}
@@ -132,7 +133,7 @@ export default function SocialPage() {
                     />
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
                       onClick={() => setFilter('all')}
                       className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                         filter === 'all'
@@ -144,8 +145,8 @@ export default function SocialPage() {
                         <Globe className="w-4 h-4" />
                         Todos
                       </div>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setFilter('recent')}
                       className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                         filter === 'recent'
@@ -157,8 +158,8 @@ export default function SocialPage() {
                         <Clock className="w-4 h-4" />
                         Recentes
                       </div>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setFilter('popular')}
                       className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                         filter === 'popular'
@@ -170,7 +171,7 @@ export default function SocialPage() {
                         <TrendingUp className="w-4 h-4" />
                         Populares
                       </div>
-                    </button>
+                    </Button>
                   </div>
                 </div>
 

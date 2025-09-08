@@ -487,7 +487,7 @@ export default function StudentEnrollmentPage() {
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href="/admin/student">
-                  <Button>Voltar para Lista de Estudantes</Button>
+                  <Button className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'>Voltar para Lista de Estudantes</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -506,7 +506,7 @@ export default function StudentEnrollmentPage() {
               {id ? 'Editar Estudante' : 'Inscrever Estudante em Curso'}
             </h1>
             <Link href="/admin/student">
-              <Button className="border border-gray-300 bg-transparent hover:bg-gray-100">Cancelar</Button>
+              <Button variant='primary'>Voltar</Button>
             </Link>
           </div>
 
@@ -669,14 +669,14 @@ export default function StudentEnrollmentPage() {
                       {allSelectedCourses.map((course) => (
                         <div key={course.id} className="relative">
                           <Tooltip label={course.title} />
-                          <button
+                          <Button
                             type="button"
                             onClick={() => removeCourse(course.id)}
-                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                            className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                             aria-label="Remover curso"
                           >
                             <X size={12} />
-                          </button>
+                          </Button>
                         </div>
                       ))}
                     </div>
@@ -742,12 +742,13 @@ export default function StudentEnrollmentPage() {
 
               <CardFooter className="flex justify-end gap-2">
                 <Link href="/admin/student">
-                  <Button className="border border-gray-300 bg-transparent hover:bg-gray-100" type="button">
+                  <Button variant='secondary' type="button">
                     Cancelar
                   </Button>
                 </Link>
                 <Button
                   type="submit"
+                  variant='primary'
                   //disabled={
                   //  isSubmitting ||
                   //  (!isEditingStudent

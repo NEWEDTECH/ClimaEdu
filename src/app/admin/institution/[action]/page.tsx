@@ -452,8 +452,7 @@ export default function InstitutionPage() {
         <div className="container mx-auto py-8">
           <div className="mb-6">
             <Button
-              icon={<ArrowLeftIcon size={16} />}
-              iconPosition="start"
+              variant='primary'
               onClick={() => router.push('/admin/institution')}
             >
               Voltar para lista de instituições
@@ -529,9 +528,9 @@ export default function InstitutionPage() {
                   
                   <div className="flex flex-wrap mb-2">
                     {selectedAdministrators.map((admin) => (
-                      <div key={admin.id} className="relative">
+                       <div key={admin.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                         <Tooltip label={admin.email} />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             // Only update the UI, backend changes will be made on save
@@ -539,11 +538,11 @@ export default function InstitutionPage() {
                               prev.filter(a => a.id !== admin.id)
                             );
                           }}
-                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                          className="bg-red-500 text-white rounded-full p-0.5"
                           aria-label="Remover administrador"
                         >
                           <X size={12} />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

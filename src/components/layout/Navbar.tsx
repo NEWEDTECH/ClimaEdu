@@ -42,10 +42,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           <Link
             href="/"
-            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm ${isDarkMode
-              ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-              : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-              }`}
+            className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
           >
             <FiHome className="w-4 h-4" />
             <span className="text-sm font-medium">Início</span>
@@ -53,10 +50,7 @@ export function Navbar() {
 
           <Link
             href="/social"
-            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm ${isDarkMode
-              ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-              : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-              }`}
+            className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
           >
             <FiUsers className="w-4 h-4" />
             <span className="text-sm font-medium">Comunidade</span>
@@ -64,10 +58,7 @@ export function Navbar() {
 
           <button
             onClick={toggleTheme}
-            className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm ${isDarkMode
-              ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-              : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-              }`}
+            className="flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
             aria-label="Alternar tema"
           >
             {isDarkMode ? (
@@ -82,7 +73,7 @@ export function Navbar() {
       <div className='flex items-center justify-end'>
 
         <div className="hidden md:flex items-center gap-4">
-          <ProfileSelect
+           <ProfileSelect
             onLogout={() => console.log('Logout clicked')}
           />
         </div>
@@ -92,10 +83,7 @@ export function Navbar() {
       <div className="md:hidden flex items-center">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className={`p-2 rounded-full transition-all duration-300 backdrop-blur-sm ${isDarkMode
-            ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-            : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-            }`}
+          className="p-2 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? (
@@ -108,19 +96,13 @@ export function Navbar() {
 
 
       {mobileMenuOpen && (
-        <div className={`md:hidden absolute top-20 left-0 right-0 backdrop-blur-md shadow-2xl z-40 ${isDarkMode
-          ? 'bg-gray-800/90 border-b border-white/10'
-          : 'bg-gray-100/90 border-b border-gray-200/50'
-          }`}>
+        <div className="md:hidden absolute top-20 left-0 right-0 backdrop-blur-md shadow-2xl z-40 dark:g-gray-800/90 dark:border-b dark:border-white/10 bg-gray-100/90 border-b border-gray-200/50">
           <div className="px-4 py-6">
             {/* Navigation buttons - Mobile */}
             <div className="space-y-3 mb-6">
               <Link
                 href="/"
-                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm ${isDarkMode
-                  ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                  : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-                  }`}
+                className="flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <FiHome className="w-5 h-5" />
@@ -129,10 +111,7 @@ export function Navbar() {
 
               <Link
                 href="/social"
-                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm ${isDarkMode
-                  ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                  : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-                  }`}
+                className="flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <FiUsers className="w-5 h-5" />
@@ -144,10 +123,7 @@ export function Navbar() {
                   toggleTheme();
                   setMobileMenuOpen(false);
                 }}
-                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm w-full text-left ${isDarkMode
-                  ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                  : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50'
-                  }`}
+                className="flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm w-full text-left dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
               >
                 {isDarkMode ? (
                   <>
@@ -163,7 +139,7 @@ export function Navbar() {
               </button>
             </div>
 
-            <div className={`pt-4 ${isDarkMode ? 'border-t border-white/20' : 'border-t border-gray-300/50'
+            <div className={`pt-4 ? 'border-t border-white/20' : 'border-t border-gray-300/50'
               }`}>
               <ProfileSelect
                 onLogout={() => console.log('Logout clicked')}

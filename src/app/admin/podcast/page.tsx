@@ -116,8 +116,8 @@ export default function PodcastPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">🎧 Podcasts Existentes</h1>
             <Link href="/admin/podcast/create">
-              <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
-                ➕ Criar novo podcast
+              <Button variant='primary'>
+                Criar novo podcast
               </Button>
             </Link>
           </div>

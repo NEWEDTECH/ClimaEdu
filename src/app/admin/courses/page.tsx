@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
+import { Tabs, TabsList } from '@/components/ui/tabs/tabs'
+import { TabsTrigger } from '@/components/tabs/TabsTrigger'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { container } from '@/_core/shared/container'
@@ -24,7 +25,6 @@ type CourseWithUIProps = {
   title: string
   description: string
   instructorDisplay?: string
-  duration?: string
   enrolledStudents?: number
   status: 'active' | 'inactive'
 }
@@ -33,7 +33,6 @@ const NAME_COLUMNS = [
   'Nome',
   'Descrição',
   'Instrutor',
-  'Duração',
   'Estudantes',
   'Status',
   'Ação'
@@ -137,7 +136,6 @@ export default function CoursesPage() {
             title: course.title,
             description: course.description,
             instructorDisplay,
-            duration: 'Not specified',
             enrolledStudents: 0,
             status: 'active' as 'active' | 'inactive'
           }
@@ -179,7 +177,7 @@ export default function CoursesPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Cursos Existentes</h1>
             <Link href="/admin/courses/create-edit">
-              <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">Criar novo curso</Button>
+              <Button variant='primary'>Criar novo curso</Button>
             </Link>
           </div>
 
@@ -256,7 +254,6 @@ export default function CoursesPage() {
                       <td className="py-3 px-4">{course.title}</td>
                       <td className="py-3 px-4 max-w-xs truncate">{course.description}</td>
                       <td className="py-3 px-4">{course.instructorDisplay}</td>
-                      <td className="py-3 px-4">{course.duration}</td>
                       <td className="py-3 px-4 text-center">{course.enrolledStudents}</td>
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs ${
@@ -270,10 +267,10 @@ export default function CoursesPage() {
                       <td className="py-3 px-4 text-right">
                         <div className="flex  gap-2">
                         <Link href={`/admin/courses/edit/${course.id}`}>
-                            <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Módulos</Button>
+                            <Button variant='primary'>Módulos</Button>
                           </Link>
                           <Link href={`/admin/courses/create-edit/${course.id}`}>
-                            <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Editar</Button>
+                            <Button variant='secondary'>Editar</Button>
                           </Link>
                         </div>
                       </td>

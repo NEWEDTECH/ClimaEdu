@@ -353,7 +353,7 @@ export default function AssociateTutorToCoursePage() {
               {isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
             </h1>
             <Link href="/admin/tutor">
-              <Button className="border bg-white hover:bg-gray-100">Cancelar</Button>
+              <Button variant='primary'>Voltar</Button>
             </Link>
           </div>
 
@@ -474,14 +474,14 @@ export default function AssociateTutorToCoursePage() {
                     {selectedCourses.map((course) => (
                       <div key={course.id} className="relative">
                         <Tooltip label={course.title} />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => handleCourseRemove(course.id)}
                           className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
                           aria-label="Remover curso"
                         >
                           <X size={12} />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -538,12 +538,15 @@ export default function AssociateTutorToCoursePage() {
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
                 <Link href="/admin/tutor">
-                  <Button className="border bg-white hover:bg-gray-100" type="button">Cancelar</Button>
+                  <Button variant='secondary' type="button">Cancelar</Button>
                 </Link>
-                <Button type="submit" disabled={isSubmitting || loading}>
+                <Button 
+                variant='primary'
+                type="submit" 
+                disabled={isSubmitting || loading}>
                   {isSubmitting 
-                    ? (isEditMode ? 'Atualizando...' : 'Associando...') 
-                    : (isEditMode ? 'Atualizar Associações' : 'Associar Tutor a Cursos')
+                    ? (isEditMode ? 'Salvando...' : 'Associando...') 
+                    : (isEditMode ? 'Salvar' : 'Associar Tutor a Cursos')
                   }
                 </Button>
               </CardFooter>

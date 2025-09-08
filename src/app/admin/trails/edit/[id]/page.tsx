@@ -400,7 +400,7 @@ export default function EditTrailPage() {
                         <h1 className="text-3xl font-bold">Editar Trilha</h1>
                         <Button
                             onClick={handleCancel}
-                            className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
+                            variant='primary'
                         >
                             Voltar
                         </Button>
@@ -482,7 +482,7 @@ export default function EditTrailPage() {
                                     <Button
                                         type="submit"
                                         disabled={saving}
-                                        className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+                                        variant='primary'
                                     >
                                         {saving ? 'Salvando...' : 'Salvar Alterações'}
                                     </Button>

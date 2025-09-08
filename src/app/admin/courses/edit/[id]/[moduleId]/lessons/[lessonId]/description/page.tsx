@@ -32,32 +32,32 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
     const fetchData = async () => {
       try {
         setIsLoading(true)
-        
+
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         )
-        
+
         const moduleRepository = container.get<ModuleRepository>(
           Register.content.repository.ModuleRepository
         )
-        
+
         const lesson = await lessonRepository.findById(lessonId)
         if (!lesson) {
           setError('Lição não encontrada')
           setIsLoading(false)
           return
         }
-        
+
         setLessonTitle(lesson.title)
         setDescription(lesson.description)
-        
+
         const moduleData = await moduleRepository.findById(moduleId)
         if (!moduleData) {
           setError('Módulo não encontrado')
           setIsLoading(false)
           return
         }
-        
+
         setModuleName(moduleData.title)
         setIsLoading(false)
       } catch (error) {
@@ -68,40 +68,40 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
         setIsLoading(false)
       }
     }
-    
+
     fetchData()
   }, [lessonId, moduleId])
 
   const handleSave = async () => {
     setIsSaving(true)
-    
+
     // Show loading toast
     const loadingToastId = showToast.loading('Salvando descrição...')
-    
+
     try {
       // Use the new UpdateLessonDescriptionUseCase
       const updateLessonDescriptionUseCase = container.get<UpdateLessonDescriptionUseCase>(
         Register.content.useCase.UpdateLessonDescriptionUseCase
       )
-      
+
       await updateLessonDescriptionUseCase.execute({
         lessonId,
         description
       })
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Descrição salva com sucesso!',
         type: 'success'
       })
-      
+
       // Navigate after a short delay to show the success message
       setTimeout(() => {
         router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`)
       }, 1000)
     } catch (error) {
       console.error('Erro ao salvar descrição:', error)
-      
+
       // Update loading toast to error
       const errorMessage = `Falha ao salvar descrição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
       showToast.update(loadingToastId, {
@@ -137,7 +137,10 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button
+                    variant='primary'
+                  >Voltar
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
@@ -163,8 +166,8 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                 </p>
               </div>
               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                <Button className="border border-gray-300 bg-white hover:bg-gray-50">
-                  Voltar para a Lição
+                <Button variant='primary'>
+                  Voltar
                 </Button>
               </Link>
             </div>
@@ -188,12 +191,13 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                 <div className="flex justify-end space-x-3">
                   <Button
                     type="button"
-                    className="border bg-white hover:bg-gray-100"
+                    variant='secondary'
                     onClick={handleCancel}
                   >
                     Cancelar
                   </Button>
                   <Button
+                    variant='primary'
                     type="button"
                     disabled={isSaving}
                     onClick={handleSave}

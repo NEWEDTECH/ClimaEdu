@@ -236,13 +236,15 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                   <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
                     <Button
                       type="button"
-                      className="bg-transparent border-gray-300 text-gray-700 hover:bg-gray-100"
+                      variant='secondary'
                     >
                       Cancelar
                     </Button>
                   </Link>
+                  
                   <Button
                     type="submit"
+                    variant='primary'
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Salvando...' : 'Criar Atividade'}

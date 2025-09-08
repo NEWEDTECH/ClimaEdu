@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card/card';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 import { Progress } from '@/components/ui/helpers/progress';
 
 const mockStudents = [

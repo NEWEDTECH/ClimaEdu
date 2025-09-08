@@ -32,7 +32,7 @@ export function CourseManager({
       <h3 className="text-lg font-medium mb-4">
         {isEditMode ? 'Gerenciar Cursos' : 'Adicionar Curso'}
       </h3>
-      
+
       {isEditMode && selectedCourses.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-medium mb-3">Cursos na Trilha ({selectedCourses.length})</h4>
@@ -53,7 +53,8 @@ export function CourseManager({
                 <Button
                   type="button"
                   onClick={() => onRemoveCourse(course.id)}
-                  className="border bg-red-50 text-red-600 shadow-xs hover:bg-red-100 hover:text-red-700 h-8 rounded-md gap-1.5 px-3"
+                  className="text-red-500 hover:text-red-700"
+                  variant='secondary'
                 >
                   Remover
                 </Button>
@@ -99,20 +100,25 @@ export function CourseManager({
         </div>
       )}
 
-      <div className={isEditMode ? 'flex gap-4' : 'flex gap-4'}>
+      <div className="flex gap-4 items-end">
         <div className="flex-1">
-          <label htmlFor="courseSelect" className="block text-sm font-medium mb-2">
-            {isEditMode ? 'Adicionar Curso' : 'Selecionar Curso'}
+          <label
+            htmlFor="courseSelect"
+            className="block text-sm font-medium mb-2"
+          >
+            {isEditMode ? "Adicionar Curso" : "Selecionar Curso"}
           </label>
           <select
             id="courseSelect"
             value={selectedCourseId}
             onChange={(e) => onCourseSelect(e.target.value)}
-            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+            className="w-full dark:bg-black rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
           >
-            <option value="">Selecione um curso para adicionar</option>
-            {availableCourses.map(course => (
-              <option key={course.id} value={course.id}>
+            <option value="" className="dark:text-white">
+              Selecione um curso para adicionar
+            </option>
+            {availableCourses.map((course) => (
+              <option key={course.id} value={course.id} className="dark:text-white">
                 {course.title}
               </option>
             ))}
@@ -123,17 +129,20 @@ export function CourseManager({
             </p>
           )}
         </div>
+
         {!isEditMode && (
           <Button
             type="button"
             onClick={onAddCourse}
             disabled={!selectedCourseId}
-            className="bg-green-600 text-white shadow-xs hover:bg-green-700"
+            className="bg-green-600 text-white shadow-xs hover:bg-green-700 h-[42px]"
           >
             Adicionar
           </Button>
         )}
       </div>
+
+
     </div>
   )
 }

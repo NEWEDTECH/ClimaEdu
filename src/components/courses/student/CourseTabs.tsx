@@ -1,6 +1,7 @@
 'use client';
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs/tabs';
+import { Tabs, TabsList, TabsContent } from '@/components/ui/tabs/tabs';
+import { TabsTrigger } from '@/components/tabs/TabsTrigger';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';

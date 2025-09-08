@@ -93,15 +93,15 @@ export function PodcastTable({ podcasts, loading, onDelete }: PodcastTableProps)
               <td className="py-3 px-4 text-right">
                 <div className="flex gap-2">
                   <Link href={`/admin/podcast/${podcast.id}/edit`}>
-                    <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
-                      ✏️ Editar
+                    <Button variant='primary'>
+                      Editar
                     </Button>
                   </Link>
                   <Button 
                     onClick={() => onDelete(podcast.id, podcast.title)}
-                    className="bg-red-600 hover:bg-red-700 text-white h-8 rounded-md gap-1.5 px-3"
+                    variant='secondary'
                   >
-                    🗑️ Excluir
+                    Excluir
                   </Button>
                 </div>
               </td>

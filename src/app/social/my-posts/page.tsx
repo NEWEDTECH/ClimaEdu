@@ -7,6 +7,7 @@ import { PostCard, PostCardSkeleton } from '@/components/social/post/PostCard';
 import { useSocialStore } from '@/context/zustand/useSocialStore';
 import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
+import { Button } from "@/components/button"
 import { FileText, Edit3, Send, Archive, Trash2, ArrowLeft, BarChart3, Plus } from 'lucide-react';
 
 type PostStatus = 'all' | 'published' | 'draft' | 'archived';
@@ -130,7 +131,7 @@ export default function MyPostsPage() {
                 </div>
 
                 <div className="hidden lg:flex gap-4">
-                  <button
+                  <Button
                     onClick={refreshMyPosts}
                     className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
                   >
@@ -138,7 +139,7 @@ export default function MyPostsPage() {
                       <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform" />
                       <span>Atualizar</span>
                     </div>
-                  </button>
+                  </Button>
                   <Link
                     href="/social/create"
                     className="group px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
@@ -160,7 +161,7 @@ export default function MyPostsPage() {
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Mobile Actions */}
             <div className="lg:hidden flex gap-4">
-              <button
+              <Button
                 onClick={refreshMyPosts}
                 className="flex-1 group px-4 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
               >
@@ -168,7 +169,7 @@ export default function MyPostsPage() {
                   <BarChart3 className="w-5 h-5" />
                   <span>Atualizar</span>
                 </div>
-              </button>
+              </Button>
               <Link
                 href="/social/create"
                 className="flex-1 group px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg transition-all duration-200 hover:scale-105"
@@ -187,7 +188,7 @@ export default function MyPostsPage() {
                 <h3 className="text-lg font-semibold dark:text-white text-gray-800">Filtrar Posts</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button
+                <Button
                   onClick={() => setStatusFilter('all')}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                     statusFilter === 'all'
@@ -196,8 +197,8 @@ export default function MyPostsPage() {
                   }`}
                 >
                   Todos ({statusCounts.all})
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setStatusFilter('published')}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                     statusFilter === 'published'
@@ -209,8 +210,8 @@ export default function MyPostsPage() {
                     <Send className="w-4 h-4" />
                     Publicados ({statusCounts.published})
                   </div>
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setStatusFilter('draft')}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                     statusFilter === 'draft'
@@ -222,8 +223,8 @@ export default function MyPostsPage() {
                     <Edit3 className="w-4 h-4" />
                     Rascunhos ({statusCounts.draft})
                   </div>
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setStatusFilter('archived')}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                     statusFilter === 'archived'
@@ -235,7 +236,7 @@ export default function MyPostsPage() {
                     <Archive className="w-4 h-4" />
                     Arquivados ({statusCounts.archived})
                   </div>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -309,42 +310,42 @@ export default function MyPostsPage() {
                     {/* Enhanced Actions Overlay */}
                     <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                       {post.status === 'DRAFT' && (
-                        <button
+                        <Button
                           onClick={() => handleEdit(post.id)}
                           className="p-2 backdrop-blur-sm rounded-lg dark:bg-blue-500/20 dark:border dark:border-blue-500/30 bg-blue-50 border border-blue-200 text-blue-600 hover:scale-110 transition-all duration-200"
                           title="Continuar editando"
                         >
                           <Edit3 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       )}
                       
                       {post.status === 'DRAFT' && (
-                        <button
+                        <Button
                           onClick={() => handlePublish(post.id)}
                           className="p-2 backdrop-blur-sm rounded-lg dark:bg-green-500/20 dark:border dark:border-green-500/30 bg-green-50 border border-green-200 text-green-600 hover:scale-110 transition-all duration-200"
                           title="Publicar"
                         >
                           <Send className="w-4 h-4" />
-                        </button>
+                        </Button>
                       )}
                       
                       {post.status === 'PUBLISHED' && (
-                        <button
+                        <Button
                           onClick={() => handleArchive(post.id)}
                           className="p-2 backdrop-blur-sm rounded-lg dark:bg-yellow-500/20 dark:border dark:border-yellow-500/30 bg-yellow-50 border border-yellow-200 text-yellow-600 hover:scale-110 transition-all duration-200"
                           title="Arquivar"
                         >
                           <Archive className="w-4 h-4" />
-                        </button>
+                        </Button>
                       )}
                       
-                      <button
+                      <Button
                         onClick={() => handleDelete(post.id)}
                         className="p-2 backdrop-blur-sm rounded-lg dark:bg-red-500/20 dark:border dark:border-red-500/30 bg-red-50 border border-red-200 text-red-600 hover:scale-110 transition-all duration-200"
                         title="Excluir"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))

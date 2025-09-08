@@ -56,7 +56,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         const institutionsRoleData = userAssociations.map(association => ({
           idInstitution: association.id,
           nameInstitution: association.name,
-          roleInstitution: null
+          roleInstitution: null,
+          primary_color: association.settings.primaryColor!,
+          secondary_color: association.settings.secondaryColor!,
         }));
 
         // console.log('✅ AuthGuard: User associations found:', institutionsRoleData.length);
@@ -97,7 +99,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             idInstitution: institution.id,
             nameInstitution: institution.name,
             urlImage: institution.settings.logoUrl || '',
-            roleInstitution: user.role
+            roleInstitution: user.role,
+            primary_color: institution.settings.primaryColor!,
+            secondary_color: institution.settings.secondaryColor!
           }
         });
       }
@@ -141,6 +145,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         idInstitution: '',
         nameInstitution: '',
         urlImage: '',
+        primary_color: '',
+        secondary_color: '',
         roleInstitution: null
       }
     });

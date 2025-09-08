@@ -7,6 +7,7 @@ import { usePost, usePosts } from '@/hooks/social/usePosts';
 import { useFormValidation, postSchema } from '@/components/social/validation/SocialValidation';
 import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
+import { Button } from '@/components/button'
 import { Edit3, Save, Send, ArrowLeft, AlertTriangle, Clock, History, Sparkles } from 'lucide-react';
 
 interface EditPostPageProps {
@@ -481,16 +482,16 @@ Compartilhe suas experiências, conhecimentos e insights!"
                   
                   <div className="flex gap-4">
                     {hasChanges && (
-                      <button
+                      <Button
                         type="button"
                         onClick={handleDiscard}
                         disabled={isSubmitting}
                         className="px-4 py-2 dark:text-white/60 text-gray-600 hover:dark:text-white hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Descartar
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
                       type="button"
                       onClick={handleSave}
                       disabled={!canSubmit || !hasChanges}
@@ -509,9 +510,9 @@ Compartilhe suas experiências, conhecimentos e insights!"
                           </>
                         )}
                       </div>
-                    </button>
+                    </Button>
                     
-                    <button
+                    <Button
                       type="button"
                       onClick={handlePublish}
                       disabled={!canSubmit}
@@ -530,7 +531,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                           </>
                         )}
                       </div>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </form>

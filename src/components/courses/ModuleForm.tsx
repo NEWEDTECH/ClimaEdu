@@ -376,7 +376,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                   className="flex items-center justify-between w-full p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200"
                 >
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mr-3 shadow-sm">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -460,14 +460,14 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                       <Button
                         type="button"
                         onClick={() => handleEditModule(module.id, module.title)}
-                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-2 rounded-lg transition-colors"
+                        variant='secondary'
                       >
                         Editar
                       </Button>
                       <Button
                         type="button"
                         onClick={() => handleAddLesson(module.id)}
-                        className="flex-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs py-2 rounded-lg transition-colors"
+                        variant='primary'
                       >
                         + Lição
                       </Button>

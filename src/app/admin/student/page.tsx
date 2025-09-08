@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
+import { Tabs, TabsList, TabsContent } from '@/components/ui/tabs/tabs'
+import { TabsTrigger } from '@/components/tabs/TabsTrigger'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { container } from '@/_core/shared/container'
@@ -206,7 +207,7 @@ export default function StudentPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Configuração de estudantes</h1>
             <Link href="/admin/student/create-edit">
-              <Button>Inscrever estudante em um curso</Button>
+              <Button variant='primary'>Inscrever estudante em um curso</Button>
             </Link>
           </div>
 
@@ -280,7 +281,7 @@ export default function StudentPage() {
                             <div className="flex items-center mt-1">
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
                                 {selectedStudentEmail}
-                                <button 
+                                <Button 
                                   onClick={() => {
                                     setSelectedStudentEmail('');
                                     setStudentSearchTerm('');
@@ -288,7 +289,7 @@ export default function StudentPage() {
                                   className="ml-1 text-blue-800 hover:text-blue-900"
                                 >
                                   <X size={12} />
-                                </button>
+                                </Button>
                               </span>
                             </div>
                           )}
@@ -338,7 +339,7 @@ export default function StudentPage() {
                             <div className="flex items-center mt-1">
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
                                 {courseOptions.find(c => c.id === selectedCourseId)?.title}
-                                <button 
+                                <Button 
                                   onClick={() => {
                                     setSelectedCourseId('');
                                     setCourseSearchTerm('');
@@ -346,7 +347,7 @@ export default function StudentPage() {
                                   className="ml-1 text-blue-800 hover:text-blue-900"
                                 >
                                   <X size={12} />
-                                </button>
+                                </Button>
                               </span>
                             </div>
                           )}
@@ -398,7 +399,7 @@ export default function StudentPage() {
                             <div className="flex items-center mt-1">
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
                                 {institutionOptions.find(i => i.id === selectedInstitutionId)?.name}
-                                <button 
+                                <Button 
                                   onClick={() => {
                                     setSelectedInstitutionId('');
                                     setInstitutionSearchTerm('');
@@ -406,7 +407,7 @@ export default function StudentPage() {
                                   className="ml-1 text-blue-800 hover:text-blue-900"
                                 >
                                   <X size={12} />
-                                </button>
+                                </Button>
                               </span>
                             </div>
                           )}
@@ -479,7 +480,7 @@ export default function StudentPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex justify-end gap-2">
                               <Link href={`/admin/student/create-edit/${student.id}`}>
-                                <Button className="border border-gray-300 bg-transparent hover:bg-gray-100">Editar</Button>
+                                <Button variant='primary'>Editar</Button>
                               </Link>
                             </div>
                           </td>

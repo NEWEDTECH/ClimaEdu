@@ -274,7 +274,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
   return (
     <>
       {isEmbedded && (
-        <div className="h-full flex flex-col bg-red-600" style={{ height: 'calc(100vh - 11.5rem)' }}>
+        <div className="h-full flex flex-col bg-white dark:bg-black" style={{ height: 'calc(100vh - 11.5rem)' }}>
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {isInitializing ? (
