@@ -138,7 +138,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button
-                    className='dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20'
+                    variant='primary'
                   >Voltar
                   </Button>
                 </Link>
@@ -166,7 +166,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                 </p>
               </div>
               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                <Button variant='primary'>
                   Voltar
                 </Button>
               </Link>
@@ -191,13 +191,13 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                 <div className="flex justify-end space-x-3">
                   <Button
                     type="button"
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    variant='secondary'
                     onClick={handleCancel}
                   >
                     Cancelar
                   </Button>
                   <Button
-                    className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
+                    variant='primary'
                     type="button"
                     disabled={isSaving}
                     onClick={handleSave}

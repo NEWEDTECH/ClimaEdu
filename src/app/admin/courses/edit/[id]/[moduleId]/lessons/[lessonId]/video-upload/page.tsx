@@ -267,13 +267,13 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                 <div className="flex justify-end space-x-3">
                   <Button
                     type="button"
-                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                    variant='secondary'
                     onClick={handleCancel}
                   >
                     Cancelar
                   </Button>
                   <Button
-                    className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
+                    variant='primary'
                     type="submit"
                     disabled={isSaving}
                   >

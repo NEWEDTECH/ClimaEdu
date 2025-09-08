@@ -491,7 +491,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                           <div className="flex gap-2">
                             <Button
                               type="button"
-                              className="border border-gray-300 bg-transparent hover:bg-gray-100 text-sm px-3 py-1"
+                              variant='primary'
                               onClick={() => editQuestion(index)}
                             >
                               Editar
@@ -545,7 +545,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                       </label>
                       <Button
                         type="button"
-                        className="border border-gray-300 bg-transparent hover:bg-gray-100 text-sm px-3 py-1"
+                        className="bg-green-500 hover:bg-green-500"
                         onClick={handleAddOption}
                       >
                         Adicionar Opção
@@ -651,7 +651,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
               <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
                 <Button
                   type="button"
-                  className="border-2 bg-transparent hover:bg-gray-50"
+                  variant='secondary'
                 >
                   Cancelar
                 </Button>
