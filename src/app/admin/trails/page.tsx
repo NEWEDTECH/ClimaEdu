@@ -229,7 +229,7 @@ export default function TrailsPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex gap-2">
                               <Link href={`/admin/trails/edit/${trail.id}`}>
-                                <Button className="hover:bg-white h-8 rounded-md gap-1.5 px-3">Editar</Button>
+                                <Button className="hover:bg-white hover:text-black h-8 rounded-md gap-1.5 px-3">Editar</Button>
                               </Link>
                               <Button 
                                 onClick={() => handleDeleteTrail(trail.id)}

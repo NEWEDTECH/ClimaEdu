@@ -95,13 +95,13 @@ export function SearchComponent({
               onClick={onFilter}
               disabled={disabled}
               className={cn(
-                "h-12 px-4 !rounded-full border-0 transition-all duration-200",
-                "bg-white/10 hover:bg-white/20 text-white",
+                "h-12 px-4 !rounded-full border-0 transition-all duration-200 cursor-pointer",
+                " hover:bg-white/20 text-white",
                 disabled && "opacity-60 cursor-not-allowed"
               )}
             >
-              <Filter className="h-5 w-5" />
-              <span className="hidden sm:inline ml-2">Filtros</span>
+              <Filter className="h-5 w-5 text-black dark:text-white" />
+              <span className="hidden sm:inline ml-2 text-black dark:text-white">Buscar</span>
             </Button>
           )}
         </div>
