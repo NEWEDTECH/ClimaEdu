@@ -11,6 +11,7 @@ import { InputText } from '@/components/input'
 import { FormSection } from '@/components/form'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { CSVUpload } from '@/components/admin/CSVUpload'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
@@ -53,11 +54,11 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateUserPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<boolean>(false)
   const [institutions, setInstitutions] = useState<Institution[]>([])
-  const [isLoadingInstitutions, setIsLoadingInstitutions] = useState(false)
+  const [isLoadingInstitutions, setIsLoadingInstitutions] = useState<boolean>(false)
   const { infoUser } = useProfile()
 
   const currentUserRole: UserRole = UserRole.SUPER_ADMIN;
@@ -183,6 +184,15 @@ export default function CreateUserPage() {
     }
   }
 
+  const handleCSVUpload = (file: File, data: any[]) => {
+    console.log('📊 CSV Upload recebido:', {
+      arquivo: file.name,
+      totalRegistros: data.length,
+      primeiroRegistro: data[0],
+      todosOsDados: data
+    });
+  }
+
   return (
     <ProtectedContent>
       <DashboardLayout>
@@ -191,160 +201,132 @@ export default function CreateUserPage() {
             <Button
               icon={<ArrowLeftIcon size={16} />}
               iconPosition="start"
-              onClick={() => router.push('/admin')}
+              onClick={() => router.push('/')}
             >
               Voltar para o painel
             </Button>
           </div>
 
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Criar Novo Usuário</CardTitle>
-              <CardDescription>
-                Preencha os dados para criar um novo usuário no sistema
-              </CardDescription>
-            </CardHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Criar Usuário Individual</CardTitle>
+                <CardDescription>
+                  Preencha os dados para criar um novo usuário no sistema
+                </CardDescription>
+              </CardHeader>
 
-            <FormSection onSubmit={handleSubmit(onSubmit)} error={error}>
-              <CardContent className="space-y-4">
-                {success && (
-                  <div className="p-3 rounded-md bg-green-100 text-green-800 mb-4">
-                    Usuário criado com sucesso!
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <label htmlFor="name" className="block text-sm font-medium">
-                    Nome Completo
-                  </label>
-                  <InputText
-                    id="name"
-                    {...register('name')}
-                    placeholder="Digite o nome completo"
-                    className={errors.name ? 'border-red-500' : ''}
-                    aria-invalid={errors.name ? 'true' : 'false'}
-                  />
-                  {errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+              <FormSection onSubmit={handleSubmit(onSubmit)} error={error}>
+                <CardContent className="space-y-4">
+                  {success && (
+                    <div className="p-3 rounded-md bg-green-100 text-green-800 mb-4">
+                      Usuário criado com sucesso!
+                    </div>
                   )}
-                </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium">
-                    Email
-                  </label>
-                  <InputText
-                    id="email"
-                    type="email"
-                    {...register('email')}
-                    placeholder="Digite o email"
-                    className={errors.email ? 'border-red-500' : ''}
-                    aria-invalid={errors.email ? 'true' : 'false'}
-                  />
-                  {errors.email && (
-                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
-                  )}
-                </div>
-
-                {/*<div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium">
-                    Senha
-                  </label>
-                  <InputText
-                    id="password"
-                    type="password"
-                    {...register('password')}
-                    placeholder="Digite a senha"
-                    className={errors.password ? 'border-red-500' : ''}
-                    aria-invalid={errors.password ? 'true' : 'false'}
-                  />
-                  {errors.password && (
-                    <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium">
-                    Confirmar Senha
-                  </label>
-                  <InputText
-                    id="confirmPassword"
-                    type="password"
-                    {...register('confirmPassword')}
-                    placeholder="Confirme a senha"
-                    className={errors.confirmPassword ? 'border-red-500' : ''}
-                    aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-                  />
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
-                  )}
-                </div>
-                */}
-                <div className="space-y-2">
-                  <label htmlFor="role" className="block text-sm font-medium">
-                    Tipo de Usuário
-                  </label>
-                  <select
-                    id="role"
-                    {...register('role')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  >
-                    {allowedRoles.map((role) => (
-                      <option key={role} value={role}>
-                        {roleLabels[role]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {(currentUserRole === UserRole.SUPER_ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN) && (
                   <div className="space-y-2">
-                    <label htmlFor="institutionId" className="block text-sm font-medium">
-                      Instituição
+                    <label htmlFor="name" className="block text-sm font-medium">
+                      Nome Completo
                     </label>
-                    {isLoadingInstitutions ? (
-                      <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm items-center">
-                        Carregando instituições...
-                      </div>
-                    ) : (
-                      <select
-                        id="institutionId"
-                        {...register('institutionId')}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      >
-                        <option value="">Selecione uma instituição</option>
-                        {institutions.map((institution) => (
-                          <option key={institution.id} value={institution.id}>
-                            {institution.name}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {errors.institutionId && (
-                      <p className="text-red-500 text-xs mt-1">{errors.institutionId.message}</p>
+                    <InputText
+                      id="name"
+                      {...register('name')}
+                      placeholder="Digite o nome completo"
+                      className={errors.name ? 'border-red-500' : ''}
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                    />
+                    {errors.name && (
+                      <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
                     )}
                   </div>
-                )}
-              </CardContent>
 
-              <CardFooter className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  onClick={() => router.push('/admin')}
-                  className="hover:bg-gray-50"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="hover:bg-gray-50"
-                >
-                  {isSubmitting ? 'Criando...' : 'Criar Usuário'}
-                </Button>
-              </CardFooter>
-            </FormSection>
-          </Card>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="block text-sm font-medium">
+                      Email
+                    </label>
+                    <InputText
+                      id="email"
+                      type="email"
+                      {...register('email')}
+                      placeholder="Digite o email"
+                      className={errors.email ? 'border-red-500' : ''}
+                      aria-invalid={errors.email ? 'true' : 'false'}
+                    />
+                    {errors.email && (
+                      <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="role" className="block text-sm font-medium">
+                      Tipo de Usuário
+                    </label>
+                    <select
+                      id="role"
+                      {...register('role')}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      {allowedRoles.map((role) => (
+                        <option key={role} value={role}>
+                          {roleLabels[role]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {(currentUserRole === UserRole.SUPER_ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN) && (
+                    <div className="space-y-2">
+                      <label htmlFor="institutionId" className="block text-sm font-medium">
+                        Instituição
+                      </label>
+                      {isLoadingInstitutions ? (
+                        <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm items-center">
+                          Carregando instituições...
+                        </div>
+                      ) : (
+                        <select
+                          id="institutionId"
+                          {...register('institutionId')}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          <option value="">Selecione uma instituição</option>
+                          {institutions.map((institution) => (
+                            <option key={institution.id} value={institution.id}>
+                              {institution.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {errors.institutionId && (
+                        <p className="text-red-500 text-xs mt-1">{errors.institutionId.message}</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => router.push('/admin')}
+                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                  >
+                    {isSubmitting ? 'Criando...' : 'Criar Usuário'}
+                  </Button>
+                </CardFooter>
+              </FormSection>
+            </Card>
+
+            <div className="lg:col-span-1">
+              <CSVUpload onFileUpload={handleCSVUpload} />
+            </div>
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedContent>
