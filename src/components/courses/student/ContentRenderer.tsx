@@ -43,6 +43,19 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
       );
     case ContentType.PDF:
       return <PdfPlayer url={content.url} />;
+    case ContentType.AUDIO:
+      return (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <audio
+            controls
+            className="w-full"
+            src={content.url.split('#storagePath=')[0]}
+            onEnded={onEnded}
+          >
+            Seu navegador não suporta o elemento de áudio.
+          </audio>
+        </div>
+      );
     // Adicionar outros tipos de conteúdo aqui (PDF, etc.)
     default:
       return (
