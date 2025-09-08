@@ -12,7 +12,7 @@ export function ProfileDropdownOptions({
 }: OptionsProfileProps) {
 
   return (
-    <DropdownMenuItem asChild>
+    <DropdownMenuItem asChild className='hover:bg-primary'>
       <Link href={href} className="flex items-center gap-2 cursor-pointer">
         <span className="w-4 h-4 text-muted-foreground flex items-center justify-center">
           {icon}
