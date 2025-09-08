@@ -83,9 +83,6 @@ export function DescriptionSection({
           <div className="flex gap-2">
             <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/description`}>
               <Button variant='primary'>
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
                 Adicionar Descrição
               </Button>
             </Link>
