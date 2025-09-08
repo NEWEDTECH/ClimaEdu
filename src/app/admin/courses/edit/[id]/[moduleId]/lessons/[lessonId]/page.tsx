@@ -583,7 +583,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <Button 
                 onClick={handleDeleteLesson} 
                 disabled={isSubmitting}
-                className="bg-destructive text-white shadow-xs hover:bg-destructive/90"
+                className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
               >
                 {isSubmitting ? 'Excluindo...' : 'Excluir Lição'}
               </Button>

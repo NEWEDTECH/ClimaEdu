@@ -35,11 +35,11 @@ type QuestionnaireFormData = {
   passingScore: number;
 }
 
-export default function QuestionsManagementPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string, questionnaireId: string }>}) { 
+export default function QuestionsManagementPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string, questionnaireId: string }> }) {
   const router = useRouter();
   const unwrappedParams = use(params);
   const { id: courseId, moduleId, lessonId, questionnaireId } = unwrappedParams;
-  
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionnaireTitle, setQuestionnaireTitle] = useState<string>('');
   const [lessonTitle, setLessonTitle] = useState<string>('');
@@ -53,7 +53,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     passingScore: 70,
   });
   const [isUpdatingQuestionnaire, setIsUpdatingQuestionnaire] = useState<boolean>(false);
-  
+
   const [isAddingQuestion, setIsAddingQuestion] = useState<boolean>(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState<boolean>(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
@@ -62,38 +62,38 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     options: ['', ''],
     correctAnswerIndex: 0
   });
-  
+
   const [isDeletingQuestion, setIsDeletingQuestion] = useState<boolean>(false);
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         const questionnaireRepository = container.get<QuestionnaireRepository>(
           Register.content.repository.QuestionnaireRepository
         );
-        
+
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         );
-        
+
         const moduleRepository = container.get<ModuleRepository>(
           Register.content.repository.ModuleRepository
         );
-        
+
         const listQuestionsUseCase = container.get<ListQuestionsOfQuestionnaireUseCase>(
           Register.content.useCase.ListQuestionsOfQuestionnaireUseCase
         );
-        
+
         const questionnaireData = await questionnaireRepository.findById(questionnaireId);
         if (!questionnaireData) {
           setError('Questionário não encontrado');
           setIsLoading(false);
           return;
         }
-        
+
         setQuestionnaire(questionnaireData);
         setQuestionnaireTitle(questionnaireData.title);
         setQuestionnaireFormData({
@@ -101,29 +101,29 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
           maxAttempts: questionnaireData.maxAttempts,
           passingScore: questionnaireData.passingScore
         });
-        
+
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
           setError('Lição não encontrada');
           setIsLoading(false);
           return;
         }
-        
+
         setLessonTitle(lesson.title);
-        
+
         const moduleData = await moduleRepository.findById(moduleId);
         if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
-        
+
         setModuleName(moduleData.title);
 
         const result = await listQuestionsUseCase.execute({
           questionnaireId
         });
-        
+
         setQuestions(result.questions);
         setIsLoading(false);
       } catch (error) {
@@ -134,7 +134,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [questionnaireId, lessonId, moduleId]);
 
@@ -150,17 +150,17 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       showToast.warning('Uma pergunta deve ter pelo menos 2 opções');
       return;
     }
-    
+
     const newOptions = [...questionFormData.options];
     newOptions.splice(index, 1);
-    
+
     let newCorrectAnswerIndex = questionFormData.correctAnswerIndex;
     if (index === questionFormData.correctAnswerIndex) {
-      newCorrectAnswerIndex = 0; 
+      newCorrectAnswerIndex = 0;
     } else if (index < questionFormData.correctAnswerIndex) {
-      newCorrectAnswerIndex--; 
+      newCorrectAnswerIndex--;
     }
-    
+
     setQuestionFormData(prev => ({
       ...prev,
       options: newOptions,
@@ -171,7 +171,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...questionFormData.options];
     newOptions[index] = value;
-    
+
     setQuestionFormData(prev => ({
       ...prev,
       options: newOptions
@@ -237,26 +237,26 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
 
   const handleAddQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
 
       if (!questionFormData.questionText.trim()) {
         showToast.warning('O texto da pergunta não pode estar vazio');
         return;
       }
-      
+
       if (questionFormData.options.some(option => !option.trim())) {
         showToast.warning('Todas as opções devem ser preenchidas');
         return;
       }
-      
+
       // Show loading toast
       const loadingToastId = showToast.loading('Adicionando pergunta...');
 
       const addQuestionUseCase = container.get<AddQuestionToQuestionnaireUseCase>(
         Register.content.useCase.AddQuestionToQuestionnaireUseCase
       );
-      
+
 
       const result = await addQuestionUseCase.execute({
         questionnaireId,
@@ -264,15 +264,15 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         options: questionFormData.options,
         correctAnswerIndex: questionFormData.correctAnswerIndex
       });
-      
+
       setQuestions(prev => [...prev, result.question]);
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Pergunta adicionada com sucesso!',
         type: 'success'
       });
-      
+
       resetFormData();
     } catch (error) {
       console.error('Erro ao adicionar pergunta:', error);
@@ -283,28 +283,28 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
 
   const handleUpdateQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingQuestionId) return;
-    
+
     try {
 
       if (!questionFormData.questionText.trim()) {
         showToast.warning('O texto da pergunta não pode estar vazio');
         return;
       }
-      
+
       if (questionFormData.options.some(option => !option.trim())) {
         showToast.warning('Todas as opções devem ser preenchidas');
         return;
       }
-      
+
       // Show loading toast
       const loadingToastId = showToast.loading('Atualizando pergunta...');
-      
+
       const updateQuestionUseCase = container.get<UpdateQuestionUseCase>(
         Register.content.useCase.UpdateQuestionUseCase
       );
-      
+
       const result = await updateQuestionUseCase.execute({
         questionnaireId,
         questionId: editingQuestionId,
@@ -312,17 +312,17 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         options: questionFormData.options,
         correctAnswerIndex: questionFormData.correctAnswerIndex
       });
-      
-      setQuestions(prev => 
+
+      setQuestions(prev =>
         prev.map(q => q.id === editingQuestionId ? result.question : q)
       );
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Pergunta atualizada com sucesso!',
         type: 'success'
       });
-      
+
       resetFormData();
     } catch (error) {
       console.error('Erro ao atualizar pergunta:', error);
@@ -332,7 +332,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
 
   const handleDeleteQuestion = async () => {
     if (!deletingQuestionId) return;
-    
+
     try {
       // Show loading toast
       const loadingToastId = showToast.loading('Excluindo pergunta...');
@@ -340,20 +340,20 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       const deleteQuestionUseCase = container.get<DeleteQuestionUseCase>(
         Register.content.useCase.DeleteQuestionUseCase
       );
-      
+
       await deleteQuestionUseCase.execute({
         questionnaireId,
         questionId: deletingQuestionId
       });
-      
+
       setQuestions(prev => prev.filter(q => q.id !== deletingQuestionId));
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Pergunta excluída com sucesso!',
         type: 'success'
       });
-      
+
       setDeletingQuestionId(null);
       setIsDeletingQuestion(false);
     } catch (error) {
@@ -373,33 +373,33 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
 
   const handleUpdateQuestionnaire = async () => {
     if (!questionnaire) return;
-    
+
     try {
       setIsUpdatingQuestionnaire(true);
-      
+
       // Show loading toast
       const loadingToastId = showToast.loading('Atualizando questionário...');
-      
+
       questionnaire.updateTitle(questionnaireFormData.title);
       questionnaire.updateMaxAttempts(questionnaireFormData.maxAttempts);
       questionnaire.updatePassingScore(questionnaireFormData.passingScore);
-      
+
       const questionnaireRepository = container.get<QuestionnaireRepository>(
         Register.content.repository.QuestionnaireRepository
       );
-      
+
       const updatedQuestionnaire = await questionnaireRepository.save(questionnaire);
-      
+
 
       setQuestionnaire(updatedQuestionnaire);
       setQuestionnaireTitle(updatedQuestionnaire.title);
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Informações do questionário atualizadas com sucesso!',
         type: 'success'
       });
-      
+
       setIsUpdatingQuestionnaire(false);
     } catch (error) {
       console.error('Erro ao atualizar questionário:', error);
@@ -529,7 +529,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                 </div>
               </div>
               <div className="flex justify-end mt-4">
-                <Button 
+                <Button
+                className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
                   onClick={handleUpdateQuestionnaire}
                   disabled={isUpdatingQuestionnaire}
                 >
@@ -545,12 +546,13 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               <div>
                 <CardTitle>Perguntas do Questionário</CardTitle>
                 <CardDescription>
-                  {questions.length === 0 
-                    ? 'Adicione perguntas ao questionário' 
+                  {questions.length === 0
+                    ? 'Adicione perguntas ao questionário'
                     : `${questions.length} pergunta(s) adicionada(s)`}
                 </CardDescription>
               </div>
-              <Button 
+              <Button
+              className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
                 onClick={startAddQuestion}
                 disabled={isAddingQuestion || isEditingQuestion}
               >
@@ -565,8 +567,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               ) : (
                 <div className="space-y-4">
                   {questions.map((question, index) => (
-                    <div 
-                      key={question.id} 
+                    <div
+                      key={question.id}
                       className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       <div className="flex justify-between items-start">
@@ -582,16 +584,14 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                           <div className="ml-8 space-y-1">
                             {question.options.map((option, optIndex) => (
                               <div key={optIndex} className="flex items-center">
-                                <div className={`w-4 h-4 rounded-full mr-2 flex-shrink-0 ${
-                                  optIndex === question.correctAnswerIndex 
-                                    ? 'bg-green-500' 
+                                <div className={`w-4 h-4 rounded-full mr-2 flex-shrink-0 ${optIndex === question.correctAnswerIndex
+                                    ? 'bg-green-500'
                                     : 'bg-gray-200 dark:bg-gray-700'
-                                }`}></div>
-                                <p className={`text-sm ${
-                                  optIndex === question.correctAnswerIndex 
-                                    ? 'font-medium text-green-600 dark:text-green-400' 
+                                  }`}></div>
+                                <p className={`text-sm ${optIndex === question.correctAnswerIndex
+                                    ? 'font-medium text-green-600 dark:text-green-400'
                                     : 'text-gray-600 dark:text-gray-400'
-                                }`}>
+                                  }`}>
                                   {option}
                                 </p>
                               </div>
@@ -599,14 +599,14 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button 
-                            className="border border-gray-300 bg-transparent hover:bg-gray-100 text-sm px-3 py-1"
+                          <Button
+                            className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                             onClick={() => startEditQuestion(question)}
                             disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
                           >
                             Editar
                           </Button>
-                          <Button 
+                          <Button
                             className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
                             onClick={() => startDeleteQuestion(question.id)}
                             disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
@@ -621,7 +621,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               )}
             </CardContent>
             <CardFooter className="flex justify-end">
-              <Button 
+              <Button
+                className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
                 onClick={handleFinish}
                 disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
               >
@@ -637,8 +638,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                   {isAddingQuestion ? 'Adicionar Nova Pergunta' : 'Editar Pergunta'}
                 </CardTitle>
                 <CardDescription>
-                  {isAddingQuestion 
-                    ? 'Crie uma nova pergunta para o questionário' 
+                  {isAddingQuestion
+                    ? 'Crie uma nova pergunta para o questionário'
                     : 'Atualize os detalhes da pergunta'}
                 </CardDescription>
               </CardHeader>
@@ -663,24 +664,23 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                         <label className="block text-sm font-medium">
                           Opções de Resposta
                         </label>
-                        <Button 
-                          type="button" 
-                          className="border border-gray-300 bg-transparent hover:bg-gray-100 text-sm px-3 py-1"
+                        <Button
+                          type="button"
+                          className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
                           onClick={handleAddOption}
                         >
                           Adicionar Opção
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-3">
                         {questionFormData.options.map((option, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <div 
-                              className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer ${
-                                index === questionFormData.correctAnswerIndex 
-                                  ? 'bg-green-500 text-white' 
+                            <div
+                              className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer ${index === questionFormData.correctAnswerIndex
+                                  ? 'bg-green-500 text-white'
                                   : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                              }`}
+                                }`}
                               onClick={() => handleSetCorrectAnswer(index)}
                               title="Marcar como resposta correta"
                             >
@@ -709,8 +709,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                               required
                               className="flex-1"
                             />
-                            <Button 
-                              type="button" 
+                            <Button
+                              type="button"
                               className="bg-red-600 hover:bg-red-700 text-white text-sm px-2 py-1"
                               onClick={() => handleRemoveOption(index)}
                               disabled={questionFormData.options.length <= 2}

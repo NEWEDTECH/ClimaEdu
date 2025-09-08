@@ -89,7 +89,7 @@ const ModuleDropdown = ({
               key={lesson.id}
               onClick={() => onLessonSelect(lesson.id)}
               className={`flex items-center w-full p-3 text-left text-sm rounded-lg transition-all duration-200 ${activeLesson === lesson.id
-                ? 'bg-blue-500 text-white shadow-md transform scale-[1.02]'
+                ? 'bg-primary text-foreground'
                 : 'hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm text-gray-700 dark:text-gray-300'
                 }`}
             >

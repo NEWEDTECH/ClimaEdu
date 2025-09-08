@@ -75,7 +75,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
   ]
 
   return (
-    <div className="bg-gray-50 border-b border-gray-300 p-2">
+    <div className="bg-gray-50 border-b border-gray-300 p-2 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20">
       <div className="flex items-center gap-1 flex-wrap">
         {/* Format buttons */}
         <div className="flex items-center gap-1 mr-2">
@@ -85,7 +85,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
               onClick={() => onCommand(command)}
               title={title}
             >
-              <Icon size={16} />
+              <Icon size={16} className='dark:text-white'/>
             </ToolbarButton>
           ))}
         </div>
@@ -100,7 +100,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
               onClick={() => onCommand(command)}
               title={title}
             >
-              <Icon size={16} />
+              <Icon size={16} className='dark:text-white'/>
             </ToolbarButton>
           ))}
         </div>
@@ -115,7 +115,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
               onClick={() => onCommand(command)}
               title={title}
             >
-              <Icon size={16} />
+              <Icon size={16} className='dark:text-white'/>
             </ToolbarButton>
           ))}
         </div>
@@ -128,7 +128,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
             onClick={() => setShowColorPicker(!showColorPicker)}
             title="Cor do texto"
           >
-            <PaletteIcon size={16} />
+            <PaletteIcon size={16} className='dark:text-white'/>
           </ToolbarButton>
           
           {showColorPicker && (
@@ -146,7 +146,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
           onClick={handleLinkClick}
           title="Transformar texto selecionado em link"
         >
-          <LinkIcon size={16} />
+          <LinkIcon size={16} className='dark:text-white'/>
         </ToolbarButton>
 
         <div className="w-px h-6 bg-gray-300 mx-2" />
