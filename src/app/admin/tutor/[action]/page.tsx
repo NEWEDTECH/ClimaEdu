@@ -474,14 +474,14 @@ export default function AssociateTutorToCoursePage() {
                     {selectedCourses.map((course) => (
                       <div key={course.id} className="relative">
                         <Tooltip label={course.title} />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => handleCourseRemove(course.id)}
                           className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
                           aria-label="Remover curso"
                         >
                           <X size={12} />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

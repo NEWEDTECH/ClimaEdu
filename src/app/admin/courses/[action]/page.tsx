@@ -537,7 +537,7 @@ export default function CoursePage() {
                     {selectedTutors.map((tutor) => (
                       <div key={tutor.id} className="relative">
                         <Tooltip label={tutor.email} />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             // Only update the UI, backend changes will be made on save
@@ -549,7 +549,7 @@ export default function CoursePage() {
                           aria-label="Remover tutor"
                         >
                           <X size={12} />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

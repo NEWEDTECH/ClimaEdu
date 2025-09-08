@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
+import { Button } from '@/components/button'
 import { Progress } from '@/components/ui/helpers/progress';
 
 const mockBadges = [
@@ -126,7 +127,7 @@ export default function ConquistasPage() {
             </p>
 
             <div className="flex flex-wrap gap-2 mb-6">
-              <button
+              <Button
                 className={`px-4 py-2 rounded-full text-sm ${
                   selectedFilter === null
                     ? 'bg-blue-500 text-white'
@@ -135,9 +136,9 @@ export default function ConquistasPage() {
                 onClick={() => handleFilterChange(null)}
               >
                 Todas
-              </button>
+              </Button>
               {criteriaTypes.map(type => (
-                <button
+                <Button
                   key={type}
                   className={`px-4 py-2 rounded-full text-sm ${
                     selectedFilter === type
@@ -147,7 +148,7 @@ export default function ConquistasPage() {
                   onClick={() => handleFilterChange(type)}
                 >
                   {criteriaTypeLabels[type] || type}
-                </button>
+                </Button>
               ))}
             </div>
 

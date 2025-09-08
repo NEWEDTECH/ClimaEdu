@@ -24,7 +24,6 @@ type CourseWithUIProps = {
   title: string
   description: string
   instructorDisplay?: string
-  duration?: string
   enrolledStudents?: number
   status: 'active' | 'inactive'
 }
@@ -33,7 +32,6 @@ const NAME_COLUMNS = [
   'Nome',
   'Descrição',
   'Instrutor',
-  'Duração',
   'Estudantes',
   'Status',
   'Ação'
@@ -137,7 +135,6 @@ export default function CoursesPage() {
             title: course.title,
             description: course.description,
             instructorDisplay,
-            duration: 'Not specified',
             enrolledStudents: 0,
             status: 'active' as 'active' | 'inactive'
           }
@@ -256,7 +253,6 @@ export default function CoursesPage() {
                       <td className="py-3 px-4">{course.title}</td>
                       <td className="py-3 px-4 max-w-xs truncate">{course.description}</td>
                       <td className="py-3 px-4">{course.instructorDisplay}</td>
-                      <td className="py-3 px-4">{course.duration}</td>
                       <td className="py-3 px-4 text-center">{course.enrolledStudents}</td>
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs ${

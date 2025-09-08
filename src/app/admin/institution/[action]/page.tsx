@@ -495,7 +495,7 @@ export default function InstitutionPage() {
                     {selectedAdministrators.map((admin) => (
                       <div key={admin.id} className="relative">
                         <Tooltip label={admin.email} />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             // Only update the UI, backend changes will be made on save
@@ -507,7 +507,7 @@ export default function InstitutionPage() {
                           aria-label="Remover administrador"
                         >
                           <X size={12} />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

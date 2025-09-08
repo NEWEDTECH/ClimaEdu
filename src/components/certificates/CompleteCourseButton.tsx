@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 import { useCompleteCourse } from '@/hooks/enrollment/useCompleteCourse';
 import { useProfile } from '@/context/zustand/useProfile';
 

@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { usePosts } from '@/hooks/social/usePosts';
 import { useFormValidation, postSchema } from '@/components/social/validation/SocialValidation';
 import { useProfile } from '@/context/zustand/useProfile';
+import { Button } from '@/components/button'
 import { DashboardLayout } from '@/components/layout';
-import { PenTool, Save, Send, ArrowLeft, Lightbulb, Sparkles, Edit3 } from 'lucide-react';
+import { Save, Send, ArrowLeft, Lightbulb } from 'lucide-react';
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -262,7 +263,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                   </div>
                   
                   <div className="flex gap-4">
-                    <button
+                    <Button
                       type="button"
                       onClick={handleSaveDraft}
                       disabled={!canSubmit}
@@ -281,9 +282,9 @@ Compartilhe suas experiências, conhecimentos e insights!"
                           </>
                         )}
                       </div>
-                    </button>
+                    </Button>
                     
-                    <button
+                    <Button
                       type="button"
                       onClick={handlePublish}
                       disabled={!canSubmit}
@@ -302,7 +303,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                           </>
                         )}
                       </div>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </form>

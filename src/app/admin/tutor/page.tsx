@@ -162,30 +162,30 @@ export default function TutorPage() {
                 </div>
                 <div>
                   <div className="flex space-x-1 rounded-md bg-muted p-1">
-                    <button
+                    <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
                         statusFilter === 'all' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
                       }`}
                       onClick={() => setStatusFilter('all')}
                     >
                       Todos
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
                         statusFilter === 'active' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
                       }`}
                       onClick={() => setStatusFilter('active')}
                     >
                       Ativos
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
                         statusFilter === 'inactive' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
                       }`}
                       onClick={() => setStatusFilter('inactive')}
                     >
                       Inativos
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

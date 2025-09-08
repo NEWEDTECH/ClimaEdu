@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { InputText } from '@/components/ui/input/input-text';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
 import { useProfile } from '@/context/zustand/useProfile';
 

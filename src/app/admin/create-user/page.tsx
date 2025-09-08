@@ -338,7 +338,6 @@ export default function CreateUserPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="font-bold"
                 >
                   {isSubmitting ? 'Criando...' : 'Criar Usuário'}
                 </Button>

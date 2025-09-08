@@ -26,8 +26,8 @@ export function Button({
     <Comp
       onClick={onClick}
       className={cn(
-        "cursor-pointer",
-        "inline-flex items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-gray-100 transition-colors",
+        "cursor-pointer font-bold",
+        "inline-flex items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-gray-100 transition-colors dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20",
         className
       )}
       {...props}

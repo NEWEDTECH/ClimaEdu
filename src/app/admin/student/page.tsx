@@ -280,7 +280,7 @@ export default function StudentPage() {
                             <div className="flex items-center mt-1">
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
                                 {selectedStudentEmail}
-                                <button 
+                                <Button 
                                   onClick={() => {
                                     setSelectedStudentEmail('');
                                     setStudentSearchTerm('');
@@ -288,7 +288,7 @@ export default function StudentPage() {
                                   className="ml-1 text-blue-800 hover:text-blue-900"
                                 >
                                   <X size={12} />
-                                </button>
+                                </Button>
                               </span>
                             </div>
                           )}
@@ -338,7 +338,7 @@ export default function StudentPage() {
                             <div className="flex items-center mt-1">
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
                                 {courseOptions.find(c => c.id === selectedCourseId)?.title}
-                                <button 
+                                <Button 
                                   onClick={() => {
                                     setSelectedCourseId('');
                                     setCourseSearchTerm('');
@@ -346,7 +346,7 @@ export default function StudentPage() {
                                   className="ml-1 text-blue-800 hover:text-blue-900"
                                 >
                                   <X size={12} />
-                                </button>
+                                </Button>
                               </span>
                             </div>
                           )}
@@ -398,7 +398,7 @@ export default function StudentPage() {
                             <div className="flex items-center mt-1">
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
                                 {institutionOptions.find(i => i.id === selectedInstitutionId)?.name}
-                                <button 
+                                <Button 
                                   onClick={() => {
                                     setSelectedInstitutionId('');
                                     setInstitutionSearchTerm('');
@@ -406,7 +406,7 @@ export default function StudentPage() {
                                   className="ml-1 text-blue-800 hover:text-blue-900"
                                 >
                                   <X size={12} />
-                                </button>
+                                </Button>
                               </span>
                             </div>
                           )}

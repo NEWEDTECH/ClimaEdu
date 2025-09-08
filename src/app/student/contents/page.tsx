@@ -5,7 +5,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
 import { Progress } from '@/components/ui/helpers/progress';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 
 const mockCourses = [
   {
