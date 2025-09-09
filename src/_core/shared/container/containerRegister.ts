@@ -7,6 +7,7 @@ import { registerContentModule } from './modules/content/register';
 import { registerAuthModule } from './modules/auth/register';
 import { registerEnrollmentModule } from './modules/enrollment/register';
 import { registerBadgeModule } from './modules/badge/register';
+import { registerAchievementModule } from './modules/achievement/register';
 import { registerChatModule } from './modules/chat/register';
 import { registerPodcastModule } from './modules/podcast/register';
 import { registerSocialModule } from './modules/social/register';
@@ -25,6 +26,7 @@ export function registerDependencies(): void {
   registerAuthModule(container);
   registerEnrollmentModule(container);
   registerBadgeModule(container);
+  registerAchievementModule(container);
   registerChatModule(container);
   registerPodcastModule(container);
   registerSocialModule(container);
