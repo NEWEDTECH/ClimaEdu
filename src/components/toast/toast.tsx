@@ -13,6 +13,7 @@ interface ToastConfig {
   pauseOnHover?: boolean
   draggable?: boolean
   position?: 'top-right' | 'top-center' | 'top-left' | 'bottom-right' | 'bottom-center' | 'bottom-left'
+  containerId?: string
 }
 
 const defaultConfig: ToastConfig = {
@@ -113,11 +114,20 @@ export function ToastProvider({ children }: ToastProviderProps) {
       <ToastContainer
         position="top-right"
         autoClose={3000}
-        //hideProgressBar={false}
-        //closeOnClick
-        //pauseOnFocusLoss
-        //draggable
-        //pauseOnHover
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable={true}
+        pauseOnHover={true}
+        theme="light"
+        toastClassName="custom-toast"
+        bodyClassName="custom-toast-body"
+        progressClassName="custom-toast-progress"
+        closeButton={true}
+        enableMultiContainer={false}
+        containerId="main-toast-container"
       />
     </>
   )

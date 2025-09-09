@@ -84,7 +84,7 @@ export class ProcessAchievementProgressUseCase {
                   name: achievement.name,
                   description: achievement.description,
                   iconUrl: achievement.iconUrl,
-                  category: 'Conquista Personalizada'
+                  category: 'Progresso'
                 });
               } catch (error) {
                 console.warn('Could not show achievement notification:', error);

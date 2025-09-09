@@ -346,29 +346,29 @@ const checkExistingAchievements = async (): Promise<boolean> => {
 /**
  * Limpa conquistas padrão existentes (opcional)
  */
-const clearExistingAchievements = async (): Promise<void> => {
-  console.log('Removendo conquistas padrão existentes...');
+// const clearExistingAchievements = async (): Promise<void> => {
+//   console.log('Removendo conquistas padrão existentes...');
   
-  const snapshot = await firestore.collection(COLLECTION_NAME).get();
+//   const snapshot = await firestore.collection(COLLECTION_NAME).get();
   
-  if (snapshot.empty) {
-    console.log('Nenhuma conquista existente encontrada.');
-    return;
-  }
+//   if (snapshot.empty) {
+//     console.log('Nenhuma conquista existente encontrada.');
+//     return;
+//   }
 
-  const batch = firestore.batch();
-  let operationCount = 0;
+//   const batch = firestore.batch();
+//   let operationCount = 0;
 
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-    operationCount++;
-  });
+//   snapshot.docs.forEach((doc) => {
+//     batch.delete(doc.ref);
+//     operationCount++;
+//   });
 
-  if (operationCount > 0) {
-    await batch.commit();
-    console.log(`${operationCount} conquistas existentes removidas.`);
-  }
-};
+//   if (operationCount > 0) {
+//     await batch.commit();
+//     console.log(`${operationCount} conquistas existentes removidas.`);
+//   }
+// };
 
 // --- Função Principal ---
 

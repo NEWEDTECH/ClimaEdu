@@ -82,7 +82,8 @@ async function showSingleAchievementNotification(achievement: AchievementNotific
     position: 'top-right',
     closeOnClick: true,
     pauseOnHover: true,
-    draggable: true
+    draggable: true,
+    containerId: 'main-toast-container'
   });
   
   // Also log for debugging
