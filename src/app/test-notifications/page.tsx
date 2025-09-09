@@ -7,8 +7,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/c
 import { Button } from '@/components/button';
 import { showAchievementNotification, AchievementNotificationDemo } from '@/components/achievements/AchievementNotification';
 import { showToast } from '@/components/toast';
+import { CompleteCourseButton } from '@/components/certificates/CompleteCourseButton';
+import { useProfile } from '@/context/zustand/useProfile';
 
 export default function TestNotificationsPage() {
+  const { infoUser } = useProfile();
   const testBasicToast = () => {
     showToast.success('Toast básico funcionando!');
   };
@@ -124,8 +127,34 @@ export default function TestNotificationsPage() {
               </CardContent>
             </Card>
 
+            {/* Teste de Certificado/Conquista */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Teste de Certificado → Conquista</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {infoUser?.currentIdInstitution ? (
+                  <CompleteCourseButton
+                    courseId="test_course_001"
+                    courseName="Curso de Teste para Certificado"
+                    institutionId={infoUser.currentIdInstitution}
+                    instructorName="Professor Teste"
+                    hoursCompleted={10}
+                    grade={95}
+                    onCourseCompleted={() => {
+                      showToast.success('Teste: Curso completado! Verifique se a conquista foi desbloqueada.');
+                    }}
+                  />
+                ) : (
+                  <div className="text-sm text-gray-500">
+                    Usuário não autenticado ou sem instituição selecionada
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Demo Component Existente */}
-            <Card className="md:col-span-2">
+            <Card>
               <CardHeader>
                 <CardTitle>Componente Demo Existente</CardTitle>
               </CardHeader>
@@ -144,8 +173,10 @@ export default function TestNotificationsPage() {
                   <p><strong>1. Toasts Básicos:</strong> Teste cada tipo de toast para verificar se aparecem e podem ser fechados sem erros.</p>
                   <p><strong>2. Conquista Única:</strong> Teste uma notificação de conquista individual.</p>
                   <p><strong>3. Múltiplas Conquistas:</strong> Teste a fila de notificações com múltiplas conquistas.</p>
-                  <p><strong>4. Verificar Console:</strong> Abra o console do navegador para verificar se não há erros JavaScript.</p>
-                  <p><strong>5. Fechar Notificações:</strong> Tente fechar as notificações clicando no X para verificar se o erro foi corrigido.</p>
+                  <p><strong>4. Certificado → Conquista:</strong> Teste o fluxo completo: completar curso → gerar certificado → desbloquear conquista CERTIFICATE_ACHIEVED.</p>
+                  <p><strong>5. Verificar Console:</strong> Abra o console do navegador para verificar se eventos são disparados e não há erros JavaScript.</p>
+                  <p><strong>6. Fechar Notificações:</strong> Tente fechar as notificações clicando no X para verificar se o erro foi corrigido.</p>
+                  <p><strong>⚠️ Importante:</strong> Para o teste de certificado funcionar, você precisa ter conquistas CERTIFICATE_ACHIEVED criadas na sua instituição.</p>
                 </div>
               </CardContent>
             </Card>

@@ -6,7 +6,7 @@ import type { CompleteCourseOutput } from './complete-course.output';
 import { EnrollmentStatus } from '../../entities/EnrollmentStatus';
 import { Register } from '@/_core/shared/container';
 import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
-import { CourseCompletedEvent, CertificateEarnedEvent } from '@/_core/modules/achievement/core/events';
+import { CourseCompletedEvent } from '@/_core/modules/achievement/core/events';
 
 /**
  * Use case for completing a course
@@ -85,21 +85,6 @@ export class CompleteCourseUseCase {
         
         await this.eventBus.publish(courseCompletedEvent);
         console.log('🎯 CourseCompletedEvent published for course:', input.courseId);
-        
-        // Publish CertificateEarnedEvent
-        const certificateEarnedEvent = CertificateEarnedEvent.create({
-          userId: input.userId,
-          institutionId: input.institutionId,
-          certificateId: certificateResult.certificate.id,
-          courseId: input.courseId,
-          courseName: input.courseName || `Course ${input.courseId}`,
-          certificateType: 'COMPLETION',
-          issuedDate: certificateResult.certificate.issuedAt,
-          score: input.grade
-        });
-        
-        await this.eventBus.publish(certificateEarnedEvent);
-        console.log('🎯 CertificateEarnedEvent published for certificate:', certificateResult.certificate.id);
         
       } catch (error) {
         console.error('Failed to publish course completion events:', error);

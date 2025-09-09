@@ -4,6 +4,8 @@ import type { GenerateCertificateInput } from './generate-certificate.input';
 import type { GenerateCertificateOutput } from './generate-certificate.output';
 import { Certificate } from '../../entities/Certificate';
 import { Register } from '@/_core/shared/container';
+import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
+import { CertificateEarnedEvent } from '@/_core/modules/achievement/core/events';
 
 /**
  * Use case for generating a certificate for a completed course
@@ -13,7 +15,10 @@ import { Register } from '@/_core/shared/container';
 export class GenerateCertificateUseCase {
   constructor(
     @inject(Register.certificate.repository.CertificateRepository)
-    private certificateRepository: CertificateRepository
+    private certificateRepository: CertificateRepository,
+    
+    @inject(Register.shared.service.EventBus)
+    private eventBus: EventBus
   ) {}
 
   /**
@@ -57,6 +62,26 @@ export class GenerateCertificateUseCase {
 
     // Save certificate
     const savedCertificate = await this.certificateRepository.save(certificate);
+
+    // Publish CertificateEarnedEvent for new certificates
+    try {
+      const certificateEarnedEvent = CertificateEarnedEvent.create({
+        userId: savedCertificate.userId,
+        institutionId: savedCertificate.institutionId,
+        certificateId: savedCertificate.id,
+        courseId: savedCertificate.courseId,
+        courseName: input.courseName,
+        certificateType: 'COMPLETION',
+        issuedDate: savedCertificate.issuedAt,
+        score: input.grade
+      });
+      
+      await this.eventBus.publish(certificateEarnedEvent);
+      console.log('🎯 CertificateEarnedEvent published for new certificate:', savedCertificate.id);
+    } catch (error) {
+      console.error('Failed to publish CertificateEarnedEvent:', error);
+      // Don't fail the use case if event publishing fails
+    }
 
     return {
       certificate: savedCertificate,
