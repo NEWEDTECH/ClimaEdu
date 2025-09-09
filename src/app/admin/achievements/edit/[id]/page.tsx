@@ -144,7 +144,7 @@ export default function EditAchievementPage() {
         description: formData.description.trim(),
         criteriaType: formData.criteriaType,
         criteriaValue: formData.criteriaValue,
-        iconUrl: formData.iconUrl.trim() || 'https://via.placeholder.com/100',
+        iconUrl: formData.iconUrl.trim() || '/icons/achievements/default.svg',
         isActive: formData.isActive,
       };
 

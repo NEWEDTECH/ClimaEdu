@@ -241,4 +241,10 @@ export class FirebaseDefaultAchievementRepository implements DefaultAchievementR
     
     await batch.commit();
   }
+
+  async findAll(options?: { isActive?: boolean }): Promise<DefaultAchievement[]> {
+    return this.listAll({
+      isGloballyEnabled: options?.isActive !== undefined ? options.isActive : true
+    });
+  }
 }

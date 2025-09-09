@@ -5,6 +5,8 @@ import type { CompleteCourseInput } from './complete-course.input';
 import type { CompleteCourseOutput } from './complete-course.output';
 import { EnrollmentStatus } from '../../entities/EnrollmentStatus';
 import { Register } from '@/_core/shared/container';
+import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
+import { CourseCompletedEvent, CertificateEarnedEvent } from '@/_core/modules/achievement/core/events';
 
 /**
  * Use case for completing a course
@@ -17,7 +19,9 @@ export class CompleteCourseUseCase {
     @inject(Register.enrollment.repository.EnrollmentRepository)
     private enrollmentRepository: EnrollmentRepository,
     @inject(Register.certificate.useCase.GenerateCertificateUseCase)
-    private generateCertificateUseCase: GenerateCertificateUseCase
+    private generateCertificateUseCase: GenerateCertificateUseCase,
+    @inject(Register.shared.service.EventBus)
+    private eventBus: EventBus
   ) {}
 
   /**
@@ -63,6 +67,45 @@ export class CompleteCourseUseCase {
       grade: input.grade,
       completionDate: enrollment.completedAt || new Date()
     });
+
+    // Publish events if course was completed and wasn't already completed
+    if (!wasAlreadyCompleted) {
+      try {
+        // Publish CourseCompletedEvent
+        const courseCompletedEvent = CourseCompletedEvent.create({
+          userId: input.userId,
+          institutionId: input.institutionId,
+          courseId: input.courseId,
+          courseName: input.courseName || `Course ${input.courseId}`,
+          completionDate: enrollment.completedAt || new Date(),
+          totalLessons: 0, // This would need to be provided from input or calculated
+          averageScore: input.grade,
+          totalStudyTime: (input.hoursCompleted || 0) * 3600 // Convert hours to seconds
+        });
+        
+        await this.eventBus.publish(courseCompletedEvent);
+        console.log('🎯 CourseCompletedEvent published for course:', input.courseId);
+        
+        // Publish CertificateEarnedEvent
+        const certificateEarnedEvent = CertificateEarnedEvent.create({
+          userId: input.userId,
+          institutionId: input.institutionId,
+          certificateId: certificateResult.certificate.id,
+          courseId: input.courseId,
+          courseName: input.courseName || `Course ${input.courseId}`,
+          certificateType: 'COMPLETION',
+          issuedDate: certificateResult.certificate.issuedAt,
+          score: input.grade
+        });
+        
+        await this.eventBus.publish(certificateEarnedEvent);
+        console.log('🎯 CertificateEarnedEvent published for certificate:', certificateResult.certificate.id);
+        
+      } catch (error) {
+        console.error('Failed to publish course completion events:', error);
+        // Don't fail the use case if event publishing fails
+      }
+    }
 
     return {
       enrollment,

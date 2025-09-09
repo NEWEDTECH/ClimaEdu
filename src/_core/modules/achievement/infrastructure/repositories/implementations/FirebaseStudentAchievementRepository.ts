@@ -1,8 +1,7 @@
 import { injectable } from 'inversify';
 import { 
   collection, 
-  doc, 
-  getDoc, 
+  doc,
   getDocs, 
   setDoc, 
   deleteDoc, 
@@ -49,6 +48,8 @@ export class FirebaseStudentAchievementRepository implements StudentAchievementR
       institutionId: data.institutionId,
       achievementType: data.achievementType as AchievementType,
       awardedAt: data.awardedAt?.toDate() || new Date(),
+      progress: data.progress || 0,
+      isCompleted: data.isCompleted || false,
       metadata: data.metadata as AchievementMetadata
     });
   }
@@ -65,8 +66,10 @@ export class FirebaseStudentAchievementRepository implements StudentAchievementR
       achievementId: studentAchievement.achievementId,
       institutionId: studentAchievement.institutionId,
       achievementType: studentAchievement.achievementType,
-      awardedAt: Timestamp.fromDate(studentAchievement.awardedAt),
-      metadata: studentAchievement.metadata
+      awardedAt: studentAchievement.awardedAt,
+      progress: studentAchievement.progress,
+      isCompleted: studentAchievement.isCompleted,
+      ...(studentAchievement.metadata && {metadata: studentAchievement.metadata})
     };
   }
 
@@ -74,6 +77,32 @@ export class FirebaseStudentAchievementRepository implements StudentAchievementR
     const achievementRef = doc(firestore, this.collectionName, studentAchievement.id);
     const data = this.mapToFirestore(studentAchievement);
     await setDoc(achievementRef, data);
+  }
+
+  async save(studentAchievement: StudentAchievement): Promise<void> {
+    // Generate new ID if empty
+    const id = studentAchievement.id || await this.generateId();
+    const achievementRef = doc(firestore, this.collectionName, id);
+    const data = this.mapToFirestore(studentAchievement);
+    console.log('💾 Saving StudentAchievement to Firestore:', { id, ...data });
+    await setDoc(achievementRef, { ...data, id });
+  }
+
+  async findByUserId(userId: string): Promise<StudentAchievement[]> {
+    const constraints: QueryConstraint[] = [
+      where('userId', '==', userId)
+    ];
+
+    const achievementsRef = collection(firestore, this.collectionName);
+    const q = query(achievementsRef, ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    const achievements: StudentAchievement[] = [];
+    querySnapshot.forEach((doc) => {
+      achievements.push(this.mapToEntity(doc.data()));
+    });
+
+    return achievements;
   }
 
   async findByUserAndAchievement(

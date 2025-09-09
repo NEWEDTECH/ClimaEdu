@@ -15,6 +15,9 @@ import Link from 'next/link';
 import { useProfile } from '@/context/zustand/useProfile';
 import { CreateInstitutionAchievementUseCase } from '@/_core/modules/achievement/core/use-cases/create-institution-achievement/create-institution-achievement.use-case';
 import { CreateInstitutionAchievementInput } from '@/_core/modules/achievement/core/use-cases/create-institution-achievement/create-institution-achievement.input';
+import { CopyDefaultAchievementUseCase } from '@/_core/modules/achievement/core/use-cases/copy-default-achievement/copy-default-achievement.use-case';
+import { ListDefaultAchievementTemplatesUseCase } from '@/_core/modules/achievement/core/use-cases/list-default-achievement-templates/list-default-achievement-templates.use-case';
+import type { DefaultAchievement } from '@/_core/modules/achievement/core/entities/DefaultAchievement';
 import { BadgeCriteriaType } from '@/_core/modules/badge/core/entities/BadgeCriteriaType';
 import { useEffect } from 'react';
 
@@ -43,6 +46,9 @@ const criteriaTypeOptions = [
 export default function CreateAchievementPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templates, setTemplates] = useState<DefaultAchievement[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -64,6 +70,66 @@ export default function CreateAchievementPage() {
       return;
     }
   }, [institutionId, router]);
+
+  // Load available templates
+  const loadTemplates = async () => {
+    try {
+      setTemplatesLoading(true);
+
+      const listTemplatesUseCase = container.get<ListDefaultAchievementTemplatesUseCase>(
+        Register.achievement.useCase.ListDefaultAchievementTemplatesUseCase
+      );
+
+      const result = await listTemplatesUseCase.execute();
+      setTemplates(result.templates);
+      setShowTemplates(true);
+
+    } catch (error) {
+      console.error('Error loading templates:', error);
+      showToast.error('Erro ao carregar templates de conquistas');
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
+  // Copy a template to form
+  const copyTemplate = async (template: DefaultAchievement) => {
+    try {
+      setLoading(true);
+
+      const copyUseCase = container.get<CopyDefaultAchievementUseCase>(
+        Register.achievement.useCase.CopyDefaultAchievementUseCase
+      );
+
+      const result = await copyUseCase.execute({
+        defaultAchievementId: template.id,
+        institutionId,
+        createdBy: userId
+      });
+
+      showToast.success(`Template "${template.name}" copiado com sucesso!`);
+      router.push('/admin/achievements');
+
+    } catch (error) {
+      console.error('Error copying template:', error);
+      showToast.error('Erro ao copiar template');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fill form with template data (for preview/editing)
+  const fillFormWithTemplate = (template: DefaultAchievement) => {
+    setFormData({
+      name: template.name,
+      description: template.description,
+      criteriaType: template.criteriaType,
+      criteriaValue: template.criteriaValue,
+      iconUrl: template.iconUrl,
+      isActive: true,
+    });
+    setShowTemplates(false);
+  };
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({
@@ -103,7 +169,7 @@ export default function CreateAchievementPage() {
         description: formData.description.trim(),
         criteriaType: formData.criteriaType,
         criteriaValue: formData.criteriaValue,
-        iconUrl: formData.iconUrl.trim() || 'https://via.placeholder.com/100',
+        iconUrl: formData.iconUrl.trim() || '/icons/achievements/default.svg',
         isActive: formData.isActive,
         createdBy: userId,
       };
@@ -138,9 +204,94 @@ export default function CreateAchievementPage() {
             <h1 className="text-3xl font-bold">Nova Conquista</h1>
           </div>
 
+          {/* Templates Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Templates de Conquistas</CardTitle>
+              <p className="text-sm text-gray-600">
+                Use templates pré-definidos para criar conquistas rapidamente ou como base para personalização
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3 mb-4">
+                <Button 
+                  type="button"
+                  variant="secondary"
+                  onClick={loadTemplates}
+                  disabled={templatesLoading}
+                >
+                  {templatesLoading ? 'Carregando...' : 'Ver Templates Disponíveis'}
+                </Button>
+                
+                {showTemplates && (
+                  <Button 
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowTemplates(false)}
+                  >
+                    Ocultar Templates
+                  </Button>
+                )}
+              </div>
+
+              {/* Templates Grid */}
+              {showTemplates && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {templates.map((template) => (
+                    <div key={template.id} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">{template.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{template.description}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 mb-3">
+                        <span className="inline-block bg-gray-200 px-2 py-1 rounded">
+                          {template.category}
+                        </span>
+                        <span className="ml-2">
+                          {criteriaTypeOptions.find(opt => opt.value === template.criteriaType)?.label}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          onClick={() => copyTemplate(template)}
+                          disabled={loading}
+                          className="flex-1"
+                        >
+                          Usar Template
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => fillFormWithTemplate(template)}
+                          className="flex-1"
+                        >
+                          Personalizar
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {showTemplates && templates.length === 0 && (
+                <p className="text-gray-500 text-center py-8">
+                  Nenhum template disponível no momento.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Criar Conquista Personalizada</CardTitle>
+              <p className="text-sm text-gray-600">
+                Ou crie uma conquista completamente personalizada
+              </p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">

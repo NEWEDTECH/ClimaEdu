@@ -5,11 +5,31 @@ import { StudentAchievement, AchievementType } from '../../core/entities/Student
  */
 export interface StudentAchievementRepository {
   /**
+   * Generates a new unique ID for student achievements
+   * @returns Promise that resolves to a unique ID string
+   */
+  generateId(): Promise<string>;
+
+  /**
    * Awards an achievement to a student
    * @param studentAchievement The student achievement to create
    * @returns Promise that resolves when the achievement is awarded
    */
   award(studentAchievement: StudentAchievement): Promise<void>;
+
+  /**
+   * Saves or updates a student achievement
+   * @param studentAchievement The student achievement to save
+   * @returns Promise that resolves when the achievement is saved
+   */
+  save(studentAchievement: StudentAchievement): Promise<void>;
+
+  /**
+   * Finds all achievements for a specific user
+   * @param userId The student user ID
+   * @returns Promise that resolves to a list of student achievements
+   */
+  findByUserId(userId: string): Promise<StudentAchievement[]>;
 
   /**
    * Finds a specific student achievement

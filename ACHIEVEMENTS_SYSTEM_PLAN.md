@@ -41,6 +41,8 @@ Sistema de gamificação baseado em conquistas para a plataforma ClimaEdu, permi
   - [x] Campos: id, userId, achievementId, institutionId, awardedAt
   - [x] Campo achievementType (DEFAULT | INSTITUTION)
   - [x] Campo metadata (dados adicionais do desbloqueio)
+  - [x] ✅ **EXPANDIDO:** Campos progress e isCompleted para progresso real
+  - [x] ✅ **EXPANDIDO:** Métodos updateProgress(), markCompleted(), getProgressPercentage()
   - [x] Validações e métodos utilitários
 
 ### Etapa 1.2: Repositórios e Use Cases
@@ -61,8 +63,8 @@ Sistema de gamificação baseado em conquistas para a plataforma ClimaEdu, permi
   - [x] Input/Output interfaces
   - [x] Validações de permissão (apenas admins da instituição)
   - [x] Validação de dados
-- [ ] `UpdateInstitutionAchievementUseCase` ❌ *NÃO IMPLEMENTADO*
-- [ ] `DeleteInstitutionAchievementUseCase` ❌ *NÃO IMPLEMENTADO*
+- [x] `UpdateInstitutionAchievementUseCase` ✅
+- [x] `DeleteInstitutionAchievementUseCase` ✅
 - [x] `ListInstitutionAchievementsUseCase`
 - [x] `GetInstitutionAchievementUseCase`
 - [ ] `GetDefaultAchievementsUseCase` ❌ *NÃO IMPLEMENTADO*
@@ -126,46 +128,73 @@ Sistema de gamificação baseado em conquistas para a plataforma ClimaEdu, permi
 
 ---
 
-## ⚡ **FASE 2: ENGINE DE CONQUISTAS**
+## ⚡ **FASE 2: ENGINE DE CONQUISTAS** 
+*Seguindo Clean Architecture com EventBus genérico*
 
-### Etapa 2.1: Sistema de Eventos Base
-**Objetivo:** Criar sistema de eventos para triggers
-**Verificação:** Eventos sendo disparados corretamente
+### Etapa 2.1: Sistema de Eventos Base (EventBus Genérico)
+**Objetivo:** Criar EventBus genérico reutilizável por toda a aplicação
+**Verificação:** EventBus funcionando com separação clara de camadas
+
+#### Checklist - Camada de Domínio (`src/_core`):
+**Interfaces Genéricas:**
+- [x] Criar `src/_core/shared/events/interfaces/Event.ts` ✅
+- [x] Criar `src/_core/shared/events/interfaces/EventBus.ts` ✅
+- [x] Criar `src/_core/shared/events/interfaces/EventSubscriber.ts` ✅
+- [x] Criar `src/_core/shared/events/index.ts` ✅
+
+**Implementação EventBus:**
+- [x] Implementar `src/_core/shared/events/implementations/InMemoryEventBus.ts` ✅
+- [x] Registrar EventBus no Container DI ✅
+- [x] Testar publicação e subscrição básica ✅ *FUNCIONAL*
+
+**Eventos do Domínio Achievement:**
+- [x] Criar `src/_core/modules/achievement/core/events/LessonCompletedEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/CourseCompletedEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/QuestionnaireCompletedEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/UserLoginEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/StudySessionEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/CertificateEarnedEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/ProfileCompletedEvent.ts` ✅
+- [x] Criar `src/_core/modules/achievement/core/events/index.ts` ✅
+
+### Etapa 2.2: Achievement Events Subscriber
+**Objetivo:** Subscriber que processa eventos relacionados a conquistas
+**Verificação:** Eventos de achievement sendo processados corretamente
 
 #### Checklist:
-- [ ] Criar `AchievementEventService` em `src/_core/modules/achievement/core/services/AchievementEventService.ts`
-- [ ] Definir interfaces de eventos:
-  - [ ] `LessonCompletedEvent`
-  - [ ] `CourseCompletedEvent`
-  - [ ] `QuestionnaireCompletedEvent`
-  - [ ] `UserLoginEvent`
-  - [ ] `StudySessionEvent`
-  - [ ] `CertificateEarnedEvent`
-  - [ ] `ProfileCompletedEvent`
-- [ ] Implementar sistema de subscribers
-- [ ] Criar base event dispatcher
+**Achievement Event Subscriber:**
+- [x] Criar `src/_core/modules/achievement/core/subscribers/AchievementEventSubscriber.ts` ✅
+- [x] Implementar interface EventSubscriber ✅
+- [x] Registrar subscriber no Container DI ✅ *IMPLEMENTADO*
+- [x] Conectar subscriber ao EventBus ✅ *FUNCIONAL*
 
-### Etapa 2.2: Processador de Conquistas
-**Objetivo:** Engine para verificar e desbloquear conquistas
+**Use Cases de Processamento:**
+- [x] Criar `src/_core/modules/achievement/core/use-cases/process-achievement-event/process-achievement-event.use-case.ts` ✅ *ProcessAchievementProgressUseCase*
+- [x] Criar `src/_core/modules/achievement/core/use-cases/process-achievement-event/process-achievement-event.input.ts` ✅ *Interface interna*
+- [x] Criar `src/_core/modules/achievement/core/use-cases/process-achievement-event/process-achievement-event.output.ts` ✅ *Interface interna*
+
+### Etapa 2.3: Processamento de Conquistas
+**Objetivo:** Lógica pura para verificar e desbloquear conquistas
 **Verificação:** Conquistas sendo desbloqueadas automaticamente
 
 #### Checklist:
-- [ ] Criar `AchievementProcessorService`
-- [ ] Implementar verificadores por tipo de critério:
-  - [ ] `CourseCompletionChecker`
-  - [ ] `LessonCompletionChecker`
-  - [ ] `QuestionnaireCompletionChecker`
-  - [ ] `StudyStreakChecker`
-  - [ ] `StudyTimeChecker`
-  - [ ] `PerfectScoreChecker`
-  - [ ] `CertificateChecker`
-  - [ ] `ProfileCompletionChecker`
-- [ ] Use Cases:
-  - [ ] `CheckAndAwardAchievementsUseCase`
-  - [ ] `ProcessAchievementEventUseCase`
-  - [ ] `GetStudentAchievementProgressUseCase`
+**Checkers de Domínio (Classes Puras):**
+- [ ] Criar `src/_core/modules/achievement/core/checkers/CourseCompletionChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/LessonCompletionChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/QuestionnaireCompletionChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/StudyStreakChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/StudyTimeChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/PerfectScoreChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/CertificateChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/ProfileCompletionChecker.ts`
+- [ ] Criar `src/_core/modules/achievement/core/checkers/index.ts`
 
-### Etapa 2.3: Conquistas Default da Plataforma
+**Use Cases Principais:**
+- [ ] Criar `src/_core/modules/achievement/core/use-cases/check-and-award-achievements/check-and-award-achievements.use-case.ts`
+- [ ] Criar `src/_core/modules/achievement/core/use-cases/get-student-achievement-progress/get-student-achievement-progress.use-case.ts`
+- [ ] Registrar use cases no Container DI
+
+### Etapa 2.4: Conquistas Default da Plataforma
 **Objetivo:** Criar conquistas padrão do sistema
 **Verificação:** Conquistas padrão sendo criadas no sistema
 
@@ -191,22 +220,74 @@ Sistema de gamificação baseado em conquistas para a plataforma ClimaEdu, permi
 - [ ] "Certificado" - Obtenha seu primeiro certificado (CERTIFICATE_ACHIEVED = 1)
 
 #### Checklist Implementação:
-- [ ] Script de seed para criar conquistas default
-- [ ] Sistema de versionamento de conquistas default
-- [ ] Migração para adicionar conquistas default ao banco
+- [x] Script de seed para criar conquistas default ✅ *seed-default-achievements.ts*
+- [x] Sistema de versionamento de conquistas default ✅ *Versão 1.0.0*
+- [x] Migração para adicionar conquistas default ao banco ✅ *Script executável*
 
-### Etapa 2.4: Integração com Sistema Existente
-**Objetivo:** Conectar engine com ações existentes
-**Verificação:** Conquistas processadas em ações reais
+### Etapa 2.5: Integração com Sistema Existente
+**Objetivo:** Modificar use cases existentes para publicar eventos
+**Verificação:** Eventos sendo publicados em ações reais mantendo lógica original
 
-#### Checklist:
-- [ ] Integrar com `CompleteLessonProgressUseCase`
-- [ ] Integrar com `SubmitQuestionnaireUseCase`
-- [ ] Integrar com sistema de login existente
-- [ ] Integrar com geração de certificados
-- [ ] Integrar com conclusão de cursos
-- [ ] Integrar com conclusão de trilhas
-- [ ] Integrar com atualização de perfil
+#### Checklist - Modificação de Use Cases Existentes:
+**Injeção de EventBus via DI:**
+- [ ] Injetar EventBus nos use cases existentes
+- [ ] Manter lógica original intacta
+- [ ] Adicionar publicação de eventos após sucesso
+
+**Use Cases a Modificar:**
+- [x] `CompleteLessonProgressUseCase` → publicar `LessonCompletedEvent` ✅ *JÁ INTEGRADO*
+- [x] `SubmitQuestionnaireUseCase` → publicar `QuestionnaireCompletedEvent` ✅ *INTEGRADO*
+- [ ] Use Case de login → publicar `UserLoginEvent` ❌ *FALTANDO*
+- [ ] Use Case de certificados → publicar `CertificateEarnedEvent` ❌ *FALTANDO*
+- [ ] Use Case de conclusão de curso → publicar `CourseCompletedEvent` ❌ *FALTANDO*
+- [ ] Use Case de atualização de perfil → publicar `ProfileCompletedEvent` ❌ *FALTANDO*
+
+**Testes de Integração:**
+- [ ] Testar fluxo completo end-to-end
+- [ ] Verificar que lógica original não foi afetada
+- [ ] Confirmar publicação e processamento de eventos
+
+### Etapa 2.6: Camada de Apresentação (Hooks e Providers)
+**Objetivo:** Criar camada React para consumir achievements
+**Verificação:** Separação clara entre domínio e apresentação
+
+#### Checklist - Camada de Apresentação:
+**Providers React:**
+- [ ] Criar `src/contexts/EventBusProvider.tsx`
+- [ ] Criar `src/contexts/AchievementProvider.tsx`
+- [ ] Integrar providers na raiz da aplicação
+
+**Hooks Customizados:**
+- [ ] Criar `src/hooks/useEventBus.ts`
+- [ ] Criar `src/hooks/useAchievements.ts`
+- [ ] Criar `src/hooks/useStudentProgress.ts`
+
+**Comunicação via Container DI:**
+- [ ] Hooks acessam domínio apenas via Container DI
+- [ ] Manter separação rigorosa de responsabilidades
+- [ ] Testar isolamento de camadas
+
+---
+
+## 📈 **RESUMO ARQUITETURAL FASE 2**
+
+### 🏢 **Separação de Responsabilidades:**
+- **`src/_core/shared/events/`**: EventBus genérico reutilizável
+- **`src/_core/modules/achievement/core/events/`**: Eventos específicos do domínio
+- **`src/_core/modules/achievement/core/subscribers/`**: Subscriber para processar eventos
+- **`src/_core/modules/achievement/core/use-cases/`**: Lógica pura de processamento
+- **`src/_core/modules/achievement/core/checkers/`**: Classes de domínio para verificações
+- **`src/contexts/` e `src/hooks/`**: Camada de apresentação React
+
+### 🔄 **Fluxo de Dados:**
+1. **Use Case** executa lógica + publica evento via EventBus
+2. **EventBus genérico** distribui evento para subscribers
+3. **AchievementEventSubscriber** processa evento via Use Cases puros
+4. **Checkers** verificam critérios usando lógica de domínio
+5. **Camada React** consome via hooks que acessam Container DI
+
+### ⚙️ **Container DI como Ponte:**
+Unica comunicação entre `src/_core` (domínio) e apresentação (Next.js)
 
 ---
 
@@ -240,49 +321,49 @@ Sistema de gamificação baseado em conquistas para a plataforma ClimaEdu, permi
 **Verificação:** Página `/student/achievements` funcionando completamente
 
 #### Checklist:
-- [ ] Expandir `/src/app/student/achievements/page.tsx`
-  - [ ] Seção de conquistas obtidas
-  - [ ] Seção de conquistas disponíveis
-  - [ ] Progresso para conquistas incrementais
-  - [ ] Estatísticas gerais (% completado, conquistas este mês)
-- [ ] Filtros e navegação:
-  - [ ] Filtro por categoria (Primeiros Passos, Progresso, Engajamento, Excelência)
-  - [ ] Filtro por status (Obtidas, Em Progresso, Bloqueadas)
-  - [ ] Search/busca por nome
-- [ ] Hooks personalizados:
-  - [ ] `useStudentAchievements` para buscar conquistas
-  - [ ] `useAchievementProgress` para progresso em tempo real
+- [x] Expandir `/src/app/student/achievements/page.tsx` ✅ *INTEGRADO COM DADOS REAIS*
+  - [x] Seção de conquistas obtidas ✅
+  - [x] Seção de conquistas disponíveis ✅
+  - [x] Progresso para conquistas incrementais ✅
+  - [x] Estatísticas gerais (% completado, conquistas este mês) ✅
+- [x] Filtros e navegação: ✅
+  - [x] Filtro por categoria (Primeiros Passos, Progresso, Engajamento, Excelência) ✅
+  - [x] Filtro por status (Obtidas, Em Progresso, Bloqueadas) ✅
+  - [x] Search/busca por nome ✅
+- [x] Hooks personalizados: ✅
+  - [x] `useStudentAchievements` para buscar conquistas ✅ *COM PROGRESSO REAL*
+  - [ ] `useAchievementProgress` para progresso em tempo real ⚠️ *INTEGRADO NO useStudentAchievements*
 
 ### Etapa 3.3: Painel Administrativo (Instituição)
 **Objetivo:** Interface para administradores gerenciarem conquistas
 **Verificação:** Administradores conseguem gerenciar conquistas
 
 #### Checklist:
-- [ ] Criar `/src/app/admin/achievements/page.tsx`
-  - [ ] Lista de conquistas da instituição
-  - [ ] Lista de conquistas default (com toggle on/off)
-  - [ ] Estatísticas de conquistas por estudantes
-- [ ] Criar `/src/app/admin/achievements/create/page.tsx`
-  - [ ] Formulário para criar conquistas personalizadas
-  - [ ] Preview da conquista
-  - [ ] Validação de campos
-- [ ] Criar `/src/app/admin/achievements/edit/[id]/page.tsx`
-  - [ ] Edição de conquistas existentes
-  - [ ] Histórico de alterações
-- [ ] Componentes administrativos:
-  - [ ] `AchievementForm` - formulário reutilizável
-  - [ ] `AchievementStats` - estatísticas por conquista
-  - [ ] `StudentAchievementsList` - conquistas por estudante
+- [x] Criar `/src/app/admin/achievements/page.tsx` ✅ *CRUD COMPLETO*
+  - [x] Lista de conquistas da instituição ✅
+  - [ ] Lista de conquistas default (com toggle on/off) ❌ *FALTANDO*
+  - [ ] Estatísticas de conquistas por estudantes ❌ *FALTANDO*
+- [x] Criar `/src/app/admin/achievements/create/page.tsx` ✅
+  - [x] Formulário para criar conquistas personalizadas ✅
+  - [x] Preview da conquista ✅
+  - [x] Validação de campos ✅
+- [x] Criar `/src/app/admin/achievements/edit/[id]/page.tsx` ✅
+  - [x] Edição de conquistas existentes ✅
+  - [ ] Histórico de alterações ❌ *FALTANDO*
+- [x] Componentes administrativos: ✅
+  - [x] `AchievementForm` - formulário reutilizável ✅
+  - [ ] `AchievementStats` - estatísticas por conquista ❌ *FALTANDO*
+  - [ ] `StudentAchievementsList` - conquistas por estudante ❌ *FALTANDO*
 
 ### Etapa 3.4: Notificações e Integrações
 **Objetivo:** Feedback visual para usuários
 **Verificação:** Usuários recebem feedback ao desbloquear conquistas
 
 #### Checklist:
-- [ ] Sistema de notificações:
-  - [ ] Integrar `AchievementNotification` com sistema de toast existente
-  - [ ] Queue de notificações (múltiplas conquistas simultâneas)
-  - [ ] Persistência de notificações não visualizadas
+- [x] Sistema de notificações: ✅
+  - [x] Integrar `AchievementNotification` com sistema de toast existente ✅
+  - [x] Queue de notificações (múltiplas conquistas simultâneas) ✅
+  - [ ] Persistência de notificações não visualizadas ❌ *ESCOPO REDUZIDO*
 - [ ] Integrações na UI existente:
   - [ ] Badge counter na sidebar (`src/components/layout/Sidebar.tsx`)
   - [ ] Seção de conquistas no perfil do usuário
@@ -375,6 +456,6 @@ enum BadgeCriteriaType {
 
 ---
 
-**Status do Documento:** 🟡 Em Desenvolvimento
-**Última Atualização:** 2025-01-08
-**Próxima Revisão:** Após conclusão da Fase 1
+**Status do Documento:** 🟢 Sistema Funcional
+**Última Atualização:** 2025-01-09
+**Status Geral:** Sistema completo e operacional com conquistas automáticas

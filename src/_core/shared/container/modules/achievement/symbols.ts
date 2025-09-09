@@ -12,10 +12,18 @@ export const useCases = {
   ListInstitutionAchievementsUseCase: Symbol.for('ListInstitutionAchievementsUseCase'),
   GetInstitutionAchievementUseCase: Symbol.for('GetInstitutionAchievementUseCase'),
   ListStudentAchievementsUseCase: Symbol.for('ListStudentAchievementsUseCase'),
+  ProcessAchievementProgress: Symbol.for('ProcessAchievementProgress'),
+  CopyDefaultAchievementUseCase: Symbol.for('CopyDefaultAchievementUseCase'),
+  ListDefaultAchievementTemplatesUseCase: Symbol.for('ListDefaultAchievementTemplatesUseCase'),
+};
+
+export const subscribers = {
+  AchievementEventSubscriber: Symbol.for('AchievementEventSubscriber'),
 };
 
 // Export all symbols for this module
 export const AchievementSymbols = {
   repositories,
   useCases,
+  subscribers,
 };

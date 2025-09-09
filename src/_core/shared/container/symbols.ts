@@ -14,9 +14,10 @@ import { SocialSymbols } from './modules/social/symbols';
 import { ReportSymbols } from './modules/report/symbols';
 import { CertificateSymbols } from './modules/certificate/symbols';
 import { TutoringSymbols } from './modules/tutoring/symbols';
+import { SharedSymbols } from './modules/shared/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -71,5 +72,8 @@ export const Register = {
   tutoring: {
     repository: TutoringSymbols.repositories,
     useCase: TutoringSymbols.useCases,
+  },
+  shared: {
+    service: SharedSymbols.services,
   },
 };

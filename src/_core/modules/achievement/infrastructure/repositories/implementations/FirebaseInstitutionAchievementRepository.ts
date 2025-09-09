@@ -234,4 +234,8 @@ export class FirebaseInstitutionAchievementRepository implements InstitutionAchi
     
     return querySnapshot.size > 0;
   }
+
+  async findByInstitutionId(institutionId: string): Promise<InstitutionAchievement[]> {
+    return this.listByInstitution(institutionId, { isActive: true });
+  }
 }

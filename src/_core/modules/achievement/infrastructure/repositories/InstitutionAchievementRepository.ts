@@ -5,6 +5,12 @@ import { InstitutionAchievement } from '../../core/entities/InstitutionAchieveme
  */
 export interface InstitutionAchievementRepository {
   /**
+   * Generates a new unique ID for an institution achievement
+   * @returns Promise that resolves to a unique ID
+   */
+  generateId(): Promise<string>;
+
+  /**
    * Creates a new institution achievement
    * @param achievement The achievement to create
    * @returns Promise that resolves when the achievement is created
@@ -80,4 +86,11 @@ export interface InstitutionAchievementRepository {
    * @returns Promise that resolves to true if name exists
    */
   existsByName(institutionId: string, name: string, excludeId?: string): Promise<boolean>;
+
+  /**
+   * Finds achievements by institution ID (alias for listByInstitution)
+   * @param institutionId The institution ID
+   * @returns Promise that resolves to a list of active achievements
+   */
+  findByInstitutionId(institutionId: string): Promise<InstitutionAchievement[]>;
 }

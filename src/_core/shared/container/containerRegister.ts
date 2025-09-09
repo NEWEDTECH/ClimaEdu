@@ -14,11 +14,18 @@ import { registerSocialModule } from './modules/social/register';
 import { registerReportModule } from './modules/report/register';
 import { registerCertificateModule } from './modules/certificate/register';
 import { registerTutoringModule } from './modules/tutoring/register';
+import { registerSharedModule } from './modules/shared/register';
+
+// Import initialization function
+import { initializeSubscribers } from './initializeSubscribers';
 
 /**
  * Register all dependencies in the container
  */
 export function registerDependencies(): void {
+  // Register shared dependencies first (EventBus, etc.)
+  registerSharedModule(container);
+  
   // Register module-specific dependencies
   registerInstitutionModule(container);
   registerUserModule(container);
@@ -33,4 +40,7 @@ export function registerDependencies(): void {
   registerReportModule(container);
   registerCertificateModule(container);
   registerTutoringModule(container);
+  
+  // Initialize event subscribers after all modules are registered
+  initializeSubscribers();
 }

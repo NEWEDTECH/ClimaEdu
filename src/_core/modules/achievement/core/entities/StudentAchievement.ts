@@ -35,6 +35,8 @@ export class StudentAchievement {
     readonly institutionId: string,
     readonly achievementType: AchievementType,
     readonly awardedAt: Date,
+    public progress: number,
+    public isCompleted: boolean,
     readonly metadata?: AchievementMetadata
   ) {}
 
@@ -51,6 +53,8 @@ export class StudentAchievement {
     institutionId: string;
     achievementType: AchievementType;
     awardedAt?: Date;
+    progress?: number;
+    isCompleted?: boolean;
     metadata?: AchievementMetadata;
   }): StudentAchievement {
     if (!params.id || params.id.trim() === '') {
@@ -84,6 +88,8 @@ export class StudentAchievement {
       params.institutionId,
       params.achievementType,
       awardedAt,
+      params.progress || 0,
+      params.isCompleted || false,
       params.metadata
     );
   }
@@ -187,7 +193,38 @@ export class StudentAchievement {
       this.institutionId,
       this.achievementType,
       this.awardedAt,
+      this.progress,
+      this.isCompleted,
       mergedMetadata
     );
+  }
+
+  /**
+   * Updates the progress for this achievement
+   * @param newProgress The new progress value (0-100 or achievement criteria value)
+   */
+  public updateProgress(newProgress: number): void {
+    if (newProgress < 0) {
+      throw new Error('Progress cannot be negative');
+    }
+    
+    this.progress = newProgress;
+  }
+
+  /**
+   * Marks this achievement as completed
+   */
+  public markCompleted(): void {
+    this.isCompleted = true;
+  }
+
+  /**
+   * Gets the progress percentage (0-100)
+   * @param maxValue The maximum value for this achievement (criteria value)
+   * @returns Progress percentage
+   */
+  public getProgressPercentage(maxValue: number): number {
+    if (maxValue === 0) return 0;
+    return Math.round((this.progress / maxValue) * 100);
   }
 }

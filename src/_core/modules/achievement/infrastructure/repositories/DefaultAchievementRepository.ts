@@ -82,4 +82,11 @@ export interface DefaultAchievementRepository {
    * @returns Promise that resolves when all achievements are created
    */
   bulkCreate(achievements: DefaultAchievement[]): Promise<void>;
+
+  /**
+   * Finds all default achievements (alias for listAll)
+   * @param options Optional filtering options
+   * @returns Promise that resolves to a list of active achievements
+   */
+  findAll(options?: { isActive?: boolean }): Promise<DefaultAchievement[]>;
 }
