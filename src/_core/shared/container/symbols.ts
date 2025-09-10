@@ -7,15 +7,17 @@ import { ContentSymbols } from './modules/content/symbols';
 import { AuthSymbols } from './modules/auth/symbols';
 import { EnrollmentSymbols } from './modules/enrollment/symbols';
 import { BadgeSymbols } from './modules/badge/symbols';
+import { AchievementSymbols } from './modules/achievement/symbols';
 import { ChatSymbols } from './modules/chat/symbols';
 import { PodcastSymbols } from './modules/podcast/symbols';
 import { SocialSymbols } from './modules/social/symbols';
 import { ReportSymbols } from './modules/report/symbols';
 import { CertificateSymbols } from './modules/certificate/symbols';
 import { TutoringSymbols } from './modules/tutoring/symbols';
+import { SharedSymbols } from './modules/shared/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -43,6 +45,10 @@ export const Register = {
     repository: BadgeSymbols.repositories,
     useCase: BadgeSymbols.useCases,
   },
+  achievement: {
+    repository: AchievementSymbols.repositories,
+    useCase: AchievementSymbols.useCases,
+  },
   chat: {
     repository: ChatSymbols.repositories,
     useCase: ChatSymbols.useCases,
@@ -66,5 +72,8 @@ export const Register = {
   tutoring: {
     repository: TutoringSymbols.repositories,
     useCase: TutoringSymbols.useCases,
+  },
+  shared: {
+    service: SharedSymbols.services,
   },
 };

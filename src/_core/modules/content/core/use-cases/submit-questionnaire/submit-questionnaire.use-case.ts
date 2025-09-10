@@ -2,10 +2,12 @@ import { injectable, inject } from 'inversify';
 import type { QuestionnaireRepository } from '../../../infrastructure/repositories/QuestionnaireRepository';
 import type { QuestionnaireSubmissionRepository } from '../../../infrastructure/repositories/QuestionnaireSubmissionRepository';
 import { Register } from '@/_core/shared/container';
+import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
 import { SubmitQuestionnaireInput } from './submit-questionnaire.input';
 import { SubmitQuestionnaireOutput } from './submit-questionnaire.output';
 import { QuestionnaireSubmission } from '../../entities/QuestionnaireSubmission';
 import { QuestionSubmission } from '../../entities/QuestionSubmission';
+import { QuestionnaireCompletedEvent } from '@/_core/modules/achievement/core/events/QuestionnaireCompletedEvent';
 
 /**
  * Use case for submitting a questionnaire
@@ -18,7 +20,10 @@ export class SubmitQuestionnaireUseCase {
     private questionnaireRepository: QuestionnaireRepository,
     
     @inject(Register.content.repository.QuestionnaireSubmissionRepository)
-    private questionnaireSubmissionRepository: QuestionnaireSubmissionRepository
+    private questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
+    
+    @inject(Register.shared.service.EventBus)
+    private eventBus: EventBus
   ) {}
 
   /**
@@ -78,7 +83,8 @@ export class SubmitQuestionnaireUseCase {
       questionnaireId: input.questionnaireId,
       userId: input.userId,
       institutionId: input.institutionId,
-      startedAt: new Date(), // Assuming the submission is completed immediately
+      startedAt: new Date(), // TODO: This should ideally come from when the user started the questionnaire
+      completedAt: new Date(),
       attempt: attemptCount + 1,
       questions: questionSubmissions,
       passingScore: questionnaire.passingScore
@@ -86,6 +92,31 @@ export class SubmitQuestionnaireUseCase {
 
     // Save the submission
     const savedSubmission = await this.questionnaireSubmissionRepository.save(submission);
+
+    // Publish event for questionnaire completion
+    try {
+      const questionnaireCompletedEvent = QuestionnaireCompletedEvent.create({
+        userId: savedSubmission.userId,
+        institutionId: savedSubmission.institutionId,
+        questionnaireId: savedSubmission.questionnaireId,
+        lessonId: questionnaire.lessonId || '',
+        moduleId: input.moduleId || '',
+        courseId: input.courseId || '',
+        score: savedSubmission.score,
+        totalQuestions: questionnaire.questions.length,
+        correctAnswers: savedSubmission.questions.filter(q => q.isCorrect).length,
+        completionTime: Math.round((savedSubmission.completedAt.getTime() - savedSubmission.startedAt.getTime()) / 1000),
+        isPerfectScore: savedSubmission.score === 100,
+        isRetry: savedSubmission.attempt > 1,
+        attemptNumber: savedSubmission.attempt
+      });
+
+      await this.eventBus.publish(questionnaireCompletedEvent);
+      console.log('🎯 QuestionnaireCompletedEvent published for questionnaire:', savedSubmission.questionnaireId);
+    } catch (error) {
+      console.error('Failed to publish QuestionnaireCompletedEvent:', error);
+      // Don't fail the use case if event publishing fails
+    }
 
     return {
       submission: savedSubmission,

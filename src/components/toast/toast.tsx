@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { toast, ToastContainer, ToastOptions } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -12,6 +13,7 @@ interface ToastConfig {
   pauseOnHover?: boolean
   draggable?: boolean
   position?: 'top-right' | 'top-center' | 'top-left' | 'bottom-right' | 'bottom-center' | 'bottom-left'
+  containerId?: string
 }
 
 const defaultConfig: ToastConfig = {
@@ -27,7 +29,7 @@ const loadingConfig: ToastConfig = {
 }
 
 export const showToast = {
-  success: (message: string, config?: Partial<ToastConfig>) => {
+  success: (message: string | React.ReactNode, config?: Partial<ToastConfig>) => {
     const options: ToastOptions = {
       ...defaultConfig,
       ...config,
@@ -36,7 +38,7 @@ export const showToast = {
     return toast.success(message, options)
   },
 
-  warning: (message: string, config?: Partial<ToastConfig>) => {
+  warning: (message: string | React.ReactNode, config?: Partial<ToastConfig>) => {
     const options: ToastOptions = {
       ...defaultConfig,
       ...config,
@@ -45,7 +47,7 @@ export const showToast = {
     return toast.warning(message, options)
   },
 
-  error: (message: string, config?: Partial<ToastConfig>) => {
+  error: (message: string | React.ReactNode, config?: Partial<ToastConfig>) => {
     const options: ToastOptions = {
       ...defaultConfig,
       ...config,
@@ -54,7 +56,7 @@ export const showToast = {
     return toast.error(message, options)
   },
 
-  loading: (message: string, config?: Partial<ToastConfig>) => {
+  loading: (message: string | React.ReactNode, config?: Partial<ToastConfig>) => {
     const options: ToastOptions = {
       ...loadingConfig,
       ...config,
@@ -112,11 +114,20 @@ export function ToastProvider({ children }: ToastProviderProps) {
       <ToastContainer
         position="top-right"
         autoClose={3000}
-        //hideProgressBar={false}
-        //closeOnClick
-        //pauseOnFocusLoss
-        //draggable
-        //pauseOnHover
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable={true}
+        pauseOnHover={true}
+        theme="light"
+        toastClassName="custom-toast"
+        bodyClassName="custom-toast-body"
+        progressClassName="custom-toast-progress"
+        closeButton={true}
+        enableMultiContainer={false}
+        containerId="main-toast-container"
       />
     </>
   )

@@ -185,11 +185,8 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
     
     // Check identity map cache first
     if (this.identityMap.has(cacheKey) && this.isCacheValid(cacheKey)) {
-      console.log(`Identity Map: Cache hit for ${cacheKey}`);
       return this.identityMap.get(cacheKey)!;
     }
-    
-    console.log(`Identity Map: Cache miss for ${cacheKey}, fetching from database`);
     
     // Fetch from database
     const progressRef = collection(firestore, this.collectionName);
@@ -353,14 +350,10 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
     const progressRef = doc(firestore, this.collectionName, lessonProgress.id);
     const progressData = this.mapToFirestoreData(lessonProgress);
 
-    console.log(`Identity Map: Saving lesson progress ${lessonProgress.id} with status: ${lessonProgress.status}`);
-    
     await setDoc(progressRef, progressData, { merge: true });
 
     // Update the identity map cache with the saved entity
     this.cacheEntity(lessonProgress);
-    
-    console.log(`Identity Map: Cached updated entity for ${this.getCacheKey(lessonProgress.userId, lessonProgress.lessonId)}`);
 
     return lessonProgress;
   }
@@ -374,7 +367,6 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
     const cacheKey = this.getCacheKey(userId, lessonId);
     this.identityMap.delete(cacheKey);
     this.cacheTimestamps.delete(cacheKey);
-    console.log(`Identity Map: Cleared cache for ${cacheKey}`);
   }
 
   /**
@@ -383,7 +375,6 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
   clearAllCache(): void {
     this.identityMap.clear();
     this.cacheTimestamps.clear();
-    console.log('Identity Map: Cleared all cache');
   }
 
   /**

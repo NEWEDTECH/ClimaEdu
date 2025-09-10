@@ -15,6 +15,16 @@ export interface CompleteLessonProgressInput {
   lessonId: string;
 
   /**
+   * ID of the module this lesson belongs to (required for achievement events)
+   */
+  moduleId?: string;
+
+  /**
+   * ID of the course this lesson belongs to (required for achievement events)
+   */
+  courseId?: string;
+
+  /**
    * Optional map of content IDs to their types for content-type-specific completion logic
    * If not provided, will use forceComplete() behavior (all contents marked as 100%)
    */
