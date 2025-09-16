@@ -15,6 +15,7 @@ import { CSVUpload } from '@/components/admin/CSVUpload'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
+import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case'
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case'
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
@@ -184,13 +185,164 @@ export default function CreateUserPage() {
     }
   }
 
-  const handleCSVUpload = (file: File, data: any[]) => {
+  const handleCSVUpload = async (file: File, data: any[]) => {
     console.log('📊 CSV Upload recebido:', {
       arquivo: file.name,
       totalRegistros: data.length,
       primeiroRegistro: data[0],
       todosOsDados: data
     });
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Determine institution ID based on user role
+      let institutionId: string;
+      
+      if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
+        // Admin users: use their institution ID
+        if (!infoUser.currentIdInstitution) {
+          throw new Error('Usuário admin deve estar associado a uma instituição');
+        }
+        institutionId = infoUser.currentIdInstitution;
+      } else if (infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) {
+        // Root users: need to select an institution
+        const selectedInstitution = institutions.find(inst => inst.id); // You might want to add institution selection for CSV
+        if (!selectedInstitution) {
+          throw new Error('Por favor, selecione uma instituição para associar os usuários do CSV');
+        }
+        institutionId = selectedInstitution.id;
+      } else {
+        throw new Error('Usuário não tem permissão para criar usuários via CSV');
+      }
+
+      // Validate CSV has email column
+      if (data.length === 0) {
+        throw new Error('CSV data is empty');
+      }
+
+      const firstRow = data[0];
+      const hasEmailColumn = Object.keys(firstRow).some(key => 
+        key.toLowerCase().trim() === 'email'
+      );
+
+      if (!hasEmailColumn) {
+        throw new Error('CSV must contain an "email" column');
+      }
+
+      const createdUsers: any[] = [];
+      const failedEmails: Array<{ email: string; error: string }> = [];
+
+      // Process each row manually using existing CreateUserUseCase
+      const createUserUseCase = container.get<CreateUserUseCase>(
+        Register.user.useCase.CreateUserUseCase
+      );
+
+      for (const row of data) {
+        try {
+          // Extract email from CSV row (case-insensitive)
+          const emailKey = Object.keys(row).find(key => 
+            key.toLowerCase().trim() === 'email'
+          );
+          const emailValue = emailKey ? row[emailKey].trim() : '';
+          
+          if (!emailValue || emailValue.trim() === '') {
+            failedEmails.push({
+              email: 'empty',
+              error: 'Email is empty or missing'
+            });
+            continue;
+          }
+
+          // Extract name from CSV or use email as fallback
+          const nameKey = Object.keys(row).find(key => {
+            const lowerKey = key.toLowerCase().trim();
+            return lowerKey === 'name' || lowerKey === 'nome' || lowerKey === 'full_name' || lowerKey === 'fullname';
+          });
+
+          const userName = (nameKey && row[nameKey].trim()) ? row[nameKey].trim() : emailValue.split('@')[0];
+
+          // Create user
+          const createUserResult = await createUserUseCase.execute({
+            name: userName,
+            email: emailValue,
+            password: '',
+            type: UserRole.STUDENT // Default role
+          });
+
+          if (createUserResult.user) {
+            createdUsers.push(createUserResult.user);
+          }
+
+        } catch (error) {
+          const emailKey = Object.keys(row).find(key => 
+            key.toLowerCase().trim() === 'email'
+          );
+          const emailValue = emailKey ? row[emailKey].trim() : 'unknown';
+          
+          failedEmails.push({
+            email: emailValue,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+          });
+        }
+      }
+
+      const result = {
+        createdUsers,
+        failedEmails,
+        totalProcessed: data.length,
+        totalCreated: createdUsers.length,
+        totalFailed: failedEmails.length
+      };
+
+      // Associate each created user to the institution
+      const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+        Register.institution.useCase.AssociateUserToInstitutionUseCase
+      );
+
+      const associationFailures: Array<{ email: string; error: string }> = [];
+      
+      for (const user of result.createdUsers) {
+        try {
+          await associateUserUseCase.execute({
+            userId: user.id,
+            institutionId,
+            userRole: user.role
+          });
+        } catch (error) {
+          associationFailures.push({
+            email: user.email.value,
+            error: `Failed to associate user to institution: ${error instanceof Error ? error.message : 'Unknown error'}`
+          });
+        }
+      }
+
+      // Update result with association failures
+      if (associationFailures.length > 0) {
+        result.failedEmails.push(...associationFailures);
+        result.totalFailed += associationFailures.length;
+      }
+
+      // Show results
+      if (result.totalCreated > 0) {
+        setSuccess(true);
+        console.log(`✅ ${result.totalCreated} usuários criados com sucesso!`);
+        
+        if (result.totalFailed > 0) {
+          console.warn(`⚠️ ${result.totalFailed} usuários falharam:`, result.failedEmails);
+          setError(`${result.totalCreated} usuários criados, mas ${result.totalFailed} falharam. Verifique o console para detalhes.`);
+        }
+      } else {
+        throw new Error('Nenhum usuário foi criado. Verifique o formato do CSV.');
+      }
+
+    } catch (err) {
+      console.error('Erro ao processar CSV:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao processar CSV. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
