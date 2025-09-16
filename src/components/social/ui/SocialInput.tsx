@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, InputHTMLAttributes, TextareaHTMLAttributes, forwardRef } from 'react';
+import { Button } from '@/components/button'
 
 // Base input component
 interface SocialInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -219,13 +220,13 @@ export function SocialSearch({
       />
       
       {showClearButton && value && onClear && (
-        <button
+        <Button
           type="button"
           onClick={onClear}
           className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
         >
           <span className="w-4 h-4">{clearIcon}</span>
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import { FiHome, FiUsers, FiSun, FiMoon } from "react-icons/fi";
 import { useProfile } from '@/context/zustand/useProfile';
 import { useThemeStore } from '@/context/zustand/useThemeStore';
+import { Button } from '@/components/button'
 
 
 export function Navbar() {
@@ -56,7 +57,7 @@ export function Navbar() {
             <span className="text-sm font-medium">Comunidade</span>
           </Link>
 
-          <button
+          <Button
             onClick={toggleTheme}
             className="flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
             aria-label="Alternar tema"
@@ -66,7 +67,7 @@ export function Navbar() {
             ) : (
               <FiMoon className="w-4 h-4" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -81,7 +82,7 @@ export function Navbar() {
       </div>
 
       <div className="md:hidden flex items-center">
-        <button
+        <Button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
           aria-label="Toggle menu"
@@ -91,7 +92,7 @@ export function Navbar() {
           ) : (
             <IoMdMenu size={24} className={isDarkMode ? "text-white" : "text-gray-800"} />
           )}
-        </button>
+        </Button>
       </div>
 
 
@@ -118,7 +119,7 @@ export function Navbar() {
                 <span className="text-base font-medium">Comunidade</span>
               </Link>
 
-              <button
+              <Button
                 onClick={() => {
                   toggleTheme();
                   setMobileMenuOpen(false);
@@ -136,7 +137,7 @@ export function Navbar() {
                     <span className="text-base font-medium">Tema Escuro</span>
                   </>
                 )}
-              </button>
+              </Button>
             </div>
 
             <div className={`pt-4 ? 'border-t border-white/20' : 'border-t border-gray-300/50'

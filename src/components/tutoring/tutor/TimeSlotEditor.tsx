@@ -200,12 +200,12 @@ export function TimeSlotEditor({
           <h2 className="text-lg font-semibold text-gray-900">
             Adicionar Horário
           </h2>
-          <button
+          <Button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <XIcon size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}

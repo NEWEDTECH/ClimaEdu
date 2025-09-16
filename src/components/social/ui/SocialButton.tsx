@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, ButtonHTMLAttributes } from 'react';
+import { Button } from '@/components/button'
 
 interface SocialButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -74,7 +75,7 @@ export function SocialButton({
   };
 
   return (
-    <button
+    <Button
       className={`
         ${baseClasses}
         ${variantClasses[variant]}
@@ -115,7 +116,7 @@ export function SocialButton({
       {!loading && icon && iconPosition === 'right' && (
         <span className={iconSizeClasses[size]}>{icon}</span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -150,7 +151,7 @@ export function SocialIconButton({
   };
 
   return (
-    <button
+    <Button
       className={`
         inline-flex items-center justify-center rounded-lg transition-all duration-200
         focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
@@ -189,7 +190,7 @@ export function SocialIconButton({
       ) : (
         <span className={iconSizeClasses[size]}>{icon}</span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -261,7 +262,7 @@ export function SocialFAB({
   };
 
   return (
-    <button
+    <Button
       className={`
         ${positionClasses[position]}
         ${sizeClasses[size]}
@@ -276,7 +277,7 @@ export function SocialFAB({
       {...props}
     >
       <span className={iconSizeClasses[size]}>{icon}</span>
-    </button>
+    </Button>
   );
 }
 
@@ -327,7 +328,7 @@ export function SocialToggle({
 
   return (
     <div className="flex items-center gap-3">
-      <button
+      <Button
         type="button"
         className={`
           relative inline-flex items-center rounded-full transition-colors duration-200
@@ -346,7 +347,7 @@ export function SocialToggle({
             ${translateClasses[size]}
           `}
         />
-      </button>
+      </Button>
       
       {(label || description) && (
         <div className="flex flex-col">

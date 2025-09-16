@@ -1,6 +1,7 @@
 'use client'
 
 import { ClockIcon } from 'lucide-react'
+import { Button } from '@/components/button'
 
 interface DurationOption {
   value: number
@@ -35,7 +36,7 @@ export function DurationSelector({
       
       <div className="grid grid-cols-2 gap-3">
         {DURATION_OPTIONS.map((option) => (
-          <button
+          <Button
             key={option.value}
             type="button"
             disabled={disabled}
@@ -54,7 +55,7 @@ export function DurationSelector({
             <div className="text-xs text-gray-500 mt-1">
               {option.description}
             </div>
-          </button>
+          </Button>
         ))}
       </div>
       

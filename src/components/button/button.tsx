@@ -5,7 +5,7 @@ import { useThemeColors } from "@/hooks/useThemeColors";
 
 type ButtonProps = {
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: any;
   className?: string;
   icon?: ReactNode;
   iconPosition?: "start" | "end";

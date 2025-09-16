@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card/card';
 import { PencilIcon, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { InstitutionAchievement } from '@/_core/modules/achievement/core/entities/InstitutionAchievement';
+import { Button } from '@/components/button'
 
 interface AchievementCardProps {
   achievement: InstitutionAchievement;
@@ -43,7 +44,7 @@ export function AchievementCard({ achievement, onToggleStatus, onDelete }: Achie
           </div>
 
           <div className="flex items-center gap-2 ml-4">
-            <button
+            <Button
               onClick={() => onToggleStatus(achievement.id, achievement.isActive)}
               className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
               title={achievement.isActive ? 'Desativar conquista' : 'Ativar conquista'}
@@ -53,21 +54,21 @@ export function AchievementCard({ achievement, onToggleStatus, onDelete }: Achie
               ) : (
                 <ToggleLeft className="h-5 w-5" />
               )}
-            </button>
+            </Button>
 
             <Link href={`/admin/achievements/edit/${achievement.id}`}>
-              <button className="p-2 text-gray-500 hover:text-blue-600 transition-colors" title="Editar conquista">
+              <Button className="p-2 text-gray-500 hover:text-blue-600 transition-colors" title="Editar conquista">
                 <PencilIcon className="h-5 w-5" />
-              </button>
+              </Button>
             </Link>
 
-            <button
+            <Button
               onClick={() => onDelete(achievement.id)}
               className="p-2 text-gray-500 hover:text-red-600 transition-colors"
               title="Deletar conquista"
             >
               <Trash2 className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
         </div>
       </CardContent>

@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { Button } from '@/components/button'
 
 interface ToolbarButtonProps {
   onClick: () => void
@@ -18,7 +19,7 @@ export function ToolbarButton({
   disabled = false 
 }: ToolbarButtonProps) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       title={title}
@@ -32,6 +33,6 @@ export function ToolbarButton({
       `}
     >
       {children}
-    </button>
+    </Button>
   )
 }

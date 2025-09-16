@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button } from '@/components/button'
 
 interface LikeButtonProps {
   isLiked: boolean;
@@ -50,7 +51,7 @@ export function LikeButton({
   };
 
   return (
-    <button
+    <Button
       onClick={handleClick}
       disabled={disabled}
       className={`
@@ -115,7 +116,7 @@ export function LikeButton({
           {likesCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 

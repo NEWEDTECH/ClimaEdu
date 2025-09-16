@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { Button } from '@/components/button'
 
 interface ColorPickerProps {
   onColorSelect: (color: string) => void
@@ -50,13 +51,14 @@ export function ColorPicker({ onColorSelect, onClose }: ColorPickerProps) {
         <p className="text-sm font-medium text-gray-700 mb-2">Cor do Texto</p>
         <div className="grid grid-cols-6 gap-1">
           {colors.map((color) => (
-            <button
+            <Button
               key={color}
               onClick={() => onColorSelect(color)}
               className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500"
               style={{ backgroundColor: color }}
-              title={color}
-            />
+            >
+              {color}
+            </Button>
           ))}
         </div>
       </div>
@@ -72,12 +74,12 @@ export function ColorPicker({ onColorSelect, onClose }: ColorPickerProps) {
       </div>
 
       <div className="border-t border-gray-200 pt-2 mt-2">
-        <button
+        <Button
           onClick={() => onColorSelect('#000000')}
           className="w-full px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
         >
           Remover cor
-        </button>
+        </Button>
       </div>
     </div>
   )

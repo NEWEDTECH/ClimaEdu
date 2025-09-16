@@ -15,6 +15,7 @@ import { AddParticipantInput } from '@/_core/modules/chat/core/use-cases/add-par
 import { ChatRoom } from '@/_core/modules/chat/core/entities/ChatRoom';
 import { ChatMessage } from '@/_core/modules/chat/core/entities/ChatMessage';
 import { ChatRoomRepository } from '@/_core/modules/chat/infrastructure/repositories/ChatRoomRepository';
+import { Button } from '@/components/button'
 
 type ChatDropdownProps = {
   courseId: string;
@@ -342,7 +343,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 disabled={isLoading}
               />
-              <button
+              <Button
                 onClick={sendMessage}
                 disabled={!newMessage.trim() || isLoading || isInitializing}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -354,7 +355,7 @@ export function ChatDropdown({ courseId, classId, userId, isEmbedded = false }: 
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

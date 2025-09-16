@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Button } from '@/components/button'
 
 interface ThresholdSliderProps {
   label: string;
@@ -43,14 +44,14 @@ export function ThresholdSlider({
             {value}{unit}
           </span>
           {defaultValue !== undefined && onReset && (
-            <button
+            <Button
               type="button"
               onClick={onReset}
               className="text-xs text-blue-600 hover:text-blue-800 underline"
               title={`Reset to default (${defaultValue}${unit})`}
             >
               Reset
-            </button>
+            </Button>
           )}
         </div>
       </div>

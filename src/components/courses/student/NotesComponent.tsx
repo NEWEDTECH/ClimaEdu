@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/button'
 
 type Note = {
   id: string;
@@ -132,7 +133,7 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-800 dark:text-gray-200">Minhas Anotações</h3>
-            <button
+            <Button
               onClick={handleCreateNote}
               className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               title="Nova anotação"
@@ -140,7 +141,7 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
-            </button>
+            </Button>
           </div>
           
           {/* Search */}
@@ -193,7 +194,7 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
                         {formatRelativeDate(note.updatedAt)}
                       </p>
                     </div>
-                    <button
+                    <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteNote(note.id);
@@ -204,7 +205,7 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -222,19 +223,19 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-200">Nova Anotação</h3>
                 <div className="flex space-x-2">
-                  <button
+                  <Button
                     onClick={handleCancelCreate}
                     className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                   >
                     Cancelar
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleSaveNote}
                     disabled={!newNoteTitle.trim()}
                     className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Salvar
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -272,7 +273,7 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
                     )}
                   </p>
                 </div>
-                <button
+                <Button
                   onClick={() => handleDeleteNote(selectedNote.id)}
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                   title="Excluir anotação"
@@ -280,7 +281,7 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -306,12 +307,12 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Selecione uma anotação para visualizar ou crie uma nova
               </p>
-              <button
+              <Button
                 onClick={handleCreateNote}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 Criar Nova Anotação
-              </button>
+              </Button>
             </div>
           </div>
         )}

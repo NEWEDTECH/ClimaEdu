@@ -4,6 +4,7 @@ import type { TutoringSession } from '@/_core/modules/tutoring'
 import { TutoringSessionStatus } from '@/_core/modules/tutoring'
 import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, LinkIcon, ExternalLinkIcon } from 'lucide-react'
 import { TutoringStatusUtils, MeetingUrlUtils } from '../shared/tutoring-utils'
+import { Button } from '@/components/button'
 
 interface SessionCardProps {
   session: TutoringSession
@@ -108,13 +109,13 @@ export function SessionCard({ session, isUpcoming, onCancel, cancelling }: Sessi
       {isUpcoming && session.status === TutoringSessionStatus.SCHEDULED && onCancel && (
         <div className={`mt-3 pt-3 border-t border-gray-100 ${session.meetingUrl ? 'mt-2 pt-2' : ''}`}>
           <div className="flex gap-2">
-            <button 
+            <Button 
               onClick={onCancel}
               disabled={cancelling}
               className="flex-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {cancelling ? 'Cancelando...' : 'Cancelar'}
-            </button>
+            </Button>
           </div>
         </div>
       )}

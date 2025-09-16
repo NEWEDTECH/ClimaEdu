@@ -132,8 +132,8 @@ export function ScormUploadForm({
       </CardHeader>
       <CardContent>
         <div className="flex space-x-4 mb-4 border-b">
-          <button onClick={() => setMode('upload')}>Upload New</button>
-          <button onClick={() => setMode('select')}>Select Existing</button>
+          <Button onClick={() => setMode('upload')}>Upload New</Button>
+          <Button onClick={() => setMode('select')}>Select Existing</Button>
         </div>
 
         {mode === 'upload' ? (

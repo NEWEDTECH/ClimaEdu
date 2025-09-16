@@ -8,6 +8,7 @@ import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { User } from '../../_core/modules/user/core/entities/User';
+import { Button } from '@/components/button'
 
 export function EmailLinkHandler() {
   const router = useRouter();
@@ -270,12 +271,12 @@ export function EmailLinkHandler() {
               </div>
               <h2 className="text-xl font-semibold mb-2 text-green-600">Success!</h2>
               <p className="mb-4">You have been successfully signed in. Click the button below to go to the home page.</p>
-              <button
+              <Button
                 onClick={goToHome}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
                 Go to Home
-              </button>
+              </Button>
             </div>
           )}
 
@@ -312,12 +313,12 @@ export function EmailLinkHandler() {
           )}
 
           {status === 'error' && (
-            <button
+            <Button
               onClick={() => router.push('/login')}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             >
               Back to Login
-            </button>
+            </Button>
           )}
         </div>
       </div>

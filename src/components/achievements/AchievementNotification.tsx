@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { showToast } from '@/components/toast';
 import { Trophy } from 'lucide-react';
+import { Button } from '@/components/button'
 
 export interface AchievementNotificationData {
   id: string;
@@ -148,12 +149,12 @@ export function AchievementNotificationDemo() {
   return (
     <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
       <h3 className="font-semibold mb-2">Teste de Notificações de Conquistas</h3>
-      <button
+      <Button
         onClick={showDemoAchievementNotification}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
       >
         Mostrar Notificação Demo
-      </button>
+      </Button>
     </div>
   );
 }

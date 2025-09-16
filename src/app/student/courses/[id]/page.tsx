@@ -7,6 +7,7 @@ import { CourseSidebar, CourseContent, ContentRenderer, AutoNavigationModal } fr
 import { useCourseData } from '@/hooks/content/useCourseData';
 import { useCourseNavigation } from '@/hooks/content/useCourseNavigation';
 import { useAutoNavigation } from '@/hooks/content/useAutoNavigation';
+import { Button } from '@/components/button'
 
 
 export default function CoursePage() {
@@ -113,7 +114,7 @@ export default function CoursePage() {
                             <div className="flex justify-end mt-4">
                                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
                                     {/* Previous Button */}
-                                    <button
+                                    <Button
                                         onClick={handlePreviousVideo}
                                         className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         disabled={!canNavigatePrevious()}
@@ -122,10 +123,10 @@ export default function CoursePage() {
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                                         </svg>
-                                    </button>
+                                    </Button>
 
                                     {/* Complete Button */}
-                                    <button
+                                    <Button
                                         onClick={handleCompleteLesson}
                                         className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         disabled={!activeLesson}
@@ -135,10 +136,10 @@ export default function CoursePage() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                         </svg>
                                         <span className="text-sm font-medium">Concluir</span>
-                                    </button>
+                                    </Button>
 
                                     {/* Next Button */}
-                                    <button
+                                    <Button
                                         onClick={handleNextVideo}
                                         className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         disabled={!canNavigateNext()}
@@ -147,7 +148,7 @@ export default function CoursePage() {
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                                         </svg>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>

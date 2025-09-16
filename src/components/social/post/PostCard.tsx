@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SocialPost } from '@/context/zustand/useSocialStore';
+import { Button } from '@/components/button'
 
 interface PostCardProps {
   post: SocialPost;
@@ -107,7 +108,7 @@ export function PostCard({
           <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-6">
               {/* Like Button */}
-              <button
+              <Button
                 onClick={handleLike}
                 className={`flex items-center gap-2 text-sm transition-colors ${
                   post.isLikedByUser
@@ -129,10 +130,10 @@ export function PostCard({
                   />
                 </svg>
                 <span>{post.likesCount}</span>
-              </button>
+              </Button>
 
               {/* Comment Button */}
-              <button
+              <Button
                 onClick={handleComment}
                 className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
@@ -145,10 +146,10 @@ export function PostCard({
                   />
                 </svg>
                 <span>{post.commentsCount}</span>
-              </button>
+              </Button>
 
               {/* Share Button */}
-              <button className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+              <Button className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path 
                     strokeLinecap="round" 
@@ -158,7 +159,7 @@ export function PostCard({
                   />
                 </svg>
                 <span>Compartilhar</span>
-              </button>
+              </Button>
             </div>
 
             {/* Read More */}

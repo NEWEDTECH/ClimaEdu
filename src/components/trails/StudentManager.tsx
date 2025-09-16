@@ -3,6 +3,7 @@
 import { InputText } from '@/components/input'
 import { Tooltip } from '@/components/tooltip'
 import { X } from 'lucide-react'
+import { Button } from '@/components/button'
 
 type StudentInfo = {
   id: string
@@ -54,14 +55,14 @@ export function StudentManager({
             {trailStudents.map((student) => (
               <div key={student.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                 <Tooltip label={student.email} />
-                <button
+                <Button
                   type="button"
                   onClick={() => onRemoveStudent(student.id)}
                   className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
                   aria-label="Remover estudante"
                 >
                   <X size={12} />
-                </button>
+                </Button>
               </div>
             ))}
           </div>

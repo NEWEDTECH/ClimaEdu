@@ -356,7 +356,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
             {modules.map((module, index) => (
               <div key={module.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 {/* Module Header */}
-                <button
+                <Button
                   onClick={() => {
                     const isOpen = openModules.has(module.id);
                     const newOpenModules = new Set(openModules);
@@ -409,7 +409,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
-                </button>
+                </Button>
 
                 {/* Module Content */}
                 {openModules.has(module.id) && (

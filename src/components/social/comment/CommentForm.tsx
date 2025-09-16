@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button } from '@/components/button'
 
 interface CommentFormProps {
   onSubmit: (content: string) => void;
@@ -92,7 +93,7 @@ export function CommentForm({
           
           <div className="flex gap-2">
             {content && (
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setContent('');
@@ -101,9 +102,9 @@ export function CommentForm({
                 className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
               >
                 Cancelar
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="submit"
               disabled={!isValid || loading || remainingChars < 0}
               className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
@@ -119,7 +120,7 @@ export function CommentForm({
               ) : (
                 'Comentar'
               )}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -137,12 +138,12 @@ export function CommentFormCompact({
 
   if (!isExpanded) {
     return (
-      <button
+      <Button
         onClick={() => setIsExpanded(true)}
         className="w-full p-3 text-left text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
         {placeholder}
-      </button>
+      </Button>
     );
   }
 

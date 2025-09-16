@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { socialTheme, socialCSSVariables } from '../design/SocialTheme';
+import { Button } from '@/components/button'
 
 interface SocialLayoutProps {
   children: ReactNode;
@@ -192,14 +193,14 @@ export function MobileNav({ isOpen, onClose, children }: MobileNavProps) {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Menu
           </h2>
-          <button
+          <Button
             onClick={onClose}
             className="p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
         
         <div className="p-4 overflow-y-auto h-full">

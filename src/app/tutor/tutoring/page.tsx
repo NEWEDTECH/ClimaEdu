@@ -86,12 +86,12 @@ export default function TutorTutoringPage() {
           <div className="container mx-auto p-6">
             <div className="text-center py-8">
               <p className="text-red-500">Erro ao carregar sessões: {error}</p>
-              <button 
+              <Button 
                 onClick={refetch}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 Tentar novamente
-              </button>
+              </Button>
             </div>
           </div>
         </DashboardLayout>

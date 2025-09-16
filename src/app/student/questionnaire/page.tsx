@@ -449,7 +449,7 @@ export default function QuestionariosPage() {
           </div>
           <div className="flex space-x-2">
             {questionnaire.questions.map((_, index) => (
-              <button
+              <Button
                 key={index}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                   index === currentQuestionIndex
@@ -461,7 +461,7 @@ export default function QuestionariosPage() {
                 onClick={() => setCurrentQuestionIndex(index)}
               >
                 {index + 1}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
