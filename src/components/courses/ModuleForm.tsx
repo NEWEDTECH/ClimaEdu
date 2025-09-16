@@ -373,7 +373,22 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                     
                     setOpenModules(newOpenModules);
                   }}
-                  className="flex items-center justify-between w-full p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200"
+                  variant="ghost"
+                  className="flex items-center w-full h-auto p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 rounded-none shadow-none border-0 justify-start"
+                  icon={
+                    <svg
+                      className={`w-4 h-4 text-blue-500 transition-transform duration-200 ${
+                        openModules.has(module.id) ? 'transform rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  }
+                  iconPosition="end"
                 >
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mr-3 shadow-sm">
@@ -392,23 +407,10 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                         />
                       </svg>
                     </div>
-                    <div>
-                      <span className="font-semibold text-gray-800 dark:text-gray-200">
-                        {index + 1}. {module.title}
-                      </span>
-                    </div>
+                    <span className="font-semibold text-gray-800 dark:text-gray-200">
+                      {index + 1}. {module.title}
+                    </span>
                   </div>
-                  <svg
-                    className={`w-5 h-5 text-blue-500 transition-transform duration-200 ${
-                      openModules.has(module.id) ? 'transform rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
                 </Button>
 
                 {/* Module Content */}
