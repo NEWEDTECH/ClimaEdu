@@ -30,19 +30,8 @@ export class ProcessCSVUsersUseCase {
   async execute(input: ProcessCSVUsersInput): Promise<ProcessCSVUsersOutput> {
     const { csvData, institutionId, createdByUserId, createdByUserRole } = input;
     
-    // Validate CSV has email column
-    if (csvData.length === 0) {
-      throw new Error('CSV data is empty');
-    }
-
-    const firstRow = csvData[0];
-    const hasEmailColumn = Object.keys(firstRow).some(key => 
-      key.toLowerCase().trim() === 'email'
-    );
-
-    if (!hasEmailColumn) {
-      throw new Error('CSV must contain an "email" column');
-    }
+    // Validate CSV structure
+    this.validateCSVStructure(csvData);
 
     const createdUsers: User[] = [];
     const failedEmails: Array<{ email: string; error: string }> = [];
@@ -106,13 +95,69 @@ export class ProcessCSVUsersUseCase {
       }
     }
 
-    return {
+    // Analyze results and provide specific error messages
+    const result = {
       createdUsers,
       failedEmails,
       totalProcessed: csvData.length,
       totalCreated: createdUsers.length,
       totalFailed: failedEmails.length
     };
+
+    // If no users were created, provide specific error message
+    if (result.totalCreated === 0 && result.failedEmails.length > 0) {
+      const allExistingUsers = result.failedEmails.every(failure => 
+        failure.error.toLowerCase().includes('already exists')
+      );
+      
+      if (allExistingUsers) {
+        throw new Error('Todos os usuários já existem na plataforma.');
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Validate CSV structure and required columns
+   */
+  private validateCSVStructure(csvData: Array<Record<string, string>>): void {
+    if (csvData.length === 0) {
+      throw new Error('CSV data is empty');
+    }
+
+    const firstRow = csvData[0];
+    const originalColumns = Object.keys(firstRow);
+    const columns = originalColumns.map(key => key.toLowerCase().trim().replace(/\s+/g, ''));
+
+    console.log('🔍 Original CSV columns:', originalColumns);
+    console.log('🔍 Normalized CSV columns:', columns);
+
+    // Check for required columns: nome, email, tipo (more flexible matching)
+    const hasNome = columns.some(col => 
+      col === 'nome' || col === 'name' || col.includes('nome') || col.includes('name')
+    );
+    const hasEmail = columns.some(col => 
+      col === 'email' || col.includes('email') || col.includes('e-mail')
+    );
+    const hasTipo = columns.some(col => 
+      col === 'tipo' || col === 'type' || col === 'role' || 
+      col.includes('tipo') || col.includes('type') || col.includes('role')
+    );
+
+    console.log('📋 Column validation:', { hasNome, hasEmail, hasTipo });
+
+    const missingColumns: string[] = [];
+    if (!hasNome) missingColumns.push('nome');
+    if (!hasEmail) missingColumns.push('email');
+    if (!hasTipo) missingColumns.push('tipo');
+
+    if (missingColumns.length > 0) {
+      console.error('❌ Missing columns. Available columns:', originalColumns);
+      throw new Error(`CSV deve conter as colunas: ${missingColumns.join(', ')}. Colunas encontradas: ${originalColumns.join(', ')}`);
+    }
+
+    console.log('✅ CSV validation passed!');
   }
 
   /**

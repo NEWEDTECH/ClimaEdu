@@ -53,6 +53,34 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
+  switch (creatorRole) {
+    case UserRole.SUPER_ADMIN:
+      return [
+        UserRole.SYSTEM_ADMIN,
+        UserRole.LOCAL_ADMIN,
+        UserRole.CONTENT_MANAGER,
+        UserRole.TUTOR,
+        UserRole.STUDENT,
+      ];
+    case UserRole.SYSTEM_ADMIN:
+      return [
+        UserRole.LOCAL_ADMIN,
+        UserRole.CONTENT_MANAGER,
+        UserRole.TUTOR,
+        UserRole.STUDENT,
+      ];
+    case UserRole.LOCAL_ADMIN:
+      return [
+        UserRole.CONTENT_MANAGER,
+        UserRole.TUTOR,
+        UserRole.STUDENT,
+      ];
+    default:
+      return [];
+  }
+};
+
 export default function CreateUserPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -60,37 +88,20 @@ export default function CreateUserPage() {
   const [success, setSuccess] = useState<boolean>(false)
   const [institutions, setInstitutions] = useState<Institution[]>([])
   const [isLoadingInstitutions, setIsLoadingInstitutions] = useState<boolean>(false)
+  const [csvProgress, setCsvProgress] = useState<{
+    current: number;
+    total: number;
+    isProcessing: boolean;
+    currentEmail: string;
+  }>({
+    current: 0,
+    total: 0,
+    isProcessing: false,
+    currentEmail: ''
+  })
   const { infoUser } = useProfile()
 
   const currentUserRole: UserRole = UserRole.SUPER_ADMIN;
-
-  const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
-    switch (creatorRole) {
-      case UserRole.SUPER_ADMIN:
-        return [
-          UserRole.SYSTEM_ADMIN,
-          UserRole.LOCAL_ADMIN,
-          UserRole.CONTENT_MANAGER,
-          UserRole.TUTOR,
-          UserRole.STUDENT,
-        ];
-      case UserRole.SYSTEM_ADMIN:
-        return [
-          UserRole.LOCAL_ADMIN,
-          UserRole.CONTENT_MANAGER,
-          UserRole.TUTOR,
-          UserRole.STUDENT,
-        ];
-      case UserRole.LOCAL_ADMIN:
-        return [
-          UserRole.CONTENT_MANAGER,
-          UserRole.TUTOR,
-          UserRole.STUDENT,
-        ];
-      default:
-        return [];
-    }
-  };
 
   const allowedRoles = getAllowedRolesToCreate(currentUserRole);
 
@@ -186,20 +197,13 @@ export default function CreateUserPage() {
   }
 
   const handleCSVUpload = async (file: File, data: any[]) => {
-    console.log('📊 CSV Upload recebido:', {
-      arquivo: file.name,
-      totalRegistros: data.length,
-      primeiroRegistro: data[0],
-      todosOsDados: data
-    });
-
     setError(null);
     setIsSubmitting(true);
 
     try {
       // Determine institution ID based on user role
       let institutionId: string;
-      
+
       if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
         // Admin users: use their institution ID
         if (!infoUser.currentIdInstitution) {
@@ -208,7 +212,7 @@ export default function CreateUserPage() {
         institutionId = infoUser.currentIdInstitution;
       } else if (infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) {
         // Root users: need to select an institution
-        const selectedInstitution = institutions.find(inst => inst.id); // You might want to add institution selection for CSV
+        const selectedInstitution = institutions.find(inst => inst.id);
         if (!selectedInstitution) {
           throw new Error('Por favor, selecione uma instituição para associar os usuários do CSV');
         }
@@ -217,84 +221,27 @@ export default function CreateUserPage() {
         throw new Error('Usuário não tem permissão para criar usuários via CSV');
       }
 
-      // Validate CSV has email column
-      if (data.length === 0) {
-        throw new Error('CSV data is empty');
-      }
+      // Initialize progress
+      setCsvProgress({
+        current: 0,
+        total: data.length,
+        isProcessing: true,
+        currentEmail: ''
+      });
 
-      const firstRow = data[0];
-      const hasEmailColumn = Object.keys(firstRow).some(key => 
-        key.toLowerCase().trim() === 'email'
+      // Use the ProcessCSVUsersUseCase to handle all the logic
+      const processCSVUseCase = container.get<ProcessCSVUsersUseCase>(
+        Register.user.useCase.ProcessCSVUsersUseCase
       );
 
-      if (!hasEmailColumn) {
-        throw new Error('CSV must contain an "email" column');
-      }
+      console.log(data)
 
-      const createdUsers: any[] = [];
-      const failedEmails: Array<{ email: string; error: string }> = [];
-
-      // Process each row manually using existing CreateUserUseCase
-      const createUserUseCase = container.get<CreateUserUseCase>(
-        Register.user.useCase.CreateUserUseCase
-      );
-
-      for (const row of data) {
-        try {
-          // Extract email from CSV row (case-insensitive)
-          const emailKey = Object.keys(row).find(key => 
-            key.toLowerCase().trim() === 'email'
-          );
-          const emailValue = emailKey ? row[emailKey].trim() : '';
-          
-          if (!emailValue || emailValue.trim() === '') {
-            failedEmails.push({
-              email: 'empty',
-              error: 'Email is empty or missing'
-            });
-            continue;
-          }
-
-          // Extract name from CSV or use email as fallback
-          const nameKey = Object.keys(row).find(key => {
-            const lowerKey = key.toLowerCase().trim();
-            return lowerKey === 'name' || lowerKey === 'nome' || lowerKey === 'full_name' || lowerKey === 'fullname';
-          });
-
-          const userName = (nameKey && row[nameKey].trim()) ? row[nameKey].trim() : emailValue.split('@')[0];
-
-          // Create user
-          const createUserResult = await createUserUseCase.execute({
-            name: userName,
-            email: emailValue,
-            password: '',
-            type: UserRole.STUDENT // Default role
-          });
-
-          if (createUserResult.user) {
-            createdUsers.push(createUserResult.user);
-          }
-
-        } catch (error) {
-          const emailKey = Object.keys(row).find(key => 
-            key.toLowerCase().trim() === 'email'
-          );
-          const emailValue = emailKey ? row[emailKey].trim() : 'unknown';
-          
-          failedEmails.push({
-            email: emailValue,
-            error: error instanceof Error ? error.message : 'Unknown error occurred'
-          });
-        }
-      }
-
-      const result = {
-        createdUsers,
-        failedEmails,
-        totalProcessed: data.length,
-        totalCreated: createdUsers.length,
-        totalFailed: failedEmails.length
-      };
+      const result = await processCSVUseCase.execute({
+        csvData: data,
+        institutionId,
+        createdByUserId: infoUser.id,
+        createdByUserRole: infoUser.currentRole as UserRole
+      });
 
       // Associate each created user to the institution
       const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
@@ -334,7 +281,20 @@ export default function CreateUserPage() {
           setError(`${result.totalCreated} usuários criados, mas ${result.totalFailed} falharam. Verifique o console para detalhes.`);
         }
       } else {
-        throw new Error('Nenhum usuário foi criado. Verifique o formato do CSV.');
+        // Check if all failures are due to existing users
+        const allExistingUsers = result.failedEmails.every(failure => 
+          failure.error.toLowerCase().includes('already exists') || 
+          failure.error.toLowerCase().includes('já existe')
+        );
+        
+        if (allExistingUsers && result.failedEmails.length > 0) {
+          setError(`⚠️ Todos os ${result.totalProcessed} usuários da planilha já existem na plataforma. Nenhum usuário novo foi criado.`);
+        } else if (result.failedEmails.length > 0) {
+          console.warn('❌ Falhas no processamento:', result.failedEmails);
+          setError(`Nenhum usuário foi criado. ${result.totalFailed} falhas encontradas. Verifique o console para detalhes.`);
+        } else {
+          setError('Nenhum usuário foi criado. Verifique o formato do CSV.');
+        }
       }
 
     } catch (err) {
@@ -342,6 +302,12 @@ export default function CreateUserPage() {
       setError(err instanceof Error ? err.message : 'Erro ao processar CSV. Tente novamente.');
     } finally {
       setIsSubmitting(false);
+      setCsvProgress({
+        current: 0,
+        total: 0,
+        isProcessing: false,
+        currentEmail: ''
+      });
     }
   }
 
@@ -478,6 +444,34 @@ export default function CreateUserPage() {
 
             <div className="lg:col-span-1">
               <CSVUpload onFileUpload={handleCSVUpload} />
+
+              {/* Progress Bar */}
+              {csvProgress.isProcessing && (
+                <Card className="mt-4">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Processando Planilha</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progresso</span>
+                        <span>{csvProgress.current} / {csvProgress.total}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                          style={{
+                            width: `${csvProgress.total > 0 ? (csvProgress.current / csvProgress.total) * 100 : 0}%`
+                          }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Processando: {csvProgress.currentEmail}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>
