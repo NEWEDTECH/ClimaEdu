@@ -240,7 +240,19 @@ export default function CreateUserPage() {
         csvData: data,
         institutionId,
         createdByUserId: infoUser.id,
-        createdByUserRole: infoUser.currentRole as UserRole
+        createdByUserRole: infoUser.currentRole as UserRole,
+        onProgress: (current, total, currentEmail) => {
+          console.log(`🎯 Frontend received progress update: ${current}/${total} - ${currentEmail}`);
+          setCsvProgress(prev => {
+            console.log(`📱 Updating state from ${prev.current}/${prev.total} to ${current}/${total}`);
+            return {
+              ...prev,
+              current,
+              total,
+              currentEmail
+            };
+          });
+        }
       });
 
       // Associate each created user to the institution
@@ -278,7 +290,7 @@ export default function CreateUserPage() {
         
         if (result.totalFailed > 0) {
           console.warn(`⚠️ ${result.totalFailed} usuários falharam:`, result.failedEmails);
-          setError(`${result.totalCreated} usuários criados, mas ${result.totalFailed} falharam. Verifique o console para detalhes.`);
+          setError(`${result.totalCreated} usuários criados, mas ${result.totalFailed} falharam.`);
         }
       } else {
         // Check if all failures are due to existing users
@@ -291,7 +303,7 @@ export default function CreateUserPage() {
           setError(`⚠️ Todos os ${result.totalProcessed} usuários da planilha já existem na plataforma. Nenhum usuário novo foi criado.`);
         } else if (result.failedEmails.length > 0) {
           console.warn('❌ Falhas no processamento:', result.failedEmails);
-          setError(`Nenhum usuário foi criado. ${result.totalFailed} falhas encontradas. Verifique o console para detalhes.`);
+          setError(`Nenhum usuário foi criado. ${result.totalFailed} falhas encontradas.`);
         } else {
           setError('Nenhum usuário foi criado. Verifique o formato do CSV.');
         }

@@ -28,7 +28,7 @@ export class ProcessCSVUsersUseCase {
    * @returns Output data
    */
   async execute(input: ProcessCSVUsersInput): Promise<ProcessCSVUsersOutput> {
-    const { csvData, institutionId, createdByUserId, createdByUserRole } = input;
+    const { csvData, institutionId, createdByUserId, createdByUserRole, onProgress } = input;
     
     // Validate CSV structure
     this.validateCSVStructure(csvData);
@@ -37,15 +37,24 @@ export class ProcessCSVUsersUseCase {
     const failedEmails: Array<{ email: string; error: string }> = [];
 
     // Process each row
-    for (const row of csvData) {
+    for (let i = 0; i < csvData.length; i++) {
+      const row = csvData[i];
       try {
         const emailValue = this.extractEmailFromRow(row);
+        
+        console.log(`🔄 Processing user ${i + 1}/${csvData.length}: ${emailValue}`);
         
         if (!emailValue || emailValue.trim() === '') {
           failedEmails.push({
             email: 'empty',
             error: 'Email is empty or missing'
           });
+          
+          // Update progress after processing
+          if (onProgress) {
+            console.log(`📊 Progress update: ${i + 1}/${csvData.length} - ${emailValue || 'email vazio'}`);
+            onProgress(i + 1, csvData.length, emailValue || 'email vazio');
+          }
           continue;
         }
 
@@ -56,6 +65,12 @@ export class ProcessCSVUsersUseCase {
             email: emailValue,
             error: 'User with this email already exists'
           });
+          
+          // Update progress after processing
+          if (onProgress) {
+            console.log(`📊 Progress update: ${i + 1}/${csvData.length} - ${emailValue} (já existe)`);
+            onProgress(i + 1, csvData.length, `${emailValue} (já existe)`);
+          }
           continue;
         }
 
@@ -85,6 +100,8 @@ export class ProcessCSVUsersUseCase {
         // Save user to Firestore
         const savedUser = await this.userRepository.save(user);
         createdUsers.push(savedUser);
+        
+        console.log(`✅ User created successfully: ${emailValue}`);
 
       } catch (error) {
         const emailValue = this.extractEmailFromRow(row) || 'unknown';
@@ -92,6 +109,15 @@ export class ProcessCSVUsersUseCase {
           email: emailValue,
           error: error instanceof Error ? error.message : 'Unknown error occurred'
         });
+        
+        console.log(`❌ Error creating user: ${emailValue} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      
+      // Always update progress after each row is processed
+      if (onProgress) {
+        const emailValue = this.extractEmailFromRow(row) || 'processando...';
+        console.log(`📊 Final progress update: ${i + 1}/${csvData.length} - ${emailValue}`);
+        onProgress(i + 1, csvData.length, emailValue);
       }
     }
 

@@ -5,4 +5,5 @@ export interface ProcessCSVUsersInput {
   institutionId: string;
   createdByUserId: string;
   createdByUserRole: UserRole;
+  onProgress?: (current: number, total: number, currentEmail: string) => void;
 }
