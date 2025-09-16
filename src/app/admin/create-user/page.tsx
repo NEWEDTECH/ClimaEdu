@@ -338,8 +338,8 @@ export default function CreateUserPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-            <Card>
+          <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
+            <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Criar Usuário Individual</CardTitle>
                 <CardDescription>
@@ -454,7 +454,7 @@ export default function CreateUserPage() {
               </FormSection>
             </Card>
 
-            <div className="lg:col-span-1">
+            <div className="flex-1 flex flex-col">
               <CSVUpload onFileUpload={handleCSVUpload} />
 
               {/* Progress Bar */}
