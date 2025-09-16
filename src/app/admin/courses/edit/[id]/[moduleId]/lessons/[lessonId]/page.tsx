@@ -216,6 +216,40 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleSaveLessonTitle = async () => {
+    if (!formData.title.trim()) {
+      showToast.error('O título da lição não pode estar vazio')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      const lesson = await lessonRepository.findById(lessonId)
+      
+      if (!lesson) {
+        throw new Error('Lição não encontrada')
+      }
+      
+      // Update lesson title
+      lesson.title = formData.title.trim()
+      
+      // Save the updated lesson
+      await lessonRepository.save(lesson)
+      
+      showToast.success('Título da lição atualizado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar título da lição:', error)
+      showToast.error(`Falha ao salvar título: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleDeleteQuestionnaire = async () => {
     if (!formData.questionnaire) return
     
@@ -496,16 +530,26 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="title" className="text-sm font-medium">
-                
+                Título da Lição
               </label>
-              <InputText
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Digite o título da lição"
-                readOnly
-              />
+              <div className="flex gap-2 items-center">
+                <InputText
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Digite o título da lição"
+                  className="flex-1 h-10"
+                />
+                <Button 
+                  onClick={handleSaveLessonTitle}
+                  disabled={isSubmitting}
+                  variant="primary"
+                  className="h-10 px-4"
+                >
+                  {isSubmitting ? 'Salvando...' : 'Salvar'}
+                </Button>
+              </div>
             </div>
             
             {/* Content Section */}
