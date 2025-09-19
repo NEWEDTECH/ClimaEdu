@@ -7,9 +7,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
+import { SelectComponent } from '@/components/select'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { FormSection } from '@/components/form'
@@ -52,7 +53,8 @@ export default function CreatePodcastPage() {
     register,
     handleSubmit,
     formState: { errors },
-    watch
+    watch,
+    setValue
   } = useForm<PodcastFormData>({
     resolver: zodResolver(podcastSchema),
     defaultValues: {
@@ -117,9 +119,6 @@ export default function CreatePodcastPage() {
               <CardTitle>
                 {selectedMediaType === 'AUDIO' ? '🎧 Novo Podcast' : '📹 Novo Vídeo Podcast'}
               </CardTitle>
-              <CardDescription>
-                Crie um novo {selectedMediaType === 'AUDIO' ? 'podcast de áudio' : 'vídeo podcast'} para sua plataforma educacional
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <FormSection onSubmit={handleSubmit(onSubmit)}>
@@ -128,13 +127,16 @@ export default function CreatePodcastPage() {
                   <label htmlFor="mediaType" className="text-sm font-medium">
                     Tipo de Mídia *
                   </label>
-                  <select
-                    {...register('mediaType')}
-                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                  >
-                    <option value="AUDIO" className='dark:text-black'>🎧 Podcast de Áudio</option>
-                    <option value="VIDEO" className='dark:text-black'>📹 Vídeo Podcast</option>
-                  </select>
+                  <SelectComponent
+                    value={watch('mediaType') || ''}
+                    onChange={(value) => setValue('mediaType', value as 'AUDIO' | 'VIDEO')}
+                    options={[
+                      { value: "AUDIO", label: "🎧 Podcast de Áudio" },
+                      { value: "VIDEO", label: "📹 Vídeo Podcast" }
+                    ]}
+                    placeholder="Selecione o tipo de mídia"
+                    className="w-full"
+                  />
                   {errors.mediaType && (
                     <p className="text-sm text-red-600">{errors.mediaType.message}</p>
                   )}
