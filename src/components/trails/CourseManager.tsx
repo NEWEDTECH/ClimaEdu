@@ -75,7 +75,7 @@ export function CourseManager({
             <div 
               className={`space-y-3 mb-6 ${
                 selectedCourses.length > 5 
-                  ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50' 
+                  ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 ' 
                   : ''
               }`}
               style={selectedCourses.length > 5 ? { maxHeight: '400px' } : {}}
@@ -89,7 +89,6 @@ export function CourseManager({
                       </span>
                       <div>
                         <h4 className="font-medium">{course.title}</h4>
-                        <p className="text-sm text-gray-600 truncate max-w-md">{course.description}</p>
                       </div>
                     </div>
                   </div>
