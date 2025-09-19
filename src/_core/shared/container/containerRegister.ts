@@ -14,6 +14,7 @@ import { registerSocialModule } from './modules/social/register';
 import { registerReportModule } from './modules/report/register';
 import { registerCertificateModule } from './modules/certificate/register';
 import { registerTutoringModule } from './modules/tutoring/register';
+import { registerNotesModule } from './modules/notes/register';
 import { registerSharedModule } from './modules/shared/register';
 
 // Import initialization function
@@ -40,6 +41,7 @@ export function registerDependencies(): void {
   registerReportModule(container);
   registerCertificateModule(container);
   registerTutoringModule(container);
+  registerNotesModule(container);
   
   // Initialize event subscribers after all modules are registered
   initializeSubscribers();
