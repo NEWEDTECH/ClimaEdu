@@ -1,7 +1,6 @@
 'use client'
 
 import { InputText } from '@/components/input'
-import { Tooltip } from '@/components/tooltip'
 import { X } from 'lucide-react'
 import { Button } from '@/components/button'
 
@@ -51,17 +50,26 @@ export function StudentManager({
       {trailStudents.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-medium mb-3">Estudantes na Trilha ({trailStudents.length})</h4>
-          <div className="flex flex-wrap gap-2">
+          <div 
+            className={`space-y-2 ${
+              trailStudents.length >= 5
+                ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50' 
+                : ''
+            }`}
+            style={trailStudents.length >= 5 ? { maxHeight: '400px' } : {}}
+          >
             {trailStudents.map((student) => (
-              <div key={student.id} className="relative bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                <Tooltip label={student.email} />
+              <div key={student.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{student.name}</div>
+                  <div className="text-sm text-gray-500">{student.email}</div>
+                </div>
                 <Button
-                  type="button"
                   onClick={() => onRemoveStudent(student.id)}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                  className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 flex items-center gap-1 whitespace-nowrap min-w-fit"
                   aria-label="Remover estudante"
                 >
-                  <X size={12} />
+                  Remover
                 </Button>
               </div>
             ))}
