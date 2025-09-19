@@ -214,9 +214,6 @@ export default function StudentPage() {
           <Card>
             <CardHeader>
               <CardTitle>Estudantes</CardTitle>
-              <CardDescription>
-                Gerencie todos os estudantes inscritos em seus cursos
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div>

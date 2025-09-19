@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card/card'
+import { SelectComponent } from '@/components/select'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
@@ -546,47 +547,33 @@ export default function StudentEnrollmentPage() {
                       Estudante *
                     </label>
                     <div className="relative">
-                      <InputText
-                        id="studentSearch"
-                        type="text"
-                        placeholder="Buscar estudante por email"
-                        value={id && studentData ? studentData.email : studentSearchTerm}
-                        onChange={(e) => {
-                          if (id && studentData) {
-                            setStudentData({ ...studentData, email: e.target.value })
-                          } else {
-                            setStudentSearchTerm(e.target.value)
-                            setShowStudentDropdown(true)
-                          }
-                        }}
-                        onFocus={() => !id && setShowStudentDropdown(true)}
-                        className="mb-2"
-                        required={!selectedStudentId}
-                      />
-
-                      {showStudentDropdown && studentSearchTerm.trim() !== '' && !id && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                          {getFilteredStudents().length > 0 ? (
-                            getFilteredStudents().map((student) => (
-                              <div
-                                key={student.id}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                onClick={() => {
-                                  setSelectedStudentId(student.id);
-                                  setStudentSearchTerm(student.email);
-                                  setShowStudentDropdown(false);
-                                }}
-                              >
-                                <div className="font-medium">{student.name}</div>
-                                <div className="text-sm text-gray-500">{student.email}</div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-gray-500">
-                              Nenhum estudante encontrado
-                            </div>
-                          )}
-                        </div>
+                      {id && studentData ? (
+                        <InputText
+                          id="studentEmail"
+                          type="email"
+                          placeholder="Email do estudante"
+                          value={studentData.email}
+                          onChange={(e) => setStudentData({ ...studentData, email: e.target.value })}
+                          className="mb-2"
+                          required
+                        />
+                      ) : (
+                        <SelectComponent
+                          value={selectedStudentId}
+                          onChange={(studentId) => {
+                            setSelectedStudentId(studentId)
+                            const student = students.find(s => s.id === studentId)
+                            if (student) {
+                              setStudentSearchTerm(student.email)
+                            }
+                          }}
+                          options={students.map(student => ({
+                            value: student.id,
+                            label: `${student.name} (${student.email})`
+                          }))}
+                          placeholder="Selecione um estudante"
+                          className="mb-2"
+                        />
                       )}
                     </div>
 
@@ -618,43 +605,22 @@ export default function StudentEnrollmentPage() {
                       Instituição *
                     </label>
                     <div className="relative">
-                      <InputText
-                        id="institutionSearch"
-                        type="text"
-                        placeholder="Buscar instituição por nome"
-                        value={selectedInstitutionId ? institutions.find(i => i.id === selectedInstitutionId)?.name || '' : institutionSearchTerm}
-                        onChange={(e) => {
-                          setInstitutionSearchTerm(e.target.value);
-                          setShowInstitutionDropdown(true);
+                      <SelectComponent
+                        value={selectedInstitutionId}
+                        onChange={(institutionId) => {
+                          setSelectedInstitutionId(institutionId)
+                          const institution = institutions.find(i => i.id === institutionId)
+                          if (institution) {
+                            setInstitutionSearchTerm(institution.name)
+                          }
                         }}
-                        onFocus={() => setShowInstitutionDropdown(true)}
+                        options={institutions.map(institution => ({
+                          value: institution.id,
+                          label: institution.name
+                        }))}
+                        placeholder="Selecione uma instituição"
                         className="mb-2"
-                        required={!selectedInstitutionId}
                       />
-
-                      {showInstitutionDropdown && institutionSearchTerm.trim() !== '' && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                          {getFilteredInstitutions().length > 0 ? (
-                            getFilteredInstitutions().map((institution) => (
-                              <div
-                                key={institution.id}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                onClick={() => {
-                                  setSelectedInstitutionId(institution.id);
-                                  setInstitutionSearchTerm(institution.name);
-                                  setShowInstitutionDropdown(false);
-                                }}
-                              >
-                                <div className="font-medium">{institution.name}</div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-gray-500">
-                              Nenhuma instituição encontrada
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -664,69 +630,56 @@ export default function StudentEnrollmentPage() {
                       Cursos *
                     </label>
 
-                    {/* Display selected courses as tooltips */}
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {allSelectedCourses.map((course) => (
-                        <div key={course.id} className="relative">
-                          <Tooltip label={course.title} />
-                          <Button
-                            type="button"
-                            onClick={() => removeCourse(course.id)}
-                            className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
-                            aria-label="Remover curso"
-                          >
-                            <X size={12} />
-                          </Button>
+                    {/* Display selected courses */}
+                    {allSelectedCourses.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium mb-3">Cursos Selecionados ({allSelectedCourses.length})</h4>
+                        <div 
+                          className={`space-y-2 ${
+                            allSelectedCourses.length >= 5
+                              ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50' 
+                              : ''
+                          }`}
+                          style={allSelectedCourses.length >= 5 ? { maxHeight: '400px' } : {}}
+                        >
+                          {allSelectedCourses.map((course) => (
+                            <div key={course.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{course.title}</div>
+                              </div>
+                              <Button
+                                type="button"
+                                onClick={() => removeCourse(course.id)}
+                                className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 flex items-center gap-1 whitespace-nowrap min-w-fit"
+                                aria-label="Remover curso"
+                              >
+                                Remover
+                              </Button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
 
                     <div className="relative">
-                      {filteredCourses.length > 0 ? (
-                        <InputText
-                          id="courseSearch"
-                          type="text"
-                          placeholder="Buscar curso por título"
-                          value={courseSearchTerm}
-                          onChange={(e) => {
-                            setCourseSearchTerm(e.target.value);
-                            setShowCourseDropdown(true);
-                          }}
-                          onFocus={() => setShowCourseDropdown(true)}
-                          className="mb-2"
-                        />
-                      ) : (
-                        <InputText
-                          id="courseSearch"
-                          type="text"
-                          placeholder="Buscar curso por título"
-                          value={courseSearchTerm}
-                          className="mb-2"
-                          disabled
-                        />
-                      )}
-
-                      {showCourseDropdown && courseSearchTerm.trim() !== '' && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                          {getFilteredCoursesBySearch().length > 0 ? (
-                            getFilteredCoursesBySearch()
-                              .filter(course => !selectedCourseIds.includes(course.id))
-                              .map((course) => (
-                                <div
-                                  key={course.id}
-                                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                  onClick={() => addCourse(course)}
-                                >
-                                  <div className="font-medium">{course.title}</div>
-                                </div>
-                              ))
-                          ) : (
-                            <div className="px-4 py-2 text-gray-500">
-                              Nenhum curso encontrado
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <SelectComponent
+                        value=""
+                        onChange={(courseId) => {
+                          const course = filteredCourses.find(c => c.id === courseId)
+                          if (course && !selectedCourseIds.includes(course.id)) {
+                            addCourse(course)
+                          }
+                        }}
+                        options={filteredCourses
+                          .filter(course => !selectedCourseIds.includes(course.id))
+                          .map(course => ({
+                            value: course.id,
+                            label: course.title
+                          }))}
+                        placeholder={filteredCourses.length > 0 ? "Selecione um curso para adicionar" : "Selecione uma instituição primeiro"}
+                        className="mb-2"
+                        disabled={filteredCourses.length === 0}
+                      />
                     </div>
 
                     <p className="text-gray-500 text-xs">
