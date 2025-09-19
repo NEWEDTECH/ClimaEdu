@@ -74,8 +74,8 @@ export class ProcessCSVUsersUseCase {
           continue;
         }
 
-        // Determine user role based on CSV data or default to STUDENT
-        const userRole = this.determineUserRole(row, createdByUserRole);
+        // All users from CSV are created as STUDENT role
+        const userRole = UserRole.STUDENT;
         
         // Extract name from CSV or use email as fallback
         const userName = this.extractNameFromRow(row, emailValue);
@@ -146,44 +146,37 @@ export class ProcessCSVUsersUseCase {
 
   /**
    * Validate CSV structure and required columns
+   * Only requires: nome and email
    */
   private validateCSVStructure(csvData: Array<Record<string, string>>): void {
     if (csvData.length === 0) {
-      throw new Error('CSV data is empty');
+      throw new Error('Dados do CSV estão vazios');
     }
 
     const firstRow = csvData[0];
     const originalColumns = Object.keys(firstRow);
     const columns = originalColumns.map(key => key.toLowerCase().trim().replace(/\s+/g, ''));
 
-    console.log('🔍 Original CSV columns:', originalColumns);
-    console.log('🔍 Normalized CSV columns:', columns);
-
-    // Check for required columns: nome, email, tipo (more flexible matching)
+    // Verificar apenas as colunas obrigatórias: nome e email
     const hasNome = columns.some(col => 
       col === 'nome' || col === 'name' || col.includes('nome') || col.includes('name')
     );
     const hasEmail = columns.some(col => 
       col === 'email' || col.includes('email') || col.includes('e-mail')
     );
-    const hasTipo = columns.some(col => 
-      col === 'tipo' || col === 'type' || col === 'role' || 
-      col.includes('tipo') || col.includes('type') || col.includes('role')
-    );
 
-    console.log('📋 Column validation:', { hasNome, hasEmail, hasTipo });
+    console.log('📋 Validação de colunas:', { hasNome, hasEmail });
 
     const missingColumns: string[] = [];
     if (!hasNome) missingColumns.push('nome');
     if (!hasEmail) missingColumns.push('email');
-    if (!hasTipo) missingColumns.push('tipo');
 
     if (missingColumns.length > 0) {
-      console.error('❌ Missing columns. Available columns:', originalColumns);
-      throw new Error(`CSV deve conter as colunas: ${missingColumns.join(', ')}. Colunas encontradas: ${originalColumns.join(', ')}`);
+      console.error('❌ Colunas faltando. Colunas disponíveis:', originalColumns);
+      throw new Error(`O CSV deve conter as colunas obrigatórias: ${missingColumns.join(', ')}. Colunas encontradas: ${originalColumns.join(', ')}`);
     }
 
-    console.log('✅ CSV validation passed!');
+    console.log('✅ Validação do CSV passou! Apenas nome e email são necessários.');
   }
 
   /**
@@ -214,42 +207,4 @@ export class ProcessCSVUsersUseCase {
     return emailFallback.split('@')[0];
   }
 
-  /**
-   * Determine user role based on CSV data and creator permissions
-   */
-  private determineUserRole(row: Record<string, string>, createdByUserRole: UserRole): UserRole {
-    // Try to find role/type column
-    const roleKey = Object.keys(row).find(key => {
-      const lowerKey = key.toLowerCase().trim();
-      return lowerKey === 'role' || lowerKey === 'type' || lowerKey === 'tipo' || lowerKey === 'perfil';
-    });
-
-    if (roleKey && row[roleKey].trim()) {
-      const roleValue = row[roleKey].trim().toLowerCase();
-      
-      // Map common role values
-      switch (roleValue) {
-        case 'student':
-        case 'estudante':
-        case 'aluno':
-          return UserRole.STUDENT;
-        case 'tutor':
-        case 'professor':
-          return UserRole.TUTOR;
-        case 'admin':
-        case 'administrator':
-        case 'administrador':
-          return UserRole.LOCAL_ADMIN;
-        case 'content_manager':
-        case 'gestor':
-        case 'gestor_conteudo':
-          return UserRole.CONTENT_MANAGER;
-        default:
-          return UserRole.STUDENT; // Default fallback
-      }
-    }
-
-    // Default to STUDENT if no role specified
-    return UserRole.STUDENT;
-  }
 }

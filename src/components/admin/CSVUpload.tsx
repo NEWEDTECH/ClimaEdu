@@ -135,7 +135,7 @@ export function CSVUpload({
   };
 
   return (
-    <Card>
+    <Card className='h-[500px]'>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileTextIcon className="w-5 h-5" />
@@ -216,8 +216,10 @@ export function CSVUpload({
         <div className="text-xs text-gray-500 space-y-1">
           <p><strong>Formato esperado:</strong></p>
           <p>• Primeira linha deve conter os cabeçalhos das colunas</p>
-          <p>• Dados separados por vírgula</p>
-          <p>• Exemplo: nome,email,tipo</p>
+          <p>• Dados separados por vírgula ou ponto e vírgula</p>
+          <p>• Colunas obrigatórias: <strong>nome, email</strong></p>
+          <p>• Exemplo: nome,email</p>
+          <p>• Todos os usuários serão cadastrados como <strong>estudantes</strong></p>
         </div>
       </CardContent>
     </Card>
