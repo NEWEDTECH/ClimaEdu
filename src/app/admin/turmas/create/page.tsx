@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/loader'
+import { SelectComponent } from '@/components/select'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
@@ -246,20 +247,16 @@ export default function CreateTurmaPage() {
                     <label htmlFor="institution" className="text-sm font-medium">
                       Instituição *
                     </label>
-                    <select
-                      id="institution"
+                    <SelectComponent
                       value={formData.institutionId}
-                      onChange={(e) => handleInputChange('institutionId', e.target.value)}
-                      className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                      required
-                    >
-                      <option value="" className='dark:text-black'>Selecione uma instituição</option>
-                      {institutions.map(institution => (
-                        <option key={institution.id} value={institution.id} className='dark:text-black'>
-                          {institution.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(institutionId) => handleInputChange('institutionId', institutionId)}
+                      options={institutions.map(institution => ({
+                        value: institution.id,
+                        label: institution.name
+                      }))}
+                      placeholder="Selecione uma instituição"
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
@@ -297,22 +294,16 @@ export default function CreateTurmaPage() {
                       <label htmlFor="course" className="text-sm font-medium">
                         Curso *
                       </label>
-                      <select
-                        id="course"
+                      <SelectComponent
                         value={formData.courseId}
-                        onChange={(e) => handleInputChange('courseId', e.target.value)}
-                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                        required
-                      >
-                        <option value="" className='dark:text-black'>Selecione um curso</option>
-                        {courses.map(course => (
-                          <option key={course.id}
-                            value={course.id}
-                            className={`dark:text-black ${courses.length > 5 ? 'overflow-y-scroll' : ''}`}>
-                            {course.title}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(courseId) => handleInputChange('courseId', courseId)}
+                        options={courses.map(course => ({
+                          value: course.id,
+                          label: course.title
+                        }))}
+                        placeholder="Selecione um curso"
+                        className="w-full"
+                      />
                     </div>
                   )}
 
@@ -321,20 +312,16 @@ export default function CreateTurmaPage() {
                       <label htmlFor="trail" className="text-sm font-medium">
                         Trilha *
                       </label>
-                      <select
-                        id="trail"
+                      <SelectComponent
                         value={formData.trailId}
-                        onChange={(e) => handleInputChange('trailId', e.target.value)}
-                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                        required
-                      >
-                        <option value="">Selecione uma trilha</option>
-                        {trails.map(trail => (
-                          <option key={trail.id} value={trail.id}>
-                            {trail.title}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(trailId) => handleInputChange('trailId', trailId)}
+                        options={trails.map(trail => ({
+                          value: trail.id,
+                          label: trail.title
+                        }))}
+                        placeholder="Selecione uma trilha"
+                        className="w-full"
+                      />
                     </div>
                   )}
                 </div>

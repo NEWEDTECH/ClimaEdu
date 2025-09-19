@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { SelectComponent } from '@/components/select'
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -200,18 +201,16 @@ export default function TurmasPage() {
                 </div>
                 
                 <div className="flex-1">
-                  <select
-                    value={selectedInstitutionId}
-                    onChange={(e) => setSelectedInstitutionId(e.target.value)}
-                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                  >
-                    <option value="" className='dark:text-black'>Selecione uma instituição</option>
-                    {institutions.map(institution => (
-                      <option key={institution.id} value={institution.id} className='dark:text-black'>
-                        {institution.name}
-                      </option>
-                    ))}
-                  </select>
+                <SelectComponent
+                  value={selectedInstitutionId}
+                  onChange={(institutionId) => setSelectedInstitutionId(institutionId)}
+                  options={institutions.map(institution => ({
+                    value: institution.id,
+                    label: institution.name
+                  }))}
+                  placeholder="Selecione uma instituição"
+                  className="w-full"
+                />
                 </div>
               </div>
 
