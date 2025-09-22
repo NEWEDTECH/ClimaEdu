@@ -61,7 +61,7 @@ export class UpdateInstitutionAchievementUseCase {
       }
 
       // Update achievement
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       if (input.name !== undefined) updateData.name = input.name;
       if (input.description !== undefined) updateData.description = input.description;
       if (input.criteriaType !== undefined) updateData.criteriaType = input.criteriaType;

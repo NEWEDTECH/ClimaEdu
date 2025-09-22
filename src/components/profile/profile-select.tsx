@@ -5,14 +5,13 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
-import { FiBook, FiUsers, FiActivity, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
+import { FiUsers, FiActivity, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
 import { MdDashboard, MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
 import { Dropdown, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/select'
 import { ProfileDropdownOptions } from './index'
-import { OptionsProfileProps } from '@/types/profile'
 import { ButtonLogout } from '@/components/logout'
 import { useProfile } from '@/context/zustand/useProfile';
 //import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';

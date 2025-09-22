@@ -15,21 +15,13 @@ import {
   Note
 } from '@/_core/modules/notes';
 
-type NoteType = {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
 type NotesComponentProps = {
   courseId: string;
   userId: string;
   isEmbedded?: boolean;
 };
 
-export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesComponentProps) {
+export function NotesComponent({ userId }: NotesComponentProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -39,7 +31,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
   const [editNoteTitle, setEditNoteTitle] = useState<string>('');
   const [editNoteContent, setEditNoteContent] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   
   const titleInputRef = useRef<HTMLInputElement>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -48,8 +39,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
   useEffect(() => {
     const loadNotes = async () => {
       try {
-        setIsLoading(true);
-        
         const listNotesUseCase = container.get<ListNotesUseCase>(ListNotesUseCase);
         const input = new ListNotesInput(userId);
         const output = await listNotesUseCase.execute(input);
@@ -57,8 +46,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
         setNotes(output.notes);
       } catch (error) {
         console.error('Error loading notes:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -86,8 +73,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
     if (!newNoteTitle.trim()) return;
 
     try {
-      setIsLoading(true);
-      
       const createNoteUseCase = container.get<CreateNoteUseCase>(CreateNoteUseCase);
       const input = new CreateNoteInput(userId, newNoteTitle.trim(), newNoteContent.trim());
       const output = await createNoteUseCase.execute(input);
@@ -99,8 +84,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
       setNewNoteContent('');
     } catch (error) {
       console.error('Error creating note:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -131,8 +114,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
     if (!selectedNote || !editNoteTitle.trim()) return;
 
     try {
-      setIsLoading(true);
-      
       const updateNoteUseCase = container.get<UpdateNoteUseCase>(UpdateNoteUseCase);
       const input = new UpdateNoteInput(selectedNote.id, userId, editNoteTitle.trim(), editNoteContent.trim());
       const output = await updateNoteUseCase.execute(input);
@@ -148,8 +129,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
       setEditNoteContent('');
     } catch (error) {
       console.error('Error updating note:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -161,8 +140,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
 
   const handleDeleteNote = async (noteId: string) => {
     try {
-      setIsLoading(true);
-      
       const deleteNoteUseCase = container.get<DeleteNoteUseCase>(DeleteNoteUseCase);
       const input = new DeleteNoteInput(noteId, userId);
       await deleteNoteUseCase.execute(input);
@@ -173,8 +150,6 @@ export function NotesComponent({ courseId, userId, isEmbedded = false }: NotesCo
       }
     } catch (error) {
       console.error('Error deleting note:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

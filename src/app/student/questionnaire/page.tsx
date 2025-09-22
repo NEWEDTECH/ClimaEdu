@@ -341,7 +341,7 @@ export default function QuestionariosPage() {
     <>
       <div className="mb-6">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           onClick={handleBackToList}
           className="mb-4"
         >
@@ -415,7 +415,7 @@ export default function QuestionariosPage() {
 
       <div className="flex justify-between">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           onClick={handleBackToList}
         >
           Cancelar
@@ -500,7 +500,7 @@ export default function QuestionariosPage() {
 
         <div className="flex justify-between">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handlePreviousQuestion}
             disabled={currentQuestionIndex === 0}
           >
@@ -543,7 +543,7 @@ export default function QuestionariosPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToList}
             className="mb-4"
           >

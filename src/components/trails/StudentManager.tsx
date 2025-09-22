@@ -1,7 +1,6 @@
 'use client'
 
 import { InputText } from '@/components/input'
-import { X } from 'lucide-react'
 import { Button } from '@/components/button'
 
 type StudentInfo = {

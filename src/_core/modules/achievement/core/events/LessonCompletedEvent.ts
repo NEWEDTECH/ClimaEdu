@@ -23,9 +23,9 @@ export class LessonCompletedEvent implements Event {
   readonly eventId: string;
   readonly version = 1;
   readonly data: LessonCompletedEventData;
-  readonly metadata?: Record<string, any>;
+  readonly metadata?: Record<string, unknown>;
 
-  constructor(data: LessonCompletedEventData, metadata?: Record<string, any>) {
+  constructor(data: LessonCompletedEventData, metadata?: Record<string, unknown>) {
     this.data = data;
     this.metadata = metadata;
     this.timestamp = new Date();
@@ -35,7 +35,7 @@ export class LessonCompletedEvent implements Event {
   /**
    * Static factory method for creating the event
    */
-  static create(data: LessonCompletedEventData, metadata?: Record<string, any>): LessonCompletedEvent {
+  static create(data: LessonCompletedEventData, metadata?: Record<string, unknown>): LessonCompletedEvent {
     return new LessonCompletedEvent(data, metadata);
   }
 }

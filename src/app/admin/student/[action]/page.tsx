@@ -19,8 +19,6 @@ import { InstitutionRepository } from '@/_core/modules/institution/infrastructur
 import { Institution } from '@/_core/modules/institution/core/entities/Institution'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { LoadingSpinner } from '@/components/loader'
-import { Tooltip } from '@/components/tooltip'
-import { X } from 'lucide-react'
 import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
 import { Enrollment } from '@/_core/modules/enrollment/core/entities/Enrollment'
 
@@ -52,13 +50,6 @@ export default function StudentEnrollmentPage() {
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([])
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
 
-  const [studentSearchTerm, setStudentSearchTerm] = useState<string>('')
-  const [showStudentDropdown, setShowStudentDropdown] = useState<boolean>(false)
-  const [institutionSearchTerm, setInstitutionSearchTerm] = useState<string>('')
-  const [showInstitutionDropdown, setShowInstitutionDropdown] = useState<boolean>(false)
-
-  const [courseSearchTerm, setCourseSearchTerm] = useState<string>('')
-  const [showCourseDropdown, setShowCourseDropdown] = useState<boolean>(false)
   const [allSelectedCourses, setAllSelectedCourses] = useState<Array<{ id: string, title: string, institutionId: string }>>([])
 
   const [filteredCourses, setFilteredCourses] = useState<Array<{ id: string, title: string, institutionId: string }>>([])
@@ -135,7 +126,6 @@ export default function StudentEnrollmentPage() {
 
             // Set selected student ID
             setSelectedStudentId(student.id)
-            setStudentSearchTerm(student.email.value)
 
             // Get courses for this student
             const studentCourses = []
@@ -154,14 +144,9 @@ export default function StudentEnrollmentPage() {
             if (studentCourses.length > 0) {
               const institutionId = studentCourses[0].institutionId
               setSelectedInstitutionId(institutionId)
-              const institution = institutionsForDropdown.find(i => i.id === institutionId)
-              if (institution) {
-                setInstitutionSearchTerm(institution.name)
-              }
             } else if (institutionsForDropdown.length > 0) {
               // Default to first institution if no enrollments
               setSelectedInstitutionId(institutionsForDropdown[0].id)
-              setInstitutionSearchTerm(institutionsForDropdown[0].name)
             }
           } else {
             // Not a student ID, check if it's an enrollment ID
@@ -175,7 +160,6 @@ export default function StudentEnrollmentPage() {
               const student = await userRepository.findById(enrollment.userId)
               if (student) {
                 setSelectedStudentId(student.id)
-                setStudentSearchTerm(student.email.value)
               }
 
               // Get course
@@ -186,10 +170,6 @@ export default function StudentEnrollmentPage() {
 
                 // Set institution
                 setSelectedInstitutionId(course.institutionId)
-                const institution = institutionsForDropdown.find(i => i.id === course.institutionId)
-                if (institution) {
-                  setInstitutionSearchTerm(institution.name)
-                }
               }
             } else {
               // ID not found
@@ -199,7 +179,6 @@ export default function StudentEnrollmentPage() {
         } else if (institutionsForDropdown.length > 0) {
           // No ID, set default institution
           setSelectedInstitutionId(institutionsForDropdown[0].id)
-          setInstitutionSearchTerm(institutionsForDropdown[0].name)
         }
 
         // Fetch all students
@@ -224,33 +203,6 @@ export default function StudentEnrollmentPage() {
   }, [id])
 
   // Filter courses, institutions, and students based on search terms
-  const getFilteredStudents = () => {
-    if (studentSearchTerm.trim() === '') {
-      return [];
-    }
-    return students.filter(student =>
-      student.email.toLowerCase().includes(studentSearchTerm.toLowerCase()) ||
-      student.name.toLowerCase().includes(studentSearchTerm.toLowerCase())
-    );
-  };
-
-  const getFilteredInstitutions = () => {
-    if (institutionSearchTerm.trim() === '') {
-      return [];
-    }
-    return institutions.filter(institution =>
-      institution.name.toLowerCase().includes(institutionSearchTerm.toLowerCase())
-    );
-  };
-
-  const getFilteredCoursesBySearch = () => {
-    if (courseSearchTerm.trim() === '') {
-      return [];
-    }
-    return filteredCourses.filter(course =>
-      course.title.toLowerCase().includes(courseSearchTerm.toLowerCase())
-    );
-  };
 
   // Update filtered courses when institution or courses change
   useEffect(() => {
@@ -456,8 +408,6 @@ export default function StudentEnrollmentPage() {
       setSelectedCourseIds(prev => [...prev, course.id])
       setAllSelectedCourses(prev => [...prev, course])
     }
-    setCourseSearchTerm('')
-    setShowCourseDropdown(false)
   }
 
   // Function to remove a course from the selected courses
@@ -562,10 +512,6 @@ export default function StudentEnrollmentPage() {
                           value={selectedStudentId}
                           onChange={(studentId) => {
                             setSelectedStudentId(studentId)
-                            const student = students.find(s => s.id === studentId)
-                            if (student) {
-                              setStudentSearchTerm(student.email)
-                            }
                           }}
                           options={students.map(student => ({
                             value: student.id,
@@ -609,10 +555,6 @@ export default function StudentEnrollmentPage() {
                         value={selectedInstitutionId}
                         onChange={(institutionId) => {
                           setSelectedInstitutionId(institutionId)
-                          const institution = institutions.find(i => i.id === institutionId)
-                          if (institution) {
-                            setInstitutionSearchTerm(institution.name)
-                          }
                         }}
                         options={institutions.map(institution => ({
                           value: institution.id,

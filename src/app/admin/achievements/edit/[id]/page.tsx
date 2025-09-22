@@ -103,7 +103,7 @@ export default function EditAchievementPage() {
     }
   }, [achievementId, institutionId, router]);
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = (field: keyof FormData, value: string | number | boolean | BadgeCriteriaType) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -209,7 +209,7 @@ export default function EditAchievementPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Editar "{achievement.name}"</CardTitle>
+              <CardTitle>Editar &quot;{achievement.name}&quot;</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">

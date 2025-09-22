@@ -13,7 +13,6 @@ export function InstitutionSelector({
   institutions,
   selectedInstitutionId,
   onInstitutionChange,
-  disabled = false
 }: InstitutionSelectorProps) {
   return (
     <div>

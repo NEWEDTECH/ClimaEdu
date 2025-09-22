@@ -196,7 +196,7 @@ export default function CreateUserPage() {
     }
   }
 
-  const handleCSVUpload = async (file: File, data: any[]) => {
+  const handleCSVUpload = async (file: File, data: Record<string, string>[]) => {
     setError(null);
     setIsSubmitting(true);
 

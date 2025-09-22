@@ -120,7 +120,7 @@ export default function ConteudosPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToCourses}
             className="mb-4"
           >
@@ -180,7 +180,7 @@ export default function ConteudosPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToModules}
             className="mb-4"
           >

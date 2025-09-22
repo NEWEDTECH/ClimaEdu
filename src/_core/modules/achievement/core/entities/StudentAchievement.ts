@@ -21,7 +21,7 @@ export enum AchievementType {
 }
 
 export interface AchievementMetadata {
-  [key: string]: any;
+  [key: string]: unknown;
   triggerEvent?: string;
   finalCount?: number;
   completedAt?: string;
@@ -147,7 +147,7 @@ export class StudentAchievement {
    * @param key The metadata key
    * @returns The metadata value or undefined if not found
    */
-  public getMetadata<T = any>(key: string): T | undefined {
+  public getMetadata<T = unknown>(key: string): T | undefined {
     return this.metadata?.[key] as T;
   }
 

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/card'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
-import { Tabs, TabsList, TabsContent } from '@/components/ui/tabs/tabs'
+import { Tabs, TabsList } from '@/components/ui/tabs/tabs'
 import { TabsTrigger } from '@/components/tabs/TabsTrigger'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'

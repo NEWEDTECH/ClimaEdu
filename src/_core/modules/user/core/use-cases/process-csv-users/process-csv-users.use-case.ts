@@ -28,7 +28,7 @@ export class ProcessCSVUsersUseCase {
    * @returns Output data
    */
   async execute(input: ProcessCSVUsersInput): Promise<ProcessCSVUsersOutput> {
-    const { csvData, institutionId, createdByUserId, createdByUserRole, onProgress } = input;
+    const { csvData, onProgress } = input;
     
     // Validate CSV structure
     this.validateCSVStructure(csvData);

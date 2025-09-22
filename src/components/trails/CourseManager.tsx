@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/button'
 import { SelectComponent } from '@/components/select'
-import { X } from 'lucide-react'
 
 type CourseInfo = {
   id: string
@@ -46,7 +45,7 @@ export function CourseManager({
             }`}
             style={selectedCourses.length >= 5 ? { maxHeight: '400px' } : {}}
           >
-            {selectedCourses.map((course, index) => (
+            {selectedCourses.map((course) => (
                <div key={course.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">{course.title}</div>

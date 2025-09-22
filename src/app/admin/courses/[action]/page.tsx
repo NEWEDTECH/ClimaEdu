@@ -68,36 +68,6 @@ type FormData = {
   updatedAt?: string;
 }
 
-const additionalFieldsConfig: Record<string, FieldConfig> = {
-  category: {
-    type: 'text',
-    label: 'Categoria',
-    placeholder: 'Adicione uma categoria'
-  },
-  level: {
-    type: 'select',
-    label: 'Nível',
-    options: [
-      { value: 'beginner', label: 'Básico' },
-      { value: 'intermediate', label: 'Intermediário' },
-      { value: 'advanced', label: 'Avançado' }
-    ]
-  },
-  duration: {
-    type: 'text',
-    label: 'Duração',
-    placeholder: '12 semanas'
-  },
-  status: {
-    type: 'select',
-    label: 'Status',
-    options: [
-      { value: 'active', label: 'Ativo' },
-      { value: 'inactive', label: 'Inativo' }
-    ]
-  }
-}
-
 export default function CoursePage() {
   const router = useRouter();
   const params = useParams();

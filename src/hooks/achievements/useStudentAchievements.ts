@@ -4,8 +4,6 @@ import { AchievementSymbols } from '@/_core/shared/container/modules/achievement
 import type { ListStudentAchievementsUseCase } from '@/_core/modules/achievement/core/use-cases/list-student-achievements/list-student-achievements.use-case';
 import type { ListInstitutionAchievementsUseCase } from '@/_core/modules/achievement/core/use-cases/list-institution-achievements/list-institution-achievements.use-case';
 import type { StudentAchievement } from '@/_core/modules/achievement/core/entities/StudentAchievement';
-import type { InstitutionAchievement } from '@/_core/modules/achievement/core/entities/InstitutionAchievement';
-
 interface AchievementWithProgress {
   id: string;
   name: string;

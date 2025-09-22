@@ -27,9 +27,9 @@ export class StudySessionEvent implements Event {
   readonly eventId: string;
   readonly version = 1;
   readonly data: StudySessionEventData;
-  readonly metadata?: Record<string, any>;
+  readonly metadata?: Record<string, unknown>;
 
-  constructor(data: StudySessionEventData, metadata?: Record<string, any>) {
+  constructor(data: StudySessionEventData, metadata?: Record<string, unknown>) {
     this.data = data;
     this.metadata = metadata;
     this.timestamp = new Date();
@@ -39,7 +39,7 @@ export class StudySessionEvent implements Event {
   /**
    * Static factory method for creating the event
    */
-  static create(data: StudySessionEventData, metadata?: Record<string, any>): StudySessionEvent {
+  static create(data: StudySessionEventData, metadata?: Record<string, unknown>): StudySessionEvent {
     return new StudySessionEvent(data, metadata);
   }
 }
