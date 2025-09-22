@@ -311,7 +311,7 @@ export default function QuestionariosPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleQuestionnaireSelect(questionnaire.id)}
-                variant={questionnaire.status === 'completed' ? 'outline' : 'default'}
+                variant={questionnaire.status === 'completed' ? 'primary' : 'ghost'}
               >
                 {questionnaire.status === 'completed' ? 'Ver resultados' : 'Iniciar questionário'}
               </Button>
