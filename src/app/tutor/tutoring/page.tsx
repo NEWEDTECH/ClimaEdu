@@ -104,10 +104,7 @@ export default function TutorTutoringPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Sessões de Tutoria</h1>
-              <p className="text-gray-600 mt-2">
-                Gerencie suas sessões de tutoria e ajude os alunos com suas dúvidas.
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Sessões de Tutoria</h1>
             </div>
             <Link href="/tutor/availability">
               <Button className="flex items-center gap-2">
@@ -123,9 +120,13 @@ export default function TutorTutoringPage() {
           <Card>
             <CardHeader>
               <CardTitle>Sessões Agendadas</CardTitle>
-              <CardDescription>
-                Suas sessões de tutoria organizadas por status
-              </CardDescription>
+              <div className="mt-4">
+                <Link href="/tutor/student-activities">
+                  <Button variant="primary">
+                    Ver Atividades dos Alunos
+                  </Button>
+                </Link>
+              </div>
             </CardHeader>
             <CardContent>
               <TutoringSessionsList 

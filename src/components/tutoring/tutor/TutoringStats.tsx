@@ -78,10 +78,10 @@ export function TutoringStats({ sessions }: TutoringStatsProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 mb-1 dark:text-white">
                   {stat.title}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {stat.value}
                 </p>
               </div>

@@ -38,6 +38,8 @@ export const useCases = {
   RetryQuestionnaireUseCase: Symbol.for('RetryQuestionnaireUseCase'),
   AssociateTutorToCourseUseCase: Symbol.for('AssociateTutorToCourseUseCase'),
   ListTutorCoursesUseCase: Symbol.for('ListTutorCoursesUseCase'),
+  ListTutorCoursesWithStudentsUseCase: Symbol.for('ListTutorCoursesWithStudentsUseCase'),
+  ListQuestionnaireSubmissionsForTutorUseCase: Symbol.for('ListQuestionnaireSubmissionsForTutorUseCase'),
   StartLessonProgressUseCase: Symbol.for('StartLessonProgressUseCase'),
   UpdateContentProgressUseCase: Symbol.for('UpdateContentProgressUseCase'),
   GetLessonProgressUseCase: Symbol.for('GetLessonProgressUseCase'),
