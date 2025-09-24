@@ -5,7 +5,6 @@ import { Module } from '@/_core/modules/content/core/entities/Module';
 import { ChatDropdown } from '@/components/courses/chat';
 import { HeaderSideBar } from '@/components/courses/header';
 import { NotesComponent } from './NotesComponent';
-import { Button } from '@/components/button'
 
 type CourseSidebarProps = {
   modules: Module[];
@@ -60,7 +59,7 @@ const ModuleDropdown = ({
 
   return (
     <div className="mb-3">
-      <Button
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full p-4 text-left bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 shadow-sm hover:shadow-md"
       >
@@ -97,7 +96,7 @@ const ModuleDropdown = ({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
         </svg>
-      </Button>
+      </button>
 
       {isOpen && (
         <div className="mt-2 ml-2 space-y-1 border-l-2 border-blue-200 dark:border-gray-600 pl-4">
@@ -116,7 +115,7 @@ const ModuleDropdown = ({
             };
 
             return (
-              <Button
+              <button
                 key={lesson.id}
                 onClick={handleLessonClick}
                 disabled={!canAccess}
@@ -171,7 +170,7 @@ const ModuleDropdown = ({
                 ) : activeLesson === lesson.id ? (
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 ) : null}
-              </Button>
+              </button>
             );
           })}
         </div>
@@ -345,7 +344,7 @@ export function CourseSidebar({
       {/* Toggle Icons - Right side */}
       <div className="flex flex-col gap-3 p-4 border-l border-gray-200 dark:border-gray-700 items-center">
         {/* Chat Icon */}
-        <Button
+        <button
           onClick={handleChatClick}
           className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'chat'
             ? 'bg-blue-600 text-white transform scale-110'
@@ -367,10 +366,10 @@ export function CourseSidebar({
               d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
             />
           </svg>
-        </Button>
+        </button>
 
         {/* Modules Icon */}
-        <Button
+        <button
           onClick={handleModulesClick}
           className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'modules'
             ? 'bg-indigo-600 text-white transform scale-110'
@@ -392,10 +391,10 @@ export function CourseSidebar({
               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
             />
           </svg>
-        </Button>
+        </button>
 
         {/* Notes Icon */}
-        <Button
+        <button
           onClick={handleNotesClick}
           className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'notes'
             ? 'bg-green-600 text-white transform scale-110'
@@ -417,7 +416,7 @@ export function CourseSidebar({
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-        </Button>
+        </button>
       </div>
     </div>
   );
