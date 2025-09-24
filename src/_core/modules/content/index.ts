@@ -65,6 +65,12 @@ export * from './core/use-cases/associate-tutor-to-course/associate-tutor-to-cou
 export * from './core/use-cases/list-tutor-courses/list-tutor-courses.use-case';
 export * from './core/use-cases/list-tutor-courses/list-tutor-courses.input';
 export * from './core/use-cases/list-tutor-courses/list-tutor-courses.output';
+export * from './core/use-cases/list-tutor-courses-with-students/list-tutor-courses-with-students.use-case';
+export * from './core/use-cases/list-tutor-courses-with-students/list-tutor-courses-with-students.input';
+export * from './core/use-cases/list-tutor-courses-with-students/list-tutor-courses-with-students.output';
+export * from './core/use-cases/list-questionnaire-submissions-for-tutor/list-questionnaire-submissions-for-tutor.use-case';
+export * from './core/use-cases/list-questionnaire-submissions-for-tutor/list-questionnaire-submissions-for-tutor.input';
+export * from './core/use-cases/list-questionnaire-submissions-for-tutor/list-questionnaire-submissions-for-tutor.output';
 export * from './core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
 export * from './core/use-cases/start-lesson-progress/start-lesson-progress.input';
 export * from './core/use-cases/start-lesson-progress/start-lesson-progress.output';
