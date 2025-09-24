@@ -12,9 +12,11 @@ interface AchievementFormData {
   isActive: boolean;
 }
 
+type FormFieldValue = string | number | boolean | BadgeCriteriaType;
+
 interface AchievementFormProps {
   formData: AchievementFormData;
-  onInputChange: (field: keyof AchievementFormData, value: any) => void;
+  onInputChange: (field: keyof AchievementFormData, value: FormFieldValue) => void;
   onSubmit: (e: React.FormEvent) => void;
   loading: boolean;
   submitLabel: string;

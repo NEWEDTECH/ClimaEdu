@@ -25,9 +25,9 @@ export class CertificateEarnedEvent implements Event {
   readonly eventId: string;
   readonly version = 1;
   readonly data: CertificateEarnedEventData;
-  readonly metadata?: Record<string, any>;
+  readonly metadata?: Record<string, unknown>;
 
-  constructor(data: CertificateEarnedEventData, metadata?: Record<string, any>) {
+  constructor(data: CertificateEarnedEventData, metadata?: Record<string, unknown>) {
     this.data = data;
     this.metadata = metadata;
     this.timestamp = new Date();
@@ -37,7 +37,7 @@ export class CertificateEarnedEvent implements Event {
   /**
    * Static factory method for creating the event
    */
-  static create(data: CertificateEarnedEventData, metadata?: Record<string, any>): CertificateEarnedEvent {
+  static create(data: CertificateEarnedEventData, metadata?: Record<string, unknown>): CertificateEarnedEvent {
     return new CertificateEarnedEvent(data, metadata);
   }
 }

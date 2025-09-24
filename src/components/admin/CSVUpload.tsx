@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/c
 import { UploadIcon, FileTextIcon, XIcon } from 'lucide-react';
 
 interface CSVUploadProps {
-  onFileUpload?: (file: File, data: any[]) => void;
+  onFileUpload?: (file: File, data: Record<string, string>[]) => void;
   acceptedFileTypes?: string;
   maxFileSize?: number; // em MB
 }
@@ -58,7 +58,7 @@ export function CSVUpload({
       // Processar dados
       const data = lines.slice(1).map((line, index) => {
         const values = line.split(',').map(value => value.trim().replace(/"/g, ''));
-        const row: any = {};
+        const row: Record<string, string> = {};
         
         headers.forEach((header, headerIndex) => {
           row[header] = values[headerIndex] || '';

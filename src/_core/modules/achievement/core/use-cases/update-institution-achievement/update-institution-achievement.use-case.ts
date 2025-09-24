@@ -3,6 +3,7 @@ import type { InstitutionAchievementRepository } from '../../../infrastructure/r
 import type { UpdateInstitutionAchievementInput } from './update-institution-achievement.input';
 import type { UpdateInstitutionAchievementOutput } from './update-institution-achievement.output';
 import { repositories } from '@/_core/shared/container/modules/achievement/symbols';
+import type { BadgeCriteriaType } from '@/_core/modules/badge/core/entities/BadgeCriteriaType';
 
 /**
  * Use case for updating institution-specific achievements
@@ -61,7 +62,16 @@ export class UpdateInstitutionAchievementUseCase {
       }
 
       // Update achievement
-      const updateData: any = {};
+      interface UpdateData {
+        name?: string;
+        description?: string;
+        criteriaType?: BadgeCriteriaType;
+        criteriaValue?: number;
+        iconUrl?: string;
+        isActive?: boolean;
+      }
+
+      const updateData: UpdateData = {};
       if (input.name !== undefined) updateData.name = input.name;
       if (input.description !== undefined) updateData.description = input.description;
       if (input.criteriaType !== undefined) updateData.criteriaType = input.criteriaType;

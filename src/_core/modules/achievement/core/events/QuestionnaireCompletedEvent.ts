@@ -29,9 +29,9 @@ export class QuestionnaireCompletedEvent implements Event {
   readonly eventId: string;
   readonly version = 1;
   readonly data: QuestionnaireCompletedEventData;
-  readonly metadata?: Record<string, any>;
+  readonly metadata?: Record<string, unknown>;
 
-  constructor(data: QuestionnaireCompletedEventData, metadata?: Record<string, any>) {
+  constructor(data: QuestionnaireCompletedEventData, metadata?: Record<string, unknown>) {
     this.data = data;
     this.metadata = metadata;
     this.timestamp = new Date();
@@ -41,7 +41,7 @@ export class QuestionnaireCompletedEvent implements Event {
   /**
    * Static factory method for creating the event
    */
-  static create(data: QuestionnaireCompletedEventData, metadata?: Record<string, any>): QuestionnaireCompletedEvent {
+  static create(data: QuestionnaireCompletedEventData, metadata?: Record<string, unknown>): QuestionnaireCompletedEvent {
     return new QuestionnaireCompletedEvent(data, metadata);
   }
 }

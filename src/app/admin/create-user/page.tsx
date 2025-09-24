@@ -184,7 +184,7 @@ export default function CreateUserPage() {
     }
   }
 
-  const handleCSVUpload = (file: File, data: any[]) => {
+  const handleCSVUpload = (file: File, data: Record<string, string>[]) => {
     console.log('📊 CSV Upload recebido:', {
       arquivo: file.name,
       totalRegistros: data.length,

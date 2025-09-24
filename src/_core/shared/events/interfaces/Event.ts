@@ -28,10 +28,10 @@ export interface Event {
    * Event-specific data payload
    * Each concrete event will define its own data structure
    */
-  readonly data: Record<string, any>;
+  readonly data: Record<string, unknown>;
 
   /**
    * Optional metadata for tracing, correlation, etc.
    */
-  readonly metadata?: Record<string, any>;
+  readonly metadata?: Record<string, unknown>;
 }
