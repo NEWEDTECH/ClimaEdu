@@ -205,7 +205,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     <ProtectedContent>
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
+          <div className="mt-4 mb-6">
             <h1 className="text-2xl font-bold mb-2">Adicionar Vídeo Aula</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
               Adicionar vídeo à lição: <span className="font-medium">{lessonTitle}</span>

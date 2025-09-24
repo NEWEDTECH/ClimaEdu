@@ -291,7 +291,7 @@ export default function AcompanhamentoPage() {
               </CardContent>
               <CardFooter>
                 <Button 
-                  variant="outline"
+                  variant="ghost"
                   className="w-full"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -341,7 +341,7 @@ export default function AcompanhamentoPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToStudentList}
             className="mb-4"
           >
@@ -584,7 +584,7 @@ export default function AcompanhamentoPage() {
                 </svg>
                 Enviar Mensagem
               </Button>
-              <Button variant="outline">
+              <Button variant="ghost">
                 <svg 
                   className="w-4 h-4 mr-2" 
                   fill="none" 
@@ -638,7 +638,7 @@ export default function AcompanhamentoPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToStudentDetail}
             className="mb-4"
           >
@@ -844,7 +844,7 @@ export default function AcompanhamentoPage() {
                   </svg>
                   Agendar Videoconferência
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="ghost" className="w-full">
                   <svg 
                     className="w-4 h-4 mr-2" 
                     fill="none" 

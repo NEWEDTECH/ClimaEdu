@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { SocialComment } from '@/context/zustand/useSocialStore';
 import { CommentItem, CommentItemSkeleton } from './CommentItem';
+import { Button } from '@/components/button'
 
 interface CommentListProps {
   comments: SocialComment[];
@@ -151,7 +152,7 @@ export function CommentList({
           {/* Load more button */}
           {showLoadMore && (
             <div className="text-center pt-6">
-              <button
+              <Button
                 onClick={onLoadMore}
                 disabled={loadingMore}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -167,7 +168,7 @@ export function CommentList({
                 ) : (
                   'Carregar mais comentários'
                 )}
-              </button>
+              </Button>
             </div>
           )}
         </>
@@ -222,12 +223,12 @@ export function CommentListCompact({
       ))}
       
       {hasMore && (
-        <button
+        <Button
           onClick={onViewAll}
           className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
         >
           Ver todos os {comments.length} comentários
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -8,14 +8,23 @@ import { container } from '@/_core/shared/container';
 import { InstitutionRepository } from '@/_core/modules/institution';
 import { Register } from '@/_core/shared/container';
 import { Institution } from '@/_core/modules/institution';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card/card';
 import { Button } from '@/components/button';
 import { LoadingSpinner } from '@/components/loader';
-import { PlusIcon, PencilIcon, LibraryBig } from 'lucide-react';
+import { InputText } from '@/components/input';
 
+
+const NAME_COLUMNS = [
+  'Nome',
+  'Domínio',
+  'Criado em',
+  'Atualizado em',
+  'Ações'
+]
 
 export default function InstitutionsPage() {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,86 +48,121 @@ export default function InstitutionsPage() {
       }
     };
 
-
     fetchInstitutions();
   }, []);
+
+  const filteredInstitutions = institutions.filter(institution => {
+    const matchesSearch = 
+      institution.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      institution.domain.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    return matchesSearch
+  })
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date)
+  }
 
   return (
     <ProtectedContent>
       <DashboardLayout>
-        <div className="container mx-auto py-8">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Instituições</h1>
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Instituições</h1>
             <Link href="/admin/institution/create-edit">
-              <Button
-              >
-                Nova Instituição
+              <Button variant='primary'>
+                Criar nova instituição
               </Button>
             </Link>
           </div>
 
-          {loading && (
-            <LoadingSpinner />
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Instituições Existentes</CardTitle>
+              <CardDescription>
+                Gerencie todas as instituições em sua plataforma educacional
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex-1">
+                  <InputText
+                    id="search"
+                    type="text"
+                    placeholder="Pesquise por nome ou domínio..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong className="font-bold">Erro!</strong>
-              <span className="block sm:inline"> {error}</span>
-            </div>
-          )}
+              {loading && (
+                <LoadingSpinner />
+              )}
 
-          {!loading && !error && institutions.length === 0 && (
-            <div className="text-center py-10 bg-gray-50 rounded-lg">
-              <p className="text-gray-500 mb-4">Nenhuma instituição encontrada</p>
-              <Link href="/admin/institution/create-edit">
-                <Button
-                  className="cursor-pointer"
-                  icon={<PlusIcon size={16} />}
-                  iconPosition='start'
-                >
-                  Criar Instituição
-                </Button>
-              </Link>
-            </div>
-          )}
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                  <strong className="font-bold">Erro!</strong>
+                  <span className="block sm:inline"> {error}</span>
+                </div>
+              )}
 
-          {!loading && !error && institutions.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {institutions.map((institution) => (
-                <Card key={institution.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle>{institution.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-500 mb-4">
-                      <span className="font-medium">Domínio:</span> {institution.domain}
-                    </p>
-                    <div className="flex justify-end gap-2">
-                      <Link href={'/admin/courses'}>
-                        <Button
-                          variant='primary'
-                          icon={<LibraryBig size={16} />}
-                          iconPosition='start'
-                        >
-                          Cursos
-                        </Button>
-                      </Link>
-                      <Link href={`/admin/institution/create-edit/${institution.id}`}>
-                        <Button
-                          variant='secondary'
-                          icon={<PencilIcon size={16} />}
-                          iconPosition='start'
-                        >
-                          Editar
-                        </Button>
-                      </Link>
+              {!loading && !error && (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b">
+                        {NAME_COLUMNS.map(item => (
+                          <th className="text-left py-3 px-4" key={item}>{item}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredInstitutions.map((institution) => (
+                        <tr key={institution.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
+                          <td className="py-3 px-4 font-medium">{institution.name}</td>
+                          <td className="py-3 px-4">{institution.domain}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                            {formatDate(institution.createdAt)}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                            {formatDate(institution.updatedAt)}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex gap-2">
+                              <Link href={'/admin/courses'}>
+                                <Button variant='primary'>
+                                  Cursos
+                                </Button>
+                              </Link>
+                              <Link href={`/admin/institution/create-edit/${institution.id}`}>
+                                <Button variant='secondary'>
+                                  Editar
+                                </Button>
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  
+                  {filteredInstitutions.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      Nenhuma instituição encontrada
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     </ProtectedContent>

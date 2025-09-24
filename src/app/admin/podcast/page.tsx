@@ -51,7 +51,7 @@ export default function PodcastPage() {
     }
 
     loadPodcasts()
-  }, [])
+  }, [infoUser.currentIdInstitution])
 
   // Aplicar filtros
   useEffect(() => {

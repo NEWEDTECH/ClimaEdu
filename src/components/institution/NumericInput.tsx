@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { InputText } from '@/components/ui/input/input-text/InputText';
+import { Button } from '@/components/button'
 
 interface NumericInputProps {
   label: string;
@@ -47,14 +48,14 @@ export function NumericInput({
           <p className="text-xs text-gray-500">{description}</p>
         </div>
         {defaultValue !== undefined && onReset && (
-          <button
+          <Button
             type="button"
             onClick={onReset}
             className="text-xs text-blue-600 hover:text-blue-800 underline"
             title={`Reset to default (${defaultValue}${unit})`}
           >
             Reset
-          </button>
+          </Button>
         )}
       </div>
       

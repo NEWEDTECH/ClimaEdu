@@ -14,6 +14,7 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Question } from '@/_core/modules/content/core/entities/Question';
 import { Course } from '@/_core/modules/content/core/entities/Course';
 import { useProfile } from '@/context/zustand/useProfile';
+import { Button } from '@/components/button'
 
 type QuestionAnswer = {
   questionId: string;
@@ -187,12 +188,12 @@ export default function QuestionnairePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-lg font-medium mb-2">{error}</p>
-              <button
+              <Button
                 onClick={handleBackToCourse}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Voltar ao Curso
-              </button>
+              </Button>
             </div>
           </div>
         </DashboardLayout>
@@ -213,7 +214,7 @@ export default function QuestionnairePage() {
         <div className="max-w-4xl mx-auto p-6">
           {/* Header */}
           <div className="mb-8">
-            <button
+            <Button
               onClick={handleBackToCourse}
               className="flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
             >
@@ -221,7 +222,7 @@ export default function QuestionnairePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
               </svg>
               Voltar ao Curso
-            </button>
+            </Button>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
@@ -357,7 +358,7 @@ export default function QuestionnairePage() {
                     Perguntas respondidas: {answers.filter(a => a.selectedOptionIndex !== null).length} de {questionnaire.questions.length}
                   </div>
                   
-                  <button
+                  <Button
                     onClick={handleSubmit}
                     disabled={!isAllQuestionsAnswered() || isSubmitting}
                     className={`px-8 py-3 rounded-lg font-medium transition-all duration-200 ${
@@ -374,7 +375,7 @@ export default function QuestionnairePage() {
                     ) : (
                       'Enviar Questionário'
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

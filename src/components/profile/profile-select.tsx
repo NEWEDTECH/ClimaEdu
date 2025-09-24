@@ -5,14 +5,13 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
-import { FiBook, FiUsers, FiActivity, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
+import { FiUsers, FiActivity, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
 import { MdDashboard, MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
 import { Dropdown, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/select'
 import { ProfileDropdownOptions } from './index'
-import { OptionsProfileProps } from '@/types/profile'
 import { ButtonLogout } from '@/components/logout'
 import { useProfile } from '@/context/zustand/useProfile';
 //import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
@@ -42,6 +41,8 @@ const studentItems: DropdownItem[] = [
   { label: 'Atividades', href: '/student/activities', icon: <FiActivity /> },
   { label: 'Tutoria', href: '/student/tutoring', icon: <FiUserCheck /> },
   { label: 'Questionários', href: '/student/questionnaire', icon: <FiFileText /> },
+  { label: 'Certificados', href: '/student/certificates', icon: <PiCertificate /> },
+  { label: 'Conquistas', href: '/student/achievements', icon: <FiAward /> },
   { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> },
 ];
 
@@ -55,6 +56,7 @@ const teacherItems: DropdownItem[] = [
 
 const adminItems: DropdownItem[] = [
   { label: 'Instituições', href: '/admin/institution', icon: <MdSchool /> },
+  { label: 'Conquistas', href: '/admin/achievements', icon: <FiAward /> },
   { label: 'Social', href: '/social', icon: <FiUsers /> },
   { label: 'Dashboard', href: '/admin/dashboard', icon: <MdDashboard /> },
   { label: 'Podcast', href: '/admin/podcast', icon: <FiMic /> },
@@ -74,11 +76,7 @@ const sections: DropdownSection[] = [
   { title: 'Área do Admin', items: adminItems, role: ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'] }
 ];
 
-const OPTIONS_PROFILE: OptionsProfileProps[] = [
-  { label: 'Certificados', href: '/student/certificates', icon: <PiCertificate /> },
-  { label: 'Conquistas', href: '/student/achievements', icon: <FiAward /> },
-  { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> }
-];
+
 
 export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
   const { infoUser } = useProfile();
@@ -99,19 +97,6 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
     return infoUser.currentRole === sectionRole;
   };
 
-  // Count total items to determine if overflow is needed
-  const getTotalItemsCount = () => {
-    let count = OPTIONS_PROFILE.length + 1;
-    sections.forEach(section => {
-      if (hasAccessToSection(section.role)) {
-        count += section.items.length;
-      }
-    });
-    return count;
-  };
-
-  const totalItems = getTotalItemsCount();
-  const needsOverflow = totalItems > 8;
 
   // Função para obter o texto da role em português
   //const getRoleText = (role: 'STUDENT' | 'TUTOR' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'CONTENT_MANAGER' | 'SUPER_ADMIN' | null) => {
@@ -163,8 +148,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
       <DropdownMenuContent 
         align="end" 
         className={cn(
-          "w-56",
-          needsOverflow && "max-h-80 overflow-y-auto"
+          "w-56"
         )}
       >
         {/* Navigation sections based on user role */}
@@ -194,14 +178,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
         <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
           Perfil
         </div>
-        {OPTIONS_PROFILE.map(option => (
-          <ProfileDropdownOptions
-            key={option.href}
-            label={option.label}
-            href={option.href}
-            icon={option.icon}
-          />
-        ))}
+
         
         <div className="h-px my-1 bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild>

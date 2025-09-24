@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { container } from '@/_core/shared/container/container'
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols'
 import { GetSessionDetailsUseCase } from '@/_core/modules/tutoring'
@@ -24,7 +24,7 @@ export function useSessionDetails(options: UseSessionDetailsOptions) {
     error: null
   })
 
-  const fetchSessionDetails = async () => {
+  const fetchSessionDetails = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
@@ -49,13 +49,13 @@ export function useSessionDetails(options: UseSessionDetailsOptions) {
         error: error instanceof Error ? error.message : 'Erro ao carregar detalhes da sessão'
       }))
     }
-  }
+  }, [options.sessionId, options.userId])
 
   useEffect(() => {
     if (options.sessionId && options.userId) {
       fetchSessionDetails()
     }
-  }, [options.sessionId, options.userId])
+  }, [options.sessionId, options.userId, fetchSessionDetails])
 
   return {
     ...state,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -115,13 +115,7 @@ export function TimeSlotEditor({
     }
   }, [selectedDay, setValue])
 
-  useEffect(() => {
-    if (watchedStartTime && watchedEndTime && watchedDayOfWeek !== undefined) {
-      checkForConflicts()
-    }
-  }, [watchedDayOfWeek, watchedStartTime, watchedEndTime])
-
-  const checkForConflicts = () => {
+  const checkForConflicts = useCallback(() => {
     if (!watchedStartTime || !watchedEndTime) return
 
     const daySlots = existingTimeSlots.filter(slot => slot.dayOfWeek === watchedDayOfWeek)
@@ -149,7 +143,13 @@ export function TimeSlotEditor({
     } else {
       setConflictWarning(null)
     }
-  }
+  }, [watchedStartTime, watchedEndTime, watchedDayOfWeek, existingTimeSlots])
+
+  useEffect(() => {
+    if (watchedStartTime && watchedEndTime && watchedDayOfWeek !== undefined) {
+      checkForConflicts()
+    }
+  }, [watchedDayOfWeek, watchedStartTime, watchedEndTime, checkForConflicts])
 
   const onSubmit = async (data: FormValues) => {
     if (conflictWarning) {
@@ -200,12 +200,12 @@ export function TimeSlotEditor({
           <h2 className="text-lg font-semibold text-gray-900">
             Adicionar Horário
           </h2>
-          <button
+          <Button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <XIcon size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useProfile } from '@/context/zustand/useProfile'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
@@ -28,17 +28,23 @@ export function PodcastViewer({ podcastId }: PodcastViewerProps) {
   const [hasAddedView, setHasAddedView] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadPodcast()
+  const loadAnalytics = useCallback(async () => {
+    try {
+      const getAnalyticsUseCase = container.get<GetPodcastAnalyticsUseCase>(Register.podcast.useCase.GetPodcastAnalyticsUseCase)
+      
+      const result = await getAnalyticsUseCase.execute({ 
+        podcastId,
+        timeRange: 'all'
+      })
+      
+      setLikesCount(result.totalLikes)
+      setViewsCount(result.totalViews)
+    } catch (error) {
+      console.error('Erro ao carregar analytics:', error)
+    }
   }, [podcastId])
 
-  useEffect(() => {
-    if (podcast && infoUser.id && !hasAddedView) {
-      addView()
-    }
-  }, [podcast, infoUser.id, hasAddedView])
-
-  const loadPodcast = async () => {
+  const loadPodcast = useCallback(async () => {
     try {
       setIsLoading(true)
       const getPodcastUseCase = container.get<GetPodcastUseCase>(Register.podcast.useCase.GetPodcastUseCase)
@@ -57,25 +63,9 @@ export function PodcastViewer({ podcastId }: PodcastViewerProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [podcastId, loadAnalytics])
 
-  const loadAnalytics = async () => {
-    try {
-      const getAnalyticsUseCase = container.get<GetPodcastAnalyticsUseCase>(Register.podcast.useCase.GetPodcastAnalyticsUseCase)
-      
-      const result = await getAnalyticsUseCase.execute({ 
-        podcastId,
-        timeRange: 'all'
-      })
-      
-      setLikesCount(result.totalLikes)
-      setViewsCount(result.totalViews)
-    } catch (error) {
-      console.error('Erro ao carregar analytics:', error)
-    }
-  }
-
-  const addView = async () => {
+  const addView = useCallback(async () => {
     if (!infoUser.id || hasAddedView) return
 
     try {
@@ -91,7 +81,17 @@ export function PodcastViewer({ podcastId }: PodcastViewerProps) {
     } catch (error) {
       console.error('Erro ao adicionar visualização:', error)
     }
-  }
+  }, [podcastId, infoUser.id, hasAddedView])
+
+  useEffect(() => {
+    loadPodcast()
+  }, [podcastId, loadPodcast])
+
+  useEffect(() => {
+    if (podcast && infoUser.id && !hasAddedView) {
+      addView()
+    }
+  }, [podcast, infoUser.id, hasAddedView, addView])
 
   const toggleLike = async () => {
     if (!infoUser.id) return

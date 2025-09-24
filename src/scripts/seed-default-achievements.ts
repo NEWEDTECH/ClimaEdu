@@ -175,7 +175,6 @@ export async function seedDefaultAchievements(): Promise<void> {
         criteriaValue: achData.criteriaValue,
         category: achData.category,
         isGloballyEnabled: true,
-        version: '1.0.0'
       });
       
       achievements.push(achievement);

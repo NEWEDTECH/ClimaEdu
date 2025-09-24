@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import { SendSignInLinkUseCase } from '@/_core/modules/auth/core/use-cases/send-sign-in-link/send-sign-in-link.use-case';
+import { Button } from '@/components/button'
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -96,7 +97,7 @@ export function LoginForm() {
           />
         </div>
         
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
           className={`w-full py-2 px-4 rounded-md text-white font-medium ${
@@ -106,7 +107,7 @@ export function LoginForm() {
           }`}
         >
           {isLoading ? 'Sending...' : 'Send Sign-In Link'}
-        </button>
+        </Button>
       </form>
       
       {message && (

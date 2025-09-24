@@ -2,6 +2,7 @@ import { Progress } from "@/components/ui/helpers/progress"
 import { Trash2Icon, UploadCloudIcon } from "lucide-react";
 //import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import { Button } from '@/components/button'
 
 import getFileTypeFromUrl from "@/shared/helpers/GetFileTypeFromUrl";
 import { addCacheBuster } from "@/shared/helpers/utils";
@@ -203,9 +204,9 @@ export function InputMedia({
           {fileType === "image" && (
             <img src={useCache ? imageSrc : addCacheBuster(imageSrc)} alt="Preview" className="object-cover w-full h-full rounded" />
           )}
-          <button type="button" onClick={handleRemoveImage} className={buttonClasses}>
+          <Button type="button" onClick={handleRemoveImage} className={buttonClasses}>
             <Trash2Icon size={16} className="text-blue-gray-500" />
-          </button>
+          </Button>
         </div>
       ) : (
         <label

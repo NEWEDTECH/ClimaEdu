@@ -28,9 +28,9 @@ export class ProfileCompletedEvent implements Event {
   readonly eventId: string;
   readonly version = 1;
   readonly data: ProfileCompletedEventData;
-  readonly metadata?: Record<string, any>;
+  readonly metadata?: Record<string, unknown>;
 
-  constructor(data: ProfileCompletedEventData, metadata?: Record<string, any>) {
+  constructor(data: ProfileCompletedEventData, metadata?: Record<string, unknown>) {
     this.data = data;
     this.metadata = metadata;
     this.timestamp = new Date();
@@ -40,7 +40,7 @@ export class ProfileCompletedEvent implements Event {
   /**
    * Static factory method for creating the event
    */
-  static create(data: ProfileCompletedEventData, metadata?: Record<string, any>): ProfileCompletedEvent {
+  static create(data: ProfileCompletedEventData, metadata?: Record<string, unknown>): ProfileCompletedEvent {
     return new ProfileCompletedEvent(data, metadata);
   }
 }

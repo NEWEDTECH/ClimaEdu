@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/button'
 //import { useRouter } from 'next/navigation';
 
 interface AuthLink {
@@ -151,12 +152,12 @@ export function EmulatorAuthLinks() {
                   {link.link}
                 </a>
               </div>
-              <button
+              <Button
                 onClick={() => handleUseLink(link)}
                 className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
               >
                 Use Link
-              </button>
+              </Button>
             </div>
           </div>
         ))}

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { SocialPost } from '@/context/zustand/useSocialStore';
+import { Button } from '@/components/button'
 
 interface ShareButtonProps {
   post: SocialPost;
@@ -164,7 +165,7 @@ export function ShareButton({
 
   return (
     <div className="relative" data-share-dropdown>
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
         className={`
           inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 
@@ -177,7 +178,7 @@ export function ShareButton({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
         </svg>
         {showLabel && <span className="text-sm">Compartilhar</span>}
-      </button>
+      </Button>
 
       {/* Dropdown Menu */}
       {isOpen && (
@@ -189,7 +190,7 @@ export function ShareButton({
           </div>
           
           {shareOptions.map((option) => (
-            <button
+            <Button
               key={option.id}
               onClick={() => {
                 option.action(post);
@@ -208,7 +209,7 @@ export function ShareButton({
                   Copiado!
                 </span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -264,7 +265,7 @@ export function QuickShareButton({
   }, [post]);
 
   return (
-    <button
+    <Button
       onClick={handleQuickShare}
       className={`
         inline-flex items-center gap-1 text-gray-600 dark:text-gray-400 
@@ -281,6 +282,6 @@ export function QuickShareButton({
           Copiado!
         </span>
       )}
-    </button>
+    </Button>
   );
 }

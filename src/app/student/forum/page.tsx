@@ -166,7 +166,7 @@ export default function DiscussoesPage() {
           </CardContent>
           <CardFooter className="flex justify-end space-x-2">
             <Button 
-              variant="outline" 
+              variant="ghost" 
               onClick={() => setIsCreatingDiscussion(false)}
             >
               Cancelar
@@ -211,7 +211,7 @@ export default function DiscussoesPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleDiscussionSelect(discussion.id)}
-                variant="outline"
+                variant="ghost"
               >
                 Ver discussão
               </Button>
@@ -230,7 +230,7 @@ export default function DiscussoesPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToList}
             className="mb-4"
           >

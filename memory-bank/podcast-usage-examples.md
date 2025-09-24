@@ -318,9 +318,9 @@ export function PodcastList({ institutionId, tags }: PodcastListProps) {
 
       {hasMore && (
         <div className="text-center">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <Button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Carregar mais
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -399,7 +399,7 @@ export function PodcastCard({ podcast }: PodcastCardProps) {
         )}
 
         <div className="flex justify-between items-center">
-          <button
+          <Button
             onClick={handlePlay}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -407,9 +407,9 @@ export function PodcastCard({ podcast }: PodcastCardProps) {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
             </svg>
             <span>Reproduzir</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleLike}
             disabled={isLoading}
             className={`p-2 rounded-full transition-colors ${
@@ -421,7 +421,7 @@ export function PodcastCard({ podcast }: PodcastCardProps) {
             <svg className="w-5 h-5" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -638,7 +638,7 @@ export function PodcastPlayer({ podcast, onViewAdded }: PodcastPlayerProps) {
 
         {/* Play Controls */}
         <div className="flex items-center justify-center space-x-4">
-          <button
+          <Button
             onClick={() => {
               const media = mediaRef.current;
               if (media) media.currentTime = Math.max(0, currentTime - 10);
@@ -648,9 +648,9 @@ export function PodcastPlayer({ podcast, onViewAdded }: PodcastPlayerProps) {
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clipRule="evenodd" />
             </svg>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={togglePlay}
             className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700"
           >
@@ -663,9 +663,9 @@ export function PodcastPlayer({ podcast, onViewAdded }: PodcastPlayerProps) {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
               </svg>
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => {
               const media = mediaRef.current;
               if (media) media.currentTime = Math.min(duration, currentTime + 10);
@@ -675,7 +675,7 @@ export function PodcastPlayer({ podcast, onViewAdded }: PodcastPlayerProps) {
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Volume Control */}

@@ -41,7 +41,7 @@ export function useThemeColors() {
     } else {
       console.log('⚠️ Cores da instituição não encontradas');
     }
-  }, [infoInstitutions.institutions.primary_color, infoInstitutions.institutions.secondary_color]);
+  }, [infoInstitutions.institutions.primary_color, infoInstitutions.institutions.secondary_color, infoInstitutions.institutions]);
   
   return {
     primaryColor: infoInstitutions.institutions.primary_color,

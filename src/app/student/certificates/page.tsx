@@ -295,7 +295,7 @@ export default function CertificadosPage() {
                     </CardContent>
                     <CardFooter>
                       <Button 
-                        variant="outline"
+                        variant="ghost"
                         className="w-full"
                         onClick={() => handleCertificateSelect(certificate.id)}
                       >

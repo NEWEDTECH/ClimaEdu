@@ -47,7 +47,7 @@ export const CourseProgressReport = () => {
       }
     };
     fetchReport();
-  }, []);
+  }, [infoUser.id, infoUser.currentIdInstitution]);
 
   if (loading) {
     return (

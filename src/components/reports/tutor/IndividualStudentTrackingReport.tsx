@@ -19,6 +19,7 @@ import { FeedbackSummary } from './sections/FeedbackSummary';
 import { ClassComparison } from './sections/ClassComparison';
 import { LearningInsights } from './sections/LearningInsights';
 import { TutorRecommendations } from './sections/TutorRecommendations';
+import { Button } from '@/components/button'
 
 interface IndividualStudentTrackingReportProps {
   courseId: string | null;
@@ -90,9 +91,9 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
       <CardContent>
         <div className="mb-4">
           <Dropdown className="w-[280px]">
-            <button className="w-full border rounded-md p-2 text-left">
+            <Button className="w-full border rounded-md p-2 text-left">
               {selectedStudent ? students.find(s => s.id === selectedStudent)?.name : "Selecione um aluno"}
-            </button>
+            </Button>
             <DropdownMenuContent>
               {students.map((student) => (
                 <DropdownMenuItem key={student.id} onSelect={() => setSelectedStudent(student.id)}>

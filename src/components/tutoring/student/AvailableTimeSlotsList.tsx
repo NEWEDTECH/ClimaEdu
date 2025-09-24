@@ -165,7 +165,7 @@ export function AvailableTimeSlotsList({
                   const endTime = calculateEndTime(startTime, selectedDuration)
                   
                   return (
-                    <button
+                    <Button
                       key={startTime}
                       onClick={() => handleTimeSlotClick(slot, startTime)}
                       className={`p-2 rounded-lg border text-sm transition-all ${
@@ -177,7 +177,7 @@ export function AvailableTimeSlotsList({
                       <div className="font-medium">
                         {startTime} - {endTime}
                       </div>
-                    </button>
+                    </Button>
                   )
                 })}
               </div>

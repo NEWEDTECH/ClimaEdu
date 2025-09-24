@@ -7,6 +7,7 @@ import { UploadActivityFilesUseCase } from '@/_core/modules/content/core/use-cas
 import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
 import { DeleteActivityFileUseCase } from '@/_core/modules/content/core/use-cases/delete-activity-file/delete-activity-file.use-case';
 import type { ActivityFile } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.output';
+import { Button } from '@/components/button'
 
 interface ActivityFileUploadProps {
   activityId: string;
@@ -326,7 +327,7 @@ export function ActivityFileUpload({ activityId, studentId, institutionId }: Act
                     </svg>
                     Download
                   </a>
-                  <button
+                  <Button
                     onClick={() => handleDeleteFile(file)}
                     className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                   >
@@ -334,7 +335,7 @@ export function ActivityFileUpload({ activityId, studentId, institutionId }: Act
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     Deletar
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

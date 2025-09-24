@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/c
 import { UploadIcon, FileTextIcon, XIcon } from 'lucide-react';
 
 interface CSVUploadProps {
-  onFileUpload?: (file: File, data: any[]) => void;
+  onFileUpload?: (file: File, data: Record<string, string>[]) => void;
   acceptedFileTypes?: string;
   maxFileSize?: number; // em MB
 }
@@ -17,8 +17,8 @@ export function CSVUpload({
   maxFileSize = 5 
 }: CSVUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,27 +52,22 @@ export function CSVUpload({
         throw new Error('O arquivo CSV está vazio.');
       }
 
+      // Detectar separador (vírgula ou ponto e vírgula)
+      const separator = lines[0].includes(';') ? ';' : ',';
+      
       // Processar cabeçalho
-      const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+      const headers = lines[0].split(separator).map(header => header.trim().replace(/"/g, ''));
       
       // Processar dados
-      const data = lines.slice(1).map((line, index) => {
-        const values = line.split(',').map(value => value.trim().replace(/"/g, ''));
-        const row: any = {};
+      const data = lines.slice(1).map((line) => {
+        const values = line.split(separator).map(value => value.trim().replace(/"/g, ''));
+        const row: Record<string, string> = {};
         
         headers.forEach((header, headerIndex) => {
           row[header] = values[headerIndex] || '';
         });
         
         return row;
-      });
-
-      console.log('📊 Dados do CSV processados:', {
-        arquivo: file.name,
-        totalLinhas: data.length,
-        colunas: headers,
-        primeirasLinhas: data.slice(0, 3),
-        dados: data
       });
 
       if (onFileUpload) {
@@ -115,6 +110,13 @@ export function CSVUpload({
   };
 
   const handleUploadClick = () => {
+    // Remove existing file and clear any errors
+    setSelectedFile(null);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    // Open file selection dialog
     fileInputRef.current?.click();
   };
 
@@ -133,7 +135,7 @@ export function CSVUpload({
   };
 
   return (
-    <Card>
+    <Card className='h-[500px]'>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileTextIcon className="w-5 h-5" />
@@ -179,7 +181,7 @@ export function CSVUpload({
               <div className="flex items-center gap-3">
                 <FileTextIcon className="w-8 h-8 text-green-600" />
                 <div>
-                  <p className="font-medium">{selectedFile.name}</p>
+                  <p className="font-medium text-foreground dark:text-gray-500">{selectedFile.name}</p>
                   <p className="text-sm text-gray-500">
                     {(selectedFile.size / 1024).toFixed(1)} KB
                   </p>
@@ -201,12 +203,6 @@ export function CSVUpload({
               >
                 {isProcessing ? 'Processando...' : 'Processar CSV'}
               </Button>
-              <Button
-                onClick={handleUploadClick}
-                className="border border-gray-300 bg-transparent hover:bg-gray-100"
-              >
-                Trocar Arquivo
-              </Button>
             </div>
           </div>
         )}
@@ -220,8 +216,10 @@ export function CSVUpload({
         <div className="text-xs text-gray-500 space-y-1">
           <p><strong>Formato esperado:</strong></p>
           <p>• Primeira linha deve conter os cabeçalhos das colunas</p>
-          <p>• Dados separados por vírgula</p>
-          <p>• Exemplo: nome,email,tipo</p>
+          <p>• Dados separados por vírgula ou ponto e vírgula</p>
+          <p>• Colunas obrigatórias: <strong>nome, email</strong></p>
+          <p>• Exemplo: nome,email</p>
+          <p>• Todos os usuários serão cadastrados como <strong>estudantes</strong></p>
         </div>
       </CardContent>
     </Card>

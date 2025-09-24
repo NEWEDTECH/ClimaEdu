@@ -141,7 +141,7 @@ export default function AtividadesPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleActivitySelect(activity.id)}
-                variant={activity.status === 'completed' ? 'outline' : 'default'}
+                variant={activity.status === 'completed' ? 'primary' : 'secondary'}
               >
                 {activity.status === 'completed' ? 'Ver detalhes' : 'Realizar atividade'}
               </Button>
@@ -246,7 +246,7 @@ export default function AtividadesPage() {
               />
               <div className="mt-4">
                 <Button 
-                  variant="outline"
+                  variant="ghost"
                   className="mr-2"
                 >
                   <svg 

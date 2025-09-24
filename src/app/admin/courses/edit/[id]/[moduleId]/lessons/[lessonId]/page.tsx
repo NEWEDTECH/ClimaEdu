@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useProfile } from '@/context/zustand/useProfile'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
 import { ActivitySection, ContentSection, DescriptionSection, Mp3UploadSection, PdfUploadSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
+import { FileText, Upload, Music, BookOpen, ClipboardList, HelpCircle, Layers } from 'lucide-react'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -212,6 +214,40 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSaveLessonTitle = async () => {
+    if (!formData.title.trim()) {
+      showToast.error('O título da lição não pode estar vazio')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      
+      const lesson = await lessonRepository.findById(lessonId)
+      
+      if (!lesson) {
+        throw new Error('Lição não encontrada')
+      }
+      
+      // Update lesson title
+      lesson.title = formData.title.trim()
+      
+      // Save the updated lesson
+      await lessonRepository.save(lesson)
+      
+      showToast.success('Título da lição atualizado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar título da lição:', error)
+      showToast.error(`Falha ao salvar título: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleDeleteQuestionnaire = async () => {
@@ -480,6 +516,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           <div>
             <h1 className="text-3xl font-bold">Editar Lição</h1>
             <p className="text-gray-500">Módulo: {moduleName}</p>
+            <p className="text-gray-500">Título da Lição: {formData.title}</p>
           </div>
           <Link href={`/admin/courses/edit/${courseId}`}>
             <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
@@ -495,90 +532,219 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               <label htmlFor="title" className="text-sm font-medium">
                 Título da Lição
               </label>
-              <InputText
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Digite o título da lição"
-                readOnly
-              />
+              <div className="flex gap-2 items-center">
+                <InputText
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Digite o título da lição"
+                  className="flex-1 h-10"
+                />
+                <Button 
+                  onClick={handleSaveLessonTitle}
+                  disabled={isSubmitting}
+                  variant="primary"
+                  className="h-10 px-4"
+                >
+                  {isSubmitting ? 'Salvando...' : 'Salvar'}
+                </Button>
+              </div>
             </div>
             
             {/* Content Section */}
-            <ContentSection
-              contents={formData.contents}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              onDeleteContent={handleDeleteContent}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="content-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-blue-100/50 dark:hover:bg-blue-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <Layers className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Conteúdos</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Gerencie vídeos e materiais da lição</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <ContentSection
+                    contents={formData.contents}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    onDeleteContent={handleDeleteContent}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* Scorm Section */}
-            <ScormSection
-              contents={formData.contents}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              institutionId={infoUser?.currentIdInstitution}
-              onDeleteContent={handleDeleteContent}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="scorm-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-purple-100/50 dark:hover:bg-purple-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">SCORM</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Pacotes de conteúdo interativo SCORM</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <ScormSection
+                    contents={formData.contents}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    institutionId={infoUser?.currentIdInstitution}
+                    onDeleteContent={handleDeleteContent}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* PDF Upload Section */}
-            <PdfUploadSection
-              contents={formData.contents}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              institutionId={infoUser?.currentIdInstitution}
-              onDeleteContent={handleDeleteContent}
-              onContentAdded={() => window.location.reload()}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="pdf-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-red-100/50 dark:hover:bg-red-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                      <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Upload de PDF</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Adicione documentos PDF à lição</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <PdfUploadSection
+                    contents={formData.contents}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    institutionId={infoUser?.currentIdInstitution}
+                    onDeleteContent={handleDeleteContent}
+                    onContentAdded={() => window.location.reload()}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* MP3 Upload Section */}
-            <Mp3UploadSection
-              contents={formData.contents}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              institutionId={infoUser?.currentIdInstitution}
-              onDeleteContent={handleDeleteContent}
-              onContentAdded={() => window.location.reload()}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="mp3-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-green-100/50 dark:hover:bg-green-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <Music className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Upload de MP3</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Adicione arquivos de áudio à lição</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <Mp3UploadSection
+                    contents={formData.contents}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    institutionId={infoUser?.currentIdInstitution}
+                    onDeleteContent={handleDeleteContent}
+                    onContentAdded={() => window.location.reload()}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* Description Section */}
-            <DescriptionSection
-              description={lessonDescription}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              onDelete={handleDeleteDescription}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="description-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                      <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Descrição</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Adicione ou edite a descrição da lição</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <DescriptionSection
+                    description={lessonDescription}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    onDelete={handleDeleteDescription}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* Activity Section */}
-            <ActivitySection
-              activity={formData.activity}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              onDelete={handleDeleteActivity}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="activity-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-teal-100/50 dark:hover:bg-teal-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
+                      <ClipboardList className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Atividade</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Configure atividades práticas para os alunos</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <ActivitySection
+                    activity={formData.activity}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    onDelete={handleDeleteActivity}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* Questionnaire Section */}
-            <QuestionnaireSection
-              questionnaire={formData.questionnaire}
-              courseId={courseId}
-              moduleId={moduleId}
-              lessonId={lessonId}
-              onDelete={handleDeleteQuestionnaire}
-              isSubmitting={isSubmitting}
-            />
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="questionnaire-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-t-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                      <HelpCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Questionário</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Crie avaliações e testes para a lição</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <QuestionnaireSection
+                    questionnaire={formData.questionnaire}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    onDelete={handleDeleteQuestionnaire}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             <div className="flex justify-end gap-2 my-4">
               <Button 

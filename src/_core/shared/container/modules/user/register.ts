@@ -7,6 +7,8 @@ import { FirebaseUserRepository } from '@/_core/modules/user/infrastructure/repo
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case';
 import { CreateSuperAdminUseCase } from '@/_core/modules/user/core/use-cases/create-super-admin/create-super-admin.use-case';
 import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/get-user-associations/get-user-associations.use-case';
+import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case';
+import { ProcessCSVUsersWithInstitutionUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users-with-institution/process-csv-users-with-institution.use-case';
 // import { AuthenticateUserUseCase } from '@/_core/modules/user/core/use-cases/authenticate-user/authenticate-user.use-case';
 
 /**
@@ -21,5 +23,7 @@ export function registerUserModule(container: Container): void {
   container.bind(useCases.CreateUserUseCase).to(CreateUserUseCase);
   container.bind(useCases.CreateSuperAdminUseCase).to(CreateSuperAdminUseCase);
   container.bind(useCases.GetUserAssociationsUseCase).to(GetUserAssociationsUseCase);
+  container.bind(useCases.ProcessCSVUsersUseCase).to(ProcessCSVUsersUseCase);
+  container.bind(useCases.ProcessCSVUsersWithInstitutionUseCase).to(ProcessCSVUsersWithInstitutionUseCase);
   // container.bind(useCases.AuthenticateUserUseCase).to(AuthenticateUserUseCase);
 }

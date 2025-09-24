@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
+import { Button } from '@/components/button'
 
 export function AuthStatus() {
   const router = useRouter();
@@ -66,12 +67,12 @@ export function AuthStatus() {
       <div className="flex items-center text-sm">
         <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
         <span className="text-gray-600 dark:text-gray-300">Not signed in</span>
-        <button
+        <Button
           onClick={() => router.push('/login')}
           className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
         >
           Sign In
-        </button>
+        </Button>
       </div>
     );
   }
@@ -82,12 +83,12 @@ export function AuthStatus() {
       <span className="text-gray-600 dark:text-gray-300">
         Signed in {userId && <span className="font-mono text-xs">({userId.substring(0, 8)}...)</span>}
       </span>
-      <button
+      <Button
         onClick={handleSignOut}
         className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
       >
         Sign Out
-      </button>
+      </Button>
     </div>
   );
 }

@@ -12,7 +12,6 @@ import { TutoringStats } from '@/components/tutoring/tutor/TutoringStats'
 import { useTutorSessions } from '@/hooks/tutoring'
 import { useProfile } from '@/context/zustand/useProfile'
 import type { TutoringSession } from '@/_core/modules/tutoring'
-import { CalendarIcon } from 'lucide-react'
 
 export default function TutorTutoringPage() {
   const { infoUser } = useProfile()
@@ -86,12 +85,12 @@ export default function TutorTutoringPage() {
           <div className="container mx-auto p-6">
             <div className="text-center py-8">
               <p className="text-red-500">Erro ao carregar sessões: {error}</p>
-              <button 
+              <Button 
                 onClick={refetch}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 Tentar novamente
-              </button>
+              </Button>
             </div>
           </div>
         </DashboardLayout>
@@ -112,7 +111,6 @@ export default function TutorTutoringPage() {
             </div>
             <Link href="/tutor/availability">
               <Button className="flex items-center gap-2">
-                <CalendarIcon size={16} />
                 Configurar Disponibilidade
               </Button>
             </Link>

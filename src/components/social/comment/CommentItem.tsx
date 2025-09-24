@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SocialComment } from '@/context/zustand/useSocialStore';
 import { LikeButtonCompact } from '../ui/LikeButton';
+import { Button } from '@/components/button'
 
 interface CommentItemProps {
   comment: SocialComment;
@@ -131,19 +132,19 @@ export function CommentItem({
                     {editContent.length}/1000 caracteres
                   </span>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={handleCancelEdit}
                       className="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                     >
                       Cancelar
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={handleEdit}
                       disabled={!editContent.trim() || editContent === comment.content}
                       className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Salvar
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -164,32 +165,32 @@ export function CommentItem({
 
               {/* Reply Button */}
               {canReply && !isEditing && (
-                <button
+                <Button
                   onClick={() => setIsReplying(!isReplying)}
                   className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Responder
-                </button>
+                </Button>
               )}
 
               {/* Edit/Delete Actions */}
               {(showActions || isEditing) && !isReplying && (
                 <div className="flex items-center gap-2">
                   {canEdit && !isEditing && (
-                    <button
+                    <Button
                       onClick={() => setIsEditing(true)}
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors"
                     >
                       Editar
-                    </button>
+                    </Button>
                   )}
                   {canDelete && !isEditing && (
-                    <button
+                    <Button
                       onClick={handleDelete}
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
                       Excluir
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -212,7 +213,7 @@ export function CommentItem({
                     {replyContent.length}/1000 caracteres
                   </span>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => {
                         setIsReplying(false);
                         setReplyContent('');
@@ -220,14 +221,14 @@ export function CommentItem({
                       className="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                     >
                       Cancelar
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={handleReply}
                       disabled={!replyContent.trim()}
                       className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Responder
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

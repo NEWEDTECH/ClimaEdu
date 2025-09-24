@@ -4,6 +4,7 @@ import { useState, useEffect, ReactNode } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card/card';
+import { SelectComponent } from '@/components/select';
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
@@ -65,36 +66,6 @@ type FormData = {
   enrolledStudents?: number;
   createdAt?: string;
   updatedAt?: string;
-}
-
-const additionalFieldsConfig: Record<string, FieldConfig> = {
-  category: {
-    type: 'text',
-    label: 'Categoria',
-    placeholder: 'Adicione uma categoria'
-  },
-  level: {
-    type: 'select',
-    label: 'Nível',
-    options: [
-      { value: 'beginner', label: 'Básico' },
-      { value: 'intermediate', label: 'Intermediário' },
-      { value: 'advanced', label: 'Avançado' }
-    ]
-  },
-  duration: {
-    type: 'text',
-    label: 'Duração',
-    placeholder: '12 semanas'
-  },
-  status: {
-    type: 'select',
-    label: 'Status',
-    options: [
-      { value: 'active', label: 'Ativo' },
-      { value: 'inactive', label: 'Inativo' }
-    ]
-  }
 }
 
 export default function CoursePage() {
@@ -419,16 +390,15 @@ export default function CoursePage() {
         )}
 
         {config.type === 'select' && (
-          <select
-            {...commonProps}
-            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-          >
-            {(config as SelectFieldConfig).options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <SelectComponent
+            value={formData[name as keyof FormData] as string}
+            onChange={(value) => {
+              setFormData(prev => ({ ...prev, [name]: value }));
+            }}
+            options={(config as SelectFieldConfig).options}
+            placeholder={config.placeholder || `Selecione ${config.label.toLowerCase()}`}
+            className="w-full"
+          />
         )}
       </div>
     );
@@ -502,13 +472,11 @@ export default function CoursePage() {
                     type: 'select',
                     label: 'Instituição',
                     required: true,
-                    options: [
-                      { value: '', label: 'Selecione uma instituição' },
-                      ...institutions.map(institution => ({
-                        value: institution.id,
-                        label: institution.name
-                      }))
-                    ]
+                    placeholder: 'Selecione uma instituição',
+                    options: institutions.map(institution => ({
+                      value: institution.id,
+                      label: institution.name
+                    }))
                   })}
 
                   {renderFormField('title', {

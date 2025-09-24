@@ -299,7 +299,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                         ) : (
                           <>
                             <Send className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            <span>Publicar Post</span>
+                            <span>Publicar Post3</span>
                           </>
                         )}
                       </div>

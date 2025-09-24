@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Button } from '@/components/button'
 
 interface ToggleSettingsProps {
   label: string;
@@ -27,21 +28,21 @@ export function ToggleSettings({
             {label}
           </label>
           {defaultValue !== undefined && onReset && (
-            <button
+            <Button
               type="button"
               onClick={onReset}
               className="text-xs text-blue-600 hover:text-blue-800 underline"
               title={`Reset to default (${defaultValue ? 'Enabled' : 'Disabled'})`}
             >
               Reset
-            </button>
+            </Button>
           )}
         </div>
         <p className="text-xs text-gray-500 mt-1">{description}</p>
       </div>
       
       <div className="ml-4">
-        <button
+        <Button
           type="button"
           onClick={() => onChange(!enabled)}
           className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
@@ -55,7 +56,7 @@ export function ToggleSettings({
               enabled ? 'translate-x-5' : 'translate-x-0'
             }`}
           />
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ import { CSVUpload } from '@/components/admin/CSVUpload'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
+import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case'
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case'
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
@@ -52,6 +53,34 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
+  switch (creatorRole) {
+    case UserRole.SUPER_ADMIN:
+      return [
+        UserRole.SYSTEM_ADMIN,
+        UserRole.LOCAL_ADMIN,
+        UserRole.CONTENT_MANAGER,
+        UserRole.TUTOR,
+        UserRole.STUDENT,
+      ];
+    case UserRole.SYSTEM_ADMIN:
+      return [
+        UserRole.LOCAL_ADMIN,
+        UserRole.CONTENT_MANAGER,
+        UserRole.TUTOR,
+        UserRole.STUDENT,
+      ];
+    case UserRole.LOCAL_ADMIN:
+      return [
+        UserRole.CONTENT_MANAGER,
+        UserRole.TUTOR,
+        UserRole.STUDENT,
+      ];
+    default:
+      return [];
+  }
+};
+
 export default function CreateUserPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -59,37 +88,20 @@ export default function CreateUserPage() {
   const [success, setSuccess] = useState<boolean>(false)
   const [institutions, setInstitutions] = useState<Institution[]>([])
   const [isLoadingInstitutions, setIsLoadingInstitutions] = useState<boolean>(false)
+  const [csvProgress, setCsvProgress] = useState<{
+    current: number;
+    total: number;
+    isProcessing: boolean;
+    currentEmail: string;
+  }>({
+    current: 0,
+    total: 0,
+    isProcessing: false,
+    currentEmail: ''
+  })
   const { infoUser } = useProfile()
 
   const currentUserRole: UserRole = UserRole.SUPER_ADMIN;
-
-  const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
-    switch (creatorRole) {
-      case UserRole.SUPER_ADMIN:
-        return [
-          UserRole.SYSTEM_ADMIN,
-          UserRole.LOCAL_ADMIN,
-          UserRole.CONTENT_MANAGER,
-          UserRole.TUTOR,
-          UserRole.STUDENT,
-        ];
-      case UserRole.SYSTEM_ADMIN:
-        return [
-          UserRole.LOCAL_ADMIN,
-          UserRole.CONTENT_MANAGER,
-          UserRole.TUTOR,
-          UserRole.STUDENT,
-        ];
-      case UserRole.LOCAL_ADMIN:
-        return [
-          UserRole.CONTENT_MANAGER,
-          UserRole.TUTOR,
-          UserRole.STUDENT,
-        ];
-      default:
-        return [];
-    }
-  };
 
   const allowedRoles = getAllowedRolesToCreate(currentUserRole);
 
@@ -184,13 +196,131 @@ export default function CreateUserPage() {
     }
   }
 
-  const handleCSVUpload = (file: File, data: any[]) => {
-    console.log('📊 CSV Upload recebido:', {
-      arquivo: file.name,
-      totalRegistros: data.length,
-      primeiroRegistro: data[0],
-      todosOsDados: data
-    });
+  const handleCSVUpload = async (file: File, data: Record<string, string>[]) => {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Determine institution ID based on user role
+      let institutionId: string;
+
+      if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
+        // Admin users: use their institution ID
+        if (!infoUser.currentIdInstitution) {
+          throw new Error('Usuário admin deve estar associado a uma instituição');
+        }
+        institutionId = infoUser.currentIdInstitution;
+      } else if (infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) {
+        // Root users: need to select an institution
+        const selectedInstitution = institutions.find(inst => inst.id);
+        if (!selectedInstitution) {
+          throw new Error('Por favor, selecione uma instituição para associar os usuários do CSV');
+        }
+        institutionId = selectedInstitution.id;
+      } else {
+        throw new Error('Usuário não tem permissão para criar usuários via CSV');
+      }
+
+      // Initialize progress
+      setCsvProgress({
+        current: 0,
+        total: data.length,
+        isProcessing: true,
+        currentEmail: ''
+      });
+
+      // Use the ProcessCSVUsersUseCase to handle all the logic
+      const processCSVUseCase = container.get<ProcessCSVUsersUseCase>(
+        Register.user.useCase.ProcessCSVUsersUseCase
+      );
+
+      console.log(data)
+
+      const result = await processCSVUseCase.execute({
+        csvData: data,
+        institutionId,
+        createdByUserId: infoUser.id,
+        createdByUserRole: infoUser.currentRole as UserRole,
+        onProgress: (current, total, currentEmail) => {
+          console.log(`🎯 Frontend received progress update: ${current}/${total} - ${currentEmail}`);
+          setCsvProgress(prev => {
+            console.log(`📱 Updating state from ${prev.current}/${prev.total} to ${current}/${total}`);
+            return {
+              ...prev,
+              current,
+              total,
+              currentEmail
+            };
+          });
+        }
+      });
+
+      // Associate each created user to the institution
+      const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+        Register.institution.useCase.AssociateUserToInstitutionUseCase
+      );
+
+      const associationFailures: Array<{ email: string; error: string }> = [];
+      
+      for (const user of result.createdUsers) {
+        try {
+          await associateUserUseCase.execute({
+            userId: user.id,
+            institutionId,
+            userRole: user.role
+          });
+        } catch (error) {
+          associationFailures.push({
+            email: user.email.value,
+            error: `Failed to associate user to institution: ${error instanceof Error ? error.message : 'Unknown error'}`
+          });
+        }
+      }
+
+      // Update result with association failures
+      if (associationFailures.length > 0) {
+        result.failedEmails.push(...associationFailures);
+        result.totalFailed += associationFailures.length;
+      }
+
+      // Show results
+      if (result.totalCreated > 0) {
+        setSuccess(true);
+        console.log(`✅ ${result.totalCreated} usuários criados com sucesso!`);
+        
+        if (result.totalFailed > 0) {
+          console.warn(`⚠️ ${result.totalFailed} usuários falharam:`, result.failedEmails);
+          setError(`${result.totalCreated} usuários criados, mas ${result.totalFailed} falharam.`);
+        }
+      } else {
+        // Check if all failures are due to existing users
+        const allExistingUsers = result.failedEmails.every(failure => 
+          failure.error.toLowerCase().includes('already exists') || 
+          failure.error.toLowerCase().includes('já existe')
+        );
+        
+        if (allExistingUsers && result.failedEmails.length > 0) {
+          setError(`⚠️ Todos os ${result.totalProcessed} usuários da planilha já existem na plataforma. Nenhum usuário novo foi criado.`);
+        } else if (result.failedEmails.length > 0) {
+          console.warn('❌ Falhas no processamento:', result.failedEmails);
+          setError(`Nenhum usuário foi criado. ${result.totalFailed} falhas encontradas.`);
+        } else {
+          setError('Nenhum usuário foi criado. Verifique o formato do CSV.');
+        }
+      }
+
+    } catch (err) {
+      console.error('Erro ao processar CSV:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao processar CSV. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+      setCsvProgress({
+        current: 0,
+        total: 0,
+        isProcessing: false,
+        currentEmail: ''
+      });
+    }
   }
 
   return (
@@ -208,8 +338,8 @@ export default function CreateUserPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-            <Card>
+          <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
+            <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Criar Usuário Individual</CardTitle>
                 <CardDescription>
@@ -324,8 +454,36 @@ export default function CreateUserPage() {
               </FormSection>
             </Card>
 
-            <div className="lg:col-span-1">
+            <div className="flex-1 flex flex-col">
               <CSVUpload onFileUpload={handleCSVUpload} />
+
+              {/* Progress Bar */}
+              {csvProgress.isProcessing && (
+                <Card className="mt-4">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Processando Planilha</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progresso</span>
+                        <span>{csvProgress.current} / {csvProgress.total}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                          style={{
+                            width: `${csvProgress.total > 0 ? (csvProgress.current / csvProgress.total) * 100 : 0}%`
+                          }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Processando: {csvProgress.currentEmail}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ interface AchievementFormData {
 
 interface AchievementFormProps {
   formData: AchievementFormData;
-  onInputChange: (field: keyof AchievementFormData, value: any) => void;
+  onInputChange: (field: keyof AchievementFormData, value: string | number | boolean | BadgeCriteriaType) => void;
   onSubmit: (e: React.FormEvent) => void;
   loading: boolean;
   submitLabel: string;

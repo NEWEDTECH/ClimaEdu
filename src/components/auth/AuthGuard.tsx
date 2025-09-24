@@ -10,6 +10,7 @@ import { UserRepository } from '@/_core/modules/user/infrastructure/repositories
 import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/get-user-associations/get-user-associations.use-case';
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import { LoadingSpinner } from '@/components/loader';
+import { Button } from '@/components/button'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -130,7 +131,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setInitializationError(error instanceof Error ? error.message : 'Erro desconhecido');
       setIsLoading(false);
     }
-  }, []);
+  }, [infoUser, setInfoUser, setInfoInstitutions, setInfoInstitutionsRole, setLastInstitutionId]);
 
   const clearUserData = useCallback(() => {
     // console.log('🧹 AuthGuard: Clearing user data on logout');
@@ -192,7 +193,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="mt-4 text-gray-600">Carregando dados do usuário...</p>
         </div>
       </div>
     );
@@ -210,12 +210,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Erro ao carregar dados</h2>
           <p className="text-gray-600 mb-4">{initializationError}</p>
-          <button
+          <Button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Tentar novamente
-          </button>
+          </Button>
         </div>
       </div>
     );

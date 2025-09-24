@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { z } from 'zod';
+import { Button } from '@/components/button'
 
 // Validation schemas
 export const postSchema = z.object({
@@ -161,18 +162,18 @@ export class SocialErrorBoundary extends React.Component<
             Ocorreu um erro inesperado. Nossa equipe foi notificada e está trabalhando para resolver o problema.
           </p>
           <div className="space-x-3">
-            <button
+            <Button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
               Recarregar página
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => this.setState({ hasError: false })}
               className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
               Tentar novamente
-            </button>
+            </Button>
           </div>
           
           {process.env.NODE_ENV === 'development' && this.state.error && (

@@ -121,12 +121,12 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
           <h2 className="text-xl font-semibold text-gray-900">
             Detalhes da Sessão
           </h2>
-          <button
+          <Button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <XIcon size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
@@ -205,13 +205,13 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
                 Anotações do Tutor
               </label>
               {!isEditingNotes && (
-                <button
+                <Button
                   onClick={() => setIsEditingNotes(true)}
                   className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
                 >
                   <EditIcon size={14} />
                   Editar
-                </button>
+                </Button>
               )}
             </div>
             
@@ -258,13 +258,13 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
                 Link da Reunião
               </label>
               {!isEditingMeetingUrl && (
-                <button
+                <Button
                   onClick={() => setIsEditingMeetingUrl(true)}
                   className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
                 >
                   <EditIcon size={14} />
                   Editar
-                </button>
+                </Button>
               )}
             </div>
             
@@ -337,13 +337,13 @@ export function SessionDetailsModal({ session, isOpen, onClose, onSessionUpdate 
                   Resumo da Sessão
                 </label>
                 {!isEditingSummary && session.status === TutoringSessionStatus.COMPLETED && (
-                  <button
+                  <Button
                     onClick={() => setIsEditingSummary(true)}
                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
                   >
                     <EditIcon size={14} />
                     Editar
-                  </button>
+                  </Button>
                 )}
               </div>
               

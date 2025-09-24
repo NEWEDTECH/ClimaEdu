@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { toast, ToastContainer, ToastOptions } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 
 export type ToastType = 'success' | 'warning' | 'error' | 'loading'
 
@@ -123,10 +122,8 @@ export function ToastProvider({ children }: ToastProviderProps) {
         pauseOnHover={true}
         theme="light"
         toastClassName="custom-toast"
-        bodyClassName="custom-toast-body"
         progressClassName="custom-toast-progress"
         closeButton={true}
-        enableMultiContainer={false}
         containerId="main-toast-container"
       />
     </>

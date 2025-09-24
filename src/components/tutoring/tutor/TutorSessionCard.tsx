@@ -3,6 +3,7 @@
 import { TutoringSession } from '@/_core/modules/tutoring'
 import { TutoringStatusUtils, SessionPriorityUtils, TutoringDateUtils, MeetingUrlUtils } from '../shared/tutoring-utils'
 import { CalendarIcon, ClockIcon, UserIcon, MessageSquareIcon, AlertCircleIcon, LinkIcon, ExternalLinkIcon } from 'lucide-react'
+import { Button } from '@/components/button'
 
 interface TutorSessionCardProps {
   session: TutoringSession
@@ -87,9 +88,9 @@ export function TutorSessionCard({ session, onClick }: TutorSessionCardProps) {
             </a>
           )}
           
-          <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+          <Button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
             Ver detalhes →
-          </button>
+          </Button>
         </div>
       </div>
     </div>

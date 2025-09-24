@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { SelectComponent } from '@/components/select'
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -31,12 +32,13 @@ export default function EditTurmaPage() {
   const [formData, setFormData] = useState({
     name: ''
   })
-  const [newEnrollmentId, setNewEnrollmentId] = useState('')
+  const [newEnrollmentId, setNewEnrollmentId] = useState<string>('')
   const [availableStudents, setAvailableStudents] = useState<Array<{ id: string, email: string }>>([])
   const [currentEnrollments, setCurrentEnrollments] = useState<Array<{ id: string, userEmail: string }>>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const [managingEnrollments, setManagingEnrollments] = useState<boolean>(false)
+  const [addingEnrollment, setAddingEnrollment] = useState<boolean>(false)
+  const [removingEnrollmentId, setRemovingEnrollmentId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -186,7 +188,7 @@ export default function EditTurmaPage() {
     }
 
     try {
-      setManagingEnrollments(true)
+      setAddingEnrollment(true)
       setError(null)
       
       const addEnrollmentUseCase = container.get<AddEnrollmentToClassUseCase>(
@@ -217,7 +219,7 @@ export default function EditTurmaPage() {
       console.error('Error adding enrollment:', err)
       setError('Erro ao adicionar matrícula. Tente novamente.')
     } finally {
-      setManagingEnrollments(false)
+      setAddingEnrollment(false)
     }
   }
 
@@ -227,7 +229,7 @@ export default function EditTurmaPage() {
     }
 
     try {
-      setManagingEnrollments(true)
+      setRemovingEnrollmentId(enrollmentId)
       setError(null)
       
       const removeEnrollmentUseCase = container.get<RemoveEnrollmentFromClassUseCase>(
@@ -256,7 +258,7 @@ export default function EditTurmaPage() {
       console.error('Error removing enrollment:', err)
       setError('Erro ao remover matrícula. Tente novamente.')
     } finally {
-      setManagingEnrollments(false)
+      setRemovingEnrollmentId(null)
     }
   }
 
@@ -417,25 +419,22 @@ export default function EditTurmaPage() {
                     Adicionar Estudante à Turma
                   </label>
                   <div className="flex gap-2">
-                    <select
-                      id="newEnrollment"
+                    <SelectComponent
                       value={newEnrollmentId}
-                      onChange={(e) => setNewEnrollmentId(e.target.value)}
-                      className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                    >
-                      <option value="" className='dark:text-black'>Selecione um estudante</option>
-                      {availableStudents.map(student => (
-                        <option key={student.id} value={student.id} className='dark:text-black'>
-                          {student.email}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(studentId) => setNewEnrollmentId(studentId)}
+                      options={availableStudents.map(student => ({
+                        value: student.id,
+                        label: student.email
+                      }))}
+                      placeholder="Selecione um estudante"
+                      className="flex-1"
+                    />
                     <Button
                       onClick={handleAddEnrollment}
-                      disabled={managingEnrollments || !newEnrollmentId.trim()}
+                      disabled={addingEnrollment || !newEnrollmentId.trim()}
                       className="bg-green-600 text-white shadow-xs hover:bg-green-700"
                     >
-                      {managingEnrollments ? 'Adicionando...' : 'Adicionar'}
+                      {addingEnrollment ? 'Adicionando...' : 'Adicionar'}
                     </Button>
                   </div>
                   {availableStudents.length === 0 && (
@@ -459,10 +458,10 @@ export default function EditTurmaPage() {
                             <span className="text-sm">{enrollment.userEmail}</span>
                             <Button
                               onClick={() => handleRemoveEnrollment(enrollment.id)}
-                              disabled={managingEnrollments}
+                              disabled={removingEnrollmentId === enrollment.id}
                               className="bg-red-50 text-red-600 shadow-xs hover:bg-red-100 hover:text-red-700 h-8 rounded-md gap-1.5 px-3 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
                             >
-                              {managingEnrollments ? 'Removendo...' : 'Remover'}
+                              {removingEnrollmentId === enrollment.id ? 'Removendo...' : 'Remover'}
                             </Button>
                           </div>
                         ))}

@@ -3,6 +3,7 @@
 import { FilterIcon, ChevronDownIcon } from 'lucide-react'
 import { TutoringSessionStatus, SessionPriority } from '@/_core/modules/tutoring'
 import { TutoringStatusUtils, SessionPriorityUtils, TutoringDateUtils } from '../shared/tutoring-utils'
+import { Button } from '@/components/button'
 
 interface SessionFiltersProps {
   statusFilter: TutoringSessionStatus | 'all'
@@ -91,7 +92,7 @@ export function SessionFilters({
 
       {/* Clear Filters */}
       {(statusFilter !== 'all' || priorityFilter !== 'all' || dateFilter !== 'all') && (
-        <button
+        <Button
           onClick={() => {
             onStatusChange('all')
             onPriorityChange('all')
@@ -100,7 +101,7 @@ export function SessionFilters({
           className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 underline"
         >
           Limpar filtros
-        </button>
+        </Button>
       )}
     </div>
   )

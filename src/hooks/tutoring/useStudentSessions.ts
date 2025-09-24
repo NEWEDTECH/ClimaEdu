@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { container } from '@/_core/shared/container/container'
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols'
 import { GetStudentSessionsUseCase, CancelTutoringSessionUseCase } from '@/_core/modules/tutoring'
@@ -27,7 +27,7 @@ export function useStudentSessions(options: UseStudentSessionsOptions) {
     cancelling: false
   })
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
@@ -55,7 +55,7 @@ export function useStudentSessions(options: UseStudentSessionsOptions) {
         error: error instanceof Error ? error.message : 'Erro ao carregar sessões'
       }))
     }
-  }
+  }, [options.studentId, options.status])
 
   const cancelSession = async (sessionId: string, reason: string) => {
     try {
@@ -89,7 +89,7 @@ export function useStudentSessions(options: UseStudentSessionsOptions) {
     if (options.studentId) {
       fetchSessions()
     }
-  }, [options.studentId, options.status])
+  }, [options.studentId, options.status, fetchSessions])
 
   // Auto-refresh every 15 minutes if enabled
   useEffect(() => {
@@ -97,7 +97,7 @@ export function useStudentSessions(options: UseStudentSessionsOptions) {
       const interval = setInterval(fetchSessions, 900000) // 15 minutes = 900,000ms
       return () => clearInterval(interval)
     }
-  }, [options.autoRefresh, options.studentId])
+  }, [options.autoRefresh, options.studentId, fetchSessions])
 
   return {
     ...state,
