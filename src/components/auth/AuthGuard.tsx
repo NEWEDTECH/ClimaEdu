@@ -131,7 +131,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setInitializationError(error instanceof Error ? error.message : 'Erro desconhecido');
       setIsLoading(false);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
   }, []);
 
   const clearUserData = useCallback(() => {
