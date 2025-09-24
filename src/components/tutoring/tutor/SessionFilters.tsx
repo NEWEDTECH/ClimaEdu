@@ -1,9 +1,10 @@
 'use client'
 
-import { FilterIcon, ChevronDownIcon } from 'lucide-react'
+import { FilterIcon } from 'lucide-react'
 import { TutoringSessionStatus, SessionPriority } from '@/_core/modules/tutoring'
 import { TutoringStatusUtils, SessionPriorityUtils, TutoringDateUtils } from '../shared/tutoring-utils'
 import { Button } from '@/components/button'
+import { SelectComponent } from '@/components/select/select'
 
 interface SessionFiltersProps {
   statusFilter: TutoringSessionStatus | 'all'
@@ -27,68 +28,38 @@ export function SessionFilters({
   const dateOptions = TutoringDateUtils.getDateFilterOptions()
 
   return (
-    <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+    <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border dark:dark:bg-black/10">
+      <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white">
         <FilterIcon size={16} />
         Filtros:
       </div>
 
       {/* Status Filter */}
-      <div className="relative">
-        <select
-          value={statusFilter}
-          onChange={(e) => onStatusChange(e.target.value as TutoringSessionStatus | 'all')}
-          className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDownIcon 
-          size={14} 
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" 
-        />
-      </div>
+      <SelectComponent
+        value={statusFilter}
+        onChange={(value) => onStatusChange(value as TutoringSessionStatus | 'all')}
+        options={statusOptions}
+        placeholder="Status"
+        className="min-w-[120px]"
+      />
 
       {/* Priority Filter */}
-      <div className="relative">
-        <select
-          value={priorityFilter}
-          onChange={(e) => onPriorityChange(e.target.value as SessionPriority | 'all')}
-          className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          {priorityOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDownIcon 
-          size={14} 
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" 
-        />
-      </div>
+      <SelectComponent
+        value={priorityFilter}
+        onChange={(value) => onPriorityChange(value as SessionPriority | 'all')}
+        options={priorityOptions}
+        placeholder="Prioridade"
+        className="min-w-[120px]"
+      />
 
       {/* Date Filter */}
-      <div className="relative">
-        <select
-          value={dateFilter}
-          onChange={(e) => onDateChange(e.target.value)}
-          className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          {dateOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDownIcon 
-          size={14} 
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" 
-        />
-      </div>
+      <SelectComponent
+        value={dateFilter}
+        onChange={(value) => onDateChange(value)}
+        options={dateOptions}
+        placeholder="Data"
+        className="min-w-[120px]"
+      />
 
       {/* Clear Filters */}
       {(statusFilter !== 'all' || priorityFilter !== 'all' || dateFilter !== 'all') && (
