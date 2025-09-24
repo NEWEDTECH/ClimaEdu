@@ -11,7 +11,6 @@ import {
   where, 
   limit,
   orderBy,
-  startAfter,
   DocumentData,
   QueryConstraint 
 } from 'firebase/firestore';

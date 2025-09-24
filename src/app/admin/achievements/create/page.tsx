@@ -101,7 +101,7 @@ export default function CreateAchievementPage() {
         Register.achievement.useCase.CopyDefaultAchievementUseCase
       );
 
-      const result = await copyUseCase.execute({
+      await copyUseCase.execute({
         defaultAchievementId: template.id,
         institutionId,
         createdBy: userId

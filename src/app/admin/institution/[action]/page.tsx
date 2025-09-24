@@ -26,7 +26,6 @@ import { FormSection } from '@/components/form'
 import { Button } from "@/components/button";
 import { InputText } from '@/components/ui/input/input-text/InputText';
 import { AdvancedSettingsSection } from '@/components/institution/AdvancedSettingsSection';
-import { ArrowLeftIcon, X } from 'lucide-react';
 import { Tooltip } from '@/components/tooltip';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

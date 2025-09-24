@@ -209,7 +209,7 @@ export default function EditAchievementPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Editar "{achievement.name}"</CardTitle>
+              <CardTitle>Editar &quot;{achievement.name}&quot;</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
