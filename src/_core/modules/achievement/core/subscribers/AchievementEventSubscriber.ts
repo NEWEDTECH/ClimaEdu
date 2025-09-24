@@ -45,7 +45,7 @@ export class AchievementEventSubscriber implements EventSubscriber {
         userId,
         institutionId,
         eventType: event.eventType,
-        eventData: event.data,
+        eventData: event.data as Record<string, unknown>,
         eventTimestamp: event.timestamp
       });
 

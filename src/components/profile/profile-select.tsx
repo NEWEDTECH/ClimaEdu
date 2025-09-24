@@ -56,6 +56,7 @@ const teacherItems: DropdownItem[] = [
 
 const adminItems: DropdownItem[] = [
   { label: 'Instituições', href: '/admin/institution', icon: <MdSchool /> },
+  { label: 'Conquistas', href: '/admin/achievements', icon: <FiAward /> },
   { label: 'Social', href: '/social', icon: <FiUsers /> },
   { label: 'Dashboard', href: '/admin/dashboard', icon: <MdDashboard /> },
   { label: 'Podcast', href: '/admin/podcast', icon: <FiMic /> },

@@ -112,7 +112,6 @@ export default function TutorTutoringPage() {
             </div>
             <Link href="/tutor/availability">
               <Button className="flex items-center gap-2">
-                <CalendarIcon size={16} />
                 Configurar Disponibilidade
               </Button>
             </Link>
