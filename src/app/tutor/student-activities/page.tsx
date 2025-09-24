@@ -133,17 +133,14 @@ export default function StudentActivitiesPage() {
         <div className="container mx-auto py-8">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Atividades dos Alunos</h1>
-              <p className="text-gray-600 mt-2">
-                Visualize e gerencie as atividades e questionários dos seus alunos
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Atividades dos Alunos</h1>
             </div>
           </div>
 
           {/* Filtros */}
           <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="course-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="course-filter" className="block text-sm font-medium text-gray-700 mb-2 dark:text-white">
                 Filtrar por Curso
               </label>
               <InputText
@@ -154,7 +151,7 @@ export default function StudentActivitiesPage() {
               />
             </div>
             <div>
-              <label htmlFor="student-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="student-filter" className="block text-sm font-medium text-gray-700 mb-2 dark:text-white">
                 Filtrar por Aluno
               </label>
               <InputText
@@ -174,33 +171,33 @@ export default function StudentActivitiesPage() {
 
 
           {/* Tabela de Cursos e Alunos */}
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <div className="bg-white dark:bg-black/10 rounded-lg shadow-sm border overflow-hidden">
             <div className={`overflow-x-auto ${filteredRows.length > 8 ? 'max-h-96 overflow-y-auto' : ''}`}>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-black/10">
+                  <tr className="dark:text-white dark:bg-black/10">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
                       Curso
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
                       Estudante
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-black/10 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredRows.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="px-6 py-12 text-center">
                         <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center mx-auto text-white text-xl mb-4">
                           📚
                         </div>
-                        <h3 className="text-sm font-medium text-gray-900">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                           {coursesWithStudents.length === 0 ? 'Nenhum curso encontrado' : 'Nenhum resultado encontrado'}
                         </h3>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
                           {coursesWithStudents.length === 0 
                             ? 'Você ainda não é tutor de nenhum curso.' 
                             : 'Tente ajustar os filtros de busca.'
@@ -210,17 +207,17 @@ export default function StudentActivitiesPage() {
                     </tr>
                   ) : (
                     filteredRows.map((row, index) => (
-                      <tr key={`${row.courseId}-${row.student?.id || 'no-student'}-${index}`} className="hover:bg-gray-50">
+                      <tr key={`${row.courseId}-${row.student?.id || 'no-student'}-${index}`} className="hover:bg-gray-50 dark:hover:bg-black/20">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
                               📚
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {row.course.title}
                               </div>
-                              <div className="text-sm text-gray-500 max-w-xs truncate">
+                              <div className="text-sm text-gray-500 dark:text-gray-300 max-w-xs truncate">
                                 {row.course.description}
                               </div>
                             </div>
@@ -232,12 +229,12 @@ export default function StudentActivitiesPage() {
                               <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
                                 👤
                               </div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {row.student.name}
                               </div>
                             </div>
                           ) : (
-                            <div className="text-sm text-gray-500 italic">
+                            <div className="text-sm text-gray-500 dark:text-gray-300 italic">
                               Nenhum aluno matriculado
                             </div>
                           )}
