@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
@@ -36,7 +36,7 @@ export default function AchievementsPage() {
     }
   }, [institutionId]);
 
-  const fetchAchievements = async () => {
+  const fetchAchievements = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -59,13 +59,13 @@ export default function AchievementsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [institutionId]);
 
   useEffect(() => {
     if (institutionId) {
       fetchAchievements();
     }
-  }, [institutionId]);
+  }, [institutionId, fetchAchievements]);
 
   useEffect(() => {
     let filtered = achievements;

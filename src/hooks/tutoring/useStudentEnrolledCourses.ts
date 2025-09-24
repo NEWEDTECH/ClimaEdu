@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { container } from '@/_core/shared/container/container'
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols'
 import { GetStudentEnrolledCoursesUseCase } from '@/_core/modules/tutoring'
@@ -23,7 +23,7 @@ export function useStudentEnrolledCourses({ studentId }: UseStudentEnrolledCours
     error: null
   })
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     if (!studentId) {
       setState({
         courses: [],
@@ -54,11 +54,11 @@ export function useStudentEnrolledCourses({ studentId }: UseStudentEnrolledCours
         error: error instanceof Error ? error.message : 'Erro ao carregar cursos'
       }))
     }
-  }
+  }, [studentId])
 
   useEffect(() => {
     fetchCourses()
-  }, [studentId])
+  }, [fetchCourses])
 
   return {
     ...state,

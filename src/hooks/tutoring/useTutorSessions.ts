@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { container } from '@/_core/shared/container/container'
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols'
 import { GetTutorSessionsUseCase, UpdateSessionStatusUseCase, AddSessionNotesUseCase, UpdateTutoringSessionUseCase } from '@/_core/modules/tutoring'
@@ -28,7 +28,7 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
     updating: false
   })
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
@@ -57,7 +57,7 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
         error: error instanceof Error ? error.message : 'Erro ao carregar sessões'
       }))
     }
-  }
+  }, [options.tutorId, options.status, options.priority])
 
   const updateSessionStatus = async (sessionId: string, newStatus: TutoringSessionStatus) => {
     try {
@@ -147,7 +147,7 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
     if (options.tutorId) {
       fetchSessions()
     }
-  }, [options.tutorId, options.status, options.priority])
+  }, [options.tutorId, options.status, options.priority, fetchSessions])
 
   // Auto-refresh every 15 minutes if enabled
   useEffect(() => {
@@ -155,7 +155,7 @@ export function useTutorSessions(options: UseTutorSessionsOptions) {
       const interval = setInterval(fetchSessions, 900000) // 15 minutes = 900,000ms
       return () => clearInterval(interval)
     }
-  }, [options.autoRefresh, options.tutorId])
+  }, [options.autoRefresh, options.tutorId, fetchSessions])
 
   return {
     ...state,

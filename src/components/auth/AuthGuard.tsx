@@ -131,7 +131,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setInitializationError(error instanceof Error ? error.message : 'Erro desconhecido');
       setIsLoading(false);
     }
-  }, []);
+  }, [infoUser, setInfoUser, setInfoInstitutions, setInfoInstitutionsRole, setLastInstitutionId]);
 
   const clearUserData = useCallback(() => {
     // console.log('🧹 AuthGuard: Clearing user data on logout');

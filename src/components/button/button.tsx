@@ -5,7 +5,7 @@ import { useThemeColors } from "@/hooks/useThemeColors";
 
 type ButtonProps = {
   children: ReactNode;
-  onClick?: any;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   icon?: ReactNode;
   iconPosition?: "start" | "end";
@@ -25,6 +25,8 @@ export function Button({
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   const { primaryColor, secondaryColor } = useThemeColors();
+
+  console.log(primaryColor, secondaryColor)
 
   const base =
     "cursor-pointer flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 gap-1.5 px-3 w-auto";

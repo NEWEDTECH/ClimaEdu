@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { container } from '@/_core/shared/container/container';
 import { AchievementSymbols } from '@/_core/shared/container/modules/achievement/symbols';
 import type { ListStudentAchievementsUseCase } from '@/_core/modules/achievement/core/use-cases/list-student-achievements/list-student-achievements.use-case';
@@ -42,7 +42,7 @@ export const useStudentAchievements = (
     AchievementSymbols.useCases.ListInstitutionAchievementsUseCase
   );
 
-  const loadAchievements = async () => {
+  const loadAchievements = useCallback(async () => {
     if (!userId || !institutionId) return;
 
     try {
@@ -96,11 +96,11 @@ export const useStudentAchievements = (
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, institutionId, listInstitutionAchievementsUseCase, listStudentAchievementsUseCase]);
 
   useEffect(() => {
     loadAchievements();
-  }, [userId, institutionId]);
+  }, [loadAchievements]);
 
   const awardedCount = achievements.filter(a => a.isAwarded).length;
   const totalCount = achievements.length;

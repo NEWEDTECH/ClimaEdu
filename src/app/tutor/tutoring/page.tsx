@@ -12,7 +12,6 @@ import { TutoringStats } from '@/components/tutoring/tutor/TutoringStats'
 import { useTutorSessions } from '@/hooks/tutoring'
 import { useProfile } from '@/context/zustand/useProfile'
 import type { TutoringSession } from '@/_core/modules/tutoring'
-import { CalendarIcon } from 'lucide-react'
 
 export default function TutorTutoringPage() {
   const { infoUser } = useProfile()
