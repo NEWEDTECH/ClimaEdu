@@ -117,7 +117,7 @@ export function AdvancedSettingsSection({ settings = {}, onChange }: AdvancedSet
               onClick={() => setIsExpanded(false)}
               className="flex items-center space-x-2"
             >
-              <span>Colapsar</span>
+              <span>Recuar</span>
             </Button>
           </div>
         </div>

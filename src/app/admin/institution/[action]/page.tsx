@@ -557,9 +557,9 @@ export default function InstitutionPage() {
                         style={selectedAdministrators.length >= 5 ? { maxHeight: '400px' } : {}}
                       >
                         {selectedAdministrators.map((admin) => (
-                          <div key={admin.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div key={admin.id} className="flex items-center gap-3 p-3 bg-blue-50 border dark:bg-black dark:border-white border-blue-200 rounded-lg">
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">{admin.email}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{admin.email}</div>
                             </div>
                             <Button
                               type="button"
