@@ -7,9 +7,5 @@ interface ProtectedContentProps {
 }
 
 export function ProtectedContent({ children }: ProtectedContentProps) {
-  return (
-    <ProtectedRoute>
-      {children}
-    </ProtectedRoute>
-  );
+  return <> {children} </>
 }

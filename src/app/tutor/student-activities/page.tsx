@@ -207,10 +207,12 @@ export default function StudentActivitiesPage() {
     }
   };
 
-  const handleViewActivities = (courseId: string, lessonId: string, studentId: string | null) => {
+  const handleViewActivities = (courseId: string, lessonId: string, activityId: any, studentId: string | null) => {
+    console.log(activityId)
+    
     if (studentId) {
       // Navegar para página de atividades completadas do estudante específico
-      window.location.href = `/tutor/activities/${courseId}/${lessonId}/${studentId}/activities-completed`;
+      window.location.href = `/tutor/activities/${courseId}/${lessonId}/${activityId}/${studentId}/activities-completed`;
     }
   };
 
@@ -336,7 +338,7 @@ export default function StudentActivitiesPage() {
                               </Button>
                               
                               <Button
-                                onClick={() => handleViewActivities(selectedCourseId, row.lesson.id, row.selectedStudent?.id  || null)}
+                                onClick={() => handleViewActivities(selectedCourseId, row.lesson.id, row.lesson.activity?.id, row.selectedStudent?.id  || null)}
                                 className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1"
                               >
                                 <span>📝</span>
