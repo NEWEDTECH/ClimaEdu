@@ -408,16 +408,16 @@ export default function AssociateTutorToCoursePage() {
                     <div className="mb-4">
                       <h4 className="text-sm font-medium mb-3">Cursos Selecionados ({selectedCourses.length})</h4>
                       <div
-                        className={`space-y-2 ${selectedCourses.length >= 5
-                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50'
+                        className={`space-y-2 dark:bg-dark ${selectedCourses.length >= 5
+                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2'
                           : ''
                           }`}
                         style={selectedCourses.length >= 5 ? { maxHeight: '400px' } : {}}
                       >
                         {selectedCourses.map((course) => (
-                          <div key={course.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div key={course.id} className="flex items-center gap-3 p-3 border border-blue-200 dark:border-white dark:bg-dark rounded-lg">
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">{course.title}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{course.title}</div>
                             </div>
                             <Button
                               type="button"
