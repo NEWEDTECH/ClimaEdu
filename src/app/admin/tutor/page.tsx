@@ -164,7 +164,7 @@ export default function TutorPage() {
                   <div className="flex space-x-1 rounded-md bg-muted p-1">
                     <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
-                        statusFilter === 'all' ? 'bg-white shadow-sm text-foreground dark:text-black' : 'hover:bg-primary/60'
+                        statusFilter === 'all' ? 'bg-primary shadow-sm text-white' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
                       }`}
                       onClick={() => setStatusFilter('all')}
                     >
@@ -172,7 +172,7 @@ export default function TutorPage() {
                     </Button>
                     <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
-                        statusFilter === 'active' ? 'bg-primary shadow-sm' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
+                        statusFilter === 'active' ? 'bg-primary shadow-sm text-white' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
                       }`}
                       onClick={() => setStatusFilter('active')}
                     >
@@ -180,7 +180,7 @@ export default function TutorPage() {
                     </Button>
                     <Button
                       className={`px-3 py-1.5 text-sm font-medium rounded-sm ${
-                        statusFilter === 'inactive' ? 'bg-primary shadow-sm' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
+                        statusFilter === 'inactive' ? 'bg-primary shadow-sm text-white' : 'bg-white text-foreground dark:text-black hover:bg-primary/60'
                       }`}
                       onClick={() => setStatusFilter('inactive')}
                     >

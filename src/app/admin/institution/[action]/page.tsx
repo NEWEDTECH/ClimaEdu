@@ -478,7 +478,7 @@ export default function InstitutionPage() {
                   if (field.colorPreview) {
                     return (
                       <div key={id} className="space-y-2">
-                        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mt-4">
+                        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark: text-white mt-4">
                           {field.label}
                         </label>
                         <div className="flex items-center space-x-2">
@@ -499,13 +499,32 @@ export default function InstitutionPage() {
                         </div>
                         {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
                         {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
+                        
+                        {/* Preview Button - Show after secondary color */}
+                        {id === 'secondaryColor' && (
+                          <div className="mt-4 space-y-2">
+                            <div 
+                              className="inline-flex items-center px-6 py-3 rounded-lg font-medium text-sm transition-colors duration-200 border-2"
+                              style={{
+                                backgroundColor: watch('primaryColor') || '#3B82F6',
+                                color: watch('secondaryColor') || '#FFFFFF',
+                                borderColor: watch('secondaryColor') || '#FFFFFF'
+                              }}
+                            >
+                              Botão de Exemplo
+                            </div>
+                            <p className="text-gray-500 text-xs">
+                              Este botão mostra como ficará a combinação das cores selecionadas
+                            </p>
+                          </div>
+                        )}
                       </div>
                     );
                   }
 
                   return (
                     <div key={id} className="space-y-2">
-                      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mt-4">
+                      <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-white mt-4">
                         {field.label}
                       </label>
                       <InputText
@@ -523,7 +542,7 @@ export default function InstitutionPage() {
 
 
                 <div className="space-y-2">
-                  <label htmlFor="administratorSearch" className="block text-sm font-medium text-gray-700 mt-4">
+                  <label htmlFor="administratorSearch" className="block text-sm font-medium text-gray-700 dark:text-white mt-4">
                     Administradores
                   </label>
 
