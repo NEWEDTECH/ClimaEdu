@@ -1,14 +1,14 @@
 import { Container } from 'inversify';
-import { Register } from '../../symbols';
+import { Register } from '@/_core/shared/container/symbols';
 
 // Import search module dependencies
-import { SearchRepository, SearchRepositoryImpl } from '../../../../modules/search';
-import { GlobalSearchUseCase } from '../../../../modules/search';
+import { SearchRepository, SearchRepositoryImpl } from '@/_core/modules/search';
+import { GlobalSearchUseCase } from '@/_core/modules/search';
 
 // Import dependencies from other modules
-import { CourseRepository } from '../../../../modules/content/infrastructure/repositories/CourseRepository';
-import { PodcastRepository } from '../../../../modules/podcast/infrastructure/repositories/PodcastRepository';
-import { TrailRepository } from '../../../../modules/content/infrastructure/repositories/TrailRepository';
+import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+import { PodcastRepository } from '@/_core/modules/podcast/infrastructure/repositories/PodcastRepository';
+import { TrailRepository } from '@/_core/modules/content/infrastructure/repositories/TrailRepository';
 
 export function registerSearchModule(container: Container): void {
   // Repository

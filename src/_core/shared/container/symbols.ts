@@ -15,7 +15,7 @@ import { ReportSymbols } from './modules/report/symbols';
 import { CertificateSymbols } from './modules/certificate/symbols';
 import { TutoringSymbols } from './modules/tutoring/symbols';
 import { SharedSymbols } from './modules/shared/symbols';
-import { SearchSymbols } from './modules/search/symbols';
+import { SearchSymbols } from '@/_core/shared/container/modules/search/symbols';
 
 // Re-export module-specific symbols
 export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols };

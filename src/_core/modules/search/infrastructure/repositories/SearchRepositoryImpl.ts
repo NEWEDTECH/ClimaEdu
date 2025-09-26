@@ -1,8 +1,8 @@
-import { SearchRepository, SearchFilters } from '../../core/repositories/SearchRepository';
-import { SearchResultEntity, SearchResultType } from '../../core/entities/SearchResult';
-import { CourseRepository } from '../../../content/infrastructure/repositories/CourseRepository';
-import { PodcastRepository } from '../../../podcast/infrastructure/repositories/PodcastRepository';
-import { TrailRepository } from '../../../content/infrastructure/repositories/TrailRepository';
+import { SearchRepository, SearchFilters } from '@/_core/modules/search/core/repositories/SearchRepository';
+import { SearchResultEntity, SearchResultType } from '@/_core/modules/search/core/entities/SearchResult';
+import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+import { PodcastRepository } from '@/_core/modules/podcast/infrastructure/repositories/PodcastRepository';
+import { TrailRepository } from '@/_core/modules/content/infrastructure/repositories/TrailRepository';
 
 export class SearchRepositoryImpl implements SearchRepository {
   constructor(

@@ -15,7 +15,7 @@ import { registerReportModule } from './modules/report/register';
 import { registerCertificateModule } from './modules/certificate/register';
 import { registerTutoringModule } from './modules/tutoring/register';
 import { registerNotesModule } from './modules/notes/register';
-import { registerSearchModule } from './modules/search/register';
+import { registerSearchModule } from '@/_core/shared/container/modules/search/register';
 import { registerSharedModule } from './modules/shared/register';
 
 // Import initialization function
