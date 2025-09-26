@@ -98,7 +98,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.SubmitQuestionnaireUseCase).to(SubmitQuestionnaireUseCase);
   container.bind(useCases.RetryQuestionnaireUseCase).to(RetryQuestionnaireUseCase);
   container.bind(useCases.AssociateTutorToCourseUseCase).to(AssociateTutorToCourseUseCase);
-  container.bind(ListTutorCoursesUseCase).toSelf();
+  container.bind(useCases.ListTutorCoursesUseCase).to(ListTutorCoursesUseCase);
   container.bind(useCases.ListTutorCoursesWithStudentsUseCase).to(ListTutorCoursesWithStudentsUseCase);
   container.bind(useCases.ListQuestionnaireSubmissionsForTutorUseCase).to(ListQuestionnaireSubmissionsForTutorUseCase);
   container.bind(useCases.StartLessonProgressUseCase).to(StartLessonProgressUseCase);

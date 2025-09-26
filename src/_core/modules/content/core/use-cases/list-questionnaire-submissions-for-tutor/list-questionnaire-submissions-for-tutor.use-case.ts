@@ -9,9 +9,6 @@ import type { UserRepository } from '../../../../user/infrastructure/repositorie
 import type { LessonRepository } from '../../../infrastructure/repositories/LessonRepository';
 import type { ModuleRepository } from '../../../infrastructure/repositories/ModuleRepository';
 import { Register } from '../../../../../shared/container/symbols';
-import { QuestionnaireSubmission } from '../../entities/QuestionnaireSubmission';
-import { Questionnaire } from '../../entities/Questionnaire';
-import { User } from '../../../../user/core/entities/User';
 import { Course } from '../../entities/Course';
 
 @injectable()
@@ -65,12 +62,10 @@ export class ListQuestionnaireSubmissionsForTutorUseCase {
     }
 
     // Buscar todas as submissões da instituição
-    const allSubmissions = await this.questionnaireSubmissionRepository.listByUsers([]);
-    
-    // Filtrar submissões por instituição e cursos do tutor
-    let filteredSubmissions = allSubmissions.filter(submission => 
-      submission.institutionId === input.institutionId
-    );
+    const allSubmissions = await this.questionnaireSubmissionRepository.listByInstitution(input.institutionId);
+
+    // As submissões já vêm filtradas por instituição
+    let filteredSubmissions = allSubmissions;
 
     // Aplicar filtros adicionais
     if (input.studentId) {
