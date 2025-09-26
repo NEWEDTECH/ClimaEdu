@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import React, { useState, useCallback, useEffect, use } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
@@ -14,10 +14,11 @@ import { Register } from '@/_core/shared/container';
 import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
 import type { ActivityFile } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.output';
 
-export default function StudentActivitiesCompletedPage() {
-  const params = useParams();
+export default function StudentActivitiesCompletedPage({ params }: { params: Promise<{ courseId: string, lessonId:string, studentId: string }> }) {
+  const resolvedParams = 'then' in params ? use(params) : params;
+  const { courseId, lessonId, studentId } = resolvedParams;
+
   const searchParams = useSearchParams();
-  const studentId = params.id as string;
   const initialActivityId = searchParams.get('activityId') || '';
   
   const [isLoadingFiles, setIsLoadingFiles] = useState<boolean>(!!initialActivityId);
