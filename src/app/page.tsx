@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout';
+import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { ContentCarousel } from '@/components/ui/carousel';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
@@ -243,8 +244,9 @@ export default function Home() {
 
 
   return (
-    <DashboardLayout>
-      {isLoading ? (
+    <ProtectedContent>
+      <DashboardLayout>
+        {isLoading ? (
         <div className="min-h-screen flex items-center justify-center transition-all duration-300 dark:bg-black bg-gray-100">
           <div className="text-center space-y-4">
             <LoadingSpinner />
@@ -522,6 +524,7 @@ export default function Home() {
           
         </div>
       )}
-    </DashboardLayout>
+      </DashboardLayout>
+    </ProtectedContent>
   );
 }
