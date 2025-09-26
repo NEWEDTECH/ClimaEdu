@@ -2,12 +2,17 @@ import { Search, Filter, X } from "lucide-react";
 import { InputText } from "@/components/ui/input/input-text";
 import { Button } from "@/components/ui/button/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { container } from "@/_core/shared/container";
+import { Register } from "@/_core/shared/container";
+import { GlobalSearchUseCase, SearchResultEntity } from "@/_core/modules/search";
+import { useProfile } from "@/context/zustand/useProfile";
 
 interface SearchComponentProps {
   placeholder?: string;
   className?: string;
   onSearch?: (query: string) => void;
+  onSearchResults?: (results: SearchResultEntity[]) => void;
   onFilter?: () => void;
   disabled?: boolean;
   showFilters?: boolean;
@@ -17,11 +22,48 @@ export function SearchComponent({
   placeholder = "Buscar...", 
   className,
   onSearch,
+  onSearchResults,
   onFilter,
-  disabled = false, // Funcionalidade desligada por enquanto
+  disabled = false,
   showFilters = true
 }: SearchComponentProps) {
   const [searchValue, setSearchValue] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const { infoUser } = useProfile();
+
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim() || !infoUser.currentIdInstitution) {
+      if (onSearchResults) {
+        onSearchResults([]);
+      }
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      
+      const globalSearchUseCase = container.get<GlobalSearchUseCase>(
+        Register.search.useCase.GlobalSearchUseCase
+      );
+
+      const result = await globalSearchUseCase.execute({
+        query: query.trim(),
+        institutionId: infoUser.currentIdInstitution,
+        limit: 20
+      });
+
+      if (onSearchResults) {
+        onSearchResults(result.results);
+      }
+    } catch (error) {
+      console.error('Error performing search:', error);
+      if (onSearchResults) {
+        onSearchResults([]);
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  }, [infoUser.currentIdInstitution, onSearchResults]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -37,11 +79,23 @@ export function SearchComponent({
     if (!disabled && onSearch) {
       onSearch("");
     }
+    if (onSearchResults) {
+      onSearchResults([]);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !disabled && onSearch) {
-      onSearch(searchValue);
+    if (e.key === "Enter" && !disabled) {
+      if (onSearch) {
+        onSearch(searchValue);
+      }
+      performSearch(searchValue);
+    }
+  };
+
+  const handleSearchClick = () => {
+    if (!disabled) {
+      performSearch(searchValue);
     }
   };
 
@@ -86,22 +140,28 @@ export function SearchComponent({
             )}
           </div>
 
-          {/* Filter Button */}
+          {/* Search Button */}
           {showFilters && (
             <Button
               type="button"
               variant="outline"
               size="lg"
-              onClick={onFilter}
-              disabled={disabled}
+              onClick={handleSearchClick}
+              disabled={disabled || isSearching}
               className={cn(
                 "h-12 px-4 !rounded-full border-0 transition-all duration-200 cursor-pointer",
                 " hover:bg-white/20 text-white",
                 disabled && "opacity-60 cursor-not-allowed"
               )}
             >
-              <Filter className="h-5 w-5 text-black dark:text-white" />
-              <span className="hidden sm:inline ml-2 text-black dark:text-white">Buscar</span>
+              {isSearching ? (
+                <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
+              ) : (
+                <Filter className="h-5 w-5 text-black dark:text-white" />
+              )}
+              <span className="hidden sm:inline ml-2 text-black dark:text-white">
+                {isSearching ? 'Buscando...' : 'Buscar'}
+              </span>
             </Button>
           )}
         </div>
