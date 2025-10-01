@@ -100,11 +100,11 @@ export class ListQuestionnaireSubmissionsForTutorUseCase {
         if (!lesson) continue;
 
         // Buscar módulo para obter o curso
-        const module = await this.moduleRepository.findById(lesson.moduleId);
-        if (!module) continue;
+        const courseModule = await this.moduleRepository.findById(lesson.moduleId);
+        if (!courseModule) continue;
 
         // Buscar curso
-        const course = await this.courseRepository.findById(module.courseId);
+        const course = await this.courseRepository.findById(courseModule.courseId);
         if (!course) continue;
 
         // Verificar se o curso pertence ao tutor
