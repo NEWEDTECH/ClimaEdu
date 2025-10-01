@@ -3,6 +3,8 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
+import serviceAccount from "./firebase-credentials.json";
+
 let adminApp: App;
 
 // Initialize Firebase Admin SDK
@@ -24,14 +26,8 @@ function initializeFirebaseAdmin() {
       // In production, use service account credentials
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-      const serviceAccount = {
-        projectId: projectId,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      };
-
       adminApp = initializeApp({
-        credential: cert(serviceAccount),
+        credential: cert(serviceAccount as unknown as object),
         projectId: projectId,
         storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
       });
