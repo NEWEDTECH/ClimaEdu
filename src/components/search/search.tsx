@@ -23,7 +23,6 @@ export function SearchComponent({
   className,
   onSearch,
   onSearchResults,
-  onFilter,
   disabled = false,
   showFilters = true
 }: SearchComponentProps) {

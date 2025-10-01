@@ -7,7 +7,6 @@ import { Register } from '@/_core/shared/container/symbols';
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
-import { User } from '@/_core/modules/user/core/entities/User';
 
 export default function ConfirmPage() {
   const router = useRouter();

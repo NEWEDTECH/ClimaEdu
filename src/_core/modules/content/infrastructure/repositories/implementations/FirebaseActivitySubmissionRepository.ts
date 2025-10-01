@@ -188,18 +188,18 @@ export class FirebaseActivitySubmissionRepository implements ActivitySubmissionR
    * @param data Firestore data
    * @returns ActivitySubmission entity
    */
-  private mapToEntity(data: any): ActivitySubmission {
+  private mapToEntity(data: Record<string, unknown> & { id: string }): ActivitySubmission {
     return ActivitySubmission.create({
       id: data.id,
-      activityId: data.activityId,
-      studentId: data.studentId,
-      institutionId: data.institutionId,
-      fileUrls: data.fileUrls || [],
+      activityId: data.activityId as string,
+      studentId: data.studentId as string,
+      institutionId: data.institutionId as string,
+      fileUrls: (data.fileUrls as string[]) || [],
       status: data.status as ActivitySubmissionStatus,
-      feedback: data.feedback || null,
-      reviewedBy: data.reviewedBy || null,
-      submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
-      reviewedAt: data.reviewedAt?.toDate?.() || (data.reviewedAt ? new Date(data.reviewedAt) : null),
+      feedback: (data.feedback as string | null) || null,
+      reviewedBy: (data.reviewedBy as string | null) || null,
+      submittedAt: data.submittedAt && typeof data.submittedAt === 'object' && 'toDate' in data.submittedAt && typeof data.submittedAt.toDate === 'function' ? data.submittedAt.toDate() : new Date(data.submittedAt as Date),
+      reviewedAt: data.reviewedAt && typeof data.reviewedAt === 'object' && 'toDate' in data.reviewedAt && typeof data.reviewedAt.toDate === 'function' ? data.reviewedAt.toDate() : (data.reviewedAt ? new Date(data.reviewedAt as Date) : null),
     });
   }
 }

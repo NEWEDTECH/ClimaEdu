@@ -20,7 +20,7 @@ import type { User } from '@/_core/modules/user/core/entities/User';
 
 export default function QuestionnaireCompletedPage({ params }: { params: Promise<{ courseId: string, lessonId:string, studentId: string }> }) {
   const resolvedParams = 'then' in params ? use(params) : params;
-  const { courseId, lessonId, studentId } = resolvedParams;
+  const { courseId, studentId } = resolvedParams;
   
   const [submissions, setSubmissions] = useState<SubmissionWithContext[]>([]);
   const [course, setCourse] = useState<Course | null>(null);

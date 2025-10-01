@@ -179,7 +179,7 @@ export default function AssociateTutorToCoursePage() {
     fetchInitialData()
 
     // Add click event listener to handle clicks outside dropdowns
-  }, [tutorId, selectedInstitutionId])
+  }, [tutorId, selectedInstitutionId, isEditMode])
 
   // Fetch courses when institution changes
   useEffect(() => {
@@ -217,7 +217,7 @@ export default function AssociateTutorToCoursePage() {
     }
 
     fetchCourses()
-  }, [selectedInstitutionId, tutorId])
+  }, [selectedInstitutionId, tutorId, isEditMode])
 
 
   const handleCourseRemove = (courseId: string) => {

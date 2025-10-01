@@ -88,7 +88,9 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
         }
 
         // Verificar se há arquivos enviados pelo aluno
-        const listFilesUseCase = container.get<any>(
+        const listFilesUseCase = container.get<{
+          execute: (params: { activityId: string; studentId: string; institutionId: string }) => Promise<{ files: Array<{ downloadUrl: string }> }>;
+        }>(
           Register.content.useCase.ListActivityFilesUseCase
         );
         const filesResult = await listFilesUseCase.execute({
@@ -107,7 +109,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
             activityId,
             studentId,
             institutionId,
-            fileUrls: filesResult.files.map((f: any) => f.downloadUrl),
+            fileUrls: filesResult.files.map((f) => f.downloadUrl),
             status: ActivitySubmissionStatus.PENDING,
             feedback: null,
             reviewedBy: null,
@@ -127,7 +129,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
     };
 
     fetchData();
-  }, [courseId, lessonId, studentId, activityId]);
+  }, [courseId, lessonId, studentId, activityId, institutionId]);
 
   const handleApprove = async () => {
     if (!submissions.length) {
@@ -184,8 +186,9 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
       const updatedSubmissions = await submissionRepository.findByActivityAndStudent(activityId, studentId);
       setSubmissions(updatedSubmissions);
 
-    } catch (error: any) {
-      alert('❌ Erro ao aprovar: ' + error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert('❌ Erro ao aprovar: ' + errorMessage);
     } finally {
       setProcessing(false);
     }
@@ -231,8 +234,9 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
       const updatedSubmissions = await submissionRepository.findByActivityAndStudent(activityId, studentId);
       setSubmissions(updatedSubmissions);
 
-    } catch (error: any) {
-      alert('❌ Erro ao reprovar: ' + error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert('❌ Erro ao reprovar: ' + errorMessage);
     } finally {
       setProcessing(false);
     }

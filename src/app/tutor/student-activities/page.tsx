@@ -6,7 +6,6 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { Button } from '@/components/button';
-import { InputText } from '@/components/input';
 import { SelectComponent } from '@/components/select';
 import { LoadingSpinner } from '@/components/loader';
 import { showToast } from '@/components/toast';
@@ -23,7 +22,7 @@ import type { Module } from '@/_core/modules/content/core/entities/Module';
 import type { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 
 interface TableRow {
-  module: Module;
+  courseModule: Module;
   lesson: Lesson;
   course: Course;
   selectedStudent: User | null;
@@ -135,8 +134,8 @@ export default function StudentActivitiesPage() {
       );
 
       const allLessons: Lesson[] = [];
-      for (const module of courseModules) {
-        const moduleLessons = await lessonRepository.listByModule(module.id);
+      for (const courseModule of courseModules) {
+        const moduleLessons = await lessonRepository.listByModule(courseModule.id);
         allLessons.push(...moduleLessons);
       }
 
@@ -190,7 +189,7 @@ export default function StudentActivitiesPage() {
   const tableRows: TableRow[] = lessons.map(lesson => {
     const lessonModule = modules.find(m => m.id === lesson.moduleId);
     return {
-      module: lessonModule!,
+      courseModule: lessonModule!,
       lesson,
       course: selectedCourse!,
       selectedStudent: selectedStudent || null
@@ -207,10 +206,10 @@ export default function StudentActivitiesPage() {
     }
   };
 
-  const handleViewActivities = (courseId: string, lessonId: string, activityId: any, studentId: string | null) => {
+  const handleViewActivities = (courseId: string, lessonId: string, activityId: string | undefined, studentId: string | null) => {
     console.log(activityId)
     
-    if (studentId) {
+    if (studentId && activityId) {
       // Navegar para página de atividades completadas do estudante específico
       window.location.href = `/tutor/activities/${courseId}/${lessonId}/${activityId}/${studentId}/activities-completed`;
     }
@@ -313,7 +312,7 @@ export default function StudentActivitiesPage() {
                                 📁
                               </div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {row.module.title}
+                                {row.courseModule.title}
                               </div>
                             </div>
                           </td>

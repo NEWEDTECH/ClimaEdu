@@ -40,8 +40,8 @@ export class GetCourseProgressUseCase {
     const allLessonIds: string[] = [];
     let totalLessonsInCourse = 0;
     
-    for (const module of course.modules) {
-      for (const lesson of module.lessons) {
+    for (const courseModule of course.modules) {
+      for (const lesson of courseModule.lessons) {
         allLessonIds.push(lesson.id);
         totalLessonsInCourse++;
       }
