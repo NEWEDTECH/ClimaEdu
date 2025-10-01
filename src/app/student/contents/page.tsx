@@ -5,7 +5,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/card';
 import { Progress } from '@/components/ui/helpers/progress';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 
 const mockCourses = [
   {
@@ -120,7 +120,7 @@ export default function ConteudosPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToCourses}
             className="mb-4"
           >
@@ -180,7 +180,7 @@ export default function ConteudosPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToModules}
             className="mb-4"
           >

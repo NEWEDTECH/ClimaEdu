@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -6,13 +6,15 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { useRouter, useParams } from 'next/navigation';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
-import { 
-  CreateInstitutionUseCase, 
+import {
+  CreateInstitutionUseCase,
   CreateInstitutionInput,
   InstitutionRepository,
   Institution,
   UpdateInstitutionSettingsUseCase,
   UpdateInstitutionSettingsInput,
+  UpdateInstitutionAdvancedSettingsUseCase,
+  UpdateInstitutionAdvancedSettingsInput,
   AssociateUserToInstitutionUseCase,
   UserInstitution
 } from '@/_core/modules/institution';
@@ -23,11 +25,13 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { FormSection } from '@/components/form'
 import { Button } from "@/components/button";
 import { InputText } from '@/components/ui/input/input-text/InputText';
-import { ArrowLeftIcon, X } from 'lucide-react';
-import { Tooltip } from '@/components/tooltip';
+import { SelectComponent } from '@/components/select';
+import { AdvancedSettingsSection } from '@/components/institution/AdvancedSettingsSection';
+import { LoadingSpinner } from '@/components/loader'
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import type { InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
 
 type InputFieldMeta = {
   label: string;
@@ -104,11 +108,11 @@ const inputFields: Record<keyof InstitutionFormFields, InputFieldMeta> = {
 export default function InstitutionPage() {
   const router = useRouter();
   const params = useParams();
-  
+
   const id = params.id as string;
   const isEditMode = !!id;
   const institutionId = id || '';
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [institution, setInstitution] = useState<Institution | null>(null);
@@ -116,8 +120,10 @@ export default function InstitutionPage() {
   const [filteredAdministrators, setFilteredAdministrators] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [selectedAdministrators, setSelectedAdministrators] = useState<Array<{id: string, email: string}>>([]);
-  const [originalAdministrators, setOriginalAdministrators] = useState<Array<{id: string, email: string}>>([]);
+  const [selectedAdministratorId, setSelectedAdministratorId] = useState<string>('');
+  const [selectedAdministrators, setSelectedAdministrators] = useState<Array<{ id: string, email: string }>>([]);
+  const [originalAdministrators, setOriginalAdministrators] = useState<Array<{ id: string, email: string }>>([]);
+  const [advancedSettings, setAdvancedSettings] = useState<Partial<GlobalSettings['settings']>>({});
 
   const {
     register,
@@ -144,7 +150,7 @@ export default function InstitutionPage() {
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         );
-        
+
         const adminUsers = await userRepository.listByType(UserRole.LOCAL_ADMIN);
         setAdministrators(adminUsers);
         setFilteredAdministrators(adminUsers);
@@ -152,16 +158,16 @@ export default function InstitutionPage() {
         console.error('Error fetching administrators:', err);
       }
     };
-    
+
     fetchAdministrators();
   }, []);
-  
+
   // Filter administrators based on search term
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredAdministrators(administrators);
     } else {
-      const filtered = administrators.filter(admin => 
+      const filtered = administrators.filter(admin =>
         admin.email.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
         admin.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -188,7 +194,7 @@ export default function InstitutionPage() {
           }
 
           setInstitution(fetchedInstitution);
-          
+
           reset({
             name: fetchedInstitution.name,
             domain: fetchedInstitution.domain,
@@ -201,14 +207,14 @@ export default function InstitutionPage() {
           const userInstitutionRepository = container.get<UserInstitutionRepository>(
             Register.institution.repository.UserInstitutionRepository
           );
-          
+
           const userRepository = container.get<UserRepository>(
             Register.user.repository.UserRepository
           );
-          
+
           // Get all user-institution associations for this institution
           const userInstitutions = await userInstitutionRepository.findByInstitutionId(institutionId);
-          
+
           // For each association, fetch the user details if they are an administrator
           const adminPromises = userInstitutions.map(async (userInst: UserInstitution) => {
             const user = await userRepository.findById(userInst.userId);
@@ -217,15 +223,18 @@ export default function InstitutionPage() {
             }
             return null;
           });
-          
-          const admins = (await Promise.all(adminPromises)).filter((admin: {id: string, email: string} | null) => admin !== null) as Array<{id: string, email: string}>;
+
+          const admins = (await Promise.all(adminPromises)).filter((admin: { id: string, email: string } | null) => admin !== null) as Array<{ id: string, email: string }>;
           setSelectedAdministrators(admins);
           setOriginalAdministrators(admins);
-          
+
+          // Load advanced settings
+          setAdvancedSettings(fetchedInstitution.settings.settings || {});
+
         } catch (err: unknown) {
           console.error('Error fetching institution data:', err);
-          const errorMessage = err instanceof Error 
-            ? `Falha ao carregar dados da instituição: ${err.message}` 
+          const errorMessage = err instanceof Error
+            ? `Falha ao carregar dados da instituição: ${err.message}`
             : 'Falha ao carregar dados da instituição. Por favor, tente novamente.';
           setError(errorMessage);
         } finally {
@@ -243,7 +252,7 @@ export default function InstitutionPage() {
       setError(null);
 
       let newInstitutionId = '';
-      
+
       if (isEditMode && institution) {
 
         const institutionRepository = container.get<InstitutionRepository>(
@@ -278,7 +287,21 @@ export default function InstitutionPage() {
         };
 
         await updateSettingsUseCase.execute(settingsInput);
-        
+
+        // Update advanced settings if changed
+        if (Object.keys(advancedSettings).length > 0) {
+          const updateAdvancedSettingsUseCase = container.get<UpdateInstitutionAdvancedSettingsUseCase>(
+            Register.institution.useCase.UpdateInstitutionAdvancedSettingsUseCase
+          );
+
+          const advancedSettingsInput: UpdateInstitutionAdvancedSettingsInput = {
+            institutionId: institution.id,
+            advancedSettings
+          };
+
+          await updateAdvancedSettingsUseCase.execute(advancedSettingsInput);
+        }
+
         newInstitutionId = institution.id;
       } else {
 
@@ -296,6 +319,20 @@ export default function InstitutionPage() {
 
         const result = await createInstitutionUseCase.execute(input);
         newInstitutionId = result.institution.id;
+
+        // Create advanced settings for new institution if provided
+        if (Object.keys(advancedSettings).length > 0) {
+          const updateAdvancedSettingsUseCase = container.get<UpdateInstitutionAdvancedSettingsUseCase>(
+            Register.institution.useCase.UpdateInstitutionAdvancedSettingsUseCase
+          );
+
+          const advancedSettingsInput: UpdateInstitutionAdvancedSettingsInput = {
+            institutionId: newInstitutionId,
+            advancedSettings
+          };
+
+          await updateAdvancedSettingsUseCase.execute(advancedSettingsInput);
+        }
       }
 
       // Handle administrator associations
@@ -304,25 +341,25 @@ export default function InstitutionPage() {
         const adminToRemove = originalAdministrators.find(
           original => !selectedAdministrators.some(selected => selected.id === original.id)
         );
-        
+
         // Find administrators to add (in new list but not in original list)
         const adminToAdd = selectedAdministrators.find(
           selected => !originalAdministrators.some(original => original.id === selected.id)
         );
-        
+
         // Remove administrator if needed
         if (adminToRemove) {
           const userInstitutionRepository = container.get<UserInstitutionRepository>(
             Register.institution.repository.UserInstitutionRepository
           );
-          
+
           try {
             // Find the user-institution association
             const association = await userInstitutionRepository.findByUserAndInstitution(
-              adminToRemove.id, 
+              adminToRemove.id,
               newInstitutionId
             );
-            
+
             if (association) {
               // Delete the association
               await userInstitutionRepository.delete(association.id);
@@ -332,13 +369,13 @@ export default function InstitutionPage() {
             console.error(`Error removing administrator:`, removeErr);
           }
         }
-        
+
         // Add administrator if needed
         if (adminToAdd) {
           const associateUserToInstitutionUseCase = container.get<AssociateUserToInstitutionUseCase>(
             Register.institution.useCase.AssociateUserToInstitutionUseCase
           );
-          
+
           try {
             await associateUserToInstitutionUseCase.execute({
               userId: adminToAdd.id,
@@ -356,7 +393,7 @@ export default function InstitutionPage() {
         const associateUserToInstitutionUseCase = container.get<AssociateUserToInstitutionUseCase>(
           Register.institution.useCase.AssociateUserToInstitutionUseCase
         );
-        
+
         try {
           await associateUserToInstitutionUseCase.execute({
             userId: adminToAdd.id,
@@ -367,7 +404,7 @@ export default function InstitutionPage() {
           console.error(`Error associating administrator:`, associateErr);
         }
       }
-      
+
       router.push('/admin/institution');
     } catch (err: unknown) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} institution:`, err);
@@ -380,15 +417,15 @@ export default function InstitutionPage() {
 
   if (loading && isEditMode) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-12 w-12 rounded-full bg-blue-200"></div>
-            <div className="mt-4 text-gray-500">Carregando...</div>
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="flex justify-center items-center h-64">
+            <LoadingSpinner />
           </div>
-        </div>
-      </div>
+        </DashboardLayout>
+      </ProtectedContent>
     );
+
   }
 
   if (error && isEditMode && !institution) {
@@ -416,8 +453,7 @@ export default function InstitutionPage() {
         <div className="container mx-auto py-8">
           <div className="mb-6">
             <Button
-              icon={<ArrowLeftIcon size={16} />}
-              iconPosition="start"
+              variant='primary'
               onClick={() => router.push('/admin/institution')}
             >
               Voltar para lista de instituições
@@ -434,7 +470,7 @@ export default function InstitutionPage() {
 
                 {Object.entries(inputFields).map(([key, field]) => {
                   const id = key as keyof InstitutionFormFields;
-                  
+
                   const hasError = !!errors[id];
                   const errorMessage = errors[id]?.message;
                   const value = watch(id);
@@ -490,42 +526,67 @@ export default function InstitutionPage() {
                   <label htmlFor="administratorSearch" className="block text-sm font-medium text-gray-700 mt-4">
                     Administradores
                   </label>
-                  
-                  <div className="flex flex-wrap mb-2">
-                    {selectedAdministrators.map((admin) => (
-                      <div key={admin.id} className="relative">
-                        <Tooltip label={admin.email} />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // Only update the UI, backend changes will be made on save
-                            setSelectedAdministrators(prev => 
-                              prev.filter(a => a.id !== admin.id)
-                            );
-                          }}
-                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
-                          aria-label="Remover administrador"
-                        >
-                          <X size={12} />
-                        </button>
+
+                  {selectedAdministrators.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium mb-3">Administradores Selecionados ({selectedAdministrators.length})</h4>
+                      <div
+                        className={`space-y-2 ${selectedAdministrators.length >= 5
+                            ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50'
+                            : ''
+                          }`}
+                        style={selectedAdministrators.length >= 5 ? { maxHeight: '400px' } : {}}
+                      >
+                        {selectedAdministrators.map((admin) => (
+                          <div key={admin.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{admin.email}</div>
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                // Only update the UI, backend changes will be made on save
+                                setSelectedAdministrators(prev =>
+                                  prev.filter(a => a.id !== admin.id)
+                                );
+                              }}
+                              className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 flex items-center gap-1 whitespace-nowrap min-w-fit"
+                              aria-label="Remover administrador"
+                            >
+                              Remover
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  
+                    </div>
+                  )}
+
                   <div className="relative">
-                    <InputText
-                      id="administratorSearch"
-                      type="text"
-                      placeholder="Buscar administrador por email"
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setShowDropdown(true);
+                    <SelectComponent
+                      value={selectedAdministratorId}
+                      onChange={(administratorId) => {
+                        setSelectedAdministratorId(administratorId)
+                        const administrator = administrators.find(admin => admin.id === administratorId)
+                        if (administrator) {
+                          setSearchTerm(administrator.email.value)
+                          // Adicionar o administrador à lista
+                          if (!selectedAdministrators.some(selected => selected.id === administrator.id)) {
+                            setSelectedAdministrators(prev => [
+                              ...prev,
+                              { id: administrator.id, email: administrator.email.value }
+                            ]);
+                          }
+                          setSelectedAdministratorId('') // Reset selection
+                        }
                       }}
-                      onFocus={() => setShowDropdown(true)}
+                      options={administrators.map(administrator => ({
+                        value: administrator.id,
+                        label: `${administrator.name} (${administrator.email.value})`
+                      }))}
+                      placeholder="Selecione um administrador"
                       className="mb-2"
                     />
-                    
+
                     {showDropdown && searchTerm.trim() !== '' && filteredAdministrators.length > 0 && (
                       <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                         {filteredAdministrators
@@ -536,7 +597,7 @@ export default function InstitutionPage() {
                               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                               onClick={() => {
                                 setSelectedAdministrators(prev => [
-                                  ...prev, 
+                                  ...prev,
                                   { id: admin.id, email: admin.email.value }
                                 ]);
                                 setSearchTerm('');
@@ -554,16 +615,24 @@ export default function InstitutionPage() {
                     Selecione administradores para associar a esta instituição
                   </p>
                 </div>
+
+                {/* Advanced Settings Section */}
+                <div className="col-span-full">
+                  <AdvancedSettingsSection
+                    settings={advancedSettings}
+                    onChange={setAdvancedSettings}
+                  />
+                </div>
               </CardContent>
-              
+
               <CardFooter className="flex justify-end">
                 <Button
                   className='font-bold'
                   type="submit"
                   disabled={loading}
                 >
-                  {loading 
-                    ? (isEditMode ? 'Salvando...' : 'Criando...') 
+                  {loading
+                    ? (isEditMode ? 'Salvando...' : 'Criando...')
                     : (isEditMode ? 'Salvar Alterações' : 'Criar Instituição')
                   }
                 </Button>

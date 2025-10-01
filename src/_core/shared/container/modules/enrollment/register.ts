@@ -17,6 +17,8 @@ import { DeleteClassUseCase } from '@/_core/modules/enrollment/core/use-cases/de
 import { AddEnrollmentToClassUseCase } from '@/_core/modules/enrollment/core/use-cases/add-enrollment-to-class/add-enrollment-to-class.use-case';
 import { RemoveEnrollmentFromClassUseCase } from '@/_core/modules/enrollment/core/use-cases/remove-enrollment-from-class/remove-enrollment-from-class.use-case';
 import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case';
+import { ListClassStudentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-class-students';
+import { CompleteCourseUseCase } from '@/_core/modules/enrollment/core/use-cases/complete-course/complete-course.use-case';
 
 /**
  * Register Enrollment module dependencies
@@ -39,4 +41,6 @@ export function registerEnrollmentModule(container: Container): void {
   container.bind(useCases.AddEnrollmentToClassUseCase).to(AddEnrollmentToClassUseCase);
   container.bind(useCases.RemoveEnrollmentFromClassUseCase).to(RemoveEnrollmentFromClassUseCase);
   container.bind(useCases.EnrollInTrailUseCase).to(EnrollInTrailUseCase);
+  container.bind(useCases.CompleteCourseUseCase).to(CompleteCourseUseCase);
+  container.bind(ListClassStudentsUseCase).toSelf();
 }

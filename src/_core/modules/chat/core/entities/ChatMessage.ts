@@ -2,6 +2,7 @@ interface ChatMessageProps {
   id?: string;
   chatRoomId: string;
   userId: string;
+  userName: string;
   text: string;
   sentAt?: Date;
 }
@@ -10,6 +11,7 @@ export class ChatMessage {
   private readonly _id: string;
   private readonly _chatRoomId: string;
   private readonly _userId: string;
+  private readonly _userName: string;
   private _text: string;
   private readonly _sentAt: Date;
 
@@ -17,6 +19,7 @@ export class ChatMessage {
     this._id = props.id ?? crypto.randomUUID();
     this._chatRoomId = props.chatRoomId;
     this._userId = props.userId;
+    this._userName = props.userName;
     this._text = props.text;
     this._sentAt = props.sentAt ?? new Date();
   }
@@ -39,6 +42,10 @@ export class ChatMessage {
 
   public get userId(): string {
     return this._userId;
+  }
+
+  public get userName(): string {
+    return this._userName;
   }
 
   public get text(): string {

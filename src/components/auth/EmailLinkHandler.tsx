@@ -8,6 +8,7 @@ import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/
 import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
 import type { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { User } from '../../_core/modules/user/core/entities/User';
+import { Button } from '@/components/button'
 
 export function EmailLinkHandler() {
   const router = useRouter();
@@ -46,6 +47,20 @@ export function EmailLinkHandler() {
         try {
           // Get the auth service from the container
           const authService = container.get<AuthService>(Register.auth.service.AuthService);
+
+          // IMPORTANT: Check if user is already authenticated before processing
+          // This prevents React Strict Mode double execution from showing error
+          const isAlreadyAuthenticated = authService.isAuthenticated();
+          const currentUserId = authService.getCurrentUserId();
+          
+          if (isAlreadyAuthenticated && currentUserId) {
+            console.log('🔄 EmailLinkHandler: User already authenticated, showing success');
+            setUserId(currentUserId);
+            setStatus('success');
+            setMessage('You have been successfully signed in!');
+            setDebugInfo(prev => `${prev}\nUser already authenticated. User ID: ${currentUserId}`);
+            return;
+          }
 
           // Check if the current URL is a sign-in link
           const isSignInLink = authService.isSignInWithEmailLink(url);
@@ -109,15 +124,43 @@ export function EmailLinkHandler() {
 
               // No need for automatic redirect, let the user click the button
             } else {
-              setStatus('error');
-              setMessage('Failed to sign in. Please try again.');
-              setDebugInfo(`Sign-in failed with email: ${email}`);
+              // Before showing error, check if user is actually authenticated
+              // This handles cases where the use case fails but authentication succeeded
+              const isNowAuthenticated = authService.isAuthenticated();
+              const nowCurrentUserId = authService.getCurrentUserId();
+              
+              if (isNowAuthenticated && nowCurrentUserId) {
+                console.log('🔄 EmailLinkHandler: Use case failed but user is authenticated, showing success');
+                setUserId(nowCurrentUserId);
+                setUserEmail(email);
+                setStatus('success');
+                setMessage('You have been successfully signed in!');
+                setDebugInfo(prev => `${prev}\nUse case failed but user is authenticated. User ID: ${nowCurrentUserId}`);
+              } else {
+                setStatus('error');
+                setMessage('Failed to sign in. Please try again.');
+                setDebugInfo(`Sign-in failed with email: ${email}`);
+              }
             }
           } catch (error) {
-            console.error('Error getting SignInWithEmailLinkUseCase:', error);
-            setStatus('error');
-            setMessage('Service unavailable. Please try again later.');
-            setDebugInfo(`Error during sign-in with email: ${email}, Error: ${error}`);
+            console.error('Error during sign-in process:', error);
+            
+            // Even if there's an error, check if user is actually authenticated
+            // This handles React Strict Mode double execution where second attempt fails
+            const isNowAuthenticated = authService.isAuthenticated();
+            const nowCurrentUserId = authService.getCurrentUserId();
+            
+            if (isNowAuthenticated && nowCurrentUserId) {
+              console.log('🔄 EmailLinkHandler: Error occurred but user is authenticated, showing success');
+              setUserId(nowCurrentUserId);
+              setStatus('success');
+              setMessage('You have been successfully signed in!');
+              setDebugInfo(prev => `${prev}\nError occurred but user is authenticated. User ID: ${nowCurrentUserId}`);
+            } else {
+              setStatus('error');
+              setMessage('Service unavailable. Please try again later.');
+              setDebugInfo(`Error during sign-in with email: ${email}, Error: ${error}`);
+            }
           }
         } catch (error) {
           console.error('Error getting AuthService:', error);
@@ -228,12 +271,12 @@ export function EmailLinkHandler() {
               </div>
               <h2 className="text-xl font-semibold mb-2 text-green-600">Success!</h2>
               <p className="mb-4">You have been successfully signed in. Click the button below to go to the home page.</p>
-              <button
+              <Button
                 onClick={goToHome}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
                 Go to Home
-              </button>
+              </Button>
             </div>
           )}
 
@@ -270,12 +313,12 @@ export function EmailLinkHandler() {
           )}
 
           {status === 'error' && (
-            <button
+            <Button
               onClick={() => router.push('/login')}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             >
               Back to Login
-            </button>
+            </Button>
           )}
         </div>
       </div>

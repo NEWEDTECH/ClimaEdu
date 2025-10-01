@@ -4,6 +4,7 @@ import type { LessonProgressRepository } from '../../../infrastructure/repositor
 import type { LessonRepository } from '../../../infrastructure/repositories/LessonRepository';
 import type { StartLessonProgressInput } from './start-lesson-progress.input';
 import type { StartLessonProgressOutput } from './start-lesson-progress.output';
+import { Register } from '@/_core/shared/container';
 
 /**
  * Use case for starting lesson progress
@@ -13,8 +14,10 @@ import type { StartLessonProgressOutput } from './start-lesson-progress.output';
 @injectable()
 export class StartLessonProgressUseCase {
   constructor(
-    @inject('LessonProgressRepository') private lessonProgressRepository: LessonProgressRepository,
-    @inject('LessonRepository') private lessonRepository: LessonRepository
+    @inject(Register.content.repository.LessonProgressRepository)
+    private lessonProgressRepository: LessonProgressRepository,
+    @inject(Register.content.repository.LessonRepository)
+    private lessonRepository: LessonRepository
   ) {}
 
   /**

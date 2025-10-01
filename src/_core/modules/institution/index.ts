@@ -11,10 +11,15 @@ export type { CreateInstitutionOutput } from './core/use-cases/create-institutio
 export { UpdateInstitutionSettingsUseCase } from './core/use-cases/update-institution-settings/update-institution-settings.use-case';
 export type { UpdateInstitutionSettingsInput } from './core/use-cases/update-institution-settings/update-institution-settings.input';
 export type { UpdateInstitutionSettingsOutput } from './core/use-cases/update-institution-settings/update-institution-settings.output';
+export { UpdateInstitutionAdvancedSettingsUseCase } from './core/use-cases/update-institution-advanced-settings/update-institution-advanced-settings.use-case';
+export type { UpdateInstitutionAdvancedSettingsInput } from './core/use-cases/update-institution-advanced-settings/update-institution-advanced-settings.input';
+export type { UpdateInstitutionAdvancedSettingsOutput } from './core/use-cases/update-institution-advanced-settings/update-institution-advanced-settings.output';
 export { AssociateUserToInstitutionUseCase } from './core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case';
 export type { AssociateUserToInstitutionInput } from './core/use-cases/associate-user-to-institution/associate-user-to-institution.input';
 export type { AssociateUserToInstitutionOutput } from './core/use-cases/associate-user-to-institution/associate-user-to-institution.output';
-
+export { ListInstitutionsUseCase } from './core/use-cases/list-institutions/list-institutions.use-case';
+export type { ListInstitutionsInput } from './core/use-cases/list-institutions/list-institutions.input';
+export type { ListInstitutionsOutput } from './core/use-cases/list-institutions/list-institutions.output';
 export { ListUserInstitutionsUseCase } from './core/use-cases/list-user-institutions/list-user-institutions.use-case';
 export type { ListUserInstitutionsInput } from './core/use-cases/list-user-institutions/list-user-institutions.input';
 export type { ListUserInstitutionsOutput } from './core/use-cases/list-user-institutions/list-user-institutions.output';

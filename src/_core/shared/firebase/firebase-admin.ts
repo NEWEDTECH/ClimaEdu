@@ -1,32 +1,38 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 let adminApp: App;
 
 // Initialize Firebase Admin SDK
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
-    // In development, we can use the emulator without service account
-    if (process.env.NODE_ENV === 'development') {
+    // In development or when credentials are not available, use without service account
+    if (process.env.NODE_ENV === 'development' || !process.env.FIREBASE_PRIVATE_KEY) {
       // Set emulator host for development BEFORE initializing
       process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
       process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
-      
+      process.env.FIREBASE_STORAGE_EMULATOR_HOST = 'localhost:9199';
+
       adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
       });
     } else {
       // In production, use service account credentials
+      const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
       const serviceAccount = {
-        projectId: process.env.FIREBASE_PROJECT_ID,
+        projectId: projectId,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       };
 
       adminApp = initializeApp({
         credential: cert(serviceAccount),
-        projectId: process.env.FIREBASE_PROJECT_ID,
+        projectId: projectId,
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
       });
     }
   } else {
@@ -51,4 +57,11 @@ function getAdminFirestore() {
   return getFirestore(adminApp);
 }
 
-export { initializeFirebaseAdmin, getAdminAuth, getAdminFirestore };
+function getAdminStorage() {
+  if (!adminApp) {
+    initializeFirebaseAdmin();
+  }
+  return getStorage(adminApp);
+}
+
+export { initializeFirebaseAdmin, getAdminAuth, getAdminFirestore, getAdminStorage };

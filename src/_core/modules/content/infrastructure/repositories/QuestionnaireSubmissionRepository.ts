@@ -49,9 +49,9 @@ export interface QuestionnaireSubmissionRepository {
   listByUser(userId: string): Promise<QuestionnaireSubmission[]>;
 
   /**
-   * List questionnaire submissions by questionnaire
-   * @param questionnaireId Questionnaire id
+   * List questionnaire submissions by a list of user ids
+   * @param userIds List of user ids
    * @returns List of questionnaire submissions
    */
-  listByQuestionnaire(questionnaireId: string): Promise<QuestionnaireSubmission[]>;
+  listByUsers(userIds: string[]): Promise<QuestionnaireSubmission[]>;
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/loader'
+import { SelectComponent } from '@/components/select'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
@@ -42,20 +43,20 @@ export default function CreateTurmaPage() {
         const institutionRepository = container.get<InstitutionRepository>(
           Register.institution.repository.InstitutionRepository
         )
-        
+
         const institutionsList = await institutionRepository.list()
-        
+
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
           name: institution.name
         }))
-        
+
         setInstitutions(institutionsForDropdown)
-        
+
         if (institutionsForDropdown.length > 0) {
           setFormData(prev => ({ ...prev, institutionId: institutionsForDropdown[0].id }))
         }
-        
+
         setError(null)
       } catch (err) {
         console.error('Error fetching data:', err)
@@ -64,59 +65,59 @@ export default function CreateTurmaPage() {
         setLoading(false)
       }
     }
-    
+
     fetchData()
   }, [])
 
   useEffect(() => {
     const fetchCourses = async () => {
       if (!formData.institutionId || formData.type !== 'course') return
-      
+
       try {
         const courseRepository = container.get<CourseRepository>(
           Register.content.repository.CourseRepository
         )
-        
+
         const coursesList = await courseRepository.listByInstitution(formData.institutionId)
-        
+
         const coursesForDropdown = coursesList.map((course) => ({
           id: course.id,
           title: course.title
         }))
-        
+
         setCourses(coursesForDropdown)
       } catch (err) {
         console.error('Error fetching courses:', err)
       }
     }
-    
+
     fetchCourses()
   }, [formData.institutionId, formData.type])
 
   useEffect(() => {
     const fetchTrails = async () => {
       if (!formData.institutionId || formData.type !== 'trail') return
-      
+
       try {
         const listTrailsUseCase = container.get<ListTrailsUseCase>(
           Register.content.useCase.ListTrailsUseCase
         )
-        
+
         const trailsResult = await listTrailsUseCase.execute({
           institutionId: formData.institutionId
         })
-        
+
         const trailsForDropdown = trailsResult.trails.map((trail) => ({
           id: trail.id,
           title: trail.title
         }))
-        
+
         setTrails(trailsForDropdown)
       } catch (err) {
         console.error('Error fetching trails:', err)
       }
     }
-    
+
     fetchTrails()
   }, [formData.institutionId, formData.type])
 
@@ -125,9 +126,9 @@ export default function CreateTurmaPage() {
   }
 
   const handleTypeChange = (type: 'course' | 'trail') => {
-    setFormData(prev => ({ 
-      ...prev, 
-      type, 
+    setFormData(prev => ({
+      ...prev,
+      type,
       courseId: type === 'course' ? prev.courseId : '',
       trailId: type === 'trail' ? prev.trailId : ''
     }))
@@ -135,22 +136,22 @@ export default function CreateTurmaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.name.trim()) {
       setError('Nome da turma é obrigatório')
       return
     }
-    
+
     if (!formData.institutionId) {
       setError('Instituição é obrigatória')
       return
     }
-    
+
     if (formData.type === 'course' && !formData.courseId) {
       setError('Curso é obrigatório quando o tipo é curso')
       return
     }
-    
+
     if (formData.type === 'trail' && !formData.trailId) {
       setError('Trilha é obrigatória quando o tipo é trilha')
       return
@@ -159,23 +160,23 @@ export default function CreateTurmaPage() {
     try {
       setSubmitting(true)
       setError(null)
-      
+
       const createClassUseCase = container.get<CreateClassUseCase>(
         Register.enrollment.useCase.CreateClassUseCase
       )
-      
+
       const input = new CreateClassInput(
         formData.institutionId,
         formData.name.trim(),
         formData.type === 'course' ? formData.courseId : undefined,
         formData.type === 'trail' ? formData.trailId : undefined
       )
-      
+
       await createClassUseCase.execute(input)
-      
+
       // Redirect to turmas list
       router.push('/admin/turmas')
-      
+
     } catch (err) {
       console.error('Error creating class:', err)
       setError('Erro ao criar turma. Tente novamente.')
@@ -202,9 +203,9 @@ export default function CreateTurmaPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Criar Nova Turma</h1>
-            <Button 
+            <Button
               onClick={() => router.push('/admin/turmas')}
-              className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
+              variant='primary'
             >
               Voltar
             </Button>
@@ -246,20 +247,16 @@ export default function CreateTurmaPage() {
                     <label htmlFor="institution" className="text-sm font-medium">
                       Instituição *
                     </label>
-                    <select
-                      id="institution"
+                    <SelectComponent
                       value={formData.institutionId}
-                      onChange={(e) => handleInputChange('institutionId', e.target.value)}
-                      className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                      required
-                    >
-                      <option value="">Selecione uma instituição</option>
-                      {institutions.map(institution => (
-                        <option key={institution.id} value={institution.id}>
-                          {institution.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(institutionId) => handleInputChange('institutionId', institutionId)}
+                      options={institutions.map(institution => ({
+                        value: institution.id,
+                        label: institution.name
+                      }))}
+                      placeholder="Selecione uma instituição"
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
@@ -297,20 +294,16 @@ export default function CreateTurmaPage() {
                       <label htmlFor="course" className="text-sm font-medium">
                         Curso *
                       </label>
-                      <select
-                        id="course"
+                      <SelectComponent
                         value={formData.courseId}
-                        onChange={(e) => handleInputChange('courseId', e.target.value)}
-                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                        required
-                      >
-                        <option value="">Selecione um curso</option>
-                        {courses.map(course => (
-                          <option key={course.id} value={course.id}>
-                            {course.title}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(courseId) => handleInputChange('courseId', courseId)}
+                        options={courses.map(course => ({
+                          value: course.id,
+                          label: course.title
+                        }))}
+                        placeholder="Selecione um curso"
+                        className="w-full"
+                      />
                     </div>
                   )}
 
@@ -319,20 +312,16 @@ export default function CreateTurmaPage() {
                       <label htmlFor="trail" className="text-sm font-medium">
                         Trilha *
                       </label>
-                      <select
-                        id="trail"
+                      <SelectComponent
                         value={formData.trailId}
-                        onChange={(e) => handleInputChange('trailId', e.target.value)}
-                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                        required
-                      >
-                        <option value="">Selecione uma trilha</option>
-                        {trails.map(trail => (
-                          <option key={trail.id} value={trail.id}>
-                            {trail.title}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(trailId) => handleInputChange('trailId', trailId)}
+                        options={trails.map(trail => ({
+                          value: trail.id,
+                          label: trail.title
+                        }))}
+                        placeholder="Selecione uma trilha"
+                        className="w-full"
+                      />
                     </div>
                   )}
                 </div>
@@ -341,14 +330,14 @@ export default function CreateTurmaPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+                    variant='primary'
                   >
                     {submitting ? 'Criando...' : 'Criar Turma'}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => router.push('/admin/turmas')}
-                    className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground"
+                    variant='secondary'
                   >
                     Cancelar
                   </Button>

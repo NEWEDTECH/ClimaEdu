@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ContainerProvider } from "@/shared/container/ContainerProvider";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ToastProvider } from "@/components/toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +31,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ContainerProvider>
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <footer className="bg-white dark:bg-gray-900 border-t py-6">
-            <div className="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
-              &copy; {new Date().getFullYear()} ClimaEdu. All rights reserved.
-            </div>
-          </footer>
+          <AuthGuard>
+            <ToastProvider>
+              <main className=" overflow-y-auto min-h-screen">
+                {children}
+              </main>
+              <footer className="bg-white dark:bg-gray-900 border-t py-6">
+                <div className="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                  &copy; {new Date().getFullYear()} ClimaEdu. All rights reserved.
+                </div>
+              </footer>
+            </ToastProvider>
+          </AuthGuard>
         </ContainerProvider>
       </body>
     </html>

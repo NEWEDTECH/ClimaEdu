@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card/card';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 import { Progress } from '@/components/ui/helpers/progress';
 
 const mockQuestionnaires = [
@@ -311,7 +311,7 @@ export default function QuestionariosPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleQuestionnaireSelect(questionnaire.id)}
-                variant={questionnaire.status === 'completed' ? 'outline' : 'default'}
+                variant={questionnaire.status === 'completed' ? 'primary' : 'ghost'}
               >
                 {questionnaire.status === 'completed' ? 'Ver resultados' : 'Iniciar questionário'}
               </Button>
@@ -341,7 +341,7 @@ export default function QuestionariosPage() {
     <>
       <div className="mb-6">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           onClick={handleBackToList}
           className="mb-4"
         >
@@ -415,7 +415,7 @@ export default function QuestionariosPage() {
 
       <div className="flex justify-between">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           onClick={handleBackToList}
         >
           Cancelar
@@ -449,7 +449,7 @@ export default function QuestionariosPage() {
           </div>
           <div className="flex space-x-2">
             {questionnaire.questions.map((_, index) => (
-              <button
+              <Button
                 key={index}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                   index === currentQuestionIndex
@@ -461,7 +461,7 @@ export default function QuestionariosPage() {
                 onClick={() => setCurrentQuestionIndex(index)}
               >
                 {index + 1}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -500,7 +500,7 @@ export default function QuestionariosPage() {
 
         <div className="flex justify-between">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handlePreviousQuestion}
             disabled={currentQuestionIndex === 0}
           >
@@ -543,7 +543,7 @@ export default function QuestionariosPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToList}
             className="mb-4"
           >

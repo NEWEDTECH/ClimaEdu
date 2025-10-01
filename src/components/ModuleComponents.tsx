@@ -6,6 +6,7 @@ import { CreateUserUseCase, UserRole } from '@/_core/modules/user';
 import { CreateContentUseCase, AssociateTutorToCourseUseCase } from '@/_core/modules/content';
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution';
+import { Button } from '@/components/button'
 
 export function UserModule() {
   const [isReady, setIsReady] = useState(false);
@@ -44,12 +45,12 @@ export function UserModule() {
         <li>Implementations: FirebaseUserRepository</li>
       </ul>
       {isReady && (
-        <button
+        <Button
           onClick={handleCreateUser}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
           Test User Creation
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -91,12 +92,12 @@ export function InstitutionModule() {
         <li>Implementations: FirebaseInstitutionRepository, FirebaseUserInstitutionRepository</li>
       </ul>
       {isReady && (
-        <button
+        <Button
           onClick={handleAssociateUserToInstitution}
           className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
         >
           Test User to Institution Association
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -158,18 +159,18 @@ export function ContentModule() {
       </ul>
       {isReady && (
         <div className="flex flex-col space-y-2 mt-4">
-          <button
+          <Button
             onClick={handleCreateContent}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
           >
             Test Content Creation
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleAssociateTutorToCourse}
             className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors"
           >
             Test Tutor Association
-          </button>
+          </Button>
         </div>
       )}
     </div>

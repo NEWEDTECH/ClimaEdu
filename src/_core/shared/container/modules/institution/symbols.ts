@@ -7,8 +7,9 @@ export const repositories = {
 export const useCases = {
   CreateInstitutionUseCase: Symbol.for('CreateInstitutionUseCase'),
   UpdateInstitutionSettingsUseCase: Symbol.for('UpdateInstitutionSettingsUseCase'),
+  UpdateInstitutionAdvancedSettingsUseCase: Symbol.for('UpdateInstitutionAdvancedSettingsUseCase'),
   AssociateUserToInstitutionUseCase: Symbol.for('AssociateUserToInstitutionUseCase'),
-
+  ListInstitutionsUseCase: Symbol.for('ListInstitutionsUseCase'),
   ListUserInstitutionsUseCase: Symbol.for('ListUserInstitutionsUseCase'),
 };
 

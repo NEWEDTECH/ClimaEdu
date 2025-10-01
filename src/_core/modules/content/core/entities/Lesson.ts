@@ -11,6 +11,7 @@ export class Lesson {
     readonly id: string,
     readonly moduleId: string,
     public title: string,
+    public description: string,
     public coverImageUrl: string | null,
     public contents: Content[],
     public order: number,
@@ -28,6 +29,7 @@ export class Lesson {
     id: string;
     moduleId: string;
     title: string;
+    description?: string;
     coverImageUrl?: string;
     order: number;
     contents?: Content[];
@@ -46,6 +48,7 @@ export class Lesson {
       params.id,
       params.moduleId,
       params.title,
+      params.description || '',
       params.coverImageUrl || null,
       params.contents || [],
       params.order,
@@ -96,5 +99,13 @@ export class Lesson {
    */
   public updateCoverImageUrl(newCoverImageUrl: string | null): void {
     this.coverImageUrl = newCoverImageUrl;
+  }
+
+  /**
+   * Updates the lesson description
+   * @param newDescription The new description
+   */
+  public updateDescription(newDescription: string): void {
+    this.description = newDescription;
   }
 }

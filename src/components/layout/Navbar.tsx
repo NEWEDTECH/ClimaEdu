@@ -5,111 +5,76 @@ import Link from 'next/link';
 import { ProfileSelect } from '@/components/profile';
 import { IoMdMenu } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
-import { cn } from '@/lib/utils';
+import { FiHome, FiUsers, FiSun, FiMoon } from "react-icons/fi";
 import { useProfile } from '@/context/zustand/useProfile';
-
-type DropdownItem = {
-  label: string;
-  href: string;
-};
-
-type UserRole = 'STUDENT' | 'TUTOR' | 'CONTENT_MANAGER' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'SUPER_ADMIN';
-
-type DropdownSection = {
-  title: string;
-  items: DropdownItem[];
-  role: UserRole | UserRole[];
-};
-
-const studentItems: DropdownItem[] = [
-  { label: 'Conteúdos', href: '/student/contents' },
-  { label: 'Atividades', href: '/student/activities' },
-  { label: 'Discussões', href: '/student/forum' },
-  { label: 'Questionários', href: '/student/questionnaire' },
-  { label: 'Configurações', href: '/student/settings' }
-];
-
-const teacherItems: DropdownItem[] = [
-  { label: 'Acompanhamento', href: '/tutor/follow-up' },
-  { label: 'Relatórios', href: '/tutor/reports' },
-  { label: 'Cursos', href: '/tutor/courses' },
-  { label: 'Gestão de Conteúdos', href: '/tutor/video-upload' },
-];
-
-const adminItems: DropdownItem[] = [
-  { label: 'Instituições', href: '/admin/institution' },
-  { label: 'Dashboard', href: '/admin/dashboard' },
-  { label: 'Podcast', href: '/admin/podcast' },
-  { label: 'Alunos', href: '/admin/student' },
-  { label: 'Classes', href: '/admin/turmas' },
-  { label: 'Professores', href: '/admin/tutor' },
-  { label: 'Trilhas', href: '/admin/trails' },
-  { label: 'Cursos', href: '/admin/courses' },
-  { label: 'Relatórios', href: '/admin/reports' },
-  { label: 'Criar Usuário', href: '/admin/create-user' },
-  { label: 'Configurações', href: '/admin/settings' },
-];
-
-const sections: DropdownSection[] = [
-  { title: 'Área do Aluno', items: studentItems, role: 'STUDENT' },
-  { title: 'Área do Tutor', items: teacherItems, role: ['TUTOR', 'CONTENT_MANAGER'] },
-  { title: 'Área do Admin', items: adminItems, role: ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'] }
-];
+import { useThemeStore } from '@/context/zustand/useThemeStore';
+import { Button } from '@/components/button'
 
 
 export function Navbar() {
 
-  const { infoUser, infoInstitutions } = useProfile();
+  const { infoInstitutions } = useProfile();
+  const { isDarkMode, toggleTheme } = useThemeStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   return (
-    <nav className="h-16 border-b border-gray-200 dark:border-gray-800 px-4 flex items-center justify-between bg-gray-50 dark:bg-gray-950 shadow-sm">
+    <nav className='h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between backdrop-blur-md shadow-lg relative z-50 transition-all duration-300 dark:bg-black dark:border-b dark:border-white/10 bg-gray-100/80 border-b border-gray-200/50'>
 
-      <div className="flex items-center">
-        <Link href="/" className="text-xl font-bold">
+      <div className="flex items-center justify-start">
+        <Link href="/" className="flex items-center space-x-3 group">
           {infoInstitutions?.institutions?.urlImage ? (
             <img
-            className='py-4 h-18 w-auto'
+              className='h-12 w-auto transition-transform duration-300 group-hover:scale-105'
               src={infoInstitutions.institutions.urlImage}
               alt="Logo da instituição"
             />
           ) : (
-            <span className="text-gray-800 dark:text-white">ClimaEdu</span>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">{infoInstitutions.institutions.nameInstitution}</span>
+              </div>
+            </div>
           )}
         </Link>
       </div>
 
+      <div className='flex justify-center'>
+        <div className="hidden md:flex items-center gap-2">
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
+          >
+            <FiHome className="w-4 h-4" />
+            <span className="text-sm font-medium">Início</span>
+          </Link>
+
+          <Link
+            href="/social"
+            className="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
+          >
+            <FiUsers className="w-4 h-4" />
+            <span className="text-sm font-medium">Comunidade</span>
+          </Link>
+
+          <Button
+            onClick={toggleTheme}
+            className="flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
+            aria-label="Alternar tema"
+          >
+            {isDarkMode ? (
+              <FiSun className="w-4 h-4" />
+            ) : (
+              <FiMoon className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+
       <div className='flex items-center justify-end'>
 
-        <div className="hidden md:flex items-center space-x-4">
-          {sections.map((section) => {
-            if (section.role.includes(infoUser.currentRole!)) {
-              return (
-                <div
-                  key={section.title}
-                  className={cn(
-                    "flex w-full items-center gap-4 px-3 py-2 text-sm font-medium rounded-md"
-                  )}
-                >
-                  {section.items.map(item => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className='px-3 py-2 rounded-md bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
-                    >
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              );
-            }
-          })}
-
-        </div>
-
         <div className="hidden md:flex items-center gap-4">
-          <ProfileSelect
+           <ProfileSelect
             onLogout={() => console.log('Logout clicked')}
           />
         </div>
@@ -117,51 +82,70 @@ export function Navbar() {
       </div>
 
       <div className="md:hidden flex items-center">
-        <button
+        <Button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          className="p-2 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? (
-            <IoCloseSharp size={30} />
+            <IoCloseSharp size={24} className={isDarkMode ? "text-white" : "text-gray-800"} />
           ) : (
-            <IoMdMenu size={30} />
+            <IoMdMenu size={24} className={isDarkMode ? "text-white" : "text-gray-800"} />
           )}
-        </button>
+        </Button>
       </div>
 
+
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 h-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg z-50">
-          <div className="px-4 py-2">
-            <div className="flex items-center gap-4">
+        <div className="md:hidden absolute top-20 left-0 right-0 backdrop-blur-md shadow-2xl z-40 dark:g-gray-800/90 dark:border-b dark:border-white/10 bg-gray-100/90 border-b border-gray-200/50">
+          <div className="px-4 py-6">
+            {/* Navigation buttons - Mobile */}
+            <div className="space-y-3 mb-6">
+              <Link
+                href="/"
+                className="flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <FiHome className="w-5 h-5" />
+                <span className="text-base font-medium">Início</span>
+              </Link>
+
+              <Link
+                href="/social"
+                className="flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <FiUsers className="w-5 h-5" />
+                <span className="text-base font-medium">Comunidade</span>
+              </Link>
+
+              <Button
+                onClick={() => {
+                  toggleTheme();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-300 backdrop-blur-sm w-full text-left dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border dark:border-white/20 bg-gray-100/80 hover:bg-gray-200/80 text-gray-800 border border-gray-300/50"
+              >
+                {isDarkMode ? (
+                  <>
+                    <FiSun className="w-5 h-5" />
+                    <span className="text-base font-medium">Tema Claro</span>
+                  </>
+                ) : (
+                  <>
+                    <FiMoon className="w-5 h-5" />
+                    <span className="text-base font-medium">Tema Escuro</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className={`pt-4 ? 'border-t border-white/20' : 'border-t border-gray-300/50'
+              }`}>
               <ProfileSelect
                 onLogout={() => console.log('Logout clicked')}
               />
             </div>
-
-            {sections.map((section) => {
-              if (section.role.includes(infoUser.currentRole!)) {
-                return (
-                  <div key={section.title} className="py-2">
-                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                      {section.title}
-                    </h3>
-                    <div className="space-y-1">
-                      {section.items.map((item) => (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )
-              }
-            })}
           </div>
         </div>
       )}

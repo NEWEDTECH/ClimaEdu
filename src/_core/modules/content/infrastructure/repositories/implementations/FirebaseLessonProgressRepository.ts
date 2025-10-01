@@ -5,7 +5,6 @@ import {
   getDoc, 
   getDocs, 
   setDoc, 
-  updateDoc, 
   deleteDoc, 
   query, 
   where, 
@@ -24,8 +23,13 @@ import { nanoid } from 'nanoid';
  */
 @injectable()
 export class FirebaseLessonProgressRepository implements LessonProgressRepository {
-  private readonly collectionName = 'lesson-progresses';
+  private readonly collectionName = 'lesson_progresses';
   private readonly idPrefix = 'lp_';
+  
+  // Identity Map for caching lesson progress entities
+  private readonly identityMap = new Map<string, LessonProgress>();
+  private readonly cacheTimestamps = new Map<string, number>();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes TTL
 
   /**
    * Generate a new unique ID for a lesson progress
@@ -33,6 +37,56 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
    */
   async generateId(): Promise<string> {
     return `${this.idPrefix}${nanoid(10)}`;
+  }
+
+  /**
+   * Generate cache key for identity map
+   * @param userId User ID
+   * @param lessonId Lesson ID
+   * @returns Cache key
+   */
+  private getCacheKey(userId: string, lessonId: string): string {
+    return `${userId}:${lessonId}`;
+  }
+
+  /**
+   * Check if cached entry is still valid (not expired)
+   * @param key Cache key
+   * @returns true if valid, false if expired
+   */
+  private isCacheValid(key: string): boolean {
+    const timestamp = this.cacheTimestamps.get(key);
+    if (!timestamp) return false;
+    
+    return (Date.now() - timestamp) < this.CACHE_TTL;
+  }
+
+  /**
+   * Clear expired cache entries
+   */
+  private clearExpiredCache(): void {
+    const now = Date.now();
+    for (const [key, timestamp] of this.cacheTimestamps.entries()) {
+      if ((now - timestamp) >= this.CACHE_TTL) {
+        this.identityMap.delete(key);
+        this.cacheTimestamps.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Store entity in identity map cache
+   * @param entity LessonProgress entity to cache
+   */
+  private cacheEntity(entity: LessonProgress): void {
+    const key = this.getCacheKey(entity.userId, entity.lessonId);
+    this.identityMap.set(key, entity);
+    this.cacheTimestamps.set(key, Date.now());
+    
+    // Periodically clean expired cache
+    if (Math.random() < 0.1) { // 10% chance on each cache operation
+      this.clearExpiredCache();
+    }
   }
 
   /**
@@ -121,12 +175,20 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
   }
 
   /**
-   * Find lesson progress by user and lesson
+   * Find lesson progress by user and lesson (with Identity Map caching)
    * @param userId User ID
    * @param lessonId Lesson ID
    * @returns LessonProgress or null if not found
    */
   async findByUserAndLesson(userId: string, lessonId: string): Promise<LessonProgress | null> {
+    const cacheKey = this.getCacheKey(userId, lessonId);
+    
+    // Check identity map cache first
+    if (this.identityMap.has(cacheKey) && this.isCacheValid(cacheKey)) {
+      return this.identityMap.get(cacheKey)!;
+    }
+    
+    // Fetch from database
     const progressRef = collection(firestore, this.collectionName);
     const q = query(
       progressRef,
@@ -141,7 +203,12 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
 
     const doc = querySnapshot.docs[0];
     const data = doc.data();
-    return this.mapToEntity({ id: doc.id, ...data });
+    const entity = this.mapToEntity({ id: doc.id, ...data });
+    
+    // Cache the entity in identity map
+    this.cacheEntity(entity);
+    
+    return entity;
   }
 
   /**
@@ -275,7 +342,7 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
   }
 
   /**
-   * Save a lesson progress
+   * Save a lesson progress (with Identity Map cache update)
    * @param lessonProgress LessonProgress to save
    * @returns Saved LessonProgress
    */
@@ -283,18 +350,31 @@ export class FirebaseLessonProgressRepository implements LessonProgressRepositor
     const progressRef = doc(firestore, this.collectionName, lessonProgress.id);
     const progressData = this.mapToFirestoreData(lessonProgress);
 
-    // Check if the lesson progress already exists
-    const progressDoc = await getDoc(progressRef);
-    
-    if (progressDoc.exists()) {
-      // Update existing lesson progress
-      await updateDoc(progressRef, progressData);
-    } else {
-      // Create new lesson progress
-      await setDoc(progressRef, progressData);
-    }
+    await setDoc(progressRef, progressData, { merge: true });
+
+    // Update the identity map cache with the saved entity
+    this.cacheEntity(lessonProgress);
 
     return lessonProgress;
+  }
+
+  /**
+   * Clear identity map cache for a specific user and lesson
+   * @param userId User ID
+   * @param lessonId Lesson ID
+   */
+  clearCache(userId: string, lessonId: string): void {
+    const cacheKey = this.getCacheKey(userId, lessonId);
+    this.identityMap.delete(cacheKey);
+    this.cacheTimestamps.delete(cacheKey);
+  }
+
+  /**
+   * Clear all identity map cache
+   */
+  clearAllCache(): void {
+    this.identityMap.clear();
+    this.cacheTimestamps.clear();
   }
 
   /**

@@ -192,6 +192,10 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         return 'PDF';
       case ContentType.PODCAST:
         return 'Podcast';
+      case ContentType.SCORM:
+        return 'SCORM';
+      case ContentType.AUDIO:
+        return 'Áudio';
       default:
         return 'Conteúdo';
     }
@@ -238,7 +242,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
             </a>
           </div>
         );
-      case ContentType.PODCAST:
+      case ContentType.AUDIO:
         return (
           <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-md">
             <audio

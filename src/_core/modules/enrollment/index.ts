@@ -14,6 +14,9 @@ export * from './core/use-cases/cancel-enrollment/cancel-enrollment.output';
 export * from './core/use-cases/list-enrollments/list-enrollments.use-case';
 export * from './core/use-cases/list-enrollments/list-enrollments.input';
 export * from './core/use-cases/list-enrollments/list-enrollments.output';
+export * from './core/use-cases/complete-course/complete-course.use-case';
+export * from './core/use-cases/complete-course/complete-course.input';
+export * from './core/use-cases/complete-course/complete-course.output';
 
 // Re-export repository interfaces
 export * from './infrastructure/repositories/EnrollmentRepository';

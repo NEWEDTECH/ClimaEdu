@@ -37,7 +37,7 @@ const VideoPlayer = ({
   };
 
   return (
-    <div className="relative w-full h-[400px]">
+    <div className="w-full" style={{ height: 'calc(100vh - 200px)' }}>
       <ReactPlayer
         ref={playerRef}
         url={url}
@@ -49,8 +49,7 @@ const VideoPlayer = ({
         onProgress={handleProgress}
         progressInterval={100}
         width="100%"
-        height="400px"
-        className="absolute top-0 left-0"
+        height="100%"
       />
     </div>
   );

@@ -27,6 +27,8 @@ type InstitutionInfo = {
   nameInstitution: string;
   urlImage?: string;
   roleInstitution: UserRole;
+  primary_color: string;
+  secondary_color: string;
 };
 
 type InfoInstitutions = {
@@ -60,6 +62,8 @@ export const useProfile = create<ProfileState>()(
           idInstitution: '',
           nameInstitution: '',
           urlImage: '',
+          primary_color: '',
+          secondary_color: '',
           roleInstitution: null
         }
       },

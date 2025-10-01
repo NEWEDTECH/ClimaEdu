@@ -2,8 +2,10 @@ import { injectable } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, writeBatch } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Lesson } from '../../../core/entities/Lesson';
+import { Content } from '../../../core/entities/Content';
 import type { LessonRepository } from '../LessonRepository';
 import { nanoid } from 'nanoid';
+import { ContentType } from '../../../core/entities';
 
 /**
  * Firebase implementation of the LessonRepository
@@ -28,14 +30,30 @@ export class FirebaseLessonRepository implements LessonRepository {
    * @returns Lesson entity
    */
   private mapToEntity(data: DocumentData): Lesson {
+    // Convert contents from plain objects back to Content entities
+    const contents = (data.contents || []).map((contentData: {
+      id: string;
+      lessonId: string;
+      type: ContentType;
+      title: string;
+      url: string;
+    }) => Content.create({
+      id: contentData.id,
+      lessonId: contentData.lessonId,
+      type: contentData.type,
+      title: contentData.title,
+      url: contentData.url
+    }));
+
     // Create and return a Lesson entity
     return Lesson.create({
       id: data.id,
       moduleId: data.moduleId,
       title: data.title,
+      description: data.description || '',
       coverImageUrl: data.coverImageUrl,
       order: data.order,
-      contents: data.contents || [],
+      contents: contents,
       activity: data.activity,
       questionnaire: data.questionnaire
     });
@@ -94,14 +112,24 @@ export class FirebaseLessonRepository implements LessonRepository {
       };
     }
     
+    // Convert contents to plain objects
+    const contentsData = lesson.contents.map(content => ({
+      id: content.id,
+      lessonId: content.lessonId,
+      type: content.type,
+      title: content.title,
+      url: content.url
+    }));
+
     // Prepare the lesson data for Firestore
     const lessonData = {
       id: lesson.id,
       moduleId: lesson.moduleId,
       title: lesson.title,
+      description: lesson.description,
       coverImageUrl: lesson.coverImageUrl,
       order: lesson.order,
-      contents: lesson.contents,
+      contents: contentsData,
       activity: activityData,
       questionnaire: questionnaireData
     };

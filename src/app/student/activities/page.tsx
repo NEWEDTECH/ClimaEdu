@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card/card';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 
 const mockActivities = [
   {
@@ -141,7 +141,7 @@ export default function AtividadesPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleActivitySelect(activity.id)}
-                variant={activity.status === 'completed' ? 'outline' : 'default'}
+                variant={activity.status === 'completed' ? 'primary' : 'secondary'}
               >
                 {activity.status === 'completed' ? 'Ver detalhes' : 'Realizar atividade'}
               </Button>
@@ -160,7 +160,6 @@ export default function AtividadesPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
             onClick={handleBackToList}
             className="mb-4"
           >
@@ -247,7 +246,7 @@ export default function AtividadesPage() {
               />
               <div className="mt-4">
                 <Button 
-                  variant="outline"
+                  variant="ghost"
                   className="mr-2"
                 >
                   <svg 

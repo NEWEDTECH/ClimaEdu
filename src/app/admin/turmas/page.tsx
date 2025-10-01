@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { SelectComponent } from '@/components/select'
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -173,7 +174,7 @@ export default function TurmasPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Turmas</h1>
             <Link href="/admin/turmas/create">
-              <Button className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90">
+              <Button variant='primary'>
                 Criar nova turma
               </Button>
             </Link>
@@ -200,18 +201,16 @@ export default function TurmasPage() {
                 </div>
                 
                 <div className="flex-1">
-                  <select
-                    value={selectedInstitutionId}
-                    onChange={(e) => setSelectedInstitutionId(e.target.value)}
-                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                  >
-                    <option value="">Selecione uma instituição</option>
-                    {institutions.map(institution => (
-                      <option key={institution.id} value={institution.id}>
-                        {institution.name}
-                      </option>
-                    ))}
-                  </select>
+                <SelectComponent
+                  value={selectedInstitutionId}
+                  onChange={(institutionId) => setSelectedInstitutionId(institutionId)}
+                  options={institutions.map(institution => ({
+                    value: institution.id,
+                    label: institution.name
+                  }))}
+                  placeholder="Selecione uma instituição"
+                  className="w-full"
+                />
                 </div>
               </div>
 
@@ -259,14 +258,14 @@ export default function TurmasPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex gap-2">
                               <Link href={`/admin/turmas/edit/${classItem.id}`}>
-                                <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
+                                <Button variant='primary'>
                                   Editar
                                 </Button>
                               </Link>
                               <Button 
                                 onClick={() => handleDeleteClass(classItem.id)}
                                 disabled={deleting === classItem.id}
-                                className="border bg-red-50 text-red-600 shadow-xs hover:bg-red-100 hover:text-red-700 h-8 rounded-md gap-1.5 px-3 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+                                variant='secondary'
                               >
                                 {deleting === classItem.id ? 'Excluindo...' : 'Excluir'}
                               </Button>

@@ -122,7 +122,7 @@ export class GetUserAssociationsUseCase {
         contextName: course?.title || "Unknown Course",
         role: UserRole.TUTOR,
         contextType: "course",
-        institutionId: undefined,
+        institutionId: course?.institutionId,
       } as UserAssociation;
     });
     return Promise.all(promises);

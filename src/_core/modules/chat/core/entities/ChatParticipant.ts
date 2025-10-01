@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 
 interface ChatParticipantProps {
   id?: string;
@@ -14,7 +13,7 @@ export class ChatParticipant {
   private readonly _joinedAt: Date;
 
   private constructor(props: ChatParticipantProps) {
-    this._id = props.id ?? randomUUID();
+    this._id = props.id ?? crypto.randomUUID();
     this._chatRoomId = props.chatRoomId;
     this._userId = props.userId;
     this._joinedAt = props.joinedAt ?? new Date();

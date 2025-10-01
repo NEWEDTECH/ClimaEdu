@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button/button'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs/tabs'
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs/tabs'
+import { TabsTrigger } from '@/components/tabs/TabsTrigger'
 
 // Define student data type
 type StudentData = {

@@ -18,6 +18,16 @@ export interface SubmitQuestionnaireInput {
   institutionId: string;
 
   /**
+   * The ID of the module (optional, for achievement event context)
+   */
+  moduleId?: string;
+
+  /**
+   * The ID of the course (optional, for achievement event context)
+   */
+  courseId?: string;
+
+  /**
    * The answers to the questions
    */
   answers: {

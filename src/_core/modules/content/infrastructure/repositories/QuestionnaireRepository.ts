@@ -19,6 +19,13 @@ export interface QuestionnaireRepository {
   findById(id: string): Promise<Questionnaire | null>;
 
   /**
+   * Find questionnaires by a list of ids
+   * @param ids List of questionnaire ids
+   * @returns List of questionnaires
+   */
+  findByIds(ids: string[]): Promise<Questionnaire[]>;
+
+  /**
    * Find a questionnaire by lesson id
    * @param lessonId Lesson id
    * @returns Questionnaire or null if not found

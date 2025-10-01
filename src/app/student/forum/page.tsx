@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card/card';
-import { Button } from '@/components/ui/button/button';
+import { Button } from '@/components/button'
 
 const mockDiscussions = [
   {
@@ -166,7 +166,7 @@ export default function DiscussoesPage() {
           </CardContent>
           <CardFooter className="flex justify-end space-x-2">
             <Button 
-              variant="outline" 
+              variant="ghost" 
               onClick={() => setIsCreatingDiscussion(false)}
             >
               Cancelar
@@ -211,7 +211,7 @@ export default function DiscussoesPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleDiscussionSelect(discussion.id)}
-                variant="outline"
+                variant="ghost"
               >
                 Ver discussão
               </Button>
@@ -230,7 +230,7 @@ export default function DiscussoesPage() {
       <>
         <div className="mb-6">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={handleBackToList}
             className="mb-4"
           >
