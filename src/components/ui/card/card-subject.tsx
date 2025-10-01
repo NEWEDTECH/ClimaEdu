@@ -2,6 +2,9 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Play, Lock, BookOpen, Headphones, TrendingUp } from "lucide-react";
+import { container } from '@/_core/shared/container';
+import { Register } from '@/_core/shared/container';
+import type { GetCourseProgressUseCase } from '@/_core/modules/content';
 
 interface CardSubjectProps {
   title: string;
@@ -10,6 +13,9 @@ interface CardSubjectProps {
   imageUrl?: string;
   isBlocked?: boolean;
   className?: string;
+  courseId?: string;
+  userId?: string;
+  institutionId?: string;
 }
 
 export function CardSubject({
@@ -18,8 +24,44 @@ export function CardSubject({
   imageUrl = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop",
   isBlocked = false,
   className,
+  courseId,
+  userId,
+  institutionId,
 }: CardSubjectProps) {
   const [isHovered, setIsHovered] = React.useState(false);
+  const [progressPercentage, setProgressPercentage] = React.useState(0);
+  const [loading, setLoading] = React.useState(true);
+
+  // Load course progress
+  React.useEffect(() => {
+    const loadProgress = async () => {
+      if (!courseId || !userId || !institutionId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const useCase = container.get<GetCourseProgressUseCase>(
+          Register.content.useCase.GetCourseProgressUseCase
+        );
+
+        const result = await useCase.execute({
+          courseId,
+          userId,
+          institutionId
+        });
+
+        setProgressPercentage(result.progressPercentage);
+      } catch (error) {
+        console.error('Error loading course progress:', error);
+        setProgressPercentage(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProgress();
+  }, [courseId, userId, institutionId]);
 
   // Determine content type based on href for appropriate icon
   const getContentIcon = () => {
@@ -139,13 +181,14 @@ export function CardSubject({
                 )}
               </div>
 
-              {/* Progress Bar Placeholder */}
-              {!isBlocked && (
+              {/* Progress Bar */}
+              {!isBlocked && !loading && (
                 <div className="flex-1 ml-3">
                   <div className="h-1 bg-white/20 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.random() * 100}%` }}
+                      style={{ width: `${progressPercentage}%` }}
+                      title={`${progressPercentage}% concluído`}
                     />
                   </div>
                 </div>

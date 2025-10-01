@@ -109,6 +109,9 @@ export * from './core/use-cases/remove-course-from-trail/remove-course-from-trai
 export * from './core/use-cases/approve-reject-activity-submission/approve-reject-activity-submission.use-case';
 export * from './core/use-cases/approve-reject-activity-submission/approve-reject-activity-submission.input';
 export * from './core/use-cases/approve-reject-activity-submission/approve-reject-activity-submission.output';
+export * from './core/use-cases/get-course-progress/get-course-progress.use-case';
+export * from './core/use-cases/get-course-progress/get-course-progress.input';
+export * from './core/use-cases/get-course-progress/get-course-progress.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces

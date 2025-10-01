@@ -53,6 +53,7 @@ export const useCases = {
   ListActivityFilesUseCase: Symbol.for('ListActivityFilesUseCase'),
   DeleteActivityFileUseCase: Symbol.for('DeleteActivityFileUseCase'),
   ApproveRejectActivitySubmissionUseCase: Symbol.for('ApproveRejectActivitySubmissionUseCase'),
+  GetCourseProgressUseCase: Symbol.for('GetCourseProgressUseCase'),
   UploadPdfToLessonUseCase: Symbol.for('UploadPdfToLessonUseCase'),
   DeletePdfFromLessonUseCase: Symbol.for('DeletePdfFromLessonUseCase'),
   UploadMp3ToLessonUseCase: Symbol.for('UploadMp3ToLessonUseCase'),

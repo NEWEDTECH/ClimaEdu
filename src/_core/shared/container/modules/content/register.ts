@@ -62,6 +62,7 @@ import { UploadActivityFilesUseCase } from '@/_core/modules/content/core/use-cas
 import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
 import { DeleteActivityFileUseCase } from '@/_core/modules/content/core/use-cases/delete-activity-file/delete-activity-file.use-case';
 import { ApproveRejectActivitySubmissionUseCase } from '@/_core/modules/content/core/use-cases/approve-reject-activity-submission';
+import { GetCourseProgressUseCase } from '@/_core/modules/content/core/use-cases/get-course-progress';
 import { UploadPdfToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-pdf-to-lesson/upload-pdf-to-lesson.use-case';
 import { DeletePdfFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-pdf-from-lesson/delete-pdf-from-lesson.use-case';
 import { UploadMp3ToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-mp3-to-lesson/upload-mp3-to-lesson.use-case';
@@ -123,6 +124,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.ListActivityFilesUseCase).to(ListActivityFilesUseCase);
   container.bind(useCases.DeleteActivityFileUseCase).to(DeleteActivityFileUseCase);
   container.bind(useCases.ApproveRejectActivitySubmissionUseCase).to(ApproveRejectActivitySubmissionUseCase);
+  container.bind(useCases.GetCourseProgressUseCase).to(GetCourseProgressUseCase);
   container.bind(useCases.UploadPdfToLessonUseCase).to(UploadPdfToLessonUseCase);
   container.bind(useCases.DeletePdfFromLessonUseCase).to(DeletePdfFromLessonUseCase);
   container.bind(useCases.UploadMp3ToLessonUseCase).to(UploadMp3ToLessonUseCase);
