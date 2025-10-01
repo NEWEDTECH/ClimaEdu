@@ -20,6 +20,7 @@ function initializeFirebaseAdmin() {
         storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
       });
     } else {
+      console.log('✅ Initializing Firebase Admin with service account');
       // In production, use service account credentials
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
