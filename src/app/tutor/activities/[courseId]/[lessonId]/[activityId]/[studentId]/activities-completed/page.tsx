@@ -14,6 +14,7 @@ import { UserRepository } from '@/_core/modules/user/infrastructure/repositories
 import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import { ActivitySubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/ActivitySubmissionRepository';
 import { ApproveRejectActivitySubmissionUseCase } from '@/_core/modules/content/core/use-cases/approve-reject-activity-submission';
+import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
 import type { Course } from '@/_core/modules/content/core/entities/Course';
 import type { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import type { User } from '@/_core/modules/user/core/entities/User';
@@ -155,6 +156,26 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
       });
 
       alert('✅ ' + result.message);
+      
+      // Atualizar o progresso da lição - marcar atividade como completa
+      try {
+        const updateProgressUseCase = container.get<UpdateContentProgressUseCase>(
+          Register.content.useCase.UpdateContentProgressUseCase
+        );
+        
+        await updateProgressUseCase.execute({
+          userId: studentId,
+          lessonId: lessonId,
+          contentId: activityId,
+          progressPercentage: 100,
+          timeSpent: 0
+        });
+        
+        console.log('✅ Progresso da lição atualizado - atividade marcada como completa');
+      } catch (progressError) {
+        console.error('⚠️ Erro ao atualizar progresso da lição:', progressError);
+        // Não bloquear o fluxo se houver erro ao atualizar o progresso
+      }
       
       // Atualizar a lista de submissões
       const submissionRepository = container.get<ActivitySubmissionRepository>(
