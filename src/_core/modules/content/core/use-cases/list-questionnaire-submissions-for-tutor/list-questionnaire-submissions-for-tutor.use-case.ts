@@ -9,9 +9,6 @@ import type { UserRepository } from '../../../../user/infrastructure/repositorie
 import type { LessonRepository } from '../../../infrastructure/repositories/LessonRepository';
 import type { ModuleRepository } from '../../../infrastructure/repositories/ModuleRepository';
 import { Register } from '../../../../../shared/container/symbols';
-import { QuestionnaireSubmission } from '../../entities/QuestionnaireSubmission';
-import { Questionnaire } from '../../entities/Questionnaire';
-import { User } from '../../../../user/core/entities/User';
 import { Course } from '../../entities/Course';
 
 @injectable()
