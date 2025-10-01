@@ -18,7 +18,7 @@ import type { Course } from '@/_core/modules/content/core/entities/Course';
 import type { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import type { User } from '@/_core/modules/user/core/entities/User';
 import type { Activity } from '@/_core/modules/content/core/entities/Activity';
-import type { ActivitySubmission } from '@/_core/modules/content/core/entities/ActivitySubmission';
+import { ActivitySubmission } from '@/_core/modules/content/core/entities/ActivitySubmission';
 import { ActivitySubmissionStatus } from '@/_core/modules/content/core/entities/ActivitySubmissionStatus';
 
 export default function StudentActivitiesCompletedPage({ params }: { params: Promise<{ courseId: string, lessonId: string, activityId: string, studentId: string }> }) {
@@ -84,6 +84,38 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
         // Pre-preencher feedback se já houver uma submissão avaliada
         if (submissionsData.length > 0 && submissionsData[0].feedback) {
           setFeedback(submissionsData[0].feedback);
+        }
+
+        // Verificar se há arquivos enviados pelo aluno
+        const listFilesUseCase = container.get<any>(
+          Register.content.useCase.ListActivityFilesUseCase
+        );
+        const filesResult = await listFilesUseCase.execute({
+          activityId,
+          studentId,
+          institutionId
+        });
+        
+        const hasUploadedFiles = filesResult.files && filesResult.files.length > 0;
+  
+        // Se há arquivos mas não há submissão, criar uma submissão PENDING
+        if (hasUploadedFiles && submissionsData.length === 0) {
+          const newSubmissionId = await submissionRepository.generateId();
+          const newSubmission = ActivitySubmission.create({
+            id: newSubmissionId,
+            activityId,
+            studentId,
+            institutionId,
+            fileUrls: filesResult.files.map((f: any) => f.downloadUrl),
+            status: ActivitySubmissionStatus.PENDING,
+            feedback: null,
+            reviewedBy: null,
+            submittedAt: new Date(),
+            reviewedAt: null
+          });
+          
+          await submissionRepository.save(newSubmission);
+          setSubmissions([newSubmission]);
         }
 
       } catch (error) {
@@ -324,14 +356,6 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
                       </div>
                     )}
 
-                    {/* Mensagem quando não há submissão */}
-                    {!currentSubmission && !loading && (
-                      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center border border-blue-200 dark:border-blue-700">
-                        <p className="text-blue-700 dark:text-blue-300">
-                          ℹ️ O aluno ainda não enviou esta atividade.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
