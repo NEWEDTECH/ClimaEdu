@@ -78,7 +78,7 @@ export function CardSubject({
     };
 
     loadProgress();
-  }, [courseId, userId, institutionId]);
+  }, [courseId, userId, institutionId, title]);
 
   // Determine content type based on href for appropriate icon
   const getContentIcon = () => {
