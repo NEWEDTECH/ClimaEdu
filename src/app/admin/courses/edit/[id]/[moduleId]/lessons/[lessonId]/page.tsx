@@ -169,10 +169,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               options: q.options,
               correctAnswerIndex: q.correctAnswerIndex
             })),
-          lengthQuestions: questionnaire?.questions.length!
+            lengthQuestions: lesson.questionnaire.questions.length
           };
         } else if (questionnaire) {
-
           questionnaireData = {
             id: questionnaire.id,
             title: questionnaire.title,
@@ -184,7 +183,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               options: q.options,
               correctAnswerIndex: q.correctAnswerIndex
             })),
-            lengthQuestions: questionnaire?.questions.length
+            lengthQuestions: questionnaire.questions.length
           };
         }
 

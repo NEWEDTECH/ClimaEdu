@@ -56,6 +56,7 @@ export function CardSubject({
 
         setProgressPercentage(result.progressPercentage);
       } catch (error) {
+        console.log(error)
         setProgressPercentage(0);
       } finally {
         setLoading(false);
