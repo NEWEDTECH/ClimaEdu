@@ -131,13 +131,7 @@ export class FirebaseModuleRepository implements ModuleRepository {
       querySnapshot.docs.map(async (docSnapshot) => {
         const data = docSnapshot.data();
         const lessons = await this.lessonRepository.listByModule(docSnapshot.id);
-        
-        console.log('[FirebaseModuleRepository] Loaded module:', {
-          moduleId: docSnapshot.id,
-          title: data.title,
-          lessonsFromCollection: lessons.length
-        });
-        
+              
         return this.mapToEntity({ id: docSnapshot.id, ...data, lessons });
       })
     );

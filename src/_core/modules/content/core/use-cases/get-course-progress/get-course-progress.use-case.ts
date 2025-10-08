@@ -27,46 +27,29 @@ export class GetCourseProgressUseCase {
    * @throws Error if validation fails or course is not found
    */
   async execute(input: GetCourseProgressInput): Promise<GetCourseProgressOutput> {
-    console.log('[GetCourseProgressUseCase] Starting execution with input:', input);
-
     // Validate input
     this.validateInput(input);
 
     // Find the course
     const course = await this.courseRepository.findById(input.courseId);
     if (!course) {
-      console.error('[GetCourseProgressUseCase] Course not found:', input.courseId);
       throw new Error(`Course with ID ${input.courseId} not found`);
     }
-
-    console.log('[GetCourseProgressUseCase] Course found:', {
-      courseId: course.id,
-      title: course.title,
-      modulesCount: course.modules.length
-    });
 
     // Get all lesson IDs from all modules in the course
     const allLessonIds: string[] = [];
     let totalLessonsInCourse = 0;
     
     for (const courseModule of course.modules) {
-      console.log('[GetCourseProgressUseCase] Processing module:', {
-        moduleId: courseModule.id,
-        title: courseModule.title,
-        lessonsCount: courseModule.lessons.length
-      });
+
       for (const lesson of courseModule.lessons) {
         allLessonIds.push(lesson.id);
         totalLessonsInCourse++;
       }
     }
 
-    console.log('[GetCourseProgressUseCase] Total lessons in course:', totalLessonsInCourse);
-    console.log('[GetCourseProgressUseCase] Lesson IDs:', allLessonIds);
-
     // If no lessons found in course structure
     if (allLessonIds.length === 0) {
-      console.warn('[GetCourseProgressUseCase] No lessons found in course');
       return {
         progressPercentage: 0,
         totalLessons: 0,
@@ -82,13 +65,6 @@ export class GetCourseProgressUseCase {
       input.userId,
       input.institutionId
     );
-
-    console.log('[GetCourseProgressUseCase] User progress records found:', allUserProgressInInstitution.length);
-    console.log('[GetCourseProgressUseCase] Progress details:', allUserProgressInInstitution.map(p => ({
-      lessonId: p.lessonId,
-      status: p.status,
-      contentProgresses: p.contentProgresses.length
-    })));
 
     // Create a map for quick lookup of lesson progress by lessonId
     const progressMap = new Map<string, typeof allUserProgressInInstitution[0]>();
@@ -142,9 +118,6 @@ export class GetCourseProgressUseCase {
       inProgressLessons,
       notStartedLessons
     };
-
-    console.log('[GetCourseProgressUseCase] Final result:', result);
-    console.log('[GetCourseProgressUseCase] Total progress accumulated:', totalProgress);
 
     return result;
   }
