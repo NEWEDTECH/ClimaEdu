@@ -161,8 +161,6 @@ export default function Home() {
           !enrolledCourseIds.includes(course.id)
         );
 
-        console.log({ notEnrolledCourses })
-
         const availableCoursesData: CourseDisplayData[] = notEnrolledCourses.map((course: Course) => ({
           id: course.id,
           title: course.title,

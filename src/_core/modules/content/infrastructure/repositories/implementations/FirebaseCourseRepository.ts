@@ -95,12 +95,6 @@ export class FirebaseCourseRepository implements CourseRepository {
     // Fetch modules from separate collection
     const modules = await this.moduleRepository.listByCourse(id);
     
-    console.log('[FirebaseCourseRepository] Loaded course:', {
-      courseId: id,
-      title: data.title,
-      modulesFromCollection: modules.length
-    });
-    
     return this.mapToEntity({ id, ...data, modules });
   }
 
