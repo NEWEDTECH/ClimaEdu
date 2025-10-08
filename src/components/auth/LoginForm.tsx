@@ -78,19 +78,19 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Acessar Plataforma</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
-            Email Address
+            Email
           </label>
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
+            placeholder="Digite o seu email"
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isLoading}
             required
@@ -106,7 +106,7 @@ export function LoginForm() {
               : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
-          {isLoading ? 'Sending...' : 'Send Sign-In Link'}
+          {isLoading ? 'Enviando...' : 'Clique para receber o link'}
         </Button>
       </form>
       
@@ -121,7 +121,7 @@ export function LoginForm() {
       )}
       
       <p className="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
-        We&apos;ll send you a magic link to sign in without a password.
+        Enviaremos um link para o seu email.
       </p>
     </div>
   );

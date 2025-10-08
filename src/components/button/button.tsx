@@ -32,9 +32,9 @@ export function Button({
     "cursor-pointer flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-8 gap-1.5 px-3 w-auto";
 
   const variants = {
-    primary: "bg-primary text-foreground shadow-sm hover:bg-primary/90",
+    primary: "bg-primary text-secondary shadow-sm hover:bg-primary/90",
     secondary:
-      "bg-transparent text-foreground shadow-sm hover:bg-transparent/80",
+      "bg-transparent text-secondary shadow-sm hover:bg-transparent/80",
     ghost:
       "bg-transparent hover:bg-accent hover:text-accent-foreground shadow-none",
   };

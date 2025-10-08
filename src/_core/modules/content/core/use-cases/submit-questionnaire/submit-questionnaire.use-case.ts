@@ -83,6 +83,7 @@ export class SubmitQuestionnaireUseCase {
       questionnaireId: input.questionnaireId,
       userId: input.userId,
       institutionId: input.institutionId,
+      courseId: input.courseId || '',
       startedAt: new Date(), // TODO: This should ideally come from when the user started the questionnaire
       completedAt: new Date(),
       attempt: attemptCount + 1,

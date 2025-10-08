@@ -414,7 +414,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
             });
             const submission = QuestionnaireSubmission.create({
               id: `sub_${faker.string.uuid()}`, questionnaireId: questionnaire.id, userId: enrollment.userId,
-              institutionId: enrollment.institutionId, startedAt: faker.date.past({ years: 1 }),
+              institutionId: enrollment.institutionId, courseId: enrollment.courseId, startedAt: faker.date.past({ years: 1 }),
               attempt: 1, questions,
             });
             const submissionPlain = {

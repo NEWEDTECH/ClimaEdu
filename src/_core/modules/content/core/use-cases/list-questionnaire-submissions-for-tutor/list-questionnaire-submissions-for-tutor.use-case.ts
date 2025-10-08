@@ -62,12 +62,10 @@ export class ListQuestionnaireSubmissionsForTutorUseCase {
     }
 
     // Buscar todas as submissões da instituição
-    const allSubmissions = await this.questionnaireSubmissionRepository.listByUsers([]);
-    
-    // Filtrar submissões por instituição e cursos do tutor
-    let filteredSubmissions = allSubmissions.filter(submission => 
-      submission.institutionId === input.institutionId
-    );
+    const allSubmissions = await this.questionnaireSubmissionRepository.listByInstitution(input.institutionId);
+
+    // As submissões já vêm filtradas por instituição
+    let filteredSubmissions = allSubmissions;
 
     // Aplicar filtros adicionais
     if (input.studentId) {

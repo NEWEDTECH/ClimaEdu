@@ -7,6 +7,8 @@ export * from './core/entities/CourseTutor';
 export * from './core/entities/Module';
 export * from './core/entities/Lesson';
 export * from './core/entities/Activity';
+export * from './core/entities/ActivitySubmission';
+export * from './core/entities/ActivitySubmissionStatus';
 export * from './core/entities/Trail';
 export * from './core/entities/Questionnaire';
 export * from './core/entities/Question';
@@ -104,6 +106,12 @@ export * from './core/use-cases/add-course-to-trail/add-course-to-trail.output';
 export * from './core/use-cases/remove-course-from-trail/remove-course-from-trail.use-case';
 export * from './core/use-cases/remove-course-from-trail/remove-course-from-trail.input';
 export * from './core/use-cases/remove-course-from-trail/remove-course-from-trail.output';
+export * from './core/use-cases/approve-reject-activity-submission/approve-reject-activity-submission.use-case';
+export * from './core/use-cases/approve-reject-activity-submission/approve-reject-activity-submission.input';
+export * from './core/use-cases/approve-reject-activity-submission/approve-reject-activity-submission.output';
+export * from './core/use-cases/get-course-progress/get-course-progress.use-case';
+export * from './core/use-cases/get-course-progress/get-course-progress.input';
+export * from './core/use-cases/get-course-progress/get-course-progress.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces
@@ -113,6 +121,7 @@ export * from './infrastructure/repositories/CourseTutorRepository';
 export * from './infrastructure/repositories/ModuleRepository';
 export * from './infrastructure/repositories/LessonRepository';
 export * from './infrastructure/repositories/ActivityRepository';
+export * from './infrastructure/repositories/ActivitySubmissionRepository';
 export * from './infrastructure/repositories/TrailRepository';
 export * from './infrastructure/repositories/QuestionnaireRepository';
 export * from './infrastructure/repositories/QuestionnaireSubmissionRepository';
@@ -125,6 +134,7 @@ export * from './infrastructure/repositories/implementations/FirebaseCourseTutor
 export * from './infrastructure/repositories/implementations/FirebaseModuleRepository';
 export * from './infrastructure/repositories/implementations/FirebaseLessonRepository';
 export * from './infrastructure/repositories/implementations/FirebaseActivityRepository';
+export * from './infrastructure/repositories/implementations/FirebaseActivitySubmissionRepository';
 export * from './infrastructure/repositories/implementations/FirebaseTrailRepository';
 export * from './infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
 export * from './infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';

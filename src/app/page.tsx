@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout';
+import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { ContentCarousel } from '@/components/ui/carousel';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
@@ -14,6 +15,7 @@ import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-t
 import { ListPodcastsUseCase } from '@/_core/modules/podcast/core/use-cases/list-podcasts/list-podcasts.use-case';
 import { LoadingSpinner } from '@/components/loader'
 import { SearchComponent } from '@/components/search'
+import { SearchResultEntity } from '@/_core/modules/search'
 import { Play, BookOpen, Headphones, TrendingUp } from 'lucide-react';
 
 
@@ -50,6 +52,60 @@ export default function Home() {
   const [podcasts, setPodcasts] = useState<PodcastDisplayData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Search states
+  const [searchResults, setSearchResults] = useState<SearchResultEntity[]>([]);
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+
+  // Handle search results
+  const handleSearchResults = (results: SearchResultEntity[]) => {
+    setSearchResults(results);
+    setIsSearchActive(results.length > 0);
+  };
+
+  // Convert search results to display format
+  const convertSearchResultsToDisplayData = () => {
+    const searchCourses: CourseDisplayData[] = [];
+    const searchTrails: TrailDisplayData[] = [];
+    const searchPodcasts: PodcastDisplayData[] = [];
+
+    searchResults.forEach(result => {
+      switch (result.type) {
+        case 'course':
+          searchCourses.push({
+            id: result.id,
+            title: result.title,
+            href: result.href,
+            imageUrl: result.imageUrl || '',
+            isBlocked: false
+          });
+          break;
+        case 'trail':
+          searchTrails.push({
+            id: result.id,
+            title: result.title,
+            description: result.description || '',
+            href: result.href,
+            imageUrl: result.imageUrl || '',
+            isBlocked: false
+          });
+          break;
+        case 'podcast':
+          searchPodcasts.push({
+            id: result.id,
+            title: result.title,
+            href: result.href,
+            imageUrl: result.imageUrl || '',
+            isBlocked: false
+          });
+          break;
+      }
+    });
+
+    return { searchCourses, searchTrails, searchPodcasts };
+  };
+
+  const { searchCourses, searchTrails, searchPodcasts } = convertSearchResultsToDisplayData();
 
   useEffect(() => {
     const loadCourseData = async () => {
@@ -188,8 +244,9 @@ export default function Home() {
 
 
   return (
-    <DashboardLayout>
-      {isLoading ? (
+    <ProtectedContent>
+      <DashboardLayout>
+        {isLoading ? (
         <div className="min-h-screen flex items-center justify-center transition-all duration-300 dark:bg-black bg-gray-100">
           <div className="text-center space-y-4">
             <LoadingSpinner />
@@ -247,6 +304,7 @@ export default function Home() {
                       placeholder="Buscar cursos, trilhas ou podcasts..."
                       className="w-full backdrop-blur-sm dark:bg-transparent dark:border-white/20 dark:text-white dark:placeholder:text-white/60 bg-white/80 border-gray-200/50 text-gray-800 placeholder:text-gray-500"
                       showFilters={true}
+                      onSearchResults={handleSearchResults}
                     />
                   </div>
                 </div>
@@ -271,109 +329,216 @@ export default function Home() {
 
           {/* Content Sections */}
           <div className="px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-            {/* Continue Watching / My Courses */}
-            {enrolledCourses.length > 0 && (
-              <section className="space-y-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
-                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
-                    }`}>
-                    <Play className="w-8 h-8 text-blue-400" />
-                    <span>Continue Aprendendo</span>
+            {isSearchActive ? (
+              /* Search Results */
+              <>
+                {/* Search Results Header */}
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl sm:text-3xl font-bold dark:text-white text-gray-800 mb-2">
+                    Resultados da Busca
                   </h2>
-                </div>
-                <ContentCarousel
-                  items={enrolledCourses}
-                  title=""
-                  emptyMessage=""
-                  className="bg-transparent shadow-none p-0"
-                />
-              </section>
-            )}
-
-            {/* My Trails */}
-            {enrolledTrails.length > 0 && (
-              <section className="space-y-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-green-400 to-blue-400 rounded-full"></div>
-                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
-                    }`}>
-                    <TrendingUp className="w-8 h-8 text-green-400" />
-                    <span>Minhas Trilhas</span>
-                  </h2>
-                </div>
-                <ContentCarousel
-                  items={enrolledTrails}
-                  title=""
-                  emptyMessage=""
-                  className="bg-transparent shadow-none p-0"
-                />
-              </section>
-            )}
-
-            {/* Podcasts */}
-            {podcasts.length > 0 && (
-              <section className="space-y-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
-                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
-                    }`}>
-                    <Headphones className="w-8 h-8 text-purple-400" />
-                    <span>Podcasts Disponíveis</span>
-                  </h2>
-                </div>
-                <ContentCarousel
-                  items={podcasts}
-                  title=""
-                  emptyMessage=""
-                  className="bg-transparent shadow-none p-0"
-                />
-              </section>
-            )}
-
-            {/* Available Courses */}
-            {availableCourses.length > 0 && (
-              <section className="space-y-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-orange-400 to-red-400 rounded-full"></div>
-                  <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
-                    }`}>
-                    <BookOpen className="w-8 h-8 text-orange-400" />
-                    <span>Explore Novos Cursos</span>
-                  </h2>
-                </div>
-                <ContentCarousel
-                  items={availableCourses}
-                  title=""
-                  emptyMessage=""
-                  className="bg-transparent shadow-none p-0"
-                  itemClassName="cursor-not-allowed opacity-75 hover:opacity-90 transition-opacity"
-                  singleItemClassName="w-[400px] cursor-not-allowed opacity-75"
-                />
-              </section>
-            )}
-
-            {/* Empty State */}
-            {enrolledCourses.length === 0 && enrolledTrails.length === 0 && podcasts.length === 0 && availableCourses.length === 0 && (
-              <div className="text-center py-20">
-                <div className="max-w-md mx-auto space-y-6">
-                  <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center dark:bg-white/10' : 'bg-gray-100'
-                    }`}>
-                    <BookOpen className="w-12 h-12 dark:text-white/60 text-gray-400"/>
-                  </div>
-                  <h3 className={`text-2xl font-bold dark:text-white' : 'text-gray-800'
-                    }`}>Nenhum conteúdo disponível</h3>
                   <p className="dark:text-white/70 text-gray-600">
-                    Parece que ainda não há conteúdo disponível em sua instituição.
-                    Entre em contato com seu administrador para mais informações.
+                    Encontrados {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}
                   </p>
                 </div>
-              </div>
+
+                {/* Search Courses */}
+                {searchCourses.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
+                      <h2 className="text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white text-gray-800">
+                        <BookOpen className="w-8 h-8 text-blue-400" />
+                        <span>Cursos ({searchCourses.length})</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={searchCourses}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* Search Trails */}
+                {searchTrails.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-green-400 to-blue-400 rounded-full"></div>
+                      <h2 className="text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white text-gray-800">
+                        <TrendingUp className="w-8 h-8 text-green-400" />
+                        <span>Trilhas ({searchTrails.length})</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={searchTrails}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* Search Podcasts */}
+                {searchPodcasts.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
+                      <h2 className="text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white text-gray-800">
+                        <Headphones className="w-8 h-8 text-purple-400" />
+                        <span>Podcasts ({searchPodcasts.length})</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={searchPodcasts}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* No Search Results */}
+                {searchResults.length === 0 && (
+                  <div className="text-center py-20">
+                    <div className="max-w-md mx-auto space-y-6">
+                      <div className="w-24 h-24 mx-auto rounded-full flex items-center justify-center dark:bg-white/10 bg-gray-100">
+                        <BookOpen className="w-12 h-12 dark:text-white/60 text-gray-400"/>
+                      </div>
+                      <h3 className="text-2xl font-bold dark:text-white text-gray-800">
+                        Nenhum resultado encontrado
+                      </h3>
+                      <p className="dark:text-white/70 text-gray-600">
+                        Tente buscar com outros termos ou verifique a ortografia.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Default Content */
+              <>
+                {/* Continue Watching / My Courses */}
+                {enrolledCourses.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
+                      <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
+                        }`}>
+                        <Play className="w-8 h-8 text-blue-400" />
+                        <span>Continue Aprendendo</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={enrolledCourses}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* My Trails */}
+                {enrolledTrails.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-green-400 to-blue-400 rounded-full"></div>
+                      <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
+                        }`}>
+                        <TrendingUp className="w-8 h-8 text-green-400" />
+                        <span>Minhas Trilhas</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={enrolledTrails}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* Podcasts */}
+                {podcasts.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
+                      <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
+                        }`}>
+                        <Headphones className="w-8 h-8 text-purple-400" />
+                        <span>Podcasts Disponíveis</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={podcasts}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* Available Courses */}
+                {availableCourses.length > 0 && (
+                  <section className="space-y-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-orange-400 to-red-400 rounded-full"></div>
+                      <h2 className={`text-2xl sm:text-3xl font-bold flex items-center space-x-3 dark:text-white' : 'text-gray-800'
+                        }`}>
+                        <BookOpen className="w-8 h-8 text-orange-400" />
+                        <span>Explore Novos Cursos</span>
+                      </h2>
+                    </div>
+                    <ContentCarousel
+                      items={availableCourses}
+                      title=""
+                      emptyMessage=""
+                      className="bg-transparent shadow-none p-0"
+                      itemClassName="cursor-not-allowed opacity-75 hover:opacity-90 transition-opacity"
+                      singleItemClassName="w-[400px] cursor-not-allowed opacity-75"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
+                    />
+                  </section>
+                )}
+
+                {/* Empty State */}
+                {enrolledCourses.length === 0 && enrolledTrails.length === 0 && podcasts.length === 0 && availableCourses.length === 0 && (
+                  <div className="text-center py-20">
+                    <div className="max-w-md mx-auto space-y-6">
+                      <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center dark:bg-white/10' : 'bg-gray-100'
+                        }`}>
+                        <BookOpen className="w-12 h-12 dark:text-white/60 text-gray-400"/>
+                      </div>
+                      <h3 className={`text-2xl font-bold dark:text-white' : 'text-gray-800'
+                        }`}>Nenhum conteúdo disponível</h3>
+                      <p className="dark:text-white/70 text-gray-600">
+                        Parece que ainda não há conteúdo disponível em sua instituição.
+                        Entre em contato com seu administrador para mais informações.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
           
         </div>
       )}
-    </DashboardLayout>
+      </DashboardLayout>
+    </ProtectedContent>
   );
 }

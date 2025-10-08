@@ -47,7 +47,7 @@ export function ThresholdSlider({
             <Button
               type="button"
               onClick={onReset}
-              className="text-xs text-blue-600 hover:text-blue-800 underline"
+              className="text-xs hover:text-blue-800"
               title={`Reset to default (${defaultValue}${unit})`}
             >
               Reset
