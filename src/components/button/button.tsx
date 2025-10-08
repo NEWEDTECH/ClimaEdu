@@ -34,7 +34,7 @@ export function Button({
   const variants = {
     primary: "bg-primary text-secondary shadow-sm hover:bg-primary/90",
     secondary:
-      "bg-transparent text-secondary shadow-sm hover:bg-transparent/80",
+      "bg-transparent text-black dark:text-white shadow-sm hover:bg-transparent/80",
     ghost:
       "bg-transparent hover:bg-accent hover:text-accent-foreground shadow-none",
   };
