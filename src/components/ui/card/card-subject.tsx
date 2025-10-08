@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Play, Lock, BookOpen, Headphones, TrendingUp } from "lucide-react";
@@ -28,35 +28,52 @@ export function CardSubject({
   userId,
   institutionId,
 }: CardSubjectProps) {
-  const [isHovered, setIsHovered] = React.useState(false);
-  const [progressPercentage, setProgressPercentage] = React.useState(0);
-  const [loading, setLoading] = React.useState(true);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [progressPercentage, setProgressPercentage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Load course progress
-  React.useEffect(() => {
+  useEffect(() => {
     const loadProgress = async () => {
+      console.log('[CardSubject] Starting to load progress with props:', {
+        courseId,
+        userId,
+        institutionId,
+        title
+      });
+
       if (!courseId || !userId || !institutionId) {
+        console.warn('[CardSubject] Missing required props:', {
+          hasCourseId: !!courseId,
+          hasUserId: !!userId,
+          hasInstitutionId: !!institutionId
+        });
         setLoading(false);
         return;
       }
 
       try {
+        console.log('[CardSubject] Resolving GetCourseProgressUseCase from container...');
         const useCase = container.get<GetCourseProgressUseCase>(
           Register.content.useCase.GetCourseProgressUseCase
         );
 
+        console.log('[CardSubject] UseCase resolved, executing...');
         const result = await useCase.execute({
           courseId,
           userId,
           institutionId
         });
 
+        console.log('[CardSubject] UseCase execution completed. Result:', result);
         setProgressPercentage(result.progressPercentage);
+        console.log('[CardSubject] Progress percentage set to:', result.progressPercentage);
       } catch (error) {
-        console.error('Error loading course progress:', error);
+        console.error('[CardSubject] Error loading course progress:', error);
         setProgressPercentage(0);
       } finally {
         setLoading(false);
+        console.log('[CardSubject] Loading completed');
       }
     };
 

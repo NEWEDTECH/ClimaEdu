@@ -357,6 +357,8 @@ export default function Home() {
                       title=""
                       emptyMessage=""
                       className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}
@@ -376,6 +378,8 @@ export default function Home() {
                       title=""
                       emptyMessage=""
                       className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}
@@ -395,6 +399,8 @@ export default function Home() {
                       title=""
                       emptyMessage=""
                       className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}
@@ -435,6 +441,8 @@ export default function Home() {
                       title=""
                       emptyMessage=""
                       className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}
@@ -455,6 +463,8 @@ export default function Home() {
                       title=""
                       emptyMessage=""
                       className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}
@@ -475,6 +485,8 @@ export default function Home() {
                       title=""
                       emptyMessage=""
                       className="bg-transparent shadow-none p-0"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}
@@ -497,6 +509,8 @@ export default function Home() {
                       className="bg-transparent shadow-none p-0"
                       itemClassName="cursor-not-allowed opacity-75 hover:opacity-90 transition-opacity"
                       singleItemClassName="w-[400px] cursor-not-allowed opacity-75"
+                      userId={infoUser.id}
+                      institutionId={infoUser.currentIdInstitution}
                     />
                   </section>
                 )}

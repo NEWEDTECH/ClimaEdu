@@ -16,6 +16,9 @@ interface ContentItem {
   href: string;
   imageUrl?: string;
   isBlocked?: boolean;
+  courseId?: string;
+  userId?: string;
+  institutionId?: string;
 }
 
 interface ContentCarouselProps {
@@ -25,6 +28,8 @@ interface ContentCarouselProps {
   className?: string;
   itemClassName?: string;
   singleItemClassName?: string;
+  userId?: string;
+  institutionId?: string;
 }
 
 export function ContentCarousel({
@@ -33,7 +38,9 @@ export function ContentCarousel({
   emptyMessage = "Nenhum conteúdo disponível.",
   className = "",
   itemClassName = "",
-  singleItemClassName = "w-[400px]"
+  singleItemClassName = "w-[400px]",
+  userId,
+  institutionId
 }: ContentCarouselProps) {
   const { isDarkMode } = useTheme();
 
@@ -82,6 +89,9 @@ export function ContentCarousel({
             href={item.href}
             imageUrl={item.imageUrl}
             isBlocked={item.isBlocked}
+            courseId={item.courseId || item.id}
+            userId={userId}
+            institutionId={institutionId}
           />
         </div>
       </div>
@@ -129,6 +139,9 @@ export function ContentCarousel({
                     href={item.href}
                     imageUrl={item.imageUrl}
                     isBlocked={item.isBlocked}
+                    courseId={item.courseId || item.id}
+                    userId={userId}
+                    institutionId={institutionId}
                   />
                 </div>
               </CarouselItem>
