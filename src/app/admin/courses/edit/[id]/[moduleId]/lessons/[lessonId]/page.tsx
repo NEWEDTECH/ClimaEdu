@@ -54,6 +54,7 @@ type QuestionnaireData = {
   maxAttempts: number;
   passingScore: number;
   questions: QuestionData[];
+  lengthQuestions: number;
 }
 
 type QuestionData = {
@@ -167,7 +168,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               questionText: q.questionText,
               options: q.options,
               correctAnswerIndex: q.correctAnswerIndex
-            }))
+            })),
+          lengthQuestions: questionnaire?.questions.length!
           };
         } else if (questionnaire) {
 
@@ -181,9 +183,12 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               questionText: q.questionText,
               options: q.options,
               correctAnswerIndex: q.correctAnswerIndex
-            }))
+            })),
+            lengthQuestions: questionnaire?.questions.length
           };
         }
+
+        console.log('jdaklwjdawdwa', questionnaire?.questions.length)
         
         setFormData({
           id: lesson.id,
