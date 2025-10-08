@@ -54,4 +54,29 @@ export interface QuestionnaireSubmissionRepository {
    * @returns List of questionnaire submissions
    */
   listByUsers(userIds: string[]): Promise<QuestionnaireSubmission[]>;
+
+  /**
+   * List questionnaire submissions by institution
+   * @param institutionId Institution id
+   * @returns List of questionnaire submissions
+   */
+  listByInstitution(institutionId: string): Promise<QuestionnaireSubmission[]>;
+
+  /**
+   * List questionnaire submissions by user and institution
+   * @param userId User id
+   * @param institutionId Institution id
+   * @param questionnaireId Optional questionnaire id to filter
+   * @returns List of questionnaire submissions
+   */
+  listByUserAndInstitution(userId: string, institutionId: string, questionnaireId?: string): Promise<QuestionnaireSubmission[]>;
+
+  /**
+   * List questionnaire submissions by course, user and institution
+   * @param courseId Course id
+   * @param userId User id
+   * @param institutionId Institution id
+   * @returns List of questionnaire submissions
+   */
+  listByCourseUserAndInstitution(courseId: string, userId: string, institutionId: string): Promise<QuestionnaireSubmission[]>;
 }

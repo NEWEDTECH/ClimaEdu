@@ -5,8 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card/c
 import { ThresholdSlider } from './ThresholdSlider';
 import { NumericInput } from './NumericInput';
 import { ToggleSettings } from './ToggleSettings';
-import { Button } from "@/components/ui/button/button";
-import { RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from "@/components/button";
 import type { InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
 import { defaultInstitutionSettings } from '@/_core/shared/config/settings.config';
 
@@ -85,13 +84,11 @@ export function AdvancedSettingsSection({ settings = {}, onChange }: AdvancedSet
             <CardTitle className="text-lg">Configurações Avançadas</CardTitle>
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="primary"
               onClick={() => setIsExpanded(true)}
               className="flex items-center space-x-2"
             >
               <span>Expandir</span>
-              <ChevronDown size={16} />
             </Button>
           </div>
         </CardHeader>
@@ -107,23 +104,19 @@ export function AdvancedSettingsSection({ settings = {}, onChange }: AdvancedSet
           <div className="flex items-center space-x-2">
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="primary"
               onClick={handleResetAll}
-              className="flex items-center space-x-2 text-blue-600"
+              className="flex items-center space-x-2 hover:text-blue-600"
             >
-              <RotateCcw size={14} />
-              <span>Reset All</span>
+              Reset All
             </Button>
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="primary"
               onClick={() => setIsExpanded(false)}
               className="flex items-center space-x-2"
             >
-              <span>Colapsar</span>
-              <ChevronUp size={16} />
+              <span>Recuar</span>
             </Button>
           </div>
         </div>

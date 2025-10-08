@@ -9,6 +9,12 @@ import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { ScormPlayer } from '@/components/scorm/ScormPlayer';
 import { ActivityFileUpload } from './ActivityFileUpload';
 import { useProfile } from '@/context/zustand/useProfile';
+import { useState, useEffect } from 'react';
+import { container } from '@/_core/shared/container';
+import { Register } from '@/_core/shared/container';
+import type { ActivitySubmissionRepository } from '@/_core/modules/content';
+import type { ActivitySubmission } from '@/_core/modules/content';
+import { ActivitySubmissionStatus } from '@/_core/modules/content';
 
 type CourseContentProps = {
   activeContent: Content | null;
@@ -35,6 +41,43 @@ export function CourseContent({
 }: CourseContentProps) {
   const { isDarkMode } = useTheme();
   const { infoUser } = useProfile();
+  const [activitySubmission, setActivitySubmission] = useState<ActivitySubmission | null>(null);
+  const [loadingSubmission, setLoadingSubmission] = useState(false);
+
+  // Load activity submission status
+  useEffect(() => {
+    const loadSubmission = async () => {
+      if (!activeActivity || !infoUser.id || !institutionId) {
+        setActivitySubmission(null);
+        return;
+      }
+
+      setLoadingSubmission(true);
+      try {
+        const submissionRepository = container.get<ActivitySubmissionRepository>(
+          Register.content.repository.ActivitySubmissionRepository
+        );
+
+        const submissions = await submissionRepository.findByActivityAndStudent(
+          activeActivity.id,
+          infoUser.id
+        );
+
+        if (submissions && submissions.length > 0) {
+          setActivitySubmission(submissions[0]);
+        } else {
+          setActivitySubmission(null);
+        }
+      } catch (error) {
+        console.error('Error loading activity submission:', error);
+        setActivitySubmission(null);
+      } finally {
+        setLoadingSubmission(false);
+      }
+    };
+
+    loadSubmission();
+  }, [activeActivity, infoUser.id, institutionId]);
 
   return (
     <div className={`space-y-8 ${isDarkMode ? 'bg-black' : 'bg-white'} rounded-lg`}>
@@ -210,36 +253,155 @@ export function CourseContent({
                   )}
 
                   {/* Activity Status */}
-                  <div className={`p-4 rounded-lg border ${
-                    isDarkMode 
-                      ? 'bg-yellow-900/20 border-yellow-800' 
-                      : 'bg-yellow-50 border-yellow-200'
-                  }`}>
-                    <div className="flex items-center justify-between">
+                  {!loadingSubmission && activitySubmission && (
+                    <div className={`p-4 rounded-lg border-2 ${
+                      activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                        ? isDarkMode 
+                          ? 'bg-green-900/20 border-green-700' 
+                          : 'bg-green-50 border-green-300'
+                        : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                        ? isDarkMode 
+                          ? 'bg-red-900/20 border-red-700' 
+                          : 'bg-red-50 border-red-300'
+                        : isDarkMode 
+                          ? 'bg-yellow-900/20 border-yellow-700' 
+                          : 'bg-yellow-50 border-yellow-300'
+                    }`}>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0">
+                              {activitySubmission.status === ActivitySubmissionStatus.APPROVED ? (
+                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              ) : activitySubmission.status === ActivitySubmissionStatus.REJECTED ? (
+                                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <p className={`font-semibold text-lg ${
+                                activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                                  ? isDarkMode ? 'text-green-200' : 'text-green-800'
+                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                  ? isDarkMode ? 'text-red-200' : 'text-red-800'
+                                  : isDarkMode ? 'text-yellow-200' : 'text-yellow-800'
+                              }`}>
+                                Status: {
+                                  activitySubmission.status === ActivitySubmissionStatus.APPROVED 
+                                    ? '✅ Aprovada'
+                                    : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                    ? '❌ Reprovada'
+                                    : '⏳ Aguardando Avaliação'
+                                }
+                              </p>
+                              <p className={`text-sm ${
+                                activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                                  ? isDarkMode ? 'text-green-300' : 'text-green-700'
+                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                  ? isDarkMode ? 'text-red-300' : 'text-red-700'
+                                  : isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
+                              }`}>
+                                {activitySubmission.reviewedAt 
+                                  ? `Avaliada em ${new Date(activitySubmission.reviewedAt).toLocaleString('pt-BR')}`
+                                  : `Enviada em ${new Date(activitySubmission.submittedAt).toLocaleString('pt-BR')}`
+                                }
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <div className={`w-3 h-3 rounded-full ${
+                              activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                                ? 'bg-green-500'
+                                : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                ? 'bg-red-500'
+                                : 'bg-yellow-500 animate-pulse'
+                            }`}></div>
+                          </div>
+                        </div>
+
+                        {/* Feedback do Professor */}
+                        {activitySubmission.feedback && (
+                          <div className={`p-3 rounded border ${
+                            isDarkMode 
+                              ? 'bg-gray-800 border-gray-600' 
+                              : 'bg-white border-gray-200'
+                          }`}>
+                            <div className="flex items-start gap-2 mb-2">
+                              <svg className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                                isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                              </svg>
+                              <div className="flex-1">
+                                <p className={`text-sm font-semibold mb-1 ${
+                                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>
+                                  Feedback do Professor:
+                                </p>
+                                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>
+                                  {activitySubmission.feedback}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Loading State */}
+                  {loadingSubmission && (
+                    <div className={`p-4 rounded-lg border ${
+                      isDarkMode 
+                        ? 'bg-gray-800 border-gray-700' 
+                        : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                          Carregando status da atividade...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Submission Yet */}
+                  {!loadingSubmission && !activitySubmission && (
+                    <div className={`p-4 rounded-lg border ${
+                      isDarkMode 
+                        ? 'bg-blue-900/20 border-blue-800' 
+                        : 'bg-blue-50 border-blue-200'
+                    }`}>
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0">
-                          <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
                         <div>
                           <p className={`font-medium ${
-                            isDarkMode ? 'text-yellow-200' : 'text-yellow-800'
+                            isDarkMode ? 'text-blue-200' : 'text-blue-800'
                           }`}>
                             Atividade Prática
                           </p>
                           <p className={`text-sm ${
-                            isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
+                            isDarkMode ? 'text-blue-300' : 'text-blue-700'
                           }`}>
-                            Complete esta atividade seguindo as instruções acima
+                            Envie seus arquivos abaixo para que o professor possa avaliar
                           </p>
                         </div>
                       </div>
-                      <div className="flex-shrink-0">
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* File Upload Section */}
                   {activeActivity && activeLesson && (

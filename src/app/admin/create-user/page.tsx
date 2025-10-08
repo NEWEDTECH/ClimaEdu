@@ -283,29 +283,43 @@ export default function CreateUserPage() {
         result.totalFailed += associationFailures.length;
       }
 
-      // Show results
+      // Analyze results for better messaging
+      const existingUsersCount = result.failedEmails.filter(failure => 
+        failure.error.toLowerCase().includes('already exists') || 
+        failure.error.toLowerCase().includes('já existe')
+      ).length;
+
+      const otherErrorsCount = result.totalFailed - existingUsersCount;
+
+      // Show results with detailed messaging
       if (result.totalCreated > 0) {
         setSuccess(true);
         console.log(`✅ ${result.totalCreated} usuários criados com sucesso!`);
         
-        if (result.totalFailed > 0) {
-          console.warn(`⚠️ ${result.totalFailed} usuários falharam:`, result.failedEmails);
-          setError(`${result.totalCreated} usuários criados, mas ${result.totalFailed} falharam.`);
+        if (existingUsersCount > 0 && otherErrorsCount === 0) {
+          // Only existing users as errors
+          setError(`✅ ${result.totalCreated} usuários foram cadastrados com sucesso! ${existingUsersCount} já estavam cadastrados na plataforma.`);
+        } else if (existingUsersCount > 0 && otherErrorsCount > 0) {
+          // Mixed errors
+          setError(`✅ ${result.totalCreated} usuários foram cadastrados com sucesso! ${existingUsersCount} já estavam cadastrados e ${otherErrorsCount} falharam por outros motivos.`);
+        } else if (otherErrorsCount > 0) {
+          // Only other errors
+          setError(`✅ ${result.totalCreated} usuários foram cadastrados com sucesso! ${otherErrorsCount} falharam por outros motivos.`);
         }
       } else {
-        // Check if all failures are due to existing users
-        const allExistingUsers = result.failedEmails.every(failure => 
-          failure.error.toLowerCase().includes('already exists') || 
-          failure.error.toLowerCase().includes('já existe')
-        );
-        
-        if (allExistingUsers && result.failedEmails.length > 0) {
-          setError(`⚠️ Todos os ${result.totalProcessed} usuários da planilha já existem na plataforma. Nenhum usuário novo foi criado.`);
-        } else if (result.failedEmails.length > 0) {
+        // No users created
+        if (existingUsersCount > 0 && otherErrorsCount === 0) {
+          // All users already exist
+          setError(`ℹ️ Todos os ${result.totalProcessed} usuários da planilha já estão cadastrados na plataforma. Nenhum usuário novo foi criado.`);
+        } else if (existingUsersCount > 0 && otherErrorsCount > 0) {
+          // Mixed: some exist, some failed
+          setError(`❌ Nenhum usuário foi criado. ${existingUsersCount} já estavam cadastrados e ${otherErrorsCount} falharam por outros motivos.`);
+        } else if (otherErrorsCount > 0) {
+          // Only other errors
           console.warn('❌ Falhas no processamento:', result.failedEmails);
-          setError(`Nenhum usuário foi criado. ${result.totalFailed} falhas encontradas.`);
+          setError(`❌ Nenhum usuário foi criado. ${result.totalFailed} usuários falharam no processamento.`);
         } else {
-          setError('Nenhum usuário foi criado. Verifique o formato do CSV.');
+          setError('❌ Nenhum usuário foi criado. Verifique o formato do CSV.');
         }
       }
 

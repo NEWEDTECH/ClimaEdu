@@ -1,8 +1,10 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData, Timestamp } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Course, Module, Lesson } from '../../../core/entities';
 import type { CourseRepository } from '../CourseRepository';
+import type { ModuleRepository } from '../ModuleRepository';
+import { Register } from '@/_core/shared/container';
 import { nanoid } from 'nanoid';
 
 /**
@@ -12,6 +14,11 @@ import { nanoid } from 'nanoid';
 export class FirebaseCourseRepository implements CourseRepository {
   private readonly collectionName = 'courses';
   private readonly idPrefix = 'crs_';
+
+  constructor(
+    @inject(Register.content.repository.ModuleRepository)
+    private readonly moduleRepository: ModuleRepository
+  ) {}
 
   /**
    * Generate a new unique ID for a course
@@ -84,7 +91,17 @@ export class FirebaseCourseRepository implements CourseRepository {
     }
 
     const data = courseDoc.data();
-    return this.mapToEntity({ id, ...data });
+    
+    // Fetch modules from separate collection
+    const modules = await this.moduleRepository.listByCourse(id);
+    
+    console.log('[FirebaseCourseRepository] Loaded course:', {
+      courseId: id,
+      title: data.title,
+      modulesFromCollection: modules.length
+    });
+    
+    return this.mapToEntity({ id, ...data, modules });
   }
 
   /**
@@ -148,9 +165,15 @@ export class FirebaseCourseRepository implements CourseRepository {
     const q = query(coursesRef, where('institutionId', '==', institutionId));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    // Fetch modules for each course
+    const coursesWithModules = await Promise.all(
+      querySnapshot.docs.map(async (docSnapshot) => {
+        const data = docSnapshot.data();
+        const modules = await this.moduleRepository.listByCourse(docSnapshot.id);
+        return this.mapToEntity({ id: docSnapshot.id, ...data, modules });
+      })
+    );
+
+    return coursesWithModules;
   }
 }

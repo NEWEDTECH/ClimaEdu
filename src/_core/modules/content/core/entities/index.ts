@@ -2,6 +2,8 @@
  * Export all domain entities from the content module
  */
 export * from './Activity';
+export * from './ActivitySubmission';
+export * from './ActivitySubmissionStatus';
 export * from './Content';
 export * from './ContentType';
 export * from './Course';

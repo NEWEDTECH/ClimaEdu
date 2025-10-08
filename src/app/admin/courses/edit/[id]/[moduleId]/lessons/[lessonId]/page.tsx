@@ -555,7 +555,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* Content Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="content-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-blue-100/50 dark:hover:bg-blue-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-blue-100/50 dark:hover:bg-blue-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                       <Layers className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -582,7 +582,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* Scorm Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="scorm-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-purple-100/50 dark:hover:bg-purple-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-purple-100/50 dark:hover:bg-purple-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                       <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -610,7 +610,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* PDF Upload Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="pdf-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-red-100/50 dark:hover:bg-red-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-red-100/50 dark:hover:bg-red-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
                       <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -639,7 +639,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* MP3 Upload Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="mp3-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-green-100/50 dark:hover:bg-green-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-green-100/50 dark:hover:bg-green-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                       <Music className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -668,7 +668,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* Description Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="description-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
                       <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -695,7 +695,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* Activity Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="activity-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-teal-100/50 dark:hover:bg-teal-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-teal-100/50 dark:hover:bg-teal-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
                       <ClipboardList className="h-5 w-5 text-teal-600 dark:text-teal-400" />
@@ -722,7 +722,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             {/* Questionnaire Section */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="questionnaire-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-t-lg transition-colors">
+                <AccordionTrigger className="px-6 py-4 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-t-lg transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
                       <HelpCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />

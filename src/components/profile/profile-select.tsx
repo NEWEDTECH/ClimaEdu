@@ -6,7 +6,7 @@ import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
 import { FiUsers, FiActivity, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
-import { MdDashboard, MdSchool } from "react-icons/md";
+import { MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
@@ -58,14 +58,12 @@ const adminItems: DropdownItem[] = [
   { label: 'Instituições', href: '/admin/institution', icon: <MdSchool /> },
   { label: 'Conquistas', href: '/admin/achievements', icon: <FiAward /> },
   { label: 'Social', href: '/social', icon: <FiUsers /> },
-  { label: 'Dashboard', href: '/admin/dashboard', icon: <MdDashboard /> },
   { label: 'Podcast', href: '/admin/podcast', icon: <FiMic /> },
   { label: 'Alunos', href: '/admin/student', icon: <FiUsers /> },
   { label: 'Classes', href: '/admin/turmas', icon: <FiLayers /> },
   { label: 'Professores', href: '/admin/tutor', icon: <FiUserCheck /> },
   { label: 'Trilhas', href: '/admin/trails', icon: <FiHome /> },
   { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
-  { label: 'Relatórios', href: '/admin/reports', icon: <FiBarChart /> },
   { label: 'Criar Usuário', href: '/admin/create-user', icon: <FiUserPlus /> },
   { label: 'Configurações', href: '/admin/settings', icon: <FiSettings /> },
 ];

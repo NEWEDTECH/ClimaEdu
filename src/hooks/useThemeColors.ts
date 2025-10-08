@@ -25,7 +25,7 @@ export function useThemeColors() {
       root.style.setProperty('--primary-foreground', institution.secondary_color);
       
       // Cores secundárias
-      root.style.setProperty('--secondary', institution.primary_color);
+      root.style.setProperty('--secondary', institution.secondary_color);
       root.style.setProperty('--secondary-foreground', institution.secondary_color);
       
       // Aplica também para sidebar se necessário
