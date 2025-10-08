@@ -126,22 +126,23 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
     <Dropdown className={cn(
       "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700",
     )}>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={infoUser.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <RxAvatar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          )}
+        </div>
 
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={'userName'}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <RxAvatar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-        )}
+        <span className="font-medium text-sm dark:text-white text-black">
+          {infoUser.name}
+        </span>
       </div>
-
-      <span className="font-medium text-sm dark:text-white text-black">
-        {infoUser.name}
-      </span>
 
       <DropdownMenuContent 
         align="end" 
@@ -171,14 +172,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
           }
           return null;
         })}
-
-        {/* Profile specific options */}
-        <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
-          Perfil
-        </div>
-
         
-        <div className="h-px my-1 bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild>
           <ButtonLogout />
         </DropdownMenuItem>

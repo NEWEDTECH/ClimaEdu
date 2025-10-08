@@ -35,45 +35,31 @@ export function CardSubject({
   // Load course progress
   useEffect(() => {
     const loadProgress = async () => {
-      console.log('[CardSubject] Starting to load progress with props:', {
-        courseId,
-        userId,
-        institutionId,
-        title
-      });
 
       if (!courseId || !userId || !institutionId) {
-        console.warn('[CardSubject] Missing required props:', {
-          hasCourseId: !!courseId,
-          hasUserId: !!userId,
-          hasInstitutionId: !!institutionId
-        });
+
         setLoading(false);
         return;
       }
 
       try {
-        console.log('[CardSubject] Resolving GetCourseProgressUseCase from container...');
+
         const useCase = container.get<GetCourseProgressUseCase>(
           Register.content.useCase.GetCourseProgressUseCase
         );
 
-        console.log('[CardSubject] UseCase resolved, executing...');
         const result = await useCase.execute({
           courseId,
           userId,
           institutionId
         });
 
-        console.log('[CardSubject] UseCase execution completed. Result:', result);
         setProgressPercentage(result.progressPercentage);
-        console.log('[CardSubject] Progress percentage set to:', result.progressPercentage);
       } catch (error) {
-        console.error('[CardSubject] Error loading course progress:', error);
+        console.log(error)
         setProgressPercentage(0);
       } finally {
         setLoading(false);
-        console.log('[CardSubject] Loading completed');
       }
     };
 

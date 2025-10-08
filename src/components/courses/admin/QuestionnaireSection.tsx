@@ -17,6 +17,7 @@ interface QuestionnaireData {
   maxAttempts: number
   passingScore: number
   questions: QuestionData[]
+  lengthQuestions: number;
 }
 
 interface QuestionnaireSectionProps {
@@ -36,6 +37,7 @@ export function QuestionnaireSection({
   onDelete,
   isSubmitting
 }: QuestionnaireSectionProps) {
+
   if (!questionnaire) {
     return (
       <Card>
@@ -186,7 +188,7 @@ export function QuestionnaireSection({
                       Total de Perguntas
                     </p>
                     <p className="text-lg font-bold text-purple-800 dark:text-purple-200">
-                      {questionnaire.questions.length}
+                      {questionnaire.lengthQuestions}
                     </p>
                   </div>
                 </div>
@@ -194,7 +196,7 @@ export function QuestionnaireSection({
             </div>
 
             {/* Questions preview */}
-            {questionnaire.questions.length > 0 && (
+            {Array.isArray(questionnaire.questions) && questionnaire.questions.length > 0 && (
               <div className="border-t border-purple-200 dark:border-purple-700 pt-4">
                 <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-3 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +211,7 @@ export function QuestionnaireSection({
                         {index + 1}. {question.questionText}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
-                        {question.options.slice(0, 2).map((option, optIndex) => (
+                        {Array.isArray(question.options) && question.options.slice(0, 2).map((option, optIndex) => (
                           <div key={optIndex} className="text-xs text-purple-700 dark:text-purple-300 bg-white/50 dark:bg-purple-800/30 px-2 py-1 rounded">
                             {String.fromCharCode(65 + optIndex)}. {option.length > 30 ? option.substring(0, 30) + '...' : option}
                           </div>
