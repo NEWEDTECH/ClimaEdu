@@ -551,6 +551,34 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                 </Button>
               </div>
             </div>
+
+
+                        {/* Description Section */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="description-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 dark:border-slate-700">
+                <AccordionTrigger className="px-6 py-4 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 rounded-t-lg transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                      <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Descrição</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Adicione ou edite a descrição da lição</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <DescriptionSection
+                    description={lessonDescription}
+                    courseId={courseId}
+                    moduleId={moduleId}
+                    lessonId={lessonId}
+                    onDelete={handleDeleteDescription}
+                    isSubmitting={isSubmitting}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
             
             {/* Content Section */}
             <Accordion type="single" collapsible className="w-full">
@@ -561,7 +589,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       <Layers className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Conteúdos</h3>
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Vídeo</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400">Gerencie vídeos e materiais da lição</p>
                     </div>
                   </div>
@@ -616,7 +644,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Upload de PDF</h3>
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">PDF</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400">Adicione documentos PDF à lição</p>
                     </div>
                   </div>
@@ -645,7 +673,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       <Music className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Upload de MP3</h3>
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Áudio</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400">Adicione arquivos de áudio à lição</p>
                     </div>
                   </div>
@@ -665,32 +693,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
               </AccordionItem>
             </Accordion>
 
-            {/* Description Section */}
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="description-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 dark:border-slate-700">
-                <AccordionTrigger className="px-6 py-4 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 rounded-t-lg transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                      <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Descrição</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Adicione ou edite a descrição da lição</p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-6">
-                  <DescriptionSection
-                    description={lessonDescription}
-                    courseId={courseId}
-                    moduleId={moduleId}
-                    lessonId={lessonId}
-                    onDelete={handleDeleteDescription}
-                    isSubmitting={isSubmitting}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
 
             {/* Activity Section */}
             <Accordion type="single" collapsible className="w-full">
