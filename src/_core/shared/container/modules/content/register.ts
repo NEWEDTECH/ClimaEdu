@@ -8,6 +8,7 @@ import type { CourseTutorRepository } from '@/_core/modules/content/infrastructu
 import type { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import type { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import type { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
+import type { ActivitySubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/ActivitySubmissionRepository';
 import type { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import type { QuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { LessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/LessonProgressRepository';
@@ -19,6 +20,7 @@ import { FirebaseCourseTutorRepository } from '@/_core/modules/content/infrastru
 import { FirebaseModuleRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseModuleRepository';
 import { FirebaseLessonRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonRepository';
 import { FirebaseActivityRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseActivityRepository';
+import { FirebaseActivitySubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseActivitySubmissionRepository';
 import { FirebaseQuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireRepository';
 import { FirebaseQuestionnaireSubmissionRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseQuestionnaireSubmissionRepository';
 import { FirebaseLessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/implementations/FirebaseLessonProgressRepository';
@@ -59,6 +61,8 @@ import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use
 import { UploadActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/upload-activity-files/upload-activity-files.use-case';
 import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
 import { DeleteActivityFileUseCase } from '@/_core/modules/content/core/use-cases/delete-activity-file/delete-activity-file.use-case';
+import { ApproveRejectActivitySubmissionUseCase } from '@/_core/modules/content/core/use-cases/approve-reject-activity-submission';
+import { GetCourseProgressUseCase } from '@/_core/modules/content/core/use-cases/get-course-progress';
 import { UploadPdfToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-pdf-to-lesson/upload-pdf-to-lesson.use-case';
 import { DeletePdfFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-pdf-from-lesson/delete-pdf-from-lesson.use-case';
 import { UploadMp3ToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-mp3-to-lesson/upload-mp3-to-lesson.use-case';
@@ -76,6 +80,7 @@ export function registerContentModule(container: Container): void {
   container.bind<ModuleRepository>(repositories.ModuleRepository).to(FirebaseModuleRepository);
   container.bind<LessonRepository>(repositories.LessonRepository).to(FirebaseLessonRepository);
   container.bind<ActivityRepository>(repositories.ActivityRepository).to(FirebaseActivityRepository);
+  container.bind<ActivitySubmissionRepository>(repositories.ActivitySubmissionRepository).to(FirebaseActivitySubmissionRepository);
   container.bind<QuestionnaireRepository>(repositories.QuestionnaireRepository).to(FirebaseQuestionnaireRepository);
   container.bind<QuestionnaireSubmissionRepository>(repositories.QuestionnaireSubmissionRepository).to(FirebaseQuestionnaireSubmissionRepository);
   container.bind<LessonProgressRepository>(repositories.LessonProgressRepository).to(FirebaseLessonProgressRepository);
@@ -98,7 +103,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.SubmitQuestionnaireUseCase).to(SubmitQuestionnaireUseCase);
   container.bind(useCases.RetryQuestionnaireUseCase).to(RetryQuestionnaireUseCase);
   container.bind(useCases.AssociateTutorToCourseUseCase).to(AssociateTutorToCourseUseCase);
-  container.bind(ListTutorCoursesUseCase).toSelf();
+  container.bind(useCases.ListTutorCoursesUseCase).to(ListTutorCoursesUseCase);
   container.bind(useCases.ListTutorCoursesWithStudentsUseCase).to(ListTutorCoursesWithStudentsUseCase);
   container.bind(useCases.ListQuestionnaireSubmissionsForTutorUseCase).to(ListQuestionnaireSubmissionsForTutorUseCase);
   container.bind(useCases.StartLessonProgressUseCase).to(StartLessonProgressUseCase);
@@ -118,6 +123,8 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.UploadActivityFilesUseCase).to(UploadActivityFilesUseCase);
   container.bind(useCases.ListActivityFilesUseCase).to(ListActivityFilesUseCase);
   container.bind(useCases.DeleteActivityFileUseCase).to(DeleteActivityFileUseCase);
+  container.bind(useCases.ApproveRejectActivitySubmissionUseCase).to(ApproveRejectActivitySubmissionUseCase);
+  container.bind(useCases.GetCourseProgressUseCase).to(GetCourseProgressUseCase);
   container.bind(useCases.UploadPdfToLessonUseCase).to(UploadPdfToLessonUseCase);
   container.bind(useCases.DeletePdfFromLessonUseCase).to(DeletePdfFromLessonUseCase);
   container.bind(useCases.UploadMp3ToLessonUseCase).to(UploadMp3ToLessonUseCase);

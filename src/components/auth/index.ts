@@ -1,5 +1,4 @@
 export { AuthStatus } from './AuthStatus';
-export { EmailLinkHandler } from './EmailLinkHandler';
 export { EmulatorAuthLinks } from './EmulatorAuthLinks';
 export { EmulatorStatus } from './EmulatorStatus';
 export { LoginForm } from './LoginForm';

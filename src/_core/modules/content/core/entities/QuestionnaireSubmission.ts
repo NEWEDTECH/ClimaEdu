@@ -10,6 +10,7 @@ export class QuestionnaireSubmission {
     readonly questionnaireId: string,
     readonly userId: string,
     readonly institutionId: string,
+    readonly courseId: string,
     readonly startedAt: Date,
     readonly completedAt: Date,
     readonly score: number,
@@ -29,6 +30,7 @@ export class QuestionnaireSubmission {
     questionnaireId: string;
     userId: string;
     institutionId: string;
+    courseId: string;
     startedAt: Date;
     completedAt?: Date;
     score?: number;
@@ -75,6 +77,7 @@ export class QuestionnaireSubmission {
       params.questionnaireId,
       params.userId,
       params.institutionId,
+      params.courseId,
       params.startedAt,
       completedAt,
       score,

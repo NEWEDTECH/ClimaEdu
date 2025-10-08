@@ -8,23 +8,31 @@ import {
   DropdownMenuItem
 } from '@/components/ui/button/dropdown';
 
-type DropdownMenuProps = {
+type DropdownProps = {
   children: React.ReactNode;
-  className: string;
+  className?: string;
 }
 
 function Dropdown({
   children,
   className
-}: DropdownMenuProps) {
+}: DropdownProps) {
+  // Split children into trigger and content
+  const childrenArray = React.Children.toArray(children);
+  const trigger = childrenArray.find(
+    (child) => React.isValidElement(child) && child.type !== DropdownMenuContent
+  );
+  const content = childrenArray.find(
+    (child) => React.isValidElement(child) && child.type === DropdownMenuContent
+  );
+
   return (
-    <>
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger className={className}>
-        {children}
+        {trigger}
       </DropdownMenuTrigger>
+      {content}
     </DropdownMenu>
-    </>
   )
 }
 

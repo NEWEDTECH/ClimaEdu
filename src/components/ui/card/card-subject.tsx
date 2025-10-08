@@ -1,7 +1,10 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Play, Lock, BookOpen, Headphones, TrendingUp } from "lucide-react";
+import { container } from '@/_core/shared/container';
+import { Register } from '@/_core/shared/container';
+import type { GetCourseProgressUseCase } from '@/_core/modules/content';
 
 interface CardSubjectProps {
   title: string;
@@ -10,6 +13,9 @@ interface CardSubjectProps {
   imageUrl?: string;
   isBlocked?: boolean;
   className?: string;
+  courseId?: string;
+  userId?: string;
+  institutionId?: string;
 }
 
 export function CardSubject({
@@ -18,8 +24,47 @@ export function CardSubject({
   imageUrl = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop",
   isBlocked = false,
   className,
+  courseId,
+  userId,
+  institutionId,
 }: CardSubjectProps) {
-  const [isHovered, setIsHovered] = React.useState(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [progressPercentage, setProgressPercentage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Load course progress
+  useEffect(() => {
+    const loadProgress = async () => {
+
+      if (!courseId || !userId || !institutionId) {
+
+        setLoading(false);
+        return;
+      }
+
+      try {
+
+        const useCase = container.get<GetCourseProgressUseCase>(
+          Register.content.useCase.GetCourseProgressUseCase
+        );
+
+        const result = await useCase.execute({
+          courseId,
+          userId,
+          institutionId
+        });
+
+        setProgressPercentage(result.progressPercentage);
+      } catch (error) {
+        console.log(error)
+        setProgressPercentage(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProgress();
+  }, [courseId, userId, institutionId, title]);
 
   // Determine content type based on href for appropriate icon
   const getContentIcon = () => {
@@ -139,13 +184,14 @@ export function CardSubject({
                 )}
               </div>
 
-              {/* Progress Bar Placeholder */}
-              {!isBlocked && (
+              {/* Progress Bar */}
+              {!isBlocked && !loading && (
                 <div className="flex-1 ml-3">
                   <div className="h-1 bg-white/20 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.random() * 100}%` }}
+                      style={{ width: `${progressPercentage}%` }}
+                      title={`${progressPercentage}% concluído`}
                     />
                   </div>
                 </div>

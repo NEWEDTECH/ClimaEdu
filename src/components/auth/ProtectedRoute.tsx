@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { container } from '@/_core/shared/container/container';
-import { Register } from '@/_core/shared/container/symbols';
-import type { AuthService } from '@/_core/modules/auth/infrastructure/services/AuthService';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/_core/shared/firebase/firebase-client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,51 +13,47 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const authService = container.get<AuthService>(Register.auth.service.AuthService);
-        const authenticated = authService.isAuthenticated();
-        const currentUserId = authService.getCurrentUserId();
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log('ProtectedRoute - Authentication check:', authenticated);
-          console.log('ProtectedRoute - Current user ID:', currentUserId);
-        }
-        
-        setIsAuthenticated(authenticated);
-        
-        if (!authenticated && !fallback) {
-          // Redirect to login page if not authenticated and no fallback is provided
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('Error checking authentication:', error);
-        setIsAuthenticated(false);
-        if (!fallback) {
-          router.push('/login');
-        }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const authenticated = !!user;
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('ProtectedRoute - Auth state changed:', authenticated);
+        console.log('ProtectedRoute - User:', user?.uid || 'null');
       }
-    };
+      
+      setIsAuthenticated(authenticated);
+      setIsLoading(false);
+      
+      // Redirect to login if not authenticated and no fallback is provided
+      if (!authenticated && !fallback) {
+        router.push('/login');
+      }
+    }, (error) => {
+      // Handle errors in auth state listener
+      console.error('Error in auth state listener:', error);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      
+      if (!fallback) {
+        router.push('/login');
+      }
+    });
     
-    // Check authentication immediately
-    checkAuth();
-    
-    // Set up an interval to check authentication periodically
-    const interval = setInterval(checkAuth, 2000);
-    
-    // Clean up the interval when the component unmounts
-    return () => clearInterval(interval);
+    // Cleanup subscription when component unmounts
+    return () => unsubscribe();
   }, [router, fallback]);
 
   // Show loading state while checking authentication
-  if (isAuthenticated === null) {
+  if (isLoading || isAuthenticated === null) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-pulse">
           <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-blue-500"></div>
-          <p className="text-center text-gray-600">Checking authentication...</p>
+          <p className="text-center text-gray-600 dark:text-gray-400">Verificando autenticação...</p>
         </div>
       </div>
     );

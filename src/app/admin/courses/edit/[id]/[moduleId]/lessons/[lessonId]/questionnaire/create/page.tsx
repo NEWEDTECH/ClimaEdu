@@ -310,7 +310,8 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
 
 
       // Redirect to lesson page
-      router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
+
     } catch (error) {
       console.error('Erro ao salvar questionário:', error);
       alert(`Falha ao salvar questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -356,7 +357,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-2">
-              Criar Questionário
+              Salvar
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
               Adicionar questionário à lição <span className="font-medium">{lessonTitle}</span>
@@ -648,7 +649,8 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
 
             {/* Submit Buttons */}
             <div className="flex justify-end space-x-3 mt-6">
-              <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
+                
                 <Button
                   type="button"
                   variant='secondary'
@@ -656,11 +658,12 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                   Cancelar
                 </Button>
               </Link>
+
               <Button
                 type="submit"
                 disabled={isSubmitting || questions.length === 0}
               >
-                {isSubmitting ? 'Salvando...' : 'Criar Questionário'}
+                {isSubmitting ? 'Salvando...' : 'Salvar Questionário'}
               </Button>
             </div>
           </form>

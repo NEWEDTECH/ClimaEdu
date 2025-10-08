@@ -1,8 +1,10 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Module } from '../../../core/entities/Module';
 import type { ModuleRepository } from '../ModuleRepository';
+import type { LessonRepository } from '../LessonRepository';
+import { Register } from '@/_core/shared/container';
 import { nanoid } from 'nanoid';
 
 /**
@@ -12,6 +14,11 @@ import { nanoid } from 'nanoid';
 export class FirebaseModuleRepository implements ModuleRepository {
   private readonly collectionName = 'modules';
   private readonly idPrefix = 'mod_';
+
+  constructor(
+    @inject(Register.content.repository.LessonRepository)
+    private readonly lessonRepository: LessonRepository
+  ) {}
 
   /**
    * Generate a new unique ID for a module
@@ -53,7 +60,11 @@ export class FirebaseModuleRepository implements ModuleRepository {
     }
 
     const data = moduleDoc.data();
-    return this.mapToEntity({ id, ...data });
+    
+    // Fetch lessons from separate collection
+    const lessons = await this.lessonRepository.listByModule(id);
+    
+    return this.mapToEntity({ id, ...data, lessons });
   }
 
   /**
@@ -115,9 +126,16 @@ export class FirebaseModuleRepository implements ModuleRepository {
     const q = query(modulesRef, where('courseId', '==', courseId));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    // Fetch lessons for each module
+    const modulesWithLessons = await Promise.all(
+      querySnapshot.docs.map(async (docSnapshot) => {
+        const data = docSnapshot.data();
+        const lessons = await this.lessonRepository.listByModule(docSnapshot.id);
+              
+        return this.mapToEntity({ id: docSnapshot.id, ...data, lessons });
+      })
+    );
+
+    return modulesWithLessons;
   }
 }

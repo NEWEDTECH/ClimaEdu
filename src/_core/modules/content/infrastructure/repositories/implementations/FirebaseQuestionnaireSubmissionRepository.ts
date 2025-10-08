@@ -43,6 +43,7 @@ export class FirebaseQuestionnaireSubmissionRepository implements QuestionnaireS
       questionnaireId: data.questionnaireId,
       userId: data.userId,
       institutionId: data.institutionId,
+      courseId: data.courseId,
       startedAt,
       completedAt,
       score: data.score,
@@ -123,6 +124,7 @@ export class FirebaseQuestionnaireSubmissionRepository implements QuestionnaireS
       questionnaireId: submission.questionnaireId,
       userId: submission.userId,
       institutionId: submission.institutionId,
+      courseId: submission.courseId,
       startedAt: submission.startedAt,
       completedAt: submission.completedAt,
       score: submission.score,
@@ -199,5 +201,79 @@ export class FirebaseQuestionnaireSubmissionRepository implements QuestionnaireS
 
     const results = await Promise.all(promises);
     return results.flat();
+  }
+
+  /**
+   * List questionnaire submissions by institution
+   * @param institutionId Institution id
+   * @returns List of questionnaire submissions
+   */
+  async listByInstitution(institutionId: string): Promise<QuestionnaireSubmission[]> {
+    const submissionsRef = collection(firestore, this.collectionName);
+    const q = query(submissionsRef, where('institutionId', '==', institutionId));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
+  }
+
+  /**
+   * List questionnaire submissions by user and institution
+   * @param userId User id
+   * @param institutionId Institution id
+   * @param questionnaireId Optional questionnaire id to filter
+   * @returns List of questionnaire submissions
+   */
+  async listByUserAndInstitution(userId: string, institutionId: string, questionnaireId?: string): Promise<QuestionnaireSubmission[]> {
+    const submissionsRef = collection(firestore, this.collectionName);
+    
+    let q = query(
+      submissionsRef, 
+      where('userId', '==', userId),
+      where('institutionId', '==', institutionId)
+    );
+
+    // Adicionar filtro por questionnaireId se fornecido
+    if (questionnaireId) {
+      q = query(
+        submissionsRef,
+        where('userId', '==', userId),
+        where('institutionId', '==', institutionId),
+        where('questionnaireId', '==', questionnaireId)
+      );
+    }
+
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
+  }
+
+  /**
+   * List questionnaire submissions by course, user and institution
+   * @param courseId Course id
+   * @param userId User id
+   * @param institutionId Institution id
+   * @returns List of questionnaire submissions
+   */
+  async listByCourseUserAndInstitution(courseId: string, userId: string, institutionId: string): Promise<QuestionnaireSubmission[]> {
+    const submissionsRef = collection(firestore, this.collectionName);
+
+    const q = query(
+      submissionsRef,
+      where('userId', '==', userId),
+      where('institutionId', '==', institutionId)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
   }
 }

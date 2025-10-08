@@ -161,9 +161,11 @@ export function CSVUpload({
             <p className="text-sm text-gray-500 mb-4">
               ou clique no botão abaixo para selecionar
             </p>
-            <Button onClick={handleUploadClick}>
-              Selecionar Arquivo CSV
-            </Button>
+            <div className="flex justify-center">
+              <Button onClick={handleUploadClick} className='flex items-center'>
+                Selecionar Arquivo CSV
+              </Button>
+            </div>
             <input
               ref={fileInputRef}
               type="file"

@@ -6,7 +6,7 @@ import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
 import { FiUsers, FiActivity, FiFileText, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
-import { MdDashboard, MdSchool } from "react-icons/md";
+import { MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
@@ -58,14 +58,12 @@ const adminItems: DropdownItem[] = [
   { label: 'Instituições', href: '/admin/institution', icon: <MdSchool /> },
   { label: 'Conquistas', href: '/admin/achievements', icon: <FiAward /> },
   { label: 'Social', href: '/social', icon: <FiUsers /> },
-  { label: 'Dashboard', href: '/admin/dashboard', icon: <MdDashboard /> },
   { label: 'Podcast', href: '/admin/podcast', icon: <FiMic /> },
   { label: 'Alunos', href: '/admin/student', icon: <FiUsers /> },
   { label: 'Classes', href: '/admin/turmas', icon: <FiLayers /> },
   { label: 'Professores', href: '/admin/tutor', icon: <FiUserCheck /> },
   { label: 'Trilhas', href: '/admin/trails', icon: <FiHome /> },
   { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
-  { label: 'Relatórios', href: '/admin/reports', icon: <FiBarChart /> },
   { label: 'Criar Usuário', href: '/admin/create-user', icon: <FiUserPlus /> },
   { label: 'Configurações', href: '/admin/settings', icon: <FiSettings /> },
 ];
@@ -128,22 +126,23 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
     <Dropdown className={cn(
       "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700",
     )}>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={infoUser.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <RxAvatar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          )}
+        </div>
 
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={'userName'}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <RxAvatar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-        )}
+        <span className="font-medium text-sm dark:text-white text-black">
+          {infoUser.name}
+        </span>
       </div>
-
-      <span className="font-medium text-sm dark:text-white text-black">
-        {infoUser.name}
-      </span>
 
       <DropdownMenuContent 
         align="end" 
@@ -173,14 +172,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
           }
           return null;
         })}
-
-        {/* Profile specific options */}
-        <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
-          Perfil
-        </div>
-
         
-        <div className="h-px my-1 bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild>
           <ButtonLogout />
         </DropdownMenuItem>

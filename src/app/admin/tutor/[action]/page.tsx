@@ -24,7 +24,11 @@ import { ListUserInstitutionsUseCase } from '@/_core/modules/institution/core/us
 export default function AssociateTutorToCoursePage() {
   const router = useRouter()
   const params = useParams()
-  const tutorId = params.action as string
+  const action = params.action as string
+  
+  // Determine if we're in edit mode (action is a tutor ID) or create mode (action is "create")
+  const isEditMode = action !== 'create'
+  const tutorId = isEditMode ? action : ''
 
   const [tutors, setTutors] = useState<Array<{ id: string, name: string, email: string }>>([])
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
@@ -74,7 +78,7 @@ export default function AssociateTutorToCoursePage() {
         setInstitutions(institutionsForDropdown)
 
         // If in edit mode, fetch tutor data and courses
-        if (tutorId) {
+        if (isEditMode && tutorId) {
           // Get tutor data
           const tutor = await userRepository.findById(tutorId)
 
@@ -175,7 +179,7 @@ export default function AssociateTutorToCoursePage() {
     fetchInitialData()
 
     // Add click event listener to handle clicks outside dropdowns
-  }, [tutorId, selectedInstitutionId])
+  }, [tutorId, selectedInstitutionId, isEditMode])
 
   // Fetch courses when institution changes
   useEffect(() => {
@@ -199,7 +203,7 @@ export default function AssociateTutorToCoursePage() {
         setCourses(coursesForDropdown)
 
         // Only reset selected courses if not in edit mode
-        if (!tutorId) {
+        if (!isEditMode) {
           setSelectedCourses([])
         }
 
@@ -213,7 +217,7 @@ export default function AssociateTutorToCoursePage() {
     }
 
     fetchCourses()
-  }, [selectedInstitutionId, tutorId])
+  }, [selectedInstitutionId, tutorId, isEditMode])
 
 
   const handleCourseRemove = (courseId: string) => {
@@ -299,7 +303,7 @@ export default function AssociateTutorToCoursePage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">
-              {tutorId ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
+              {isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
             </h1>
             <Link href="/admin/tutor">
               <Button variant='primary'>Voltar</Button>
@@ -326,10 +330,10 @@ export default function AssociateTutorToCoursePage() {
             <FormSection onSubmit={handleSubmit}>
               <CardHeader>
                 <CardTitle>
-                  {tutorId ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
+                  {isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
                 </CardTitle>
                 <CardDescription>
-                  {tutorId
+                  {isEditMode
                     ? 'Edite as associações de cursos para este tutor'
                     : 'Selecione um tutor e um ou mais cursos para associá-lo'
                   }
@@ -344,7 +348,7 @@ export default function AssociateTutorToCoursePage() {
                   <SelectComponent
                     value={selectedInstitutionId}
                     onChange={(institutionId) => {
-                      if (!tutorId) {
+                      if (!isEditMode) {
                         const selectedInstitution = institutions.find(i => i.id === institutionId)
                         if (selectedInstitution) {
                           setSelectedInstitutionId(selectedInstitution.id)
@@ -356,9 +360,9 @@ export default function AssociateTutorToCoursePage() {
                       label: institution.name
                     }))}
                     placeholder="Selecione uma instituição"
-                    className={`${tutorId ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}
+                    className={`${isEditMode ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}
                   />
-                  {tutorId && (
+                  {isEditMode && (
                     <p className="text-xs text-gray-500">
                       Instituição definida automaticamente baseada nos cursos do tutor
                     </p>
@@ -372,9 +376,9 @@ export default function AssociateTutorToCoursePage() {
                   </label>
                   <SelectComponent
                     value={selectedTutorId}
-                    onChange={(tutorId) => {
-                      if (!tutorId) {
-                        const selectedTutor = tutors.find(t => t.id === tutorId)
+                    onChange={(selectedTutorIdValue) => {
+                      if (!isEditMode) {
+                        const selectedTutor = tutors.find(t => t.id === selectedTutorIdValue)
                         if (selectedTutor) {
                           setSelectedTutorId(selectedTutor.id)
                         }
@@ -385,10 +389,10 @@ export default function AssociateTutorToCoursePage() {
                       label: `${tutor.name} (${tutor.email})`
                     }))}
                     placeholder="Selecione um tutor"
-                    className={`${tutorId ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}
+                    className={`${isEditMode ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}
                   />
 
-                  {tutorId && (
+                  {isEditMode && (
                     <p className="text-xs text-gray-500">
                       Tutor não pode ser alterado no modo de edição
                     </p>
@@ -408,16 +412,16 @@ export default function AssociateTutorToCoursePage() {
                     <div className="mb-4">
                       <h4 className="text-sm font-medium mb-3">Cursos Selecionados ({selectedCourses.length})</h4>
                       <div
-                        className={`space-y-2 ${selectedCourses.length >= 5
-                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50'
+                        className={`space-y-2 dark:bg-dark ${selectedCourses.length >= 5
+                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2'
                           : ''
                           }`}
                         style={selectedCourses.length >= 5 ? { maxHeight: '400px' } : {}}
                       >
                         {selectedCourses.map((course) => (
-                          <div key={course.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div key={course.id} className="flex items-center gap-3 p-3 border border-blue-200 dark:border-white dark:bg-dark rounded-lg">
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">{course.title}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{course.title}</div>
                             </div>
                             <Button
                               type="button"
@@ -458,7 +462,7 @@ export default function AssociateTutorToCoursePage() {
                     </p>
                   )}
 
-                  {!selectedInstitutionId && !tutorId && (
+                  {!selectedInstitutionId && !isEditMode && (
                     <p className="text-sm text-gray-500">
                       Por favor, selecione uma instituição para ver os cursos
                     </p>
@@ -477,8 +481,8 @@ export default function AssociateTutorToCoursePage() {
                   type="submit"
                   disabled={isSubmitting || loading}>
                   {isSubmitting
-                    ? (tutorId ? 'Salvando...' : 'Associando...')
-                    : (tutorId ? 'Salvar' : 'Associar Tutor a Cursos')
+                    ? (isEditMode ? 'Salvando...' : 'Associando...')
+                    : (isEditMode ? 'Salvar' : 'Associar Tutor a Cursos')
                   }
                 </Button>
               </CardFooter>
