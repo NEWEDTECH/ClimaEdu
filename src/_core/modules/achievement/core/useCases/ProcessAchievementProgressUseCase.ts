@@ -201,6 +201,55 @@ export class ProcessAchievementProgressUseCase {
           isCompleted: completionPercentage >= criteriaValue
         };
 
+      case BadgeCriteriaType.DAILY_LOGIN:
+        // Uses consecutiveLoginDays from UserLoginEvent
+        const consecutiveDays = typeof eventData.consecutiveLoginDays === 'number'
+          ? eventData.consecutiveLoginDays
+          : 0;
+
+        return {
+          currentValue: consecutiveDays,
+          isCompleted: consecutiveDays >= criteriaValue
+        };
+
+      case BadgeCriteriaType.STUDY_STREAK:
+        // Uses consecutiveLoginDays from UserLoginEvent (same as DAILY_LOGIN)
+        // Represents consecutive days of studying/accessing the platform
+        const studyStreak = typeof eventData.consecutiveLoginDays === 'number'
+          ? eventData.consecutiveLoginDays
+          : 0;
+
+        return {
+          currentValue: studyStreak,
+          isCompleted: studyStreak >= criteriaValue
+        };
+
+      case BadgeCriteriaType.FIRST_TIME_ACTIVITIES:
+        // Uses isFirstLogin from UserLoginEvent
+        const isFirstLogin = eventData.isFirstLogin === true;
+
+        return {
+          currentValue: isFirstLogin ? 1 : 0,
+          isCompleted: isFirstLogin
+        };
+
+      case BadgeCriteriaType.TIME_BASED_ACCESS:
+        // Uses loginTime from UserLoginEvent to check time of day
+        const loginTime = eventData.loginTime instanceof Date
+          ? eventData.loginTime
+          : new Date(eventData.loginTime as string);
+
+        const hour = loginTime.getHours();
+
+        // Default implementation: considers any login time as valid
+        // Institutions can customize criteriaValue to represent specific hours
+        // For example: criteriaValue = 6 means "login between 6 AM and 7 AM"
+        // For now, we'll just mark as completed when login happens
+        return {
+          currentValue: hour,
+          isCompleted: true // Always complete on login for now
+        };
+
       default:
         return {
           currentValue: 1,
