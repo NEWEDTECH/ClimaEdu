@@ -1,10 +1,12 @@
 import { injectable, inject } from 'inversify';
 import type { LessonProgressRepository } from '../../../infrastructure/repositories/LessonProgressRepository';
+import type { LessonRepository } from '../../../infrastructure/repositories/LessonRepository';
 import type { CompleteLessonProgressInput } from './complete-lesson-progress.input';
 import type { CompleteLessonProgressOutput } from './complete-lesson-progress.output';
 import { Register } from '@/_core/shared/container';
 import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
 import { LessonCompletedEvent } from '@/_core/modules/achievement/core/events/LessonCompletedEvent';
+import { StudySessionEvent } from '@/_core/modules/achievement/core/events/StudySessionEvent';
 
 /**
  * Use case for forcefully completing lesson progress
@@ -16,7 +18,10 @@ export class CompleteLessonProgressUseCase {
   constructor(
     @inject(Register.content.repository.LessonProgressRepository)
     private lessonProgressRepository: LessonProgressRepository,
-    
+
+    @inject(Register.content.repository.LessonRepository)
+    private lessonRepository: LessonRepository,
+
     @inject(Register.shared.service.EventBus)
     private eventBus: EventBus
   ) {}
@@ -59,23 +64,47 @@ export class CompleteLessonProgressUseCase {
     console.log('🔎 Saving completed lesson progress:', lessonProgress);
     const savedProgress = await this.lessonProgressRepository.save(lessonProgress);
 
-    // Publish event if lesson was completed and wasn't already completed
+    // Publish events if lesson was completed and wasn't already completed
     if (savedProgress.isCompleted() && !wasAlreadyCompleted) {
       try {
+        // Fetch lesson to get moduleId
+        const lesson = await this.lessonRepository.findById(savedProgress.lessonId);
+
+        // Publish LessonCompletedEvent
         const lessonCompletedEvent = LessonCompletedEvent.create({
           userId: savedProgress.userId,
           institutionId: savedProgress.institutionId,
           lessonId: savedProgress.lessonId,
-          moduleId: input.moduleId || '', // Module ID should be provided in input
-          courseId: input.courseId || '', // Course ID should be provided in input
+          moduleId: input.moduleId || lesson?.moduleId || '',
+          courseId: input.courseId || '',
           completionTime: savedProgress.getTotalTimeSpent(),
           score: savedProgress.calculateOverallProgress()
         });
 
         await this.eventBus.publish(lessonCompletedEvent);
         console.log('🎯 LessonCompletedEvent published for lesson:', savedProgress.lessonId);
+
+        // Publish StudySessionEvent
+        if (lesson) {
+          const studySessionEvent = StudySessionEvent.create({
+            userId: savedProgress.userId,
+            institutionId: savedProgress.institutionId,
+            sessionId: savedProgress.id,
+            courseId: input.courseId || '',
+            moduleId: lesson.moduleId,
+            lessonId: savedProgress.lessonId,
+            startTime: savedProgress.startedAt,
+            endTime: savedProgress.completedAt || new Date(),
+            duration: savedProgress.getTotalTimeSpent(),
+            sessionType: 'LESSON',
+            isCompleted: true
+          });
+
+          await this.eventBus.publish(studySessionEvent);
+          console.log('📚 StudySessionEvent published for lesson:', savedProgress.lessonId);
+        }
       } catch (error) {
-        console.error('Failed to publish LessonCompletedEvent:', error);
+        console.error('Failed to publish events:', error);
         // Don't fail the use case if event publishing fails
       }
     }
