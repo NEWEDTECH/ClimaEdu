@@ -43,6 +43,7 @@ import { RetryQuestionnaireUseCase } from '@/_core/modules/content/core/use-case
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 import { ListTutorCoursesUseCase } from '@/_core/modules/content/core/use-cases/list-tutor-courses';
 import { ListTutorCoursesWithStudentsUseCase } from '@/_core/modules/content/core/use-cases/list-tutor-courses-with-students';
+import { ListCoursesByInstitutionUseCase } from '@/_core/modules/content/core/use-cases/list-courses-by-institution';
 import { ListQuestionnaireSubmissionsForTutorUseCase } from '@/_core/modules/content/core/use-cases/list-questionnaire-submissions-for-tutor';
 import { StartLessonProgressUseCase } from '@/_core/modules/content/core/use-cases/start-lesson-progress/start-lesson-progress.use-case';
 import { UpdateContentProgressUseCase } from '@/_core/modules/content/core/use-cases/update-content-progress/update-content-progress.use-case';
@@ -105,6 +106,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.AssociateTutorToCourseUseCase).to(AssociateTutorToCourseUseCase);
   container.bind(useCases.ListTutorCoursesUseCase).to(ListTutorCoursesUseCase);
   container.bind(useCases.ListTutorCoursesWithStudentsUseCase).to(ListTutorCoursesWithStudentsUseCase);
+  container.bind(useCases.ListCoursesByInstitutionUseCase).to(ListCoursesByInstitutionUseCase);
   container.bind(useCases.ListQuestionnaireSubmissionsForTutorUseCase).to(ListQuestionnaireSubmissionsForTutorUseCase);
   container.bind(useCases.StartLessonProgressUseCase).to(StartLessonProgressUseCase);
   container.bind(useCases.UpdateContentProgressUseCase).to(UpdateContentProgressUseCase);

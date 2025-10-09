@@ -4,22 +4,29 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/card';
 import { UploadIcon, FileTextIcon, XIcon } from 'lucide-react';
+import { SelectComponent } from '@/components/select/select';
 
 interface CSVUploadProps {
-  onFileUpload?: (file: File, data: Record<string, string>[]) => void;
+  onFileUpload?: (file: File, data: Record<string, string>[], enrollmentType: 'course' | 'trail', enrollmentId: string) => void;
   acceptedFileTypes?: string;
   maxFileSize?: number; // em MB
+  courses?: Array<{ id: string; title: string }>;
+  trails?: Array<{ id: string; name: string }>;
 }
 
 export function CSVUpload({ 
   onFileUpload,
   acceptedFileTypes = '.csv',
-  maxFileSize = 5 
+  maxFileSize = 5,
+  courses = [],
+  trails = []
 }: CSVUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [enrollmentType, setEnrollmentType] = useState<'course' | 'trail'>('course');
+  const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -45,6 +52,11 @@ export function CSVUpload({
     setError(null);
 
     try {
+      // Validate enrollment selection
+      if (!selectedEnrollmentId) {
+        throw new Error(`Por favor, selecione ${enrollmentType === 'course' ? 'um curso' : 'uma trilha'} antes de processar o CSV.`);
+      }
+
       const text = await file.text();
       const lines = text.split('\n').filter(line => line.trim() !== '');
       
@@ -71,7 +83,7 @@ export function CSVUpload({
       });
 
       if (onFileUpload) {
-        onFileUpload(file, data);
+        onFileUpload(file, data, enrollmentType, selectedEnrollmentId);
       }
 
     } catch (err) {
@@ -135,17 +147,17 @@ export function CSVUpload({
   };
 
   return (
-    <Card className='h-[500px]'>
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileTextIcon className="w-5 h-5" />
           Upload de Planilha CSV
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {!selectedFile ? (
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
               isDragging
                 ? 'border-primary bg-primary/5'
                 : 'border-gray-300 hover:border-gray-400'
@@ -154,15 +166,15 @@ export function CSVUpload({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <UploadIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-lg font-medium mb-2">
+            <UploadIcon className="w-10 h-10 mx-auto mb-3 text-gray-400" />
+            <p className="text-base font-medium mb-1">
               Arraste e solte seu arquivo CSV aqui
             </p>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-xs text-gray-500 mb-3">
               ou clique no botão abaixo para selecionar
             </p>
             <div className="flex justify-center">
-              <Button onClick={handleUploadClick} className='flex items-center'>
+              <Button onClick={handleUploadClick} className='flex items-center text-sm'>
                 Selecionar Arquivo CSV
               </Button>
             </div>
@@ -173,39 +185,37 @@ export function CSVUpload({
               onChange={handleFileInputChange}
               className="hidden"
             />
-            <p className="text-xs text-gray-400 mt-4">
+            <p className="text-xs text-gray-400 mt-3">
               Tamanho máximo: {maxFileSize}MB • Formato: CSV
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <FileTextIcon className="w-8 h-8 text-green-600" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <FileTextIcon className="w-6 h-6 text-green-600" />
                 <div>
-                  <p className="font-medium text-foreground dark:text-gray-500">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm font-medium text-foreground dark:text-gray-500">{selectedFile.name}</p>
+                  <p className="text-xs text-gray-500">
                     {(selectedFile.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
               </div>
               <Button
                 onClick={handleRemoveFile}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-600 hover:text-red-700 p-1"
               >
                 <XIcon className="w-4 h-4" />
               </Button>
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={handleProcessFile}
-                disabled={isProcessing}
-                className="flex-1"
-              >
-                {isProcessing ? 'Processando...' : 'Processar CSV'}
-              </Button>
-            </div>
+            <Button
+              onClick={handleProcessFile}
+              disabled={isProcessing}
+              className="w-full"
+            >
+              {isProcessing ? 'Processando...' : 'Processar CSV'}
+            </Button>
           </div>
         )}
 
@@ -215,13 +225,87 @@ export function CSVUpload({
           </div>
         )}
 
-        <div className="text-xs text-gray-500 space-y-1">
-          <p><strong>Formato esperado:</strong></p>
-          <p>• Primeira linha deve conter os cabeçalhos das colunas</p>
-          <p>• Dados separados por vírgula ou ponto e vírgula</p>
-          <p>• Colunas obrigatórias: <strong>nome, email</strong></p>
-          <p>• Exemplo: nome,email</p>
-          <p>• Todos os usuários serão cadastrados como <strong>estudantes</strong></p>
+        <div className="space-y-3 pt-3 border-t">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium">
+              Tipo de Matrícula
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="enrollmentType"
+                  value="course"
+                  checked={enrollmentType === 'course'}
+                  onChange={(e) => {
+                    setEnrollmentType('course');
+                    setSelectedEnrollmentId('');
+                  }}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Curso</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="enrollmentType"
+                  value="trail"
+                  checked={enrollmentType === 'trail'}
+                  onChange={(e) => {
+                    setEnrollmentType('trail');
+                    setSelectedEnrollmentId('');
+                  }}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Trilha</span>
+              </label>
+            </div>
+          </div>
+
+          {enrollmentType === 'course' ? (
+            <div className="space-y-1.5">
+              <label htmlFor="courseSelect" className="block text-sm font-medium">
+                Selecionar Curso
+              </label>
+              <SelectComponent
+                value={selectedEnrollmentId}
+                onChange={setSelectedEnrollmentId}
+                options={courses.map(course => ({
+                  value: course.id,
+                  label: course.title
+                }))}
+                placeholder="Selecione um curso"
+              />
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <label htmlFor="trailSelect" className="block text-sm font-medium">
+                Selecionar Trilha
+              </label>
+              <SelectComponent
+                value={selectedEnrollmentId}
+                onChange={setSelectedEnrollmentId}
+                options={trails.map(trail => ({
+                  value: trail.id,
+                  label: trail.name
+                }))}
+                placeholder="Selecione uma trilha"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="text-xs text-gray-500 space-y-1 pt-2 border-t">
+          <p className="font-medium">Instruções:</p>
+          <p>• Primeira linha: cabeçalhos (nome, email)</p>
+          <p>• Separador: vírgula ou ponto e vírgula</p>
+          <p>• Todos cadastrados como <strong>estudantes</strong></p>
+          {enrollmentType === 'course' && selectedEnrollmentId && (
+            <p className="text-blue-600">• Matriculados no curso selecionado</p>
+          )}
+          {enrollmentType === 'trail' && selectedEnrollmentId && (
+            <p className="text-blue-600">• Matriculados em todos os cursos da trilha</p>
+          )}
         </div>
       </CardContent>
     </Card>
