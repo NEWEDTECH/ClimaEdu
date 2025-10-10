@@ -5,7 +5,9 @@ import {
   signInWithEmailLink,
   signOut,
   onAuthStateChanged,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { AuthService } from '../services/AuthService';
 import { auth } from '@/_core/shared/firebase/firebase-client';
@@ -179,6 +181,45 @@ export class FirebaseAuthService implements AuthService {
       return userCredential.user.uid;
     } catch (error) {
       console.error('Error creating user with email and password:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sign in with email and password
+   * @param email User email
+   * @param password User password
+   * @returns Promise with user ID if successful
+   */
+  async signInWithEmailAndPassword(email: string, password: string): Promise<string> {
+    try {
+      console.log(`🚀 Attempting to sign in with email and password: ${email}`);
+      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      console.log(`✅ Successfully signed in user: ${userCredential.user.uid}`);
+      
+      return userCredential.user.uid;
+    } catch (error) {
+      console.error('❌ Error signing in with email and password:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send password reset email
+   * @param email User email
+   * @returns Promise<void>
+   */
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    try {
+      console.log(`📧 Sending password reset email to: ${email}`);
+      
+      await sendPasswordResetEmail(auth, email);
+      
+      console.log(`✅ Password reset email sent successfully to: ${email}`);
+    } catch (error) {
+      console.error('❌ Error sending password reset email:', error);
       throw error;
     }
   }

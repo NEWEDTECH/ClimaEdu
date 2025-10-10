@@ -51,4 +51,19 @@ export interface AuthService {
    * @returns Promise with user ID if successful
    */
   createUserWithEmailAndPassword(email: string, password: string): Promise<string>;
+
+  /**
+   * Sign in with email and password
+   * @param email User email
+   * @param password User password
+   * @returns Promise with user ID if successful
+   */
+  signInWithEmailAndPassword(email: string, password: string): Promise<string>;
+
+  /**
+   * Send password reset email
+   * @param email User email
+   * @returns Promise<void>
+   */
+  sendPasswordResetEmail(email: string): Promise<void>;
 }

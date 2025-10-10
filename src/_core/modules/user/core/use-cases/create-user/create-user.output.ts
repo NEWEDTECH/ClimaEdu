@@ -5,4 +5,5 @@ import { User } from '../../entities/User';
  */
 export interface CreateUserOutput {
   user: User;
+  temporaryPassword?: string;
 }

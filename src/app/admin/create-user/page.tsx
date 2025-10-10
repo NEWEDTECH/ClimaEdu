@@ -22,6 +22,12 @@ import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { Institution } from '@/_core/modules/institution/core/entities/Institution'
 import { useProfile } from '@/context/zustand/useProfile'
 import { ArrowLeftIcon } from 'lucide-react'
+import { ListCoursesByInstitutionUseCase } from '@/_core/modules/content/core/use-cases/list-courses-by-institution/list-courses-by-institution.use-case'
+import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-trails/list-trails.use-case'
+import { EnrollInCourseUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-course/enroll-in-course.use-case'
+import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case'
+import { ContentSymbols } from '@/_core/shared/container/modules/content/symbols'
+import { EnrollmentSymbols } from '@/_core/shared/container/modules/enrollment/symbols'
 
 
 const allowedRoles = [
@@ -88,6 +94,8 @@ export default function CreateUserPage() {
   const [success, setSuccess] = useState<boolean>(false)
   const [institutions, setInstitutions] = useState<Institution[]>([])
   const [isLoadingInstitutions, setIsLoadingInstitutions] = useState<boolean>(false)
+  const [courses, setCourses] = useState<Array<{ id: string; title: string }>>([])
+  const [trails, setTrails] = useState<Array<{ id: string; name: string }>>([])
   const [csvProgress, setCsvProgress] = useState<{
     current: number;
     total: number;
@@ -126,6 +134,51 @@ export default function CreateUserPage() {
 
     fetchInstitutions()
   }, [currentUserRole])
+
+  // Fetch courses and trails for CSV upload
+  useEffect(() => {
+    const fetchCoursesAndTrails = async () => {
+      try {
+        const listCoursesUseCase = container.get<ListCoursesByInstitutionUseCase>(
+          ContentSymbols.useCases.ListCoursesByInstitutionUseCase
+        )
+        const listTrailsUseCase = container.get<ListTrailsUseCase>(
+          ContentSymbols.useCases.ListTrailsUseCase
+        )
+
+        let institutionId: string | null = null
+
+        if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
+          institutionId = infoUser.currentIdInstitution
+        } else if ((infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) && institutions.length > 0) {
+          institutionId = institutions[0].id
+        }
+
+        if (institutionId) {
+          const [coursesResult, trailsResult] = await Promise.all([
+            listCoursesUseCase.execute({ institutionId }),
+            listTrailsUseCase.execute({ institutionId })
+          ])
+
+          setCourses(coursesResult.courses.map(course => ({
+            id: course.id,
+            title: course.title
+          })))
+
+          setTrails(trailsResult.trails.map(trail => ({
+            id: trail.id,
+            name: trail.title
+          })))
+        }
+      } catch (err) {
+        console.error('Error fetching courses and trails:', err)
+      }
+    }
+
+    if (infoUser.id) {
+      fetchCoursesAndTrails()
+    }
+  }, [infoUser.id, infoUser.currentRole, infoUser.currentIdInstitution, institutions])
 
   const {
     register,
@@ -196,7 +249,12 @@ export default function CreateUserPage() {
     }
   }
 
-  const handleCSVUpload = async (file: File, data: Record<string, string>[]) => {
+  const handleCSVUpload = async (
+    file: File, 
+    data: Record<string, string>[], 
+    enrollmentType: 'course' | 'trail', 
+    enrollmentId: string
+  ) => {
     setError(null);
     setIsSubmitting(true);
 
@@ -255,32 +313,69 @@ export default function CreateUserPage() {
         }
       });
 
-      // Associate each created user to the institution
+      // Associate each created user to the institution and enroll them
       const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
         Register.institution.useCase.AssociateUserToInstitutionUseCase
       );
+      const enrollInCourseUseCase = container.get<EnrollInCourseUseCase>(
+        EnrollmentSymbols.useCases.EnrollInCourseUseCase
+      );
+      const enrollInTrailUseCase = container.get<EnrollInTrailUseCase>(
+        EnrollmentSymbols.useCases.EnrollInTrailUseCase
+      );
 
       const associationFailures: Array<{ email: string; error: string }> = [];
+      const enrollmentFailures: Array<{ email: string; error: string }> = [];
       
       for (const user of result.createdUsers) {
         try {
+          // Associate user to institution
           await associateUserUseCase.execute({
             userId: user.id,
             institutionId,
             userRole: user.role
           });
+
+          // Enroll user based on enrollment type
+          if (enrollmentType === 'course') {
+            // Enroll in single course using use case
+            await enrollInCourseUseCase.execute({
+              userId: user.id,
+              courseId: enrollmentId,
+              institutionId
+            });
+            console.log(`✅ Enrolled ${user.email.value} in course ${enrollmentId}`);
+          } else if (enrollmentType === 'trail') {
+            // Enroll in trail (will enroll in all courses of the trail) using use case
+            await enrollInTrailUseCase.execute({
+              userId: user.id,
+              trailId: enrollmentId,
+              institutionId
+            });
+            console.log(`✅ Enrolled ${user.email.value} in all courses of trail ${enrollmentId}`);
+          }
+
         } catch (error) {
-          associationFailures.push({
-            email: user.email.value,
-            error: `Failed to associate user to institution: ${error instanceof Error ? error.message : 'Unknown error'}`
-          });
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          if (errorMessage.toLowerCase().includes('institution')) {
+            associationFailures.push({
+              email: user.email.value,
+              error: `Failed to associate user to institution: ${errorMessage}`
+            });
+          } else {
+            enrollmentFailures.push({
+              email: user.email.value,
+              error: `Failed to enroll user: ${errorMessage}`
+            });
+          }
         }
       }
 
-      // Update result with association failures
-      if (associationFailures.length > 0) {
-        result.failedEmails.push(...associationFailures);
-        result.totalFailed += associationFailures.length;
+      // Update result with failures
+      if (associationFailures.length > 0 || enrollmentFailures.length > 0) {
+        result.failedEmails.push(...associationFailures, ...enrollmentFailures);
+        result.totalFailed += (associationFailures.length + enrollmentFailures.length);
       }
 
       // Analyze results for better messaging
@@ -469,7 +564,11 @@ export default function CreateUserPage() {
             </Card>
 
             <div className="flex-1 flex flex-col">
-              <CSVUpload onFileUpload={handleCSVUpload} />
+              <CSVUpload 
+                onFileUpload={handleCSVUpload}
+                courses={courses}
+                trails={trails}
+              />
 
               {/* Progress Bar */}
               {csvProgress.isProcessing && (

@@ -6,6 +6,7 @@ import type { AuthService } from '@/_core/modules/auth/infrastructure/services/A
 import { FirebaseAuthService } from '@/_core/modules/auth/infrastructure/implementations/FirebaseAuthService';
 import { SendSignInLinkUseCase } from '@/_core/modules/auth/core/use-cases/send-sign-in-link/send-sign-in-link.use-case';
 import { SignInWithEmailLinkUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-email-link/sign-in-with-email-link.use-case';
+import { SignInWithPasswordUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-password/sign-in-with-password.use-case';
 
 /**
  * Register Auth module dependencies
@@ -18,4 +19,5 @@ export function registerAuthModule(container: Container): void {
   // Register use cases
   container.bind(useCases.SendSignInLinkUseCase).to(SendSignInLinkUseCase);
   container.bind(useCases.SignInWithEmailLinkUseCase).to(SignInWithEmailLinkUseCase);
+  container.bind(useCases.SignInWithPasswordUseCase).to(SignInWithPasswordUseCase);
 }

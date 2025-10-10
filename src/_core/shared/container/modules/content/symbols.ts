@@ -40,6 +40,7 @@ export const useCases = {
   AssociateTutorToCourseUseCase: Symbol.for('AssociateTutorToCourseUseCase'),
   ListTutorCoursesUseCase: Symbol.for('ListTutorCoursesUseCase'),
   ListTutorCoursesWithStudentsUseCase: Symbol.for('ListTutorCoursesWithStudentsUseCase'),
+  ListCoursesByInstitutionUseCase: Symbol.for('ListCoursesByInstitutionUseCase'),
   ListQuestionnaireSubmissionsForTutorUseCase: Symbol.for('ListQuestionnaireSubmissionsForTutorUseCase'),
   GetQuestionnaireSubmissionUseCase: Symbol.for('GetQuestionnaireSubmissionUseCase'),
   StartLessonProgressUseCase: Symbol.for('StartLessonProgressUseCase'),
