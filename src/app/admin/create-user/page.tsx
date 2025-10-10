@@ -96,7 +96,6 @@ export default function CreateUserPage() {
   const [isLoadingInstitutions, setIsLoadingInstitutions] = useState<boolean>(false)
   const [courses, setCourses] = useState<Array<{ id: string; title: string }>>([])
   const [trails, setTrails] = useState<Array<{ id: string; name: string }>>([])
-  const [isLoadingCoursesAndTrails, setIsLoadingCoursesAndTrails] = useState<boolean>(false)
   const [csvProgress, setCsvProgress] = useState<{
     current: number;
     total: number;
@@ -139,7 +138,6 @@ export default function CreateUserPage() {
   // Fetch courses and trails for CSV upload
   useEffect(() => {
     const fetchCoursesAndTrails = async () => {
-      setIsLoadingCoursesAndTrails(true)
       try {
         const listCoursesUseCase = container.get<ListCoursesByInstitutionUseCase>(
           ContentSymbols.useCases.ListCoursesByInstitutionUseCase
@@ -174,8 +172,6 @@ export default function CreateUserPage() {
         }
       } catch (err) {
         console.error('Error fetching courses and trails:', err)
-      } finally {
-        setIsLoadingCoursesAndTrails(false)
       }
     }
 

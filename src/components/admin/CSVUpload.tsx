@@ -237,7 +237,7 @@ export function CSVUpload({
                   name="enrollmentType"
                   value="course"
                   checked={enrollmentType === 'course'}
-                  onChange={(e) => {
+                  onChange={() => {
                     setEnrollmentType('course');
                     setSelectedEnrollmentId('');
                   }}
@@ -251,7 +251,7 @@ export function CSVUpload({
                   name="enrollmentType"
                   value="trail"
                   checked={enrollmentType === 'trail'}
-                  onChange={(e) => {
+                  onChange={() => {
                     setEnrollmentType('trail');
                     setSelectedEnrollmentId('');
                   }}

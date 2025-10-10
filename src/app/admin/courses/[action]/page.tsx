@@ -11,7 +11,6 @@ import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Tooltip } from '@/components/tooltip';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
@@ -22,7 +21,6 @@ import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-
 import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { User, UserRole } from '@/_core/modules/user/core/entities/User';
-import { X } from 'lucide-react';
 import { showToast } from '@/components/toast';
 
 type FieldOption = {
