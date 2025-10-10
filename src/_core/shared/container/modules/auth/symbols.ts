@@ -6,6 +6,7 @@ export const services = {
 export const useCases = {
   SendSignInLinkUseCase: Symbol.for('SendSignInLinkUseCase'),
   SignInWithEmailLinkUseCase: Symbol.for('SignInWithEmailLinkUseCase'),
+  SignInWithPasswordUseCase: Symbol.for('SignInWithPasswordUseCase'),
 };
 
 // Export all symbols for this module

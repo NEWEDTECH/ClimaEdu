@@ -1,13 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import { SendSignInLinkUseCase } from '@/_core/modules/auth/core/use-cases/send-sign-in-link/send-sign-in-link.use-case';
+import { SignInWithPasswordUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-password/sign-in-with-password.use-case';
 import { Button } from '@/components/button'
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [usePassword, setUsePassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
@@ -19,50 +24,88 @@ export function LoginForm() {
       return;
     }
 
+    if (usePassword && !password) {
+      setMessage({ text: 'Por favor, insira sua senha', type: 'error' });
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
 
     try {
-      const redirectUrl = `${window.location.origin}/auth/confirm`;
-      
-      localStorage.setItem('emailForSignIn', email);
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Email saved to localStorage from LoginForm: ${email}`);
-        console.log(`Redirect URL: ${redirectUrl}`);
-      }
-      
-      try {
-        const sendSignInLinkUseCase = container.get<SendSignInLinkUseCase>(
-          Register.auth.useCase.SendSignInLinkUseCase
-        );
+      if (usePassword) {
+        // Sign in with password
+        try {
+          const signInWithPasswordUseCase = container.get<SignInWithPasswordUseCase>(
+            Register.auth.useCase.SignInWithPasswordUseCase
+          );
 
-        const result = await sendSignInLinkUseCase.execute({
-          email,
-          redirectUrl,
-        });
-
-        if (result.success) {
-          setMessage({
-            text: 'Verifique seu email! Enviamos um link de acesso.',
-            type: 'success',
+          const result = await signInWithPasswordUseCase.execute({
+            email,
+            password,
           });
-          setEmail('');
-        } else {
+
+          if (result.success) {
+            setMessage({
+              text: 'Login realizado com sucesso! Redirecionando...',
+              type: 'success',
+            });
+            
+            // Redirect to home after successful login
+            setTimeout(() => {
+              router.push('/');
+            }, 1000);
+          }
+        } catch (error) {
+          console.error('Error signing in with password:', error);
           setMessage({
-            text: 'Falha ao enviar o link. Tente novamente.',
+            text: 'Email ou senha incorretos. Tente novamente.',
             type: 'error',
           });
         }
-      } catch (error) {
-        console.error('Error getting SendSignInLinkUseCase:', error);
-        setMessage({
-          text: 'Serviço indisponível. Tente novamente mais tarde.',
-          type: 'error',
-        });
+      } else {
+        // Send sign-in link to email
+        const redirectUrl = `${window.location.origin}/auth/confirm`;
+        
+        localStorage.setItem('emailForSignIn', email);
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Email saved to localStorage from LoginForm: ${email}`);
+          console.log(`Redirect URL: ${redirectUrl}`);
+        }
+        
+        try {
+          const sendSignInLinkUseCase = container.get<SendSignInLinkUseCase>(
+            Register.auth.useCase.SendSignInLinkUseCase
+          );
+
+          const result = await sendSignInLinkUseCase.execute({
+            email,
+            redirectUrl,
+          });
+
+          if (result.success) {
+            setMessage({
+              text: 'Verifique seu email! Enviamos um link de acesso.',
+              type: 'success',
+            });
+            setEmail('');
+          } else {
+            setMessage({
+              text: 'Falha ao enviar o link. Tente novamente.',
+              type: 'error',
+            });
+          }
+        } catch (error) {
+          console.error('Error getting SendSignInLinkUseCase:', error);
+          setMessage({
+            text: 'Serviço indisponível. Tente novamente mais tarde.',
+            type: 'error',
+          });
+        }
       }
     } catch (error) {
-      console.error('Error sending sign-in link:', error);
+      console.error('Error in login:', error);
       setMessage({
         text: 'Ocorreu um erro. Tente novamente mais tarde.',
         type: 'error',
@@ -141,6 +184,68 @@ export function LoginForm() {
                 />
               </div>
             </div>
+
+            {/* Checkbox para usar senha */}
+            <div className="flex items-center gap-2">
+              <input
+                id="usePassword"
+                type="checkbox"
+                checked={usePassword}
+                onChange={(e) => {
+                  setUsePassword(e.target.checked);
+                  if (!e.target.checked) {
+                    setPassword('');
+                  }
+                }}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                disabled={isLoading}
+              />
+              <label 
+                htmlFor="usePassword" 
+                className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+              >
+                Acessar com senha
+              </label>
+            </div>
+
+            {/* Campo de senha condicional */}
+            {usePassword && (
+              <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                <label 
+                  htmlFor="password" 
+                  className="block text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1"
+                >
+                  Senha
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg 
+                      className="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Digite sua senha"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                    required={usePassword}
+                  />
+                </div>
+              </div>
+            )}
             
             <Button
               type="submit"
@@ -170,6 +275,23 @@ export function LoginForm() {
                       />
                     </svg>
                     <span>Enviando...</span>
+                  </>
+                ) : usePassword ? (
+                  <>
+                    <span>Entrar</span>
+                    <svg 
+                      className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" 
+                      />
+                    </svg>
                   </>
                 ) : (
                   <>
@@ -249,10 +371,13 @@ export function LoginForm() {
                   strokeLinecap="round" 
                   strokeLinejoin="round" 
                   strokeWidth={2} 
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" 
+                  d={usePassword 
+                    ? "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    : "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  }
                 />
               </svg>
-              <p>Enviaremos um link seguro para o seu email</p>
+              <p>{usePassword ? 'Acesso direto com email e senha' : 'Enviaremos um link seguro para o seu email'}</p>
             </div>
           </div>
         </div>

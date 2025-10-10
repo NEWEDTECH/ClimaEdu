@@ -34,11 +34,28 @@ export class CreateUserUseCase {
       throw new Error('User with this email already exists');
     }
 
-    // Create user in Firebase Authentication
+    // Generate random password that user will never know
+    // User will receive password reset email to create their own password
+    const randomPassword = nanoid(32); // Strong random password
+    
+    console.log(`🔑 Creating user with secure random password`);
+    console.log(`📧 Email: ${input.email}`);
+    console.log(`📬 Password reset email will be sent automatically`);
+
+    // Create user in Firebase Authentication with random password
     const authUserId = await this.authService.createUserWithEmailAndPassword(
       input.email,
-      input.password || nanoid(8)
+      randomPassword
     );
+    
+    // Send password reset email immediately
+    try {
+      await this.authService.sendPasswordResetEmail(input.email);
+      console.log(`✅ Password reset email sent to: ${input.email}`);
+    } catch (emailError) {
+      console.error('⚠️ Failed to send password reset email:', emailError);
+      // Don't fail user creation if email fails
+    }
     
     // Use the Firebase Auth ID as the user ID
     const id = authUserId;
@@ -57,6 +74,9 @@ export class CreateUserUseCase {
     // Save user to Firestore
     const savedUser = await this.userRepository.save(user);
 
-    return { user: savedUser };
+    return { 
+      user: savedUser,
+      temporaryPassword: undefined // No temporary password - user creates their own
+    };
   }
 }
