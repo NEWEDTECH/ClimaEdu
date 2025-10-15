@@ -322,8 +322,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         Register.content.repository.LessonRepository
       )
       
-      // Delete the activity
-      const deleted = await activityRepository.delete(formData.activity.id)
+      // Delete the activity - pass lessonId, not activityId
+      const deleted = await activityRepository.delete(lessonId)
       
       if (!deleted) {
         throw new Error('Não foi possível excluir a atividade')

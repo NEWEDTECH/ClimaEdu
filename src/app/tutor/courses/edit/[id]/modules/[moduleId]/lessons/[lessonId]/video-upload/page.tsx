@@ -184,7 +184,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       
       console.log('Vídeo adicionado com sucesso à lição');
       
-      router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+      router.push(`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
     } catch (error) {
       console.error('Erro ao adicionar vídeo:', error);
       alert(`Falha ao adicionar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -193,7 +193,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
 
   const handleCancel = () => {
-    router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+    router.push(`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
   };
 
   if (isLoading) {
@@ -215,7 +215,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>

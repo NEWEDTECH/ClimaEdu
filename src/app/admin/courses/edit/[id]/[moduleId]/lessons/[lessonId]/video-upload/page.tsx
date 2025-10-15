@@ -150,7 +150,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
       // Navigate after a short delay to show the success message
       setTimeout(() => {
-        router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+        router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
       }, 1000);
     } catch (error) {
       console.error('Erro ao adicionar vídeo:', error);
@@ -190,7 +190,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>

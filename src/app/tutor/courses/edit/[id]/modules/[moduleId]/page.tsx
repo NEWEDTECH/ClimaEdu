@@ -243,7 +243,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
                     <div className="flex justify-between items-center">
                       <CardTitle>Lições do Módulo</CardTitle>
                       <div className="flex gap-2">
-                        <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/create`}>
+                        <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/create`}>
                           <Button className="text-xs px-3 py-1">Adicionar Lição</Button>
                         </Link>
                       </div>
@@ -279,7 +279,7 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
                                   {lesson.contentsCount} {lesson.contentsCount === 1 ? 'conteúdo' : 'conteúdos'}
                                 </td>
                                 <td className="px-4 py-3 text-left">
-                                  <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lesson.id}`}>
+                                  <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lesson.id}`}>
                                     <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                   </Link>
                                 </td>

@@ -126,7 +126,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
         passingScore: formData.passingScore,
       });
       
-      router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${result.questionnaire.id}/questions`);
+      router.push(`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${result.questionnaire.id}/questions`);
     } catch (error) {
       console.error('Erro ao criar questionário:', error);
       alert(`Falha ao criar questionário: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -153,7 +153,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>
@@ -255,7 +255,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                  <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                     <Button
                       type="button"
                       className="border-2 bg-transparent hover:bg-gray-50"
