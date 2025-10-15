@@ -1,7 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card/card';
-import { Button } from '@/components/button';
 import { AchievementCard } from './AchievementCard';
 import { InstitutionAchievement } from '@/_core/modules/achievement/core/entities/InstitutionAchievement';
 
@@ -20,7 +18,6 @@ export function AchievementsList({
   onDelete,
   loading = false,
   emptyMessage = 'Nenhuma conquista encontrada.',
-  showCreateButton = true
 }: AchievementsListProps) {
   if (loading) {
     return (
