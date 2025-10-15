@@ -433,7 +433,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>

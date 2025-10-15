@@ -64,11 +64,6 @@ export function ActivitySection({
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
               Crie uma atividade prática para engajar os estudantes e reforçar o aprendizado desta lição.
             </p>
-            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
-              <Button variant='primary'>
-                Criar Primeira Atividade
-              </Button>
-            </Link>
           </div>
         </CardContent>
       </Card>

@@ -57,11 +57,6 @@ export function DescriptionSection({
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
               Adicione uma descrição rica e detalhada para fornecer contexto e orientações aos estudantes.
             </p>
-            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/description`}>
-              <Button variant='primary'>
-                Criar Descrição
-              </Button>
-            </Link>
           </div>
         </CardContent>
       </Card>

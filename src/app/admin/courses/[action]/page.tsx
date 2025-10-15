@@ -11,7 +11,6 @@ import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
-import { Tooltip } from '@/components/tooltip';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
@@ -22,7 +21,6 @@ import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-
 import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { User, UserRole } from '@/_core/modules/user/core/entities/User';
-import { X } from 'lucide-react';
 import { showToast } from '@/components/toast';
 
 type FieldOption = {
@@ -96,9 +94,7 @@ export default function CoursePage() {
   const [error, setError] = useState<string | null>(null);
 
   const [tutors, setTutors] = useState<User[]>([]);
-  const [filteredTutors, setFilteredTutors] = useState<User[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [selectedTutorId, setSelectedTutorId] = useState<string>('');
   const [selectedTutors, setSelectedTutors] = useState<Array<{ id: string, email: string }>>([]);
   const [originalTutors, setOriginalTutors] = useState<Array<{ id: string, email: string }>>([]);
 
@@ -128,7 +124,6 @@ export default function CoursePage() {
         const tutorUsers = await userRepository.listByType(UserRole.TUTOR);
         console.log(tutorUsers)
         setTutors(tutorUsers);
-        setFilteredTutors(tutorUsers);
 
         if (isEditMode && courseId) {
           // Fetch course data
@@ -198,18 +193,6 @@ export default function CoursePage() {
     fetchData();
   }, [isEditMode, courseId]);
 
-  // Filter tutors based on search term
-  useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredTutors(tutors);
-    } else {
-      const filtered = tutors.filter(tutor =>
-        tutor.email.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tutor.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredTutors(filtered);
-    }
-  }, [searchTerm, tutors]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -497,71 +480,61 @@ export default function CoursePage() {
 
                 {/* Instructor/Tutor selection */}
                 <div className="space-y-2">
-                  <label htmlFor="tutorSearch" className="block text-sm font-medium text-gray-700 mt-4">
+                  <label htmlFor="tutorSelect" className="block text-sm font-medium text-gray-700 mt-4">
                     Instrutor
                   </label>
 
-                  <div className="flex flex-wrap mb-2">
-                    {selectedTutors.map((tutor) => (
-                      <div key={tutor.id} className="relative">
-                        <Tooltip label={tutor.email} />
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            // Only update the UI, backend changes will be made on save
-                            setSelectedTutors(prev =>
-                              prev.filter(t => t.id !== tutor.id)
-                            );
-                          }}
-                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
-                          aria-label="Remover tutor"
-                        >
-                          <X size={12} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="relative">
-                    <InputText
-                      id="tutorSearch"
-                      type="text"
-                      placeholder="Buscar instrutor por email"
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setShowDropdown(true);
-                      }}
-                      onFocus={() => setShowDropdown(true)}
-                      className="mb-2"
-                    />
-
-                    {showDropdown && searchTerm.trim() !== '' && filteredTutors.length > 0 && (
-                      <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                        {filteredTutors
-                          .filter(tutor => !selectedTutors.some(selected => selected.id === tutor.id))
-                          .map((tutor) => (
-                            <div
-                              key={tutor.id}
-                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                              onClick={() => {
-                                setSelectedTutors(prev => [
-                                  ...prev,
-                                  { id: tutor.id, email: tutor.email.value }
-                                ]);
-                                setSearchTerm('');
-                                setShowDropdown(false);
-                              }}
-                            >
-                              <div className="font-medium">{tutor.name}</div>
-                              <div className="text-sm text-gray-500">{tutor.email.value}</div>
+                  {selectedTutors.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium mb-3">Tutores Selecionados ({selectedTutors.length})</h4>
+                      <div className="space-y-3">
+                        {selectedTutors.map((tutor) => (
+                          <div key={tutor.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{tutor.email}</div>
                             </div>
-                          ))}
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                setSelectedTutors(prev =>
+                                  prev.filter(t => t.id !== tutor.id)
+                                );
+                              }}
+                              className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 flex items-center gap-1 whitespace-nowrap min-w-fit"
+                              aria-label="Remover tutor"
+                            >
+                              Remover
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                  <SelectComponent
+                    value={selectedTutorId}
+                    onChange={(value) => {
+                      if (value) {
+                        const tutor = tutors.find(t => t.id === value);
+                        if (tutor && !selectedTutors.some(selected => selected.id === tutor.id)) {
+                          setSelectedTutors(prev => [
+                            ...prev,
+                            { id: tutor.id, email: tutor.email.value }
+                          ]);
+                          setSelectedTutorId('');
+                        }
+                      }
+                    }}
+                    options={tutors
+                      .filter(tutor => !selectedTutors.some(selected => selected.id === tutor.id))
+                      .map(tutor => ({
+                        value: tutor.id,
+                        label: `${tutor.name} (${tutor.email.value})`
+                      }))}
+                    placeholder="Selecione um instrutor"
+                  />
                   <p className="text-gray-500 text-xs">
-                    Busque e selecione instrutores para este curso
+                    Selecione instrutores para este curso
                   </p>
                 </div>
 
