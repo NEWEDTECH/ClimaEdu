@@ -1,6 +1,7 @@
 // User module symbols
 export const repositories = {
   UserRepository: Symbol.for('UserRepository'),
+  UserAccessHistoryRepository: Symbol.for('UserAccessHistoryRepository'),
 };
 
 export const useCases = {
@@ -10,6 +11,7 @@ export const useCases = {
   GetUserAssociationsUseCase: Symbol.for('GetUserAssociationsUseCase'),
   ProcessCSVUsersUseCase: Symbol.for('ProcessCSVUsersUseCase'),
   ProcessCSVUsersWithInstitutionUseCase: Symbol.for('ProcessCSVUsersWithInstitutionUseCase'),
+  RecordDailyAccessUseCase: Symbol.for('RecordDailyAccessUseCase'),
 };
 
 // Export all symbols for this module

@@ -6,8 +6,10 @@ import { useProfile } from '@/context/zustand/useProfile';
 import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
+import { UserSymbols } from '@/_core/shared/container/modules/user/symbols';
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/get-user-associations/get-user-associations.use-case';
+import { RecordDailyAccessUseCase } from '@/_core/modules/user/core/use-cases/record-daily-access/record-daily-access.use-case';
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import { LoadingSpinner } from '@/components/loader';
 import { Button } from '@/components/button'
@@ -120,6 +122,27 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // Passo 7: Salvar esse ID da instituição no localStorage
       if (currentInstitutionId) {
         setLastInstitutionId(currentInstitutionId);
+      }
+
+      // Passo 8: Registrar acesso diário para tracking de conquistas
+      if (currentInstitutionId) {
+        try {
+          const recordDailyAccessUseCase = container.get<RecordDailyAccessUseCase>(
+            UserSymbols.useCases.RecordDailyAccessUseCase
+          );
+
+          // Chamar use case de forma assíncrona (não bloqueia o login)
+          recordDailyAccessUseCase.execute({
+            userId,
+            institutionId: currentInstitutionId
+          }).catch((error) => {
+            console.error('❌ AuthGuard: Failed to record daily access:', error);
+            // Não falhar o AuthGuard por causa disso
+          });
+        } catch (error) {
+          console.error('❌ AuthGuard: Failed to get RecordDailyAccessUseCase:', error);
+          // Não falhar o AuthGuard por causa disso
+        }
       }
 
       // console.log('✅ AuthGuard: User data initialization completed');
