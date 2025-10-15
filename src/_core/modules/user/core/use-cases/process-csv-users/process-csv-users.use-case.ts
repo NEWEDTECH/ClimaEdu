@@ -9,6 +9,16 @@ import { Email } from '../../entities/Email';
 import { User, UserRole } from '../../entities/User';
 
 /**
+ * Type for user with temporary password for email sending
+ */
+export type UserWithPassword = {
+  user: User;
+  temporaryPassword: string;
+  email: string;
+  name: string;
+};
+
+/**
  * Use case for processing CSV data and creating multiple users
  * Following Clean Architecture principles, this use case depends only on the repository interface
  */
@@ -33,7 +43,7 @@ export class ProcessCSVUsersUseCase {
     // Validate CSV structure
     this.validateCSVStructure(csvData);
 
-    const createdUsers: User[] = [];
+    const createdUsers: UserWithPassword[] = [];
     const failedEmails: Array<{ email: string; error: string }> = [];
 
     // Process each row
@@ -109,7 +119,7 @@ export class ProcessCSVUsersUseCase {
           temporaryPassword,
           email: emailValue,
           name: userName
-        } as any);
+        });
         
         console.log(`✅ User created successfully: ${emailValue}`);
 

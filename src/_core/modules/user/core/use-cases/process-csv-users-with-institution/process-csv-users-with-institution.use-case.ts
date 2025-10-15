@@ -38,16 +38,16 @@ export class ProcessCSVUsersWithInstitutionUseCase {
     // Then, associate each successfully created user to the institution
     const associationFailures: Array<{ email: string; error: string }> = [];
     
-    for (const user of processResult.createdUsers) {
+    for (const userWithPassword of processResult.createdUsers) {
       try {
         await this.associateUserToInstitutionUseCase.execute({
-          userId: user.id,
+          userId: userWithPassword.user.id,
           institutionId,
-          userRole: user.role
+          userRole: userWithPassword.user.role
         });
       } catch (error) {
         associationFailures.push({
-          email: user.email.value,
+          email: userWithPassword.email,
           error: `Failed to associate user to institution: ${error instanceof Error ? error.message : 'Unknown error'}`
         });
       }

@@ -361,10 +361,10 @@ export default function CreateUserPage() {
       for (const userWithPassword of result.createdUsers) {
         try {
           // Extract user data from result
-          const user = (userWithPassword as any).user;
-          const temporaryPassword = (userWithPassword as any).temporaryPassword;
-          const email = (userWithPassword as any).email;
-          const name = (userWithPassword as any).name;
+          const user = userWithPassword.user;
+          const temporaryPassword = userWithPassword.temporaryPassword;
+          const email = userWithPassword.email;
+          const name = userWithPassword.name;
 
           // Associate user to institution
           await associateUserUseCase.execute({
@@ -428,7 +428,7 @@ export default function CreateUserPage() {
 
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          const email = (userWithPassword as any).email || 'unknown';
+          const email = userWithPassword.email || 'unknown';
           
           if (errorMessage.toLowerCase().includes('institution')) {
             associationFailures.push({
