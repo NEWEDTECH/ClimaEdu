@@ -176,9 +176,6 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
           <Card>
             <CardHeader>
               <CardTitle>Editor de Descrição</CardTitle>
-              <CardDescription>
-                Use o editor abaixo para criar uma descrição rica e detalhada da lição
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
