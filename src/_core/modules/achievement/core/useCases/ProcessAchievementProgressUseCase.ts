@@ -1,7 +1,10 @@
 import { injectable, inject } from 'inversify';
 import { AchievementSymbols } from '@/_core/shared/container/modules/achievement/symbols';
+import { ContentSymbols } from '@/_core/shared/container/modules/content/symbols';
 import type { InstitutionAchievementRepository } from '../../infrastructure/repositories/InstitutionAchievementRepository';
 import type { StudentAchievementRepository } from '../../infrastructure/repositories/StudentAchievementRepository';
+import type { LessonProgressRepository } from '@/_core/modules/content/infrastructure/repositories/LessonProgressRepository';
+import type { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import type { InstitutionAchievement } from '../entities/InstitutionAchievement';
 import { StudentAchievement, AchievementType } from '../entities/StudentAchievement';
 import { BadgeCriteriaType } from '@/_core/modules/badge/core/entities/BadgeCriteriaType';
@@ -23,9 +26,15 @@ export class ProcessAchievementProgressUseCase {
   constructor(
     @inject(AchievementSymbols.repositories.InstitutionAchievementRepository)
     private institutionAchievementRepository: InstitutionAchievementRepository,
-    
+
     @inject(AchievementSymbols.repositories.StudentAchievementRepository)
-    private studentAchievementRepository: StudentAchievementRepository
+    private studentAchievementRepository: StudentAchievementRepository,
+
+    @inject(ContentSymbols.repositories.LessonProgressRepository)
+    private lessonProgressRepository: LessonProgressRepository,
+
+    @inject(ContentSymbols.repositories.LessonRepository)
+    private lessonRepository: LessonRepository
   ) {}
 
   async execute(request: ProcessAchievementProgressRequest): Promise<void> {
@@ -174,11 +183,21 @@ export class ProcessAchievementProgressUseCase {
         };
 
       case BadgeCriteriaType.STUDY_TIME:
-        const duration = typeof eventData.duration === 'number' ? eventData.duration : 
-                        typeof eventData.completionTime === 'number' ? eventData.completionTime : 0;
+        // Query all lesson progresses for this user and institution
+        const allLessonProgresses = await this.lessonProgressRepository.findByUserAndInstitution(
+          eventData.userId as string,
+          eventData.institutionId as string
+        );
+
+        // Filter only completed lessons
+        const completedProgresses = allLessonProgresses.filter(p => p.isCompleted());
+
+        // Sum total time spent across all completed lessons (in seconds)
+        const totalTimeSeconds = completedProgresses.reduce((sum, p) => sum + p.getTotalTimeSpent(), 0);
+
         return {
-          currentValue: duration,
-          isCompleted: duration >= criteriaValue
+          currentValue: totalTimeSeconds,
+          isCompleted: totalTimeSeconds >= criteriaValue
         };
 
       case BadgeCriteriaType.QUESTIONNAIRE_COMPLETION:
@@ -199,6 +218,82 @@ export class ProcessAchievementProgressUseCase {
         return {
           currentValue: completionPercentage,
           isCompleted: completionPercentage >= criteriaValue
+        };
+
+      case BadgeCriteriaType.DAILY_LOGIN:
+        // Uses consecutiveLoginDays from UserLoginEvent
+        const consecutiveDays = typeof eventData.consecutiveLoginDays === 'number'
+          ? eventData.consecutiveLoginDays
+          : 0;
+
+        return {
+          currentValue: consecutiveDays,
+          isCompleted: consecutiveDays >= criteriaValue
+        };
+
+      case BadgeCriteriaType.STUDY_STREAK:
+        // Uses consecutiveLoginDays from UserLoginEvent (same as DAILY_LOGIN)
+        // Represents consecutive days of studying/accessing the platform
+        const studyStreak = typeof eventData.consecutiveLoginDays === 'number'
+          ? eventData.consecutiveLoginDays
+          : 0;
+
+        return {
+          currentValue: studyStreak,
+          isCompleted: studyStreak >= criteriaValue
+        };
+
+      case BadgeCriteriaType.FIRST_TIME_ACTIVITIES:
+        // Uses isFirstLogin from UserLoginEvent
+        const isFirstLogin = eventData.isFirstLogin === true;
+
+        return {
+          currentValue: isFirstLogin ? 1 : 0,
+          isCompleted: isFirstLogin
+        };
+
+      case BadgeCriteriaType.TIME_BASED_ACCESS:
+        // Uses loginTime from UserLoginEvent to check time of day
+        const loginTime = eventData.loginTime instanceof Date
+          ? eventData.loginTime
+          : new Date(eventData.loginTime as string);
+
+        const hour = loginTime.getHours();
+
+        // Default implementation: considers any login time as valid
+        // Institutions can customize criteriaValue to represent specific hours
+        // For example: criteriaValue = 6 means "login between 6 AM and 7 AM"
+        // For now, we'll just mark as completed when login happens
+        return {
+          currentValue: hour,
+          isCompleted: true // Always complete on login for now
+        };
+
+      case BadgeCriteriaType.CONTENT_TYPE_DIVERSITY:
+        // Query all lesson progresses for this user and institution
+        const userLessonProgresses = await this.lessonProgressRepository.findByUserAndInstitution(
+          eventData.userId as string,
+          eventData.institutionId as string
+        );
+
+        // Filter only completed lessons
+        const completedLessonProgresses = userLessonProgresses.filter(p => p.isCompleted());
+
+        // Fetch moduleId for each completed lesson
+        const moduleIds = await Promise.all(
+          completedLessonProgresses.map(async (progress) => {
+            const lesson = await this.lessonRepository.findById(progress.lessonId);
+            return lesson?.moduleId;
+          })
+        );
+
+        // Count unique modules (diverse topics)
+        const uniqueModules = new Set(moduleIds.filter(id => id !== null && id !== undefined));
+        const diverseTopics = uniqueModules.size;
+
+        return {
+          currentValue: diverseTopics,
+          isCompleted: diverseTopics >= criteriaValue
         };
 
       default:
