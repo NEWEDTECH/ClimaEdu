@@ -74,11 +74,6 @@ export function QuestionnaireSection({
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
               Crie um questionário para avaliar o conhecimento dos estudantes sobre esta lição.
             </p>
-            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
-              <Button variant='primary'>
-                Criar Primeiro Questionário
-              </Button>
-            </Link>
           </div>
         </CardContent>
       </Card>
