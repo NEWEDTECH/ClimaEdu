@@ -24,8 +24,8 @@ export default function PodcastPage({ params }: PodcastPageProps) {
           <div className="flex justify-between items-center px-6 pt-6">
             <h1 className="text-3xl font-bold">🎧 Podcast</h1>
             <Link href="/">
-              <Button className="border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 rounded-md gap-1.5 px-3">
-                ← Voltar ao Início
+              <Button className="bg-black text-white dark:bg-white dark:text-black border shadow-xs hover:bg-accent hover:text-accent-foreground h-9 rounded-md gap-1.5 px-3">
+                Voltar ao Início
               </Button>
             </Link>
           </div>
