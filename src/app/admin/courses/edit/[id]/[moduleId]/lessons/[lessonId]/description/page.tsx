@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/card'
 import { Button } from '@/components/button'
 import { LoadingSpinner } from '@/components/loader'
 import { RichTextEditor } from '@/components/rich-text-editor/RichTextEditor'
@@ -176,9 +176,6 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
           <Card>
             <CardHeader>
               <CardTitle>Editor de Descrição</CardTitle>
-              <CardDescription>
-                Use o editor abaixo para criar uma descrição rica e detalhada da lição
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">

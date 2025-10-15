@@ -133,7 +133,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
       
       // Navigate after a short delay to show the success message
       setTimeout(() => {
-        router.push(`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
+        router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
       }, 1000);
     } catch (error) {
       console.error('Erro ao criar atividade:', error);
@@ -167,7 +167,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>
@@ -254,7 +254,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                  <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                     <Button
                       type="button"
                       className="bg-transparent border-gray-300 text-gray-700 hover:bg-gray-100"

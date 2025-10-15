@@ -238,6 +238,36 @@ export default function CreateUserPage() {
         })
       }
 
+      // Send temporary password via email
+      if (createUserResult.temporaryPassword) {
+        try {
+          const emailResponse = await fetch('/api/send-password-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: data.email,
+              password: createUserResult.temporaryPassword,
+              userName: data.name,
+            }),
+          });
+
+          if (!emailResponse.ok) {
+            const errorData = await emailResponse.json();
+            console.error('Erro ao enviar email:', errorData.error);
+            // Don't fail user creation if email fails
+            setError(`Usuário criado com sucesso, mas houve um erro ao enviar o email: ${errorData.error || 'Erro desconhecido'}`);
+          } else {
+            console.log('✅ Email com senha enviado com sucesso');
+          }
+        } catch (emailError) {
+          console.error('Erro ao enviar email:', emailError);
+          // Don't fail user creation if email fails
+          setError('Usuário criado com sucesso, mas houve um erro ao enviar o email. Por favor, reenvie a senha manualmente.');
+        }
+      }
+
       setSuccess(true)
       reset()
 
@@ -326,9 +356,16 @@ export default function CreateUserPage() {
 
       const associationFailures: Array<{ email: string; error: string }> = [];
       const enrollmentFailures: Array<{ email: string; error: string }> = [];
+      const emailFailures: Array<{ email: string; error: string }> = [];
       
-      for (const user of result.createdUsers) {
+      for (const userWithPassword of result.createdUsers) {
         try {
+          // Extract user data from result
+          const user = userWithPassword.user;
+          const temporaryPassword = userWithPassword.temporaryPassword;
+          const email = userWithPassword.email;
+          const name = userWithPassword.name;
+
           // Associate user to institution
           await associateUserUseCase.execute({
             userId: user.id,
@@ -344,7 +381,7 @@ export default function CreateUserPage() {
               courseId: enrollmentId,
               institutionId
             });
-            console.log(`✅ Enrolled ${user.email.value} in course ${enrollmentId}`);
+            console.log(`✅ Enrolled ${email} in course ${enrollmentId}`);
           } else if (enrollmentType === 'trail') {
             // Enroll in trail (will enroll in all courses of the trail) using use case
             await enrollInTrailUseCase.execute({
@@ -352,24 +389,64 @@ export default function CreateUserPage() {
               trailId: enrollmentId,
               institutionId
             });
-            console.log(`✅ Enrolled ${user.email.value} in all courses of trail ${enrollmentId}`);
+            console.log(`✅ Enrolled ${email} in all courses of trail ${enrollmentId}`);
+          }
+
+          // Send password via email
+          if (temporaryPassword) {
+            try {
+              const emailResponse = await fetch('/api/send-password-email', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  email,
+                  password: temporaryPassword,
+                  userName: name,
+                }),
+              });
+
+              if (!emailResponse.ok) {
+                const errorData = await emailResponse.json();
+                console.error('Erro ao enviar email:', errorData.error);
+                emailFailures.push({
+                  email,
+                  error: `Failed to send email: ${errorData.error || 'Unknown error'}`
+                });
+              } else {
+                console.log(`✅ Email com senha enviado para: ${email}`);
+              }
+            } catch (emailError) {
+              console.error('Erro ao enviar email:', emailError);
+              emailFailures.push({
+                email,
+                error: `Failed to send email: ${emailError instanceof Error ? emailError.message : 'Unknown error'}`
+              });
+            }
           }
 
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const email = userWithPassword.email || 'unknown';
           
           if (errorMessage.toLowerCase().includes('institution')) {
             associationFailures.push({
-              email: user.email.value,
+              email,
               error: `Failed to associate user to institution: ${errorMessage}`
             });
           } else {
             enrollmentFailures.push({
-              email: user.email.value,
+              email,
               error: `Failed to enroll user: ${errorMessage}`
             });
           }
         }
+      }
+
+      // Log email failures for information (don't add to total failures as user was created)
+      if (emailFailures.length > 0) {
+        console.warn(`⚠️ ${emailFailures.length} emails falharam ao enviar:`, emailFailures);
       }
 
       // Update result with failures

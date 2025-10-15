@@ -1,7 +1,7 @@
-import { User } from '../../entities/User';
+import { UserWithPassword } from './process-csv-users.use-case';
 
 export interface ProcessCSVUsersOutput {
-  createdUsers: User[];
+  createdUsers: UserWithPassword[];
   failedEmails: Array<{
     email: string;
     error: string;
