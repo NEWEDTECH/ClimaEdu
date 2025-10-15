@@ -53,17 +53,10 @@ export function AchievementsList({
   if (achievements.length === 0) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-8 flex items-center justify-center">
           <p className="text-gray-500 text-lg mb-4">
             {emptyMessage}
           </p>
-          {showCreateButton && (
-            <Link href="/admin/achievements/create">
-              <Button>
-                Criar primeira conquista
-              </Button>
-            </Link>
-          )}
         </CardContent>
       </Card>
     );
