@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
+import { SelectComponent } from '@/components/select/select'
 import { Tabs, TabsList } from '@/components/ui/tabs/tabs'
 import { TabsTrigger } from '@/components/tabs/TabsTrigger'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
@@ -202,18 +203,15 @@ export default function CoursesPage() {
                 </div>
                 
                 <div className="flex-1">
-                  <select
+                  <SelectComponent
                     value={selectedInstitutionId}
-                    onChange={(e) => setSelectedInstitutionId(e.target.value)}
-                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-                  >
-                    <option value="">Selecione uma instituição</option>
-                    {institutions.map(institution => (
-                      <option key={institution.id} value={institution.id}>
-                        {institution.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => setSelectedInstitutionId(value)}
+                    options={institutions.map(institution => ({
+                      value: institution.id,
+                      label: institution.name
+                    }))}
+                    placeholder="Selecione uma instituição"
+                  />
                 </div>
                 
                 <div>

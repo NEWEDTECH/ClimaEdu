@@ -9,8 +9,8 @@ import { Register } from '@/_core/shared/container';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
 import { LoadingSpinner } from '@/components/loader';
+import { SelectComponent } from '@/components/select/select';
 import { showToast } from '@/components/toast';
-import { PlusIcon } from 'lucide-react';
 import { useProfile } from '@/context/zustand/useProfile';
 import { InstitutionAchievementRepository } from '@/_core/modules/achievement/infrastructure/repositories/InstitutionAchievementRepository';
 import { DeleteInstitutionAchievementUseCase } from '@/_core/modules/achievement/core/use-cases/delete-institution-achievement/delete-institution-achievement.use-case';
@@ -165,14 +165,13 @@ export default function AchievementsPage() {
             <h1 className="text-3xl font-bold">Conquistas da Instituição</h1>
             <Link href="/admin/achievements/create">
               <Button className="flex items-center gap-2">
-                <PlusIcon className="h-4 w-4" />
                 Nova Conquista
               </Button>
             </Link>
           </div>
 
           {/* Filters */}
-          <div className="mb-6 flex gap-4 flex-wrap">
+          <div className="mb-6 flex gap-4 flex-wrap items-center">
             <div className="flex-1 min-w-64">
               <InputText
                 id="search-achievements"
@@ -181,15 +180,17 @@ export default function AchievementsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <select
+            <SelectComponent
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Todas</option>
-              <option value="active">Ativas</option>
-              <option value="inactive">Inativas</option>
-            </select>
+              onChange={(value) => setStatusFilter(value as 'all' | 'active' | 'inactive')}
+              options={[
+                { value: 'all', label: 'Todas' },
+                { value: 'active', label: 'Ativas' },
+                { value: 'inactive', label: 'Inativas' }
+              ]}
+              placeholder="Selecione o status"
+              className="w-48"
+            />
           </div>
 
           {error && (

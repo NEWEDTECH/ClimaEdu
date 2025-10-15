@@ -1,7 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card/card';
-import { Button } from '@/components/button';
 import { AchievementCard } from './AchievementCard';
 import { InstitutionAchievement } from '@/_core/modules/achievement/core/entities/InstitutionAchievement';
 
@@ -20,7 +18,6 @@ export function AchievementsList({
   onDelete,
   loading = false,
   emptyMessage = 'Nenhuma conquista encontrada.',
-  showCreateButton = true
 }: AchievementsListProps) {
   if (loading) {
     return (
@@ -53,17 +50,10 @@ export function AchievementsList({
   if (achievements.length === 0) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-8 flex items-center justify-center">
           <p className="text-gray-500 text-lg mb-4">
             {emptyMessage}
           </p>
-          {showCreateButton && (
-            <Link href="/admin/achievements/create">
-              <Button>
-                Criar primeira conquista
-              </Button>
-            </Link>
-          )}
         </CardContent>
       </Card>
     );
