@@ -85,7 +85,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
               onClick={() => onCommand(command)}
               title={title}
             >
-              <Icon size={16} className='dark:text-white'/>
+              <Icon size={16} className='text-white'/>
             </ToolbarButton>
           ))}
         </div>
@@ -100,7 +100,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
               onClick={() => onCommand(command)}
               title={title}
             >
-              <Icon size={16} className='dark:text-white'/>
+              <Icon size={16} className='text-white'/>
             </ToolbarButton>
           ))}
         </div>
@@ -115,7 +115,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
               onClick={() => onCommand(command)}
               title={title}
             >
-              <Icon size={16} className='dark:text-white'/>
+              <Icon size={16} className='text-white'/>
             </ToolbarButton>
           ))}
         </div>
@@ -128,7 +128,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
             onClick={() => setShowColorPicker(!showColorPicker)}
             title="Cor do texto"
           >
-            <PaletteIcon size={16} className='dark:text-white'/>
+            <PaletteIcon size={16} className='text-white'/>
           </ToolbarButton>
           
           {showColorPicker && (
@@ -146,7 +146,7 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
           onClick={handleLinkClick}
           title="Transformar texto selecionado em link"
         >
-          <LinkIcon size={16} className='dark:text-white'/>
+          <LinkIcon size={16} className='text-white'/>
         </ToolbarButton>
 
         <div className="w-px h-6 bg-gray-300 mx-2" />
@@ -155,16 +155,16 @@ export function EditorToolbar({ onCommand, isVisible }: EditorToolbarProps) {
         <select
           onChange={(e) => onCommand('fontSize', e.target.value)}
           defaultValue="3"
-          className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 "
           title="Tamanho da fonte"
         >
-          <option value="1">Muito pequeno</option>
-          <option value="2">Pequeno</option>
-          <option value="3">Normal</option>
-          <option value="4">Médio</option>
-          <option value="5">Grande</option>
-          <option value="6">Muito grande</option>
-          <option value="7">Gigante</option>
+          <option className="dark:text-black" value="1">Muito pequeno</option>
+          <option className="dark:text-black" value="2">Pequeno</option>
+          <option className="dark:text-black" value="3">Normal</option>
+          <option className="dark:text-black" value="4">Médio</option>
+          <option className="dark:text-black" value="5">Grande</option>
+          <option className="dark:text-black" value="6">Muito grande</option>
+          <option className="dark:text-black" value="7">Gigante</option>
         </select>
       </div>
     </div>

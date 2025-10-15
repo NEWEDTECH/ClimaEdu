@@ -136,7 +136,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       
       await contentRepository.save(content)
       
-      router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
+      router.push(`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`)
     } catch (error) {
       console.error('Erro ao atualizar conteúdo:', error)
       alert(`Falha ao atualizar conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -174,7 +174,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       
       await lessonRepository.save(lesson)
       
-      router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`)
+      router.push(`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`)
     } catch (error) {
       console.error('Erro ao excluir conteúdo:', error)
       alert(`Falha ao excluir conteúdo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
@@ -304,7 +304,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
               <CardContent className="flex flex-col items-center justify-center p-6">
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
-                <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                   <Button>Voltar para a Lição</Button>
                 </Link>
               </CardContent>
@@ -325,7 +325,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
               <p className="text-gray-500">Lição: {lessonTitle}</p>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
-            <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+            <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
               <Button className="border border-gray-300 bg-transparent hover:bg-gray-100">Voltar para a Lição</Button>
             </Link>
           </div>
@@ -403,7 +403,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}`}>
+                    <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
                       <Button className="border border-gray-300 bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
                     </Link>
                     <Button type="submit" disabled={isSubmitting || isDeleting}>

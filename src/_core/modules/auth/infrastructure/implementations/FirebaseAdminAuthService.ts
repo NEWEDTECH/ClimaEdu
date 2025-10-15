@@ -83,4 +83,42 @@ export class FirebaseAdminAuthService implements AuthService {
       throw error;
     }
   }
+
+  /**
+   * Sign in with email and password
+   * Not implemented for admin service as authentication is handled client-side
+   * @param email User email
+   * @param password User password
+   * @returns Promise with user ID if successful
+   */
+  async signInWithEmailAndPassword(email: string, password: string): Promise<string> {
+    throw new Error('signInWithEmailAndPassword is not supported in server-side context');
+  }
+
+  /**
+   * Send password reset email using Firebase Admin SDK
+   * @param email User email
+   * @returns Promise<void>
+   */
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    try {
+      const adminAuth = getAdminAuth();
+      
+      console.log(`📧 Generating password reset link for: ${email}`);
+      
+      // Generate password reset link using Admin SDK
+      const link = await adminAuth.generatePasswordResetLink(email);
+      
+      console.log(`✅ Password reset link generated for: ${email}`);
+      console.log(`🔗 Link: ${link}`);
+      
+      // Note: In a real implementation, you would send this link via your email service
+      // For now, we just log it. The client-side implementation (FirebaseAuthService) 
+      // handles actual email sending via Firebase Authentication
+      
+    } catch (error) {
+      console.error('❌ Error generating password reset link:', error);
+      throw error;
+    }
+  }
 }

@@ -81,8 +81,7 @@ export class FirebaseModuleRepository implements ModuleRepository {
       courseId: module.courseId,
       title: module.title,
       coverImageUrl: module.coverImageUrl,
-      order: module.order,
-      lessons: module.lessons
+      order: module.order
     };
 
     // Check if the module already exists

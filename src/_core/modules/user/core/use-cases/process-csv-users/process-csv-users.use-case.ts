@@ -9,6 +9,16 @@ import { Email } from '../../entities/Email';
 import { User, UserRole } from '../../entities/User';
 
 /**
+ * Type for user with temporary password for email sending
+ */
+export type UserWithPassword = {
+  user: User;
+  temporaryPassword: string;
+  email: string;
+  name: string;
+};
+
+/**
  * Use case for processing CSV data and creating multiple users
  * Following Clean Architecture principles, this use case depends only on the repository interface
  */
@@ -33,7 +43,7 @@ export class ProcessCSVUsersUseCase {
     // Validate CSV structure
     this.validateCSVStructure(csvData);
 
-    const createdUsers: User[] = [];
+    const createdUsers: UserWithPassword[] = [];
     const failedEmails: Array<{ email: string; error: string }> = [];
 
     // Process each row
@@ -80,10 +90,13 @@ export class ProcessCSVUsersUseCase {
         // Extract name from CSV or use email as fallback
         const userName = this.extractNameFromRow(row, emailValue);
 
+        // Generate temporary password using nanoid (8 characters)
+        const temporaryPassword = nanoid(8);
+
         // Create user in Firebase Authentication
         const authUserId = await this.authService.createUserWithEmailAndPassword(
           emailValue,
-          nanoid(8) // Generate random password
+          temporaryPassword
         );
         
         // Create email value object
@@ -99,7 +112,14 @@ export class ProcessCSVUsersUseCase {
 
         // Save user to Firestore
         const savedUser = await this.userRepository.save(user);
-        createdUsers.push(savedUser);
+        
+        // Store user with password for email sending
+        createdUsers.push({
+          user: savedUser,
+          temporaryPassword,
+          email: emailValue,
+          name: userName
+        });
         
         console.log(`✅ User created successfully: ${emailValue}`);
 

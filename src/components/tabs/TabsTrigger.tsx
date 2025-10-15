@@ -26,7 +26,7 @@ function TabsTrigger({
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // Estado inativo
         // Estado ativo - usa as cores do tema
-        "data-[state=active]:bg-primary data-[state=active]:shadow-sm",
+        "data-[state=active]:bg-primary data-[state=active]:text-white",
         className
       )}
       style={{

@@ -34,10 +34,14 @@ export class CreateUserUseCase {
       throw new Error('User with this email already exists');
     }
 
-    // Create user in Firebase Authentication
+    // Generate temporary password using nanoid (8 characters)
+    // This password will be sent to the user via email
+    const temporaryPassword = nanoid(8);
+    
+    // Create user in Firebase Authentication with temporary password
     const authUserId = await this.authService.createUserWithEmailAndPassword(
       input.email,
-      input.password || nanoid(8)
+      temporaryPassword
     );
     
     // Use the Firebase Auth ID as the user ID
@@ -57,6 +61,9 @@ export class CreateUserUseCase {
     // Save user to Firestore
     const savedUser = await this.userRepository.save(user);
 
-    return { user: savedUser };
+    return { 
+      user: savedUser,
+      temporaryPassword
+    };
   }
 }

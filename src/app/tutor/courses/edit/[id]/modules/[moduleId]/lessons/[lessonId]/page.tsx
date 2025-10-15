@@ -415,13 +415,13 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <div className="flex justify-between items-center">
                       <CardTitle>Conteúdos da Lição</CardTitle>
                       <div className="flex gap-2">
-                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/video-upload`}>
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
                         </Link>
-                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/activity/create`}>
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Atividade</Button>
                         </Link>
-                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/create`}>
                           <Button className="text-xs px-3 py-1">Adicionar Questionário</Button>
                         </Link>
                       </div>
@@ -457,7 +457,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
+                                <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/content/${content.id}/edit`}>
                                   <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Editar</Button>
                                 </Link>
                               </div>
@@ -536,7 +536,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-center">
                         <CardTitle>Questionário</CardTitle>
-                        <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
+                        <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/questionnaire/${formData.questionnaire.id}/questions`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Gerenciar Perguntas</Button>
                         </Link>
                       </div>
