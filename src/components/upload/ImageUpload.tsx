@@ -185,11 +185,11 @@ export function ImageUpload({
       
       {/* Preview da imagem */}
       {(imagePreview || uploadedUrl || manualUrl) && (
-        <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 mb-3">
+        <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 mb-3 bg-gray-50 dark:bg-gray-900">
           <img 
             src={imagePreview || uploadedUrl} 
             alt="Preview da imagem" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
           <button
             type="button"
