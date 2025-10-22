@@ -14,7 +14,6 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [usePassword, setUsePassword] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
@@ -41,7 +40,6 @@ export function LoginForm() {
           text: 'Email de recuperação enviado! Verifique sua caixa de entrada.',
           type: 'success',
         });
-        setShowForgotPassword(false);
       } else {
         setMessage({
           text: result.message || 'Erro ao enviar email de recuperação',
