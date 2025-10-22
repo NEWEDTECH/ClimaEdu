@@ -15,6 +15,7 @@ import { CreateTrailInput } from '@/_core/modules/content/core/use-cases/create-
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
+import { ImageUpload } from '@/components/upload'
 
 type CourseInfo = {
   id: string
@@ -230,6 +231,22 @@ export default function CreateTrailPage() {
                     onDescriptionChange={setDescription}
                     onCoverImageUrlChange={setCoverImageUrl}
                   />
+
+                  {/* Upload de Imagem de Capa */}
+                  {selectedInstitutionId && (
+                    <>
+                      <ImageUpload
+                        imageType="trail"
+                        institutionId={selectedInstitutionId}
+                        onUploadSuccess={setCoverImageUrl}
+                        currentImageUrl={coverImageUrl}
+                        label="Imagem de Capa da Trilha"
+                      />
+                      {coverImageUrl && (
+                        <p className="text-sm text-green-600">✓ Imagem de capa definida</p>
+                      )}
+                    </>
+                  )}
 
                   <CourseManager
                     availableCourses={availableCourses}
