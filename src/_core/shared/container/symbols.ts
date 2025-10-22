@@ -16,9 +16,10 @@ import { CertificateSymbols } from './modules/certificate/symbols';
 import { TutoringSymbols } from './modules/tutoring/symbols';
 import { SharedSymbols } from './modules/shared/symbols';
 import { SearchSymbols } from '@/_core/shared/container/modules/search/symbols';
+import { StorageSymbols } from '@/_core/shared/container/modules/storage/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols, StorageSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -77,6 +78,10 @@ export const Register = {
   search: {
     repository: SearchSymbols.repositories,
     useCase: SearchSymbols.useCases,
+  },
+  storage: {
+    service: StorageSymbols.services,
+    useCase: StorageSymbols.useCases,
   },
   shared: {
     service: SharedSymbols.services,

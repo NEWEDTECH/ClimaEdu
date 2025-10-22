@@ -16,6 +16,7 @@ import { registerCertificateModule } from './modules/certificate/register';
 import { registerTutoringModule } from './modules/tutoring/register';
 import { registerNotesModule } from './modules/notes/register';
 import { registerSearchModule } from '@/_core/shared/container/modules/search/register';
+import { registerStorageModule } from '@/_core/shared/container/modules/storage/register';
 import { registerSharedModule } from './modules/shared/register';
 
 // Import initialization function
@@ -44,6 +45,7 @@ export function registerDependencies(): void {
   registerTutoringModule(container);
   registerNotesModule(container);
   registerSearchModule(container);
+  registerStorageModule(container);
   
   // Initialize event subscribers after all modules are registered
   initializeSubscribers();
