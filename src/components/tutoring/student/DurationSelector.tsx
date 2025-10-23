@@ -29,7 +29,7 @@ export function DurationSelector({
 }: DurationSelectorProps) {
   return (
     <div className="space-y-3">
-      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white">
         <ClockIcon size={16} />
         Duração da Sessão
       </label>
@@ -41,27 +41,25 @@ export function DurationSelector({
             type="button"
             disabled={disabled}
             onClick={() => onDurationChange(option.value)}
-            className={`p-3 rounded-lg border-2 text-left transition-all ${
+            className={`p-3 rounded-lg border-2 transition-all flex items-center justify-center${
               selectedDuration === option.value
-                ? 'border-blue-500 bg-blue-50 text-blue-900'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 bg-blue-50 text-blue-900 hover:text-white'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:text-white'
             } ${
               disabled
                 ? 'opacity-50 cursor-not-allowed'
                 : 'cursor-pointer hover:shadow-sm'
             }`}
           >
-            <div className="font-medium">{option.label}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              {option.description}
+            <div className="flex items-center gap-2 ">
+              <div className="font-medium">{option.label}</div>
+              <div className="text-xs text-gray-500">
+                {option.description}
+              </div>
             </div>
           </Button>
         ))}
       </div>
-      
-      <p className="text-xs text-gray-500">
-        Selecione a duração desejada para sua sessão de tutoria
-      </p>
     </div>
   )
 }

@@ -5,14 +5,13 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
 import { TutoringScheduleForm } from '@/components/tutoring/student/TutoringScheduleForm'
 import { ScheduledSessionsList } from '@/components/tutoring/student/ScheduledSessionsList'
-import { useStudentEnrolledCourses, useStudentSessions } from '@/hooks/tutoring'
+import { useStudentSessions } from '@/hooks/tutoring'
 import { useProfile } from '@/context/zustand/useProfile'
 
 export default function TutoringPage() {
   const { infoUser } = useProfile()
   const studentId = infoUser.id
   
-  const { courses, loading: coursesLoading, error: coursesError } = useStudentEnrolledCourses({ studentId: studentId })
   const { 
     sessions, 
     loading: sessionsLoading, 
@@ -47,10 +46,7 @@ export default function TutoringPage() {
       <DashboardLayout>
         <div className="container mx-auto p-6 space-y-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Agendamento de Tutoria</h1>
-            <p className="text-gray-600 mt-2">
-              Agende sessões de tutoria com seus professores para tirar dúvidas e aprofundar seus conhecimentos.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendamento de Tutoria</h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -58,15 +54,9 @@ export default function TutoringPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Agendar Nova Sessão</CardTitle>
-                <CardDescription>
-                  Selecione o curso, data e horário para sua sessão de tutoria
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <TutoringScheduleForm 
-                  courses={courses}
-                  loading={coursesLoading}
-                  error={coursesError}
                   onSchedule={handleScheduleSession}
                   studentId={studentId}
                 />
