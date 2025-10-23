@@ -102,13 +102,13 @@ export function AvailableTimeSlotsList({
     return (
       <div className="text-center py-8">
         <AlertCircleIcon size={48} className="text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-gray-900 mb-2 dark:text-white">
           Nenhum horário disponível
         </h3>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 mb-4 dark:text-white">
           Não encontramos tutores disponíveis para a data e duração selecionadas.
         </p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-400 dark:text-white">
           Tente selecionar uma data diferente ou reduzir a duração da sessão.
         </p>
       </div>

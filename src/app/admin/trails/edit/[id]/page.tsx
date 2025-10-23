@@ -23,6 +23,7 @@ import { ListEnrollmentsInput } from '@/_core/modules/enrollment/core/use-cases/
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
+import { ImageUpload } from '@/components/upload'
 
 type CourseInfo = {
     id: string
@@ -431,6 +432,22 @@ export default function EditTrailPage() {
                                     onDescriptionChange={setDescription}
                                     onCoverImageUrlChange={setCoverImageUrl}
                                 />
+
+                                {/* Upload de Imagem de Capa */}
+                                {trail && (
+                                    <>
+                                        <ImageUpload
+                                            imageType="trail"
+                                            institutionId={trail.institutionId}
+                                            onUploadSuccess={setCoverImageUrl}
+                                            currentImageUrl={coverImageUrl}
+                                            label="Imagem de Capa da Trilha"
+                                        />
+                                        {coverImageUrl && (
+                                            <p className="text-sm text-green-600">✓ Imagem de capa definida</p>
+                                        )}
+                                    </>
+                                )}
 
                                 <CourseManager
                                     availableCourses={availableCourses}

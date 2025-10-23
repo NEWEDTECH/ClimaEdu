@@ -10,11 +10,11 @@ import { CourseSelect } from './CourseSelect'
 import { DatePicker } from './DatePicker'
 import { DurationSelector } from './DurationSelector'
 import { AvailableTimeSlotsList } from './AvailableTimeSlotsList'
-import { useTutoringScheduler } from '@/hooks/tutoring'
+import { useTutoringScheduler, useStudentEnrolledCourses } from '@/hooks/tutoring'
 import { useAvailableTimeSlots } from '@/hooks/tutoring/useAvailableTimeSlots'
 import type { Course } from '@/_core/modules/content'
 import type { AvailableTimeSlot } from '@/_core/modules/tutoring'
-import { CalendarIcon, BookOpenIcon, MessageSquareIcon, SearchIcon } from 'lucide-react'
+import { CalendarIcon, BookOpenIcon, MessageSquareIcon } from 'lucide-react'
 
 const formSchema = z.object({
   subjectId: z.string().min(1, { message: 'Selecione um curso' }),
@@ -26,15 +26,22 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 interface TutoringScheduleFormProps {
-  courses: Course[]
-  loading: boolean
-  error: string | null
   studentId: string
   onSchedule: () => Promise<void>
 }
 
-export function TutoringScheduleForm({ courses, loading, error, studentId, onSchedule }: TutoringScheduleFormProps) {
+export function TutoringScheduleForm({ studentId, onSchedule }: TutoringScheduleFormProps) {
+  // Fetch student's enrolled courses
+  const { courses, loading, error } = useStudentEnrolledCourses({ studentId })
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+
+  // Debug: Log courses data
+  useEffect(() => {
+    console.log('TutoringScheduleForm - studentId:', studentId)
+    console.log('TutoringScheduleForm - courses:', courses)
+    console.log('TutoringScheduleForm - loading:', loading)
+    console.log('TutoringScheduleForm - error:', error)
+  }, [studentId, courses, loading, error])
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     slot: AvailableTimeSlot
     startTime: string
@@ -177,7 +184,7 @@ export function TutoringScheduleForm({ courses, loading, error, studentId, onSch
         <div className="space-y-6">
           {/* Subject Selection */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white">
               <BookOpenIcon size={16} />
               Curso
             </label>
@@ -201,7 +208,7 @@ export function TutoringScheduleForm({ courses, loading, error, studentId, onSch
 
           {/* Date Selection */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white">
               <CalendarIcon size={16} />
               Data
             </label>
@@ -226,7 +233,6 @@ export function TutoringScheduleForm({ courses, loading, error, studentId, onSch
             disabled={!canSearch || searchingSlots}
             className="w-full flex items-center justify-center gap-2"
           >
-            <SearchIcon size={16} />
             {searchingSlots ? 'Buscando...' : 'Buscar Horários Disponíveis'}
           </Button>
 

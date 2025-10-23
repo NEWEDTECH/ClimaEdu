@@ -6,6 +6,7 @@ import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import { SendSignInLinkUseCase } from '@/_core/modules/auth/core/use-cases/send-sign-in-link/send-sign-in-link.use-case';
 import { SignInWithPasswordUseCase } from '@/_core/modules/auth/core/use-cases/sign-in-with-password/sign-in-with-password.use-case';
+import { SendPasswordResetEmailUseCase } from '@/_core/modules/auth/core/use-cases/send-password-reset-email/send-password-reset-email.use-case';
 import { Button } from '@/components/button'
 
 export function LoginForm() {
@@ -15,6 +16,46 @@ export function LoginForm() {
   const [usePassword, setUsePassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes('@')) {
+      setMessage({ text: 'Por favor, insira um endereço de email válido para recuperar sua senha', type: 'error' });
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      const sendPasswordResetEmailUseCase = container.get<SendPasswordResetEmailUseCase>(
+        Register.auth.useCase.SendPasswordResetEmailUseCase
+      );
+
+      const result = await sendPasswordResetEmailUseCase.execute({ email });
+
+      if (result.success) {
+        setMessage({
+          text: 'Email de recuperação enviado! Verifique sua caixa de entrada.',
+          type: 'success',
+        });
+      } else {
+        setMessage({
+          text: result.message || 'Erro ao enviar email de recuperação',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      setMessage({
+        text: 'Erro ao enviar email de recuperação. Tente novamente.',
+        type: 'error',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,12 +252,22 @@ export function LoginForm() {
             {/* Campo de senha condicional */}
             {usePassword && (
               <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                <label 
-                  htmlFor="password" 
-                  className="block text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1"
-                >
-                  Senha
-                </label>
+                <div className="flex items-center justify-between">
+                  <label 
+                    htmlFor="password" 
+                    className="block text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1"
+                  >
+                    Senha
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={isLoading}
+                    className="text-sm font-medium cursor-pointer text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Esqueci minha senha
+                  </button>
+                </div>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <svg 

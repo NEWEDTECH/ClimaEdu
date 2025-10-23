@@ -22,6 +22,7 @@ import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/re
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { User, UserRole } from '@/_core/modules/user/core/entities/User';
 import { showToast } from '@/components/toast';
+import { ImageUpload } from '@/components/upload';
 
 type FieldOption = {
   value: string;
@@ -538,23 +539,22 @@ export default function CoursePage() {
                   </p>
                 </div>
 
-                {/* Cover Image URL Field */}
-                <div className="space-y-2">
-                  <label htmlFor="coverImageUrl" className="text-sm font-medium">
-                    URL da Imagem <span className="text-red-500">*</span>
-                  </label>
-                  <InputText
-                    id="coverImageUrl"
-                    name="coverImageUrl"
-                    value={formData.coverImageUrl}
-                    onChange={handleChange}
-                    placeholder="https://exemplo.com/imagem.jpg"
-                    required
-                  />
-                  <p className="text-gray-500 text-xs">
-                    Adicione uma URL para a imagem de capa do curso (obrigatório)
-                  </p>
-                </div>
+                {/* Cover Image Upload */}
+                {formData.institutionId && (
+                  <>
+                    <ImageUpload
+                      imageType="course"
+                      institutionId={formData.institutionId}
+                      onUploadSuccess={(url) => setFormData(prev => ({ ...prev, coverImageUrl: url }))}
+                      currentImageUrl={formData.coverImageUrl}
+                      label="Imagem de Capa do Curso"
+                      required
+                    />
+                    {formData.coverImageUrl && (
+                      <p className="text-sm text-green-600">✓ Imagem de capa definida</p>
+                    )}
+                  </>
+                )}
 
               </CardContent>
               <CardFooter className="flex justify-end gap-2 mt-4">
