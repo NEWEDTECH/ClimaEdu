@@ -18,6 +18,7 @@ import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
 import { CreatePodcastUseCase } from '@/_core/modules/podcast/core/use-cases/create-podcast/create-podcast.use-case'
 import { PodcastMediaType } from '@/_core/modules/podcast/core/entities/PodcastMediaType'
+import { ImageUpload } from '@/components/upload/ImageUpload'
 
 // Schema de validação com Zod
 const podcastSchema = z.object({
@@ -68,6 +69,10 @@ export default function CreatePodcastPage() {
   })
 
   const selectedMediaType = watch('mediaType')
+
+  const handleImageUploadSuccess = (downloadUrl: string) => {
+    setValue('coverImageUrl', downloadUrl)
+  }
 
   const onSubmit = async (data: PodcastFormData) => {
     setIsSubmitting(true)
@@ -178,22 +183,25 @@ export default function CreatePodcastPage() {
                   )}
                 </div>
 
-                {/* URL da Imagem de Capa */}
-                <div className="space-y-2">
-                  <label htmlFor="coverImageUrl" className="text-sm font-medium">
-                    URL da Imagem de Capa *
-                  </label>
-                  <InputText
-                    {...register('coverImageUrl')}
-                    id="coverImageUrl"
-                    type="url"
-                    placeholder="https://exemplo.com/imagem-capa.jpg"
-                    className={errors.coverImageUrl ? 'border-red-500' : ''}
-                  />
-                  {errors.coverImageUrl && (
-                    <p className="text-sm text-red-600">{errors.coverImageUrl.message}</p>
-                  )}
-                </div>
+                {/* Upload da Imagem de Capa */}
+                <ImageUpload
+                  imageType="podcast"
+                  institutionId={infoUser.currentIdInstitution}
+                  onUploadSuccess={handleImageUploadSuccess}
+                  currentImageUrl={watch('coverImageUrl')}
+                  label="Imagem de Capa"
+                  required
+                />
+                
+                {/* Campo oculto para URL (preenchido após upload) */}
+                <input
+                  type="hidden"
+                  {...register('coverImageUrl')}
+                />
+                
+                {errors.coverImageUrl && (
+                  <p className="text-sm text-red-600">{errors.coverImageUrl.message}</p>
+                )}
 
                 {/* URL da Mídia */}
                 <div className="space-y-2">
