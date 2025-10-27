@@ -134,13 +134,17 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         const validUsers = usersWithDetails.filter((user): user is { id: string; email: string; name: string; role: UserRole } => user !== null);
 
         // Separate tutors and content managers by role
+        // For backward compatibility: if role is not CONTENT_MANAGER, treat as TUTOR
         const tutors = validUsers
-          .filter((user) => user.role === UserRole.TUTOR)
+          .filter((user) => user.role !== UserRole.CONTENT_MANAGER)
           .map(({ id, email, name }) => ({ id, email, name } as TutorInfo));
         
         const managers = validUsers
           .filter((user) => user.role === UserRole.CONTENT_MANAGER)
           .map(({ id, email, name }) => ({ id, email, name } as ContentManagerInfo));
+
+        console.log('Loaded tutors:', tutors);
+        console.log('Loaded managers:', managers);
 
         setSelectedTutors(tutors);
         setOriginalTutors(tutors);
