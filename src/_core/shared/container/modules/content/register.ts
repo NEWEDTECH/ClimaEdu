@@ -67,6 +67,7 @@ import { GetCourseProgressUseCase } from '@/_core/modules/content/core/use-cases
 import { UploadPdfToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-pdf-to-lesson/upload-pdf-to-lesson.use-case';
 import { DeletePdfFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-pdf-from-lesson/delete-pdf-from-lesson.use-case';
 import { UploadMp3ToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-mp3-to-lesson/upload-mp3-to-lesson.use-case';
+import { ListCourseTutorsUseCase } from '@/_core/modules/content/core/use-cases/list-course-tutors';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -130,5 +131,6 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.UploadPdfToLessonUseCase).to(UploadPdfToLessonUseCase);
   container.bind(useCases.DeletePdfFromLessonUseCase).to(DeletePdfFromLessonUseCase);
   container.bind(useCases.UploadMp3ToLessonUseCase).to(UploadMp3ToLessonUseCase);
+  container.bind(useCases.ListCourseTutorsUseCase).to(ListCourseTutorsUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

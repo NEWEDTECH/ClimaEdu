@@ -8,6 +8,7 @@ export const useCases = {
   CreateSuperAdminUseCase: Symbol.for('CreateSuperAdminUseCase'),
   AuthenticateUserUseCase: Symbol.for('AuthenticateUserUseCase'),
   GetUserAssociationsUseCase: Symbol.for('GetUserAssociationsUseCase'),
+  GetUserByIdUseCase: Symbol.for('GetUserByIdUseCase'),
   ProcessCSVUsersUseCase: Symbol.for('ProcessCSVUsersUseCase'),
   ProcessCSVUsersWithInstitutionUseCase: Symbol.for('ProcessCSVUsersWithInstitutionUseCase'),
 };
