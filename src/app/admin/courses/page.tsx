@@ -139,7 +139,9 @@ export default function CoursesPage() {
           if (tutors.length === 1) {
             instructorDisplay = tutors[0]?.email || 'Sem instrutor'
           } else if (tutors.length > 1) {
-            instructorDisplay = `${tutors.length} instrutores`
+            const firstTutor = tutors[0]?.email || 'Tutor'
+            const additionalCount = tutors.length - 1
+            instructorDisplay = `${firstTutor} +${additionalCount}`
           }
           
           // Get enrolled students count
@@ -199,7 +201,7 @@ export default function CoursesPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Cursos Existentes</h1>
-            <Link href="/admin/courses/create-edit">
+            <Link href="/admin/courses/create">
               <Button variant='primary'>Criar novo curso</Button>
             </Link>
           </div>
@@ -286,7 +288,7 @@ export default function CoursesPage() {
                         <Link href={`/admin/courses/edit/${course.id}`}>
                             <Button variant='primary'>Módulos</Button>
                           </Link>
-                          <Link href={`/admin/courses/create-edit/${course.id}`}>
+                          <Link href={`/admin/courses/edit-course/${course.id}`}>
                             <Button variant='secondary'>Editar</Button>
                           </Link>
                         </div>

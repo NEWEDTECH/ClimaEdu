@@ -9,6 +9,7 @@ export const useCases = {
   AuthenticateUserUseCase: Symbol.for('AuthenticateUserUseCase'),
   GetUserAssociationsUseCase: Symbol.for('GetUserAssociationsUseCase'),
   GetUserByIdUseCase: Symbol.for('GetUserByIdUseCase'),
+  ListUsersByRoleUseCase: Symbol.for('ListUsersByRoleUseCase'),
   ProcessCSVUsersUseCase: Symbol.for('ProcessCSVUsersUseCase'),
   ProcessCSVUsersWithInstitutionUseCase: Symbol.for('ProcessCSVUsersWithInstitutionUseCase'),
 };

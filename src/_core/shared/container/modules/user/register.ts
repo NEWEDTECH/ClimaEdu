@@ -10,6 +10,7 @@ import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/
 import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case';
 import { ProcessCSVUsersWithInstitutionUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users-with-institution/process-csv-users-with-institution.use-case';
 import { GetUserByIdUseCase } from '@/_core/modules/user/core/use-cases/get-user-by-id';
+import { ListUsersByRoleUseCase } from '@/_core/modules/user/core/use-cases/list-users-by-role';
 // import { AuthenticateUserUseCase } from '@/_core/modules/user/core/use-cases/authenticate-user/authenticate-user.use-case';
 
 /**
@@ -25,6 +26,7 @@ export function registerUserModule(container: Container): void {
   container.bind(useCases.CreateSuperAdminUseCase).to(CreateSuperAdminUseCase);
   container.bind(useCases.GetUserAssociationsUseCase).to(GetUserAssociationsUseCase);
   container.bind(useCases.GetUserByIdUseCase).to(GetUserByIdUseCase);
+  container.bind(useCases.ListUsersByRoleUseCase).to(ListUsersByRoleUseCase);
   container.bind(useCases.ProcessCSVUsersUseCase).to(ProcessCSVUsersUseCase);
   container.bind(useCases.ProcessCSVUsersWithInstitutionUseCase).to(ProcessCSVUsersWithInstitutionUseCase);
   // container.bind(useCases.AuthenticateUserUseCase).to(AuthenticateUserUseCase);
