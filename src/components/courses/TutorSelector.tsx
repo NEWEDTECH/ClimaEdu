@@ -23,6 +23,7 @@ export function TutorSelector({
   onAddTutor,
   isLoading = false,
 }: TutorSelectorProps) {
+  // Filter out tutors already added to THIS course
   const unselectedTutors = availableTutors.filter(
     (tutor) => !selectedTutorIds.includes(tutor.id)
   );
@@ -35,9 +36,13 @@ export function TutorSelector({
       <CardContent>
         {isLoading ? (
           <p className="text-sm text-gray-500">Carregando tutores disponíveis...</p>
+        ) : availableTutors.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            Nenhum tutor disponível na instituição.
+          </p>
         ) : unselectedTutors.length === 0 ? (
           <p className="text-sm text-gray-500">
-            Todos os tutores disponíveis já foram adicionados ao curso.
+            Todos os tutores da instituição já foram adicionados a este curso.
           </p>
         ) : (
           <div className="space-y-2">

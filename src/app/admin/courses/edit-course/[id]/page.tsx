@@ -15,6 +15,8 @@ import { showToast } from '@/components/toast';
 import { CourseFormFields, type CourseFormData } from '@/components/courses/CourseFormFields';
 import { TutorSelector } from '@/components/courses/TutorSelector';
 import { CourseTutorsList, type TutorInfo } from '@/components/courses/CourseTutorsList';
+import { ContentManagerSelector } from '@/components/courses/ContentManagerSelector';
+import { ContentManagersList, type ContentManagerInfo } from '@/components/courses/ContentManagersList';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 import { RemoveTutorFromCourseUseCase, RemoveTutorFromCourseInput } from '@/_core/modules/content/core/use-cases/remove-tutor-from-course';
@@ -42,6 +44,9 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
   const [availableTutors, setAvailableTutors] = useState<User[]>([]);
   const [selectedTutors, setSelectedTutors] = useState<TutorInfo[]>([]);
   const [originalTutors, setOriginalTutors] = useState<TutorInfo[]>([]);
+  const [availableContentManagers, setAvailableContentManagers] = useState<User[]>([]);
+  const [selectedContentManagers, setSelectedContentManagers] = useState<ContentManagerInfo[]>([]);
+  const [originalContentManagers, setOriginalContentManagers] = useState<ContentManagerInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +94,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         );
         setAvailableTutors(tutorsResult.users);
 
+        // Fetch content managers
+        const contentManagersResult = await listUsersByRoleUseCase.execute(
+          new ListUsersByRoleInput(UserRole.CONTENT_MANAGER)
+        );
+        setAvailableContentManagers(contentManagersResult.users);
+
         // Fetch course tutors
         const listCourseTutorsUseCase = container.get<ListCourseTutorsUseCase>(
           Register.content.useCase.ListCourseTutorsUseCase
@@ -121,6 +132,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         setSelectedTutors(tutors);
         setOriginalTutors(tutors);
 
+        // Note: Content managers would need their own repository/use case
+        // For now, we'll initialize empty arrays
+        setSelectedContentManagers([]);
+        setOriginalContentManagers([]);
+
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -141,16 +157,36 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
   const handleAddTutor = (tutorId: string) => {
     const tutor = availableTutors.find((t) => t.id === tutorId);
-    if (tutor && !selectedTutors.some((t) => t.id === tutorId)) {
-      setSelectedTutors((prev) => [
-        ...prev,
-        { id: tutor.id, email: tutor.email.value, name: tutor.name },
-      ]);
+    if (tutor) {
+      // Check if already added to avoid duplicates in the current course
+      if (!selectedTutors.some((t) => t.id === tutorId)) {
+        setSelectedTutors((prev) => [
+          ...prev,
+          { id: tutor.id, email: tutor.email.value, name: tutor.name },
+        ]);
+      }
     }
   };
 
   const handleRemoveTutor = (tutorId: string) => {
     setSelectedTutors((prev) => prev.filter((t) => t.id !== tutorId));
+  };
+
+  const handleAddContentManager = (managerId: string) => {
+    const manager = availableContentManagers.find((m) => m.id === managerId);
+    if (manager) {
+      // Check if already added to avoid duplicates in the current course
+      if (!selectedContentManagers.some((m) => m.id === managerId)) {
+        setSelectedContentManagers((prev) => [
+          ...prev,
+          { id: manager.id, email: manager.email.value, name: manager.name },
+        ]);
+      }
+    }
+  };
+
+  const handleRemoveContentManager = (managerId: string) => {
+    setSelectedContentManagers((prev) => prev.filter((m) => m.id !== managerId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -211,6 +247,50 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             });
           } catch (err) {
             console.error(`Error associating tutor ${tutor.email}:`, err);
+          }
+        }
+      }
+
+      // Handle content manager changes
+      const managersToRemove = originalContentManagers.filter(
+        (original) => !selectedContentManagers.some((selected) => selected.id === original.id)
+      );
+
+      const managersToAdd = selectedContentManagers.filter(
+        (selected) => !originalContentManagers.some((original) => original.id === selected.id)
+      );
+
+      // Remove content managers
+      if (managersToRemove.length > 0) {
+        const removeTutorUseCase = container.get<RemoveTutorFromCourseUseCase>(
+          Register.content.useCase.RemoveTutorFromCourseUseCase
+        );
+
+        for (const manager of managersToRemove) {
+          try {
+            await removeTutorUseCase.execute(
+              new RemoveTutorFromCourseInput(manager.id, courseId)
+            );
+          } catch (err) {
+            console.error(`Error removing content manager ${manager.email}:`, err);
+          }
+        }
+      }
+
+      // Add content managers
+      if (managersToAdd.length > 0) {
+        const associateTutorUseCase = container.get<AssociateTutorToCourseUseCase>(
+          Register.content.useCase.AssociateTutorToCourseUseCase
+        );
+
+        for (const manager of managersToAdd) {
+          try {
+            await associateTutorUseCase.execute({
+              userId: manager.id,
+              courseId: courseId,
+            });
+          } catch (err) {
+            console.error(`Error associating content manager ${manager.email}:`, err);
           }
         }
       }
@@ -278,47 +358,38 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card>
-                <FormSection onSubmit={handleSubmit} error={null}>
-                  <CardHeader>
-                    <CardTitle>Informações do Curso</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CourseFormFields
-                      formData={formData}
-                      institutions={institutions}
-                      onFieldChange={handleFieldChange}
-                      showInstitutionSelect={false}
-                      onImageUpload={(url) => handleFieldChange('coverImageUrl', url)}
-                    />
-                  </CardContent>
-                  <CardFooter className="flex justify-end gap-2">
-                    <Link href="/admin/courses">
-                      <Button variant="secondary">Cancelar</Button>
-                    </Link>
-                    <Button type="submit" variant="primary" disabled={isSubmitting}>
-                      {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-                    </Button>
-                  </CardFooter>
-                </FormSection>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <TutorSelector
-                availableTutors={availableTutors}
-                selectedTutorIds={selectedTutors.map((t) => t.id)}
-                onAddTutor={handleAddTutor}
-              />
-
-              <CourseTutorsList
-                tutors={selectedTutors}
-                onRemoveTutor={handleRemoveTutor}
-              />
-            </div>
-          </div>
+          <Card>
+            <FormSection onSubmit={handleSubmit} error={null}>
+              <CardHeader>
+                <CardTitle>Informações do Curso</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CourseFormFields
+                  formData={formData}
+                  institutions={institutions}
+                  onFieldChange={handleFieldChange}
+                  showInstitutionSelect={false}
+                  onImageUpload={(url) => handleFieldChange('coverImageUrl', url)}
+                  availableTutors={availableTutors}
+                  selectedTutors={selectedTutors}
+                  onAddTutor={handleAddTutor}
+                  onRemoveTutor={handleRemoveTutor}
+                  availableContentManagers={availableContentManagers}
+                  selectedContentManagers={selectedContentManagers}
+                  onAddContentManager={handleAddContentManager}
+                  onRemoveContentManager={handleRemoveContentManager}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2">
+                <Link href="/admin/courses">
+                  <Button variant="secondary">Cancelar</Button>
+                </Link>
+                <Button type="submit" variant="primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </CardFooter>
+            </FormSection>
+          </Card>
         </div>
       </DashboardLayout>
     </ProtectedContent>

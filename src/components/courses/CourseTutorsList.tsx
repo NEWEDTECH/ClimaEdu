@@ -29,26 +29,13 @@ export function CourseTutorsList({ tutors, onRemoveTutor, isLoading = false }: C
     );
   }
 
-  if (tutors.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Tutores do Curso</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">Nenhum tutor associado a este curso.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Tutores do Curso ({tutors.length})</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className={`space-y-3 ${tutors.length > 5 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}>
           {tutors.map((tutor) => (
             <div
               key={tutor.id}

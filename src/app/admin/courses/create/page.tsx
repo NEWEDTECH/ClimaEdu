@@ -15,6 +15,8 @@ import { showToast } from '@/components/toast';
 import { CourseFormFields, type CourseFormData } from '@/components/courses/CourseFormFields';
 import { TutorSelector } from '@/components/courses/TutorSelector';
 import { CourseTutorsList, type TutorInfo } from '@/components/courses/CourseTutorsList';
+import { ContentManagerSelector } from '@/components/courses/ContentManagerSelector';
+import { ContentManagersList, type ContentManagerInfo } from '@/components/courses/ContentManagersList';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case';
@@ -35,6 +37,8 @@ export default function CreateCoursePage() {
   const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([]);
   const [availableTutors, setAvailableTutors] = useState<User[]>([]);
   const [selectedTutors, setSelectedTutors] = useState<TutorInfo[]>([]);
+  const [availableContentManagers, setAvailableContentManagers] = useState<User[]>([]);
+  const [selectedContentManagers, setSelectedContentManagers] = useState<ContentManagerInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +75,12 @@ export default function CreateCoursePage() {
         );
         setAvailableTutors(tutorsResult.users);
 
+        // Fetch content managers
+        const contentManagersResult = await listUsersByRoleUseCase.execute(
+          new ListUsersByRoleInput(UserRole.CONTENT_MANAGER)
+        );
+        setAvailableContentManagers(contentManagersResult.users);
+
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -91,16 +101,36 @@ export default function CreateCoursePage() {
 
   const handleAddTutor = (tutorId: string) => {
     const tutor = availableTutors.find((t) => t.id === tutorId);
-    if (tutor && !selectedTutors.some((t) => t.id === tutorId)) {
-      setSelectedTutors((prev) => [
-        ...prev,
-        { id: tutor.id, email: tutor.email.value, name: tutor.name },
-      ]);
+    if (tutor) {
+      // Check if already added to avoid duplicates in the current course
+      if (!selectedTutors.some((t) => t.id === tutorId)) {
+        setSelectedTutors((prev) => [
+          ...prev,
+          { id: tutor.id, email: tutor.email.value, name: tutor.name },
+        ]);
+      }
     }
   };
 
   const handleRemoveTutor = (tutorId: string) => {
     setSelectedTutors((prev) => prev.filter((t) => t.id !== tutorId));
+  };
+
+  const handleAddContentManager = (managerId: string) => {
+    const manager = availableContentManagers.find((m) => m.id === managerId);
+    if (manager) {
+      // Check if already added to avoid duplicates in the current course
+      if (!selectedContentManagers.some((m) => m.id === managerId)) {
+        setSelectedContentManagers((prev) => [
+          ...prev,
+          { id: manager.id, email: manager.email.value, name: manager.name },
+        ]);
+      }
+    }
+  };
+
+  const handleRemoveContentManager = (managerId: string) => {
+    setSelectedContentManagers((prev) => prev.filter((m) => m.id !== managerId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,6 +165,24 @@ export default function CreateCoursePage() {
             });
           } catch (err) {
             console.error(`Error associating tutor ${tutor.email}:`, err);
+          }
+        }
+      }
+
+      // Associate content managers (using same UseCase as tutors)
+      if (selectedContentManagers.length > 0) {
+        const associateTutorUseCase = container.get<AssociateTutorToCourseUseCase>(
+          Register.content.useCase.AssociateTutorToCourseUseCase
+        );
+
+        for (const manager of selectedContentManagers) {
+          try {
+            await associateTutorUseCase.execute({
+              userId: manager.id,
+              courseId: result.course.id,
+            });
+          } catch (err) {
+            console.error(`Error associating content manager ${manager.email}:`, err);
           }
         }
       }
@@ -189,47 +237,38 @@ export default function CreateCoursePage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card>
-                <FormSection onSubmit={handleSubmit} error={null}>
-                  <CardHeader>
-                    <CardTitle>Informações do Curso</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CourseFormFields
-                      formData={formData}
-                      institutions={institutions}
-                      onFieldChange={handleFieldChange}
-                      showInstitutionSelect={true}
-                      onImageUpload={(url) => handleFieldChange('coverImageUrl', url)}
-                    />
-                  </CardContent>
-                  <CardFooter className="flex justify-end gap-2">
-                    <Link href="/admin/courses">
-                      <Button variant="secondary">Cancelar</Button>
-                    </Link>
-                    <Button type="submit" variant="primary" disabled={isSubmitting}>
-                      {isSubmitting ? 'Criando...' : 'Criar Curso'}
-                    </Button>
-                  </CardFooter>
-                </FormSection>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <TutorSelector
-                availableTutors={availableTutors}
-                selectedTutorIds={selectedTutors.map((t) => t.id)}
-                onAddTutor={handleAddTutor}
-              />
-
-              <CourseTutorsList
-                tutors={selectedTutors}
-                onRemoveTutor={handleRemoveTutor}
-              />
-            </div>
-          </div>
+          <Card>
+            <FormSection onSubmit={handleSubmit} error={null}>
+              <CardHeader>
+                <CardTitle>Informações do Curso</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CourseFormFields
+                  formData={formData}
+                  institutions={institutions}
+                  onFieldChange={handleFieldChange}
+                  showInstitutionSelect={true}
+                  onImageUpload={(url) => handleFieldChange('coverImageUrl', url)}
+                  availableTutors={availableTutors}
+                  selectedTutors={selectedTutors}
+                  onAddTutor={handleAddTutor}
+                  onRemoveTutor={handleRemoveTutor}
+                  availableContentManagers={availableContentManagers}
+                  selectedContentManagers={selectedContentManagers}
+                  onAddContentManager={handleAddContentManager}
+                  onRemoveContentManager={handleRemoveContentManager}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2">
+                <Link href="/admin/courses">
+                  <Button variant="secondary">Cancelar</Button>
+                </Link>
+                <Button type="submit" variant="primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Criando...' : 'Criar Curso'}
+                </Button>
+              </CardFooter>
+            </FormSection>
+          </Card>
         </div>
       </DashboardLayout>
     </ProtectedContent>
