@@ -20,6 +20,7 @@ import { ContentManagersList, type ContentManagerInfo } from '@/components/cours
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 import { RemoveTutorFromCourseUseCase, RemoveTutorFromCourseInput } from '@/_core/modules/content/core/use-cases/remove-tutor-from-course';
+import { DeleteCourseUseCase, DeleteCourseInput } from '@/_core/modules/content/core/use-cases/delete-course';
 import { ListCourseTutorsUseCase, ListCourseTutorsInput } from '@/_core/modules/content/core/use-cases/list-course-tutors';
 import { GetUserByIdUseCase, GetUserByIdInput } from '@/_core/modules/user/core/use-cases/get-user-by-id';
 import { ListUsersByRoleUseCase, ListUsersByRoleInput } from '@/_core/modules/user/core/use-cases/list-users-by-role';
@@ -49,6 +50,8 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
   const [originalContentManagers, setOriginalContentManagers] = useState<ContentManagerInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -187,6 +190,39 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
   const handleRemoveContentManager = (managerId: string) => {
     setSelectedContentManagers((prev) => prev.filter((m) => m.id !== managerId));
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const loadingToastId = showToast.loading('Excluindo curso...');
+
+    try {
+      const deleteCourseUseCase = container.get<DeleteCourseUseCase>(
+        Register.content.useCase.DeleteCourseUseCase
+      );
+
+      await deleteCourseUseCase.execute(new DeleteCourseInput(courseId));
+
+      showToast.update(loadingToastId, {
+        render: 'Curso excluído com sucesso!',
+        type: 'success',
+      });
+
+      setTimeout(() => {
+        router.push('/admin/courses');
+      }, 1000);
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      const errorMessage = `Falha ao excluir curso: ${
+        error instanceof Error ? error.message : 'Erro desconhecido'
+      }`;
+      showToast.update(loadingToastId, {
+        render: errorMessage,
+        type: 'error',
+      });
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -380,16 +416,66 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                   onRemoveContentManager={handleRemoveContentManager}
                 />
               </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Link href="/admin/courses">
-                  <Button variant="secondary">Cancelar</Button>
-                </Link>
-                <Button type="submit" variant="primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+              <CardFooter className="flex justify-between gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  variant="secondary"
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                  disabled={isSubmitting || isDeleting}
+                >
+                  Excluir Curso
                 </Button>
+                <div className="flex gap-2">
+                  <Link href="/admin/courses">
+                    <Button variant="secondary" disabled={isSubmitting || isDeleting}>Cancelar</Button>
+                  </Link>
+                  <Button type="submit" variant="primary" disabled={isSubmitting || isDeleting}>
+                    {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+                  </Button>
+                </div>
               </CardFooter>
             </FormSection>
           </Card>
+
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <Card className="w-full max-w-md">
+                <CardHeader>
+                  <CardTitle className="text-red-600">Confirmar Exclusão</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-4">
+                    Tem certeza que deseja excluir este curso? Esta ação é irreversível e irá remover:
+                  </p>
+                  <ul className="list-disc list-inside mb-4 space-y-1">
+                    <li>Todas as informações do curso</li>
+                    <li>Todas as associações com tutores e gestores</li>
+                    <li>O curso não poderá ser recuperado</li>
+                  </ul>
+                  <p className="font-semibold text-red-600">
+                    Curso: {formData.title}
+                  </p>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleDelete}
+                    className="bg-red-500 hover:bg-red-600 text-white"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedContent>
