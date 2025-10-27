@@ -28,8 +28,8 @@ export class DeleteModuleUseCase {
    */
   async execute(input: DeleteModuleInput): Promise<DeleteModuleOutput> {
     // Verify if the module exists
-    const module = await this.moduleRepository.findById(input.moduleId);
-    if (!module) {
+    const moduleEntity = await this.moduleRepository.findById(input.moduleId);
+    if (!moduleEntity) {
       throw new Error('Module not found');
     }
 
