@@ -161,12 +161,15 @@ export default function Home() {
           !enrolledCourseIds.includes(course.id)
         );
 
+        // Check if user has unrestricted access (Tutors, Content Managers, Admins)
+        const hasUnrestrictedAccess = ['TUTOR', 'CONTENT_MANAGER', 'LOCAL_ADMIN'].includes(infoUser.currentRole || '');
+
         const availableCoursesData: CourseDisplayData[] = notEnrolledCourses.map((course: Course) => ({
           id: course.id,
           title: course.title,
-          href: '#',
+          href: hasUnrestrictedAccess ? `/student/courses/${course.id}` : '#',
           imageUrl: course.coverImageUrl || '',
-          isBlocked: true
+          isBlocked: !hasUnrestrictedAccess
         }));
 
         setAvailableCourses(availableCoursesData);
@@ -183,12 +186,14 @@ export default function Home() {
         const enrolledTrailsData: TrailDisplayData[] = [];
 
         // Para cada trilha, verificar se o usuário está matriculado em TODOS os cursos da trilha
+        // Tutors, Content Managers e Admins têm acesso a todas as trilhas
         for (const trail of trailsResult.trails) {
           const isEnrolledInAllCourses = trail.courseIds.every(courseId =>
             enrolledCourseIds.includes(courseId)
           );
 
-          if (isEnrolledInAllCourses && trail.courseIds.length > 0) {
+          // Unrestricted access users can access all trails
+          if ((isEnrolledInAllCourses && trail.courseIds.length > 0) || hasUnrestrictedAccess) {
             enrolledTrailsData.push({
               id: trail.id,
               title: trail.title,
