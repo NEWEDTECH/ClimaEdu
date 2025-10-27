@@ -11,8 +11,6 @@ import { CreateSuperAdminUseCase } from '@/_core/modules/user/core/use-cases/cre
 import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/get-user-associations/get-user-associations.use-case';
 import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case';
 import { ProcessCSVUsersWithInstitutionUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users-with-institution/process-csv-users-with-institution.use-case';
-import { RecordDailyAccessUseCase } from '@/_core/modules/user/core/use-cases/record-daily-access/record-daily-access.use-case';
-// import { AuthenticateUserUseCase } from '@/_core/modules/user/core/use-cases/authenticate-user/authenticate-user.use-case';
 
 /**
  * Register User module dependencies
@@ -27,6 +25,8 @@ export function registerUserModule(container: Container): void {
   container.bind(useCases.CreateUserUseCase).to(CreateUserUseCase);
   container.bind(useCases.CreateSuperAdminUseCase).to(CreateSuperAdminUseCase);
   container.bind(useCases.GetUserAssociationsUseCase).to(GetUserAssociationsUseCase);
+  container.bind(useCases.GetUserByIdUseCase).to(GetUserByIdUseCase);
+  container.bind(useCases.ListUsersByRoleUseCase).to(ListUsersByRoleUseCase);
   container.bind(useCases.ProcessCSVUsersUseCase).to(ProcessCSVUsersUseCase);
   container.bind(useCases.ProcessCSVUsersWithInstitutionUseCase).to(ProcessCSVUsersWithInstitutionUseCase);
   container.bind(useCases.RecordDailyAccessUseCase).to(RecordDailyAccessUseCase);

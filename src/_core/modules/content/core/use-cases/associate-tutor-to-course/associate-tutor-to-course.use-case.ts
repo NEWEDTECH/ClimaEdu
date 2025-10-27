@@ -38,9 +38,9 @@ export class AssociateTutorToCourseUseCase {
       throw new Error('User not found');
     }
 
-    // Verify if the user is a tutor
-    if (user.role !== UserRole.TUTOR) {
-      throw new Error('User must be a tutor to be associated with a course');
+    // Verify if the user is a tutor or content manager
+    if (user.role !== UserRole.TUTOR && user.role !== UserRole.CONTENT_MANAGER) {
+      throw new Error('User must be a tutor or content manager to be associated with a course');
     }
 
     // Verify if the course exists

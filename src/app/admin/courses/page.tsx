@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -13,12 +13,15 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
-import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
-import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository'
-import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
-import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { showToast } from '@/components/toast'
+import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case'
+import { ListCoursesByInstitutionUseCase, ListCoursesByInstitutionInput } from '@/_core/modules/content/core/use-cases/list-courses-by-institution'
+import { ListCourseTutorsUseCase, ListCourseTutorsInput } from '@/_core/modules/content/core/use-cases/list-course-tutors'
+import { GetUserByIdUseCase, GetUserByIdInput } from '@/_core/modules/user/core/use-cases/get-user-by-id'
+import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.use-case'
+import type { Course } from '@/_core/modules/content/core/entities/Course'
+import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus'
 
 
 type CourseWithUIProps = {
@@ -54,13 +57,13 @@ export default function CoursesPage() {
       try {
         setLoading(true)
 
-        const institutionRepository = container.get<InstitutionRepository>(
-          Register.institution.repository.InstitutionRepository
+        const listInstitutionsUseCase = container.get<ListInstitutionsUseCase>(
+          Register.institution.useCase.ListInstitutionsUseCase
         )
         
-        const institutionsList = await institutionRepository.list()
+        const result = await listInstitutionsUseCase.execute({})
         
-        const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
+        const institutionsForDropdown = result.institutions.map((institution: Institution) => ({
           id: institution.id,
           name: institution.name
         }))
@@ -93,30 +96,37 @@ export default function CoursesPage() {
       try {
         setLoading(true)
 
-        const courseRepository = container.get<CourseRepository>(
-          Register.content.repository.CourseRepository
+        const listCoursesByInstitutionUseCase = container.get<ListCoursesByInstitutionUseCase>(
+          Register.content.useCase.ListCoursesByInstitutionUseCase
         )
         
-        const coursesList = await courseRepository.listByInstitution(selectedInstitutionId)
-        
-        // Get course tutors
-        const courseTutorRepository = container.get<CourseTutorRepository>(
-          Register.content.repository.CourseTutorRepository
+        const coursesResult = await listCoursesByInstitutionUseCase.execute(
+          new ListCoursesByInstitutionInput(selectedInstitutionId)
         )
         
-        const userRepository = container.get<UserRepository>(
-          Register.user.repository.UserRepository
+        const listCourseTutorsUseCase = container.get<ListCourseTutorsUseCase>(
+          Register.content.useCase.ListCourseTutorsUseCase
         )
         
-        // Create an array of promises to fetch tutors for each course
-        const coursesWithTutorsPromises = coursesList.map(async (course) => {
+        const getUserByIdUseCase = container.get<GetUserByIdUseCase>(
+          Register.user.useCase.GetUserByIdUseCase
+        )
+        
+        const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
+          Register.enrollment.useCase.ListEnrollmentsUseCase
+        )
+        
+        // Create an array of promises to fetch tutors and enrollments for each course
+        const coursesWithDetailsPromises = coursesResult.courses.map(async (course: Course) => {
           // Get all tutor associations for this course
-          const tutorAssociations = await courseTutorRepository.findByCourseId(course.id)
+          const tutorsResult = await listCourseTutorsUseCase.execute(
+            new ListCourseTutorsInput(course.id)
+          )
           
           // Get user details for each tutor
-          const tutorPromises = tutorAssociations.map(async (association) => {
-            const user = await userRepository.findById(association.userId)
-            return user ? { id: user.id, email: user.email.value } : null
+          const tutorPromises = tutorsResult.tutors.map(async (association) => {
+            const userResult = await getUserByIdUseCase.execute(new GetUserByIdInput(association.userId))
+            return userResult.user ? { id: userResult.user.id, email: userResult.user.email.value } : null
           })
           
           // Wait for all tutor details to be fetched
@@ -125,11 +135,23 @@ export default function CoursesPage() {
           // Determine what to display for instructors
           let instructorDisplay = 'Sem instrutor'
           if (tutors.length === 1) {
-            // If there's only one tutor, display their email
             instructorDisplay = tutors[0]?.email || 'Sem instrutor'
           } else if (tutors.length > 1) {
-            // If there are multiple tutors, display the count
-            instructorDisplay = `${tutors.length} instrutores`
+            const firstTutor = tutors[0]?.email || 'Tutor'
+            const additionalCount = tutors.length - 1
+            instructorDisplay = `${firstTutor} +${additionalCount}`
+          }
+          
+          // Get enrolled students count
+          let enrolledStudents = 0
+          try {
+            const enrollmentsResult = await listEnrollmentsUseCase.execute({
+              courseId: course.id,
+              status: [EnrollmentStatus.ENROLLED]
+            })
+            enrolledStudents = enrollmentsResult.enrollments.length
+          } catch (error) {
+            console.error('Error fetching enrollments for course:', course.id, error)
           }
           
           return {
@@ -137,13 +159,13 @@ export default function CoursesPage() {
             title: course.title,
             description: course.description,
             instructorDisplay,
-            enrolledStudents: 0,
+            enrolledStudents,
             status: 'active' as 'active' | 'inactive'
           }
         })
         
-        // Wait for all courses with tutors to be processed
-        const coursesWithUIProps = await Promise.all(coursesWithTutorsPromises)
+        // Wait for all courses with details to be processed
+        const coursesWithUIProps = await Promise.all(coursesWithDetailsPromises)
         
         setCourses(coursesWithUIProps)
         setError(null)
@@ -177,7 +199,7 @@ export default function CoursesPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Cursos Existentes</h1>
-            <Link href="/admin/courses/create-edit">
+            <Link href="/admin/courses/create">
               <Button variant='primary'>Criar novo curso</Button>
             </Link>
           </div>
@@ -185,9 +207,6 @@ export default function CoursesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Cursos</CardTitle>
-              <CardDescription>
-                Gerencie todos os cursos em sua plataforma educacional
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -267,7 +286,7 @@ export default function CoursesPage() {
                         <Link href={`/admin/courses/edit/${course.id}`}>
                             <Button variant='primary'>Módulos</Button>
                           </Link>
-                          <Link href={`/admin/courses/create-edit/${course.id}`}>
+                          <Link href={`/admin/courses/edit-course/${course.id}`}>
                             <Button variant='secondary'>Editar</Button>
                           </Link>
                         </div>

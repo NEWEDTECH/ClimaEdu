@@ -9,6 +9,8 @@ export const useCases = {
   CreateSuperAdminUseCase: Symbol.for('CreateSuperAdminUseCase'),
   AuthenticateUserUseCase: Symbol.for('AuthenticateUserUseCase'),
   GetUserAssociationsUseCase: Symbol.for('GetUserAssociationsUseCase'),
+  GetUserByIdUseCase: Symbol.for('GetUserByIdUseCase'),
+  ListUsersByRoleUseCase: Symbol.for('ListUsersByRoleUseCase'),
   ProcessCSVUsersUseCase: Symbol.for('ProcessCSVUsersUseCase'),
   ProcessCSVUsersWithInstitutionUseCase: Symbol.for('ProcessCSVUsersWithInstitutionUseCase'),
   RecordDailyAccessUseCase: Symbol.for('RecordDailyAccessUseCase'),

@@ -472,7 +472,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       
       // Navigate after a short delay to show the success message
       setTimeout(() => {
-        router.push(`/admin/courses/edit/${courseId}/${moduleId}`)
+        router.push(`/admin/courses/edit/${courseId}`)
       }, 1000)
     } catch (error) {
       console.error('Erro ao excluir lição:', error)
