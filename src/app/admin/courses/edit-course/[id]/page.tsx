@@ -115,7 +115,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
           Register.user.useCase.GetUserByIdUseCase
         );
 
-        const tutorPromises = courseTutorsResult.tutors.map(async (association) => {
+        const userPromises = courseTutorsResult.tutors.map(async (association) => {
           const userResult = await getUserByIdUseCase.execute(
             new GetUserByIdInput(association.userId)
           );
@@ -124,21 +124,28 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
               id: userResult.user.id,
               email: userResult.user.email.value,
               name: userResult.user.name,
-            } as TutorInfo;
+              role: userResult.user.role,
+            };
           }
           return null;
         });
 
-        const courseTutorsWithDetails = await Promise.all(tutorPromises);
-        const tutors = courseTutorsWithDetails.filter((tutor): tutor is TutorInfo => tutor !== null);
+        const usersWithDetails = await Promise.all(userPromises);
+        const validUsers = usersWithDetails.filter((user): user is { id: string; email: string; name: string; role: UserRole } => user !== null);
+
+        // Separate tutors and content managers by role
+        const tutors = validUsers
+          .filter((user) => user.role === UserRole.TUTOR)
+          .map(({ id, email, name }) => ({ id, email, name } as TutorInfo));
+        
+        const managers = validUsers
+          .filter((user) => user.role === UserRole.CONTENT_MANAGER)
+          .map(({ id, email, name }) => ({ id, email, name } as ContentManagerInfo));
 
         setSelectedTutors(tutors);
         setOriginalTutors(tutors);
-
-        // Note: Content managers would need their own repository/use case
-        // For now, we'll initialize empty arrays
-        setSelectedContentManagers([]);
-        setOriginalContentManagers([]);
+        setSelectedContentManagers(managers);
+        setOriginalContentManagers(managers);
 
         setError(null);
       } catch (err) {
