@@ -362,7 +362,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
-              <Button>Voltar para o Módulo</Button>
+                  <Button>Voltar para o Módulo</Button>
                 </Link>
               </CardContent>
             </Card>
