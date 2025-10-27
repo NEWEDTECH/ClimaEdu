@@ -70,6 +70,7 @@ import { UploadMp3ToLessonUseCase } from '@/_core/modules/content/core/use-cases
 import { ListCourseTutorsUseCase } from '@/_core/modules/content/core/use-cases/list-course-tutors';
 import { RemoveTutorFromCourseUseCase } from '@/_core/modules/content/core/use-cases/remove-tutor-from-course';
 import { DeleteCourseUseCase } from '@/_core/modules/content/core/use-cases/delete-course';
+import { DeleteModuleUseCase } from '@/_core/modules/content/core/use-cases/delete-module';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -136,5 +137,6 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.ListCourseTutorsUseCase).to(ListCourseTutorsUseCase);
   container.bind(useCases.RemoveTutorFromCourseUseCase).to(RemoveTutorFromCourseUseCase);
   container.bind(useCases.DeleteCourseUseCase).to(DeleteCourseUseCase);
+  container.bind(useCases.DeleteModuleUseCase).to(DeleteModuleUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

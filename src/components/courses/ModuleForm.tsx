@@ -9,6 +9,7 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/create-module/create-module.use-case';
 import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
+import { DeleteModuleUseCase, DeleteModuleInput } from '@/_core/modules/content/core/use-cases/delete-module';
 
 type ModuleData = {
   id: string;
@@ -41,6 +42,8 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [isCreatingLesson, setIsCreatingLesson] = useState<Record<string, boolean>>({});
   const [openModules, setOpenModules] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmModuleId, setDeleteConfirmModuleId] = useState<string | null>(null);
+  const [isDeletingModule, setIsDeletingModule] = useState(false);
 
   const fetchModules = useCallback(async () => {
     try {
@@ -264,6 +267,28 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
     }
   };
 
+  const handleDeleteModule = async (moduleId: string) => {
+    setIsDeletingModule(true);
+
+    try {
+      const deleteModuleUseCase = container.get<DeleteModuleUseCase>(
+        Register.content.useCase.DeleteModuleUseCase
+      );
+
+      await deleteModuleUseCase.execute(new DeleteModuleInput(moduleId));
+
+      setModules(prevModules => prevModules.filter(m => m.id !== moduleId));
+      setDeleteConfirmModuleId(null);
+      
+      alert('Módulo e suas lições excluídos com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir módulo:', error);
+      alert(`Falha ao excluir módulo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    } finally {
+      setIsDeletingModule(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="h-full p-4 flex justify-center items-center">
@@ -455,6 +480,13 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                             Cancelar
                           </Button>
                         </div>
+                        <Button
+                          type="button"
+                          onClick={() => setDeleteConfirmModuleId(module.id)}
+                          className="w-full bg-red-500 hover:bg-red-600 text-white text-xs py-2 rounded-lg"
+                        >
+                          Excluir Módulo
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -464,7 +496,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                         onClick={() => handleEditModule(module.id, module.title)}
                         variant='secondary'
                       >
-                        Editar
+                        Editar Módulo
                       </Button>
                       <Button
                         type="button"
@@ -567,6 +599,41 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModuleId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-red-600 mb-3">Confirmar Exclusão</h3>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              Tem certeza que deseja excluir este módulo? Esta ação é irreversível e irá remover:
+            </p>
+            <ul className="list-disc list-inside mb-4 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+              <li>O módulo completo</li>
+              <li>Todas as lições deste módulo</li>
+              <li>Todo o conteúdo associado</li>
+            </ul>
+            <div className="flex gap-2 justify-end">
+              <Button
+                type="button"
+                onClick={() => setDeleteConfirmModuleId(null)}
+                disabled={isDeletingModule}
+                variant="secondary"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleDeleteModule(deleteConfirmModuleId)}
+                className="bg-red-500 hover:bg-red-600 text-white"
+                disabled={isDeletingModule}
+              >
+                {isDeletingModule ? 'Excluindo...' : 'Confirmar Exclusão'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -61,6 +61,7 @@ export const useCases = {
   ListCourseTutorsUseCase: Symbol.for('ListCourseTutorsUseCase'),
   RemoveTutorFromCourseUseCase: Symbol.for('RemoveTutorFromCourseUseCase'),
   DeleteCourseUseCase: Symbol.for('DeleteCourseUseCase'),
+  DeleteModuleUseCase: Symbol.for('DeleteModuleUseCase'),
 };
 
 // Export all symbols for this module
