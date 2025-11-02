@@ -44,7 +44,7 @@ export function ScormSection({
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center shadow-md">
               <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <span>Conteúdo Interativo (SCORM)</span>

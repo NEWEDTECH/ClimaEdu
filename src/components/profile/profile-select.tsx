@@ -61,6 +61,7 @@ const adminItems: DropdownItem[] = [
   { label: 'Alunos', href: '/admin/student', icon: <FiUsers /> },
   { label: 'Classes', href: '/admin/turmas', icon: <FiLayers /> },
   { label: 'Professores', href: '/admin/tutor', icon: <FiUserCheck /> },
+  { label: 'Gestor de conteudo', href: '/admin/gestor', icon: <FiUserCheck /> },
   { label: 'Trilhas', href: '/admin/trails', icon: <FiHome /> },
   { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
   { label: 'Criar Usuário', href: '/admin/create-user', icon: <FiUserPlus /> },
