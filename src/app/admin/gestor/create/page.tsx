@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/button'
-import { SelectComponent } from '@/components/select'
-import { FormSection } from '@/components/form/form'
 import { LoadingSpinner } from '@/components/loader'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { UserAssociationForm, type UserOption, type InstitutionOption, type CourseOption } from '@/components/admin/UserAssociationForm'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
@@ -22,13 +18,13 @@ import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-
 export default function CreateGestorCoursesPage() {
   const router = useRouter()
 
-  const [gestores, setGestores] = useState<Array<{ id: string, name: string, email: string }>>([])
-  const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
-  const [courses, setCourses] = useState<Array<{ id: string, title: string }>>([])
+  const [gestores, setGestores] = useState<UserOption[]>([])
+  const [institutions, setInstitutions] = useState<InstitutionOption[]>([])
+  const [courses, setCourses] = useState<CourseOption[]>([])
 
   const [selectedGestorId, setSelectedGestorId] = useState<string>('')
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
-  const [selectedCourses, setSelectedCourses] = useState<Array<{ id: string, title: string }>>([])
+  const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([])
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -117,6 +113,13 @@ export default function CreateGestorCoursesPage() {
     fetchCourses()
   }, [selectedInstitutionId])
 
+  const handleCourseAdd = (courseId: string) => {
+    const course = courses.find(c => c.id === courseId)
+    if (course && !selectedCourses.some(c => c.id === courseId)) {
+      setSelectedCourses(prev => [...prev, course])
+    }
+  }
+
   const handleCourseRemove = (courseId: string) => {
     setSelectedCourses(prev => prev.filter(course => course.id !== courseId))
   }
@@ -171,168 +174,70 @@ export default function CreateGestorCoursesPage() {
     }
   }
 
-  return (
-    <ProtectedContent>
-      <DashboardLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Associar Gestor de Conteúdo a Cursos</h1>
-            <Link href="/admin/gestor">
-              <Button variant='primary'>Voltar</Button>
-            </Link>
-          </div>
+  if (loading) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <LoadingSpinner />
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-          {loading && <LoadingSpinner />}
-
-          {error && (
+  if (error) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
               <strong className="font-bold">Erro!</strong>
               <span className="block sm:inline"> {error}</span>
             </div>
-          )}
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-          {successMessage && (
+  if (successMessage) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
               <strong className="font-bold">Sucesso!</strong>
               <span className="block sm:inline"> {successMessage}</span>
             </div>
-          )}
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-          <Card>
-            <FormSection onSubmit={handleSubmit}>
-              <CardHeader>
-                <CardTitle>Associar Gestor de Conteúdo a Cursos</CardTitle>
-                <CardDescription>
-                  Selecione um gestor de conteúdo e um ou mais cursos para associá-lo
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Institution Selection */}
-                <div className="space-y-2">
-                  <label htmlFor="institution" className="text-sm font-medium">
-                    Selecionar Instituição
-                  </label>
-                  <SelectComponent
-                    value={selectedInstitutionId}
-                    onChange={(institutionId) => {
-                      const selectedInstitution = institutions.find(i => i.id === institutionId)
-                      if (selectedInstitution) {
-                        setSelectedInstitutionId(selectedInstitution.id)
-                      }
-                    }}
-                    options={institutions.map(institution => ({
-                      value: institution.id,
-                      label: institution.name
-                    }))}
-                    placeholder="Selecione uma instituição"
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Gestor Selection */}
-                <div className="space-y-2">
-                  <label htmlFor="gestor" className="text-sm font-medium">
-                    Selecionar Gestor de Conteúdo
-                  </label>
-                  <SelectComponent
-                    value={selectedGestorId}
-                    onChange={(selectedGestorIdValue) => {
-                      const selectedGestor = gestores.find(g => g.id === selectedGestorIdValue)
-                      if (selectedGestor) {
-                        setSelectedGestorId(selectedGestor.id)
-                      }
-                    }}
-                    options={gestores.map(gestor => ({
-                      value: gestor.id,
-                      label: `${gestor.name} (${gestor.email})`
-                    }))}
-                    placeholder="Selecione um gestor de conteúdo"
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Course Autocomplete */}
-                <div className="space-y-2">
-                  <label htmlFor="course" className="text-sm font-medium">
-                    Selecionar Cursos
-                  </label>
-
-                  {/* Selected Courses List */}
-                  {selectedCourses.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium mb-3">Cursos Selecionados ({selectedCourses.length})</h4>
-                      <div
-                        className={`space-y-2 dark:bg-dark ${selectedCourses.length >= 5
-                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2'
-                          : ''
-                          }`}
-                        style={selectedCourses.length >= 5 ? { maxHeight: '400px' } : {}}
-                      >
-                        {selectedCourses.map((course) => (
-                          <div key={course.id} className="flex items-center gap-3 p-3 border border-blue-200 dark:border-white dark:bg-dark rounded-lg">
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900 dark:text-white">{course.title}</div>
-                            </div>
-                            <Button
-                              type="button"
-                              onClick={() => handleCourseRemove(course.id)}
-                              className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 flex items-center gap-1 whitespace-nowrap min-w-fit"
-                              aria-label="Remover curso"
-                            >
-                              Remover
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="relative">
-                    <SelectComponent
-                      value=""
-                      onChange={(courseId) => {
-                        const selectedCourse = courses.find(c => c.id === courseId)
-                        if (selectedCourse && !selectedCourses.some(c => c.id === courseId)) {
-                          setSelectedCourses(prev => [...prev, selectedCourse])
-                        }
-                      }}
-                      options={selectedInstitutionId ? courses
-                        .filter(course => !selectedCourses.some(selected => selected.id === course.id))
-                        .map(course => ({
-                          value: course.id,
-                          label: course.title
-                        })) : []}
-                      placeholder={selectedInstitutionId ? "Selecione um curso para adicionar" : "Selecione uma instituição primeiro"}
-                    />
-                  </div>
-
-                  {courses.length === 0 && selectedInstitutionId && (
-                    <p className="text-sm text-gray-500">
-                      Nenhum curso disponível para a instituição selecionada
-                    </p>
-                  )}
-
-                  {!selectedInstitutionId && (
-                    <p className="text-sm text-gray-500">
-                      Por favor, selecione uma instituição para ver os cursos
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Link href="/admin/gestor">
-                  <Button variant='secondary' type="button">Cancelar</Button>
-                </Link>
-                <Button
-                  variant='primary'
-                  type="submit"
-                  disabled={isSubmitting || loading}>
-                  {isSubmitting ? 'Associando...' : 'Associar Gestor a Cursos'}
-                </Button>
-              </CardFooter>
-            </FormSection>
-          </Card>
-        </div>
+  return (
+    <ProtectedContent>
+      <DashboardLayout>
+        <UserAssociationForm
+          users={gestores}
+          institutions={institutions}
+          courses={courses}
+          selectedUserId={selectedGestorId}
+          selectedInstitutionId={selectedInstitutionId}
+          selectedCourses={selectedCourses}
+          onUserChange={setSelectedGestorId}
+          onInstitutionChange={setSelectedInstitutionId}
+          onCourseAdd={handleCourseAdd}
+          onCourseRemove={handleCourseRemove}
+          isSubmitting={isSubmitting}
+          isEditMode={false}
+          userLabel="Gestor de Conteúdo"
+          userPlaceholder="Selecione um gestor de conteúdo"
+          title="Associar Gestor de Conteúdo a Cursos"
+          description="Selecione um gestor de conteúdo e um ou mais cursos para associá-lo"
+          backUrl="/admin/gestor"
+          onSubmit={handleSubmit}
+          loading={loading}
+        />
       </DashboardLayout>
     </ProtectedContent>
   )
