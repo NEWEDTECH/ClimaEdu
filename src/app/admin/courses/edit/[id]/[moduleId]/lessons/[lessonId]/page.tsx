@@ -39,6 +39,7 @@ type ContentData = {
   title: string;
   type: ContentType;
   url: string;
+  order: number;
 }
 
 type ActivityData = {
@@ -126,12 +127,15 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         
         setModuleName(moduleData.title)
         
-        const contentsData: ContentData[] = lesson.contents.map(content => ({
-          id: content.id,
-          title: content.title,
-          type: content.type,
-          url: content.url
-        }))
+        const contentsData: ContentData[] = lesson.contents
+          .map(content => ({
+            id: content.id,
+            title: content.title,
+            type: content.type,
+            url: content.url,
+            order: content.order
+          }))
+          .sort((a, b) => a.order - b.order)
         
 
         const activity = await activityRepository.findByLessonId(lessonId)

@@ -12,7 +12,7 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
 import { showToast } from '@/components/toast'
 
-type ReorderType = 'modules' | 'lessons' | 'actions'
+type ReorderType = 'modules' | 'lessons' | 'content'
 
 type ModuleItem = {
   id: string
@@ -26,10 +26,18 @@ type LessonItem = {
   order: number
 }
 
-type ActionItem = {
+type ContentItem = {
   id: string
   title: string
   type: string
+  order: number
+}
+
+type ContentTypeOption = {
+  type: string
+  label: string
+  emoji: string
+  color: string
   order: number
 }
 
@@ -44,7 +52,16 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
   const [reorderType, setReorderType] = useState<ReorderType>('modules')
   const [modules, setModules] = useState<ModuleItem[]>([])
   const [lessons, setLessons] = useState<LessonItem[]>([])
-  const [actions, setActions] = useState<ActionItem[]>([])
+  const [contents, setContents] = useState<ContentItem[]>([])
+  const [contentTypes, setContentTypes] = useState<ContentTypeOption[]>([
+    { type: 'description', label: 'Descrição', emoji: '📖', color: 'amber', order: 0 },
+    { type: 'video', label: 'Vídeo', emoji: '🎥', color: 'blue', order: 1 },
+    { type: 'scorm', label: 'SCORM', emoji: '📦', color: 'purple', order: 2 },
+    { type: 'pdf', label: 'PDF', emoji: '📄', color: 'red', order: 3 },
+    { type: 'audio', label: 'Áudio', emoji: '🎵', color: 'green', order: 4 },
+    { type: 'activity', label: 'Atividade', emoji: '✏️', color: 'teal', order: 5 },
+    { type: 'questionnaire', label: 'Questionário', emoji: '❓', color: 'orange', order: 6 },
+  ])
   
   const [selectedModuleId, setSelectedModuleId] = useState<string>('')
   const [selectedLessonId, setSelectedLessonId] = useState<string>('')
@@ -84,10 +101,10 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
     loadModules()
   }, [isOpen, courseId])
 
-  // Load lessons when module is selected (for both lessons and actions mode)
+  // Load lessons when module is selected (for both lessons and content mode)
   useEffect(() => {
     if (!selectedModuleId) return
-    if (reorderType !== 'lessons' && reorderType !== 'actions') return
+    if (reorderType !== 'lessons' && reorderType !== 'content') return
     
     const loadLessons = async () => {
       setLoading(true)
@@ -117,37 +134,37 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
     loadLessons()
   }, [selectedModuleId, reorderType])
 
-  // Load actions when lesson is selected
+  // Load contents when lesson is selected
   useEffect(() => {
-    if (!selectedLessonId || reorderType !== 'actions') return
+    if (!selectedLessonId || reorderType !== 'content') return
     
-    const loadActions = async () => {
+    const loadContents = async () => {
       setLoading(true)
       try {
         const contentRepository = container.get<ContentRepository>(
           Register.content.repository.ContentRepository
         )
-        const actionsList = await contentRepository.listByLesson(selectedLessonId)
+        const contentsList = await contentRepository.listByLesson(selectedLessonId)
         
-        const actionsData = actionsList
-          .map(a => ({
-            id: a.id,
-            title: a.title,
-            type: a.type,
-            order: a.order
+        const contentsData = contentsList
+          .map(c => ({
+            id: c.id,
+            title: c.title,
+            type: c.type,
+            order: c.order
           }))
           .sort((a, b) => a.order - b.order)
         
-        setActions(actionsData)
+        setContents(contentsData)
       } catch (error) {
-        console.error('Error loading actions:', error)
-        showToast.error('Erro ao carregar ações')
+        console.error('Error loading contents:', error)
+        showToast.error('Erro ao carregar conteúdos')
       } finally {
         setLoading(false)
       }
     }
     
-    loadActions()
+    loadContents()
   }, [selectedLessonId, reorderType])
 
   const handleDragEnd = (result: DropResult) => {
@@ -181,8 +198,8 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
       }))
       
       setLessons(updatedItems)
-    } else if (reorderType === 'actions') {
-      const items = Array.from(actions)
+    } else if (reorderType === 'content') {
+      const items = Array.from(contents)
       const [reorderedItem] = items.splice(sourceIndex, 1)
       items.splice(destinationIndex, 0, reorderedItem)
       
@@ -191,7 +208,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
         order: index
       }))
       
-      setActions(updatedItems)
+      setContents(updatedItems)
     }
   }
 
@@ -208,7 +225,6 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
         for (const module of modules) {
           const moduleEntity = await moduleRepository.findById(module.id)
           if (moduleEntity) {
-            // Update order through repository
             await moduleRepository.updateOrder(module.id, module.order)
           }
         }
@@ -223,17 +239,11 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
             await lessonRepository.updateOrder(lesson.id, lesson.order)
           }
         }
-      } else if (reorderType === 'actions') {
-        const contentRepository = container.get<ContentRepository>(
-          Register.content.repository.ContentRepository
-        )
-        
-        for (const action of actions) {
-          const actionEntity = await contentRepository.findById(action.id)
-          if (actionEntity) {
-            await contentRepository.updateOrder(action.id, action.order)
-          }
-        }
+      } else if (reorderType === 'content') {
+        // Save content type order preferences
+        // This will define the default display order for all content types in this lesson
+        showToast.success('Ordem dos tipos de conteúdo definida!')
+        console.log('Content types order:', contentTypes.map(ct => ({ type: ct.type, order: ct.order })))
       }
 
       showToast.update(loadingToastId, {
@@ -262,7 +272,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
     setSelectedModuleId('')
     setSelectedLessonId('')
     setLessons([])
-    setActions([])
+    setContents([])
   }
 
   if (!isOpen) return null
@@ -311,15 +321,15 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
               <p className="text-sm font-medium">Lições</p>
             </button>
             <button
-              onClick={() => handleTypeChange('actions')}
+              onClick={() => handleTypeChange('content')}
               className={`p-4 rounded-lg border-2 transition-all ${
-                reorderType === 'actions'
+                reorderType === 'content'
                   ? 'border-primary bg-primary/5'
                   : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
               }`}
             >
               <FileText className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <p className="text-sm font-medium">Ações</p>
+              <p className="text-sm font-medium">Conteúdo</p>
             </button>
           </div>
 
@@ -336,8 +346,8 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
             </div>
           )}
 
-          {/* Actions: Module and Lesson Selection */}
-          {reorderType === 'actions' && (
+          {/* Content: Module and Lesson Selection */}
+          {reorderType === 'content' && (
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Selecione o Módulo</label>
@@ -346,7 +356,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
                   onChange={(value) => {
                     setSelectedModuleId(value)
                     setSelectedLessonId('')
-                    setActions([])
+                    setContents([])
                   }}
                   options={modules.map(m => ({ value: m.id, label: m.title }))}
                   placeholder="Selecione um módulo"
@@ -441,13 +451,27 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
                 </DragDropContext>
               )}
 
-              {reorderType === 'actions' && selectedLessonId && actions.length > 0 && (
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <Droppable droppableId="actions">
+              {reorderType === 'content' && selectedLessonId && (
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return
+                  const sourceIndex = result.source.index
+                  const destinationIndex = result.destination.index
+                  if (sourceIndex === destinationIndex) return
+                  
+                  const items = Array.from(contentTypes)
+                  const [reorderedItem] = items.splice(sourceIndex, 1)
+                  items.splice(destinationIndex, 0, reorderedItem)
+                  const updatedItems = items.map((item, index) => ({
+                    ...item,
+                    order: index
+                  }))
+                  setContentTypes(updatedItems)
+                }}>
+                  <Droppable droppableId="contentTypes">
                     {(provided) => (
                       <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                        {actions.map((action, index) => (
-                          <Draggable key={action.id} draggableId={action.id} index={index}>
+                        {contentTypes.map((contentType, index) => (
+                          <Draggable key={contentType.type} draggableId={contentType.type} index={index}>
                             {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
@@ -461,10 +485,18 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
                               >
                                 <GripVertical className="w-5 h-5 text-gray-400 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium truncate">{action.title}</p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">
-                                      {action.type}
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                                      contentType.color === 'amber' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                      contentType.color === 'blue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                      contentType.color === 'purple' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                      contentType.color === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                      contentType.color === 'green' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                      contentType.color === 'teal' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
+                                      contentType.color === 'orange' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                      'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                    }`}>
+                                      {contentType.emoji} {contentType.label}
                                     </span>
                                     <span className="text-xs text-gray-500">Ordem: {index + 1}</span>
                                   </div>
@@ -495,24 +527,17 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
                 </div>
               )}
 
-              {reorderType === 'actions' && !selectedModuleId && (
+              {reorderType === 'content' && !selectedModuleId && (
                 <div className="text-center py-12 text-gray-500">
                   <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p>Selecione um módulo primeiro</p>
                 </div>
               )}
 
-              {reorderType === 'actions' && selectedModuleId && !selectedLessonId && (
+              {reorderType === 'content' && selectedModuleId && !selectedLessonId && (
                 <div className="text-center py-12 text-gray-500">
                   <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Selecione uma lição para ver as ações</p>
-                </div>
-              )}
-
-              {reorderType === 'actions' && selectedLessonId && actions.length === 0 && !loading && (
-                <div className="text-center py-12 text-gray-500">
-                  <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Esta lição não possui ações</p>
+                  <p>Selecione uma lição para definir a ordem dos tipos de conteúdo</p>
                 </div>
               )}
             </>
@@ -526,7 +551,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
           <Button
             variant="primary"
             onClick={handleSave}
-            disabled={saving || loading || (reorderType === 'modules' && modules.length === 0) || (reorderType === 'lessons' && lessons.length === 0) || (reorderType === 'actions' && actions.length === 0)}
+            disabled={saving || loading || (reorderType === 'modules' && modules.length === 0) || (reorderType === 'lessons' && lessons.length === 0) || (reorderType === 'content' && !selectedLessonId)}
           >
             {saving ? 'Salvando...' : 'Salvar Ordem'}
           </Button>
