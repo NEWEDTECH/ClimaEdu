@@ -37,12 +37,14 @@ export class FirebaseLessonRepository implements LessonRepository {
       type: ContentType;
       title: string;
       url: string;
+      order?: number;
     }) => Content.create({
       id: contentData.id,
       lessonId: contentData.lessonId,
       type: contentData.type,
       title: contentData.title,
-      url: contentData.url
+      url: contentData.url,
+      order: contentData.order ?? 0
     }));
 
     // Create and return a Lesson entity
@@ -118,7 +120,8 @@ export class FirebaseLessonRepository implements LessonRepository {
       lessonId: content.lessonId,
       type: content.type,
       title: content.title,
-      url: content.url
+      url: content.url,
+      order: content.order
     }));
 
     // Prepare the lesson data for Firestore
@@ -225,5 +228,15 @@ export class FirebaseLessonRepository implements LessonRepository {
 
     await batch.commit();
     return true;
+  }
+
+  /**
+   * Update the order of a lesson
+   * @param id Lesson id
+   * @param order New order value
+   */
+  async updateOrder(id: string, order: number): Promise<void> {
+    const lessonRef = doc(firestore, this.collectionName, id);
+    await updateDoc(lessonRef, { order });
   }
 }
