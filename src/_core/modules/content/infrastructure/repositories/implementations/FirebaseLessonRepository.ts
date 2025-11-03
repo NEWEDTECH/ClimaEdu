@@ -56,6 +56,7 @@ export class FirebaseLessonRepository implements LessonRepository {
       coverImageUrl: data.coverImageUrl,
       order: data.order,
       contents: contents,
+      contentSectionsOrder: data.contentSectionsOrder || ['description', 'video', 'scorm', 'pdf', 'audio', 'activity', 'questionnaire'],
       activity: data.activity,
       questionnaire: data.questionnaire
     });
@@ -132,6 +133,7 @@ export class FirebaseLessonRepository implements LessonRepository {
       description: lesson.description,
       coverImageUrl: lesson.coverImageUrl,
       order: lesson.order,
+      contentSectionsOrder: lesson.contentSectionsOrder,
       contents: contentsData,
       activity: activityData,
       questionnaire: questionnaireData

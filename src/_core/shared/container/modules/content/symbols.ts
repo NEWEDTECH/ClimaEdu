@@ -49,6 +49,7 @@ export const useCases = {
   CompleteLessonProgressUseCase: Symbol.for('CompleteLessonProgressUseCase'),
   CanAccessLessonUseCase: Symbol.for('CanAccessLessonUseCase'),
   UpdateLessonDescriptionUseCase: Symbol.for('UpdateLessonDescriptionUseCase'),
+  UpdateLessonContentSectionsOrderUseCase: Symbol.for('UpdateLessonContentSectionsOrderUseCase'),
   RemoveContentFromLessonUseCase: Symbol.for('RemoveContentFromLessonUseCase'),
   UploadActivityFilesUseCase: Symbol.for('UploadActivityFilesUseCase'),
   ListActivityFilesUseCase: Symbol.for('ListActivityFilesUseCase'),

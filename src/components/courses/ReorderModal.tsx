@@ -10,6 +10,7 @@ import { container, Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
+import { UpdateLessonContentSectionsOrderUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-content-sections-order/update-lesson-content-sections-order.use-case'
 import { showToast } from '@/components/toast'
 
 type ReorderType = 'modules' | 'lessons' | 'content'
@@ -240,9 +241,23 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
           }
         }
       } else if (reorderType === 'content') {
-        // Salvar a ordem preferida dos tipos de conteúdo
-        // Esta ordem será usada como padrão ao exibir conteúdos
-        console.log('Ordem dos tipos de conteúdo:', contentTypes.map(ct => ({ type: ct.type, order: ct.order })))
+        if (!selectedLessonId) {
+          throw new Error('Nenhuma lição selecionada')
+        }
+
+        // Usar o caso de uso para salvar a ordem no banco de dados
+        const updateOrderUseCase = container.get<UpdateLessonContentSectionsOrderUseCase>(
+          Register.content.useCase.UpdateLessonContentSectionsOrderUseCase
+        )
+
+        const orderedTypes = contentTypes
+          .sort((a, b) => a.order - b.order)
+          .map(ct => ct.type)
+
+        await updateOrderUseCase.execute({
+          lessonId: selectedLessonId,
+          contentSectionsOrder: orderedTypes
+        })
       }
 
       showToast.update(loadingToastId, {

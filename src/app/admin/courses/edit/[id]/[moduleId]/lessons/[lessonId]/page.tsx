@@ -86,8 +86,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Define the order of content sections
-  const contentSectionsOrder = [
+  // Define the order of content sections (will be loaded from lesson)
+  const [contentSectionsOrder, setContentSectionsOrder] = useState<string[]>([
     'description',
     'video',
     'scorm',
@@ -95,7 +95,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     'audio',
     'activity',
     'questionnaire',
-  ]
+  ])
 
   useEffect(() => {
     const fetchLessonData = async () => {
@@ -216,6 +216,11 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
         // Set lesson description
         setLessonDescription(lesson.description || '')
+
+        // Load content sections order from lesson
+        if (lesson.contentSectionsOrder && lesson.contentSectionsOrder.length === 7) {
+          setContentSectionsOrder(lesson.contentSectionsOrder)
+        }
 
         setIsLoading(false)
       } catch (error) {

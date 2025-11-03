@@ -49,6 +49,7 @@ export * from './core/use-cases/add-question-to-questionnaire/add-question-to-qu
 export * from './core/use-cases/update-question/update-question.use-case';
 export * from './core/use-cases/update-question/update-question.input';
 export * from './core/use-cases/update-question/update-question.output';
+export * from './core/use-cases/update-lesson-content-sections-order/update-lesson-content-sections-order.use-case';
 export * from './core/use-cases/delete-question/delete-question.use-case';
 export * from './core/use-cases/delete-question/delete-question.input';
 export * from './core/use-cases/delete-question/delete-question.output';
