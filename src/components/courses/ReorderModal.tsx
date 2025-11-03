@@ -240,10 +240,9 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
           }
         }
       } else if (reorderType === 'content') {
-        // Save content type order preferences
-        // This will define the default display order for all content types in this lesson
-        showToast.success('Ordem dos tipos de conteúdo definida!')
-        console.log('Content types order:', contentTypes.map(ct => ({ type: ct.type, order: ct.order })))
+        // Salvar a ordem preferida dos tipos de conteúdo
+        // Esta ordem será usada como padrão ao exibir conteúdos
+        console.log('Ordem dos tipos de conteúdo:', contentTypes.map(ct => ({ type: ct.type, order: ct.order })))
       }
 
       showToast.update(loadingToastId, {
@@ -537,9 +536,10 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
               {reorderType === 'content' && selectedModuleId && !selectedLessonId && (
                 <div className="text-center py-12 text-gray-500">
                   <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Selecione uma lição para definir a ordem dos tipos de conteúdo</p>
+                  <p>Selecione uma lição para reordenar os conteúdos</p>
                 </div>
               )}
+
             </>
           )}
         </CardContent>
