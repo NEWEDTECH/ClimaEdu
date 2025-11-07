@@ -23,10 +23,10 @@ export class UpdateLessonContentSectionsOrderUseCase {
   ): Promise<UpdateLessonContentSectionsOrderOutput> {
     const { lessonId, contentSectionsOrder } = input
 
-    // Validate that we have exactly 7 content types
-    const validTypes = ['description', 'video', 'scorm', 'pdf', 'audio', 'activity', 'questionnaire']
-    if (contentSectionsOrder.length !== 7 || !contentSectionsOrder.every(type => validTypes.includes(type))) {
-      throw new Error('Invalid content sections order. Must include all 7 types.')
+    // Validate that we have exactly 8 content types
+    const validTypes = ['description', 'video', 'scorm', 'pdf', 'audio', 'supportMaterial', 'activity', 'questionnaire']
+    if (contentSectionsOrder.length !== 8 || !contentSectionsOrder.every(type => validTypes.includes(type))) {
+      throw new Error('Invalid content sections order. Must include all 8 types.')
     }
 
     const lesson = await this.lessonRepository.findById(lessonId)

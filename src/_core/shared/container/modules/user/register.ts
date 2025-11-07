@@ -11,6 +11,7 @@ import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/proc
 import { ProcessCSVUsersWithInstitutionUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users-with-institution/process-csv-users-with-institution.use-case';
 import { GetUserByIdUseCase } from '@/_core/modules/user/core/use-cases/get-user-by-id';
 import { ListUsersByRoleUseCase } from '@/_core/modules/user/core/use-cases/list-users-by-role';
+import { RecordDailyAccessUseCase } from '@/_core/modules/user/core/use-cases/record-daily-access/record-daily-access.use-case';
 // import { AuthenticateUserUseCase } from '@/_core/modules/user/core/use-cases/authenticate-user/authenticate-user.use-case';
 
 /**
@@ -29,5 +30,6 @@ export function registerUserModule(container: Container): void {
   container.bind(useCases.ListUsersByRoleUseCase).to(ListUsersByRoleUseCase);
   container.bind(useCases.ProcessCSVUsersUseCase).to(ProcessCSVUsersUseCase);
   container.bind(useCases.ProcessCSVUsersWithInstitutionUseCase).to(ProcessCSVUsersWithInstitutionUseCase);
+  container.bind(useCases.RecordDailyAccessUseCase).to(RecordDailyAccessUseCase);
   // container.bind(useCases.AuthenticateUserUseCase).to(AuthenticateUserUseCase);
 }
