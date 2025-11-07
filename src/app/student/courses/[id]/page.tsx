@@ -3,11 +3,10 @@
 import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
 import { useProfile } from '@/context/zustand/useProfile';
-import { CourseSidebar, CourseContent, ContentRenderer, AutoNavigationModal } from '@/components/courses/student';
+import { CourseSidebar, CourseContent, AutoNavigationModal } from '@/components/courses/student';
 import { useCourseData } from '@/hooks/content/useCourseData';
 import { useCourseNavigation } from '@/hooks/content/useCourseNavigation';
 import { useAutoNavigation } from '@/hooks/content/useAutoNavigation';
-import { Button } from '@/components/button'
 
 
 export default function CoursePage() {
@@ -79,7 +78,6 @@ export default function CoursePage() {
     };
 
 
-
     return (
         <DashboardLayout>
             <div className="flex h-[calc(100vh-4rem)]">
@@ -93,110 +91,7 @@ export default function CoursePage() {
                         <div className="text-red-500 text-center p-8">{error}</div>
                     ) : (
                         <div className="space-y-6">
-
-                            <div className="w-full border-gray-300 pb-4 relative space-y-4">
-                                {activeLessonData && activeLessonData.contents.length > 0 ? (
-                                    activeLessonData.contents
-                                        .filter(content => content.type !== 'SUPPORT_MATERIAL')
-                                        .map(content => (
-                                            <ContentRenderer
-                                                key={content.id}
-                                                content={content}
-                                                onEnded={handleVideoEnded}
-                                                handleProgress={handleVideoProgress}
-                                            />
-                                        ))
-                                ) : (
-                                    <div className="flex justify-center items-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                        <p className="text-gray-500">Nenhum conteúdo disponível para esta lição.</p>
-                                    </div>
-                                )}
-
-                                {/* Materiais de Apoio */}
-                                {activeLessonData && activeLessonData.contents.filter(c => c.type === 'SUPPORT_MATERIAL').length > 0 && (
-                                    <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                            <span className="text-2xl">📂</span>
-                                            Materiais de Apoio
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {activeLessonData.contents
-                                                .filter(c => c.type === 'SUPPORT_MATERIAL')
-                                                .map(material => (
-                                                    <div
-                                                        key={material.id}
-                                                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-                                                    >
-                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                            <div className="text-2xl">📄</div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                                    {material.title}
-                                                                </p>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Material complementar
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <a
-                                                            href={material.url.split('#storagePath=')[0]}
-                                                            download
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors whitespace-nowrap"
-                                                        >
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                            </svg>
-                                                            Download
-                                                        </a>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Navigation Buttons - Bottom Right */}
-                                <div className="flex justify-end mt-4">
-                                    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-                                        {/* Previous Button */}
-                                        <Button
-                                            onClick={handlePreviousVideo}
-                                            className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            disabled={!canNavigatePrevious()}
-                                            title="Lição anterior"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                        </Button>
-
-                                        {/* Complete Button */}
-                                        <Button
-                                            onClick={handleCompleteLesson}
-                                            className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            disabled={!activeLesson}
-                                            title="Concluir lição"
-                                        >
-                                            <span className="text-sm font-medium">Concluir</span>
-                                        </Button>
-
-                                        {/* Next Button */}
-                                        <Button
-                                            onClick={handleNextVideo}
-                                            className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            disabled={!canNavigateNext()}
-                                            title="Próxima lição"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* CONTEÚDO VERTICAL */}
+                            {/* CONTEÚDO UNIFICADO */}
                             <CourseContent
                                 activeContent={activeContent}
                                 activeLesson={activeLesson}
@@ -207,6 +102,14 @@ export default function CoursePage() {
                                 hasPassedQuestionnaire={hasPassedQuestionnaire}
                                 courseId={courseId}
                                 institutionId={infoUser.currentIdInstitution || ''}
+                                contentSectionsOrder={activeLessonData?.contentSectionsOrder || []}
+                                onVideoEnded={handleVideoEnded}
+                                handleVideoProgress={handleVideoProgress}
+                                handleNextVideo={handleNextVideo}
+                                handlePreviousVideo={handlePreviousVideo}
+                                handleCompleteLesson={handleCompleteLesson}
+                                canNavigatePrevious={canNavigatePrevious}
+                                canNavigateNext={canNavigateNext}
                             />
                         </div>
                     )}
