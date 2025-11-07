@@ -41,8 +41,6 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
           <ScormPlayer contentId={content.url} />
         // </div>
       );
-    case ContentType.PDF:
-      return <PdfPlayer url={content.url} />;
     case ContentType.AUDIO:
       return (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
@@ -59,9 +57,7 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
     // Adicionar outros tipos de conteúdo aqui (PDF, etc.)
     default:
       return (
-        <div className="p-4 text-center bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <p>Conteúdo do tipo `&apos;{content.type}`&apos; não suportado.</p>
-        </div>
+        <></>
       );
   }
 }

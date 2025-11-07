@@ -754,7 +754,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             lessonId={lessonId}
                             institutionId={infoUser?.currentIdInstitution}
                             onDeleteContent={handleDeleteContent}
-                            onContentAdded={() => window.location.reload()}
                             isSubmitting={isSubmitting}
                           />
                         </AccordionContent>
