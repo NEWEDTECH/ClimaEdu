@@ -72,6 +72,8 @@ import { ListCourseTutorsUseCase } from '@/_core/modules/content/core/use-cases/
 import { RemoveTutorFromCourseUseCase } from '@/_core/modules/content/core/use-cases/remove-tutor-from-course';
 import { DeleteCourseUseCase } from '@/_core/modules/content/core/use-cases/delete-course';
 import { DeleteModuleUseCase } from '@/_core/modules/content/core/use-cases/delete-module';
+import { UploadSupportMaterialToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-support-material-to-lesson/upload-support-material-to-lesson.use-case';
+import { DeleteSupportMaterialFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -140,5 +142,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.RemoveTutorFromCourseUseCase).to(RemoveTutorFromCourseUseCase);
   container.bind(useCases.DeleteCourseUseCase).to(DeleteCourseUseCase);
   container.bind(useCases.DeleteModuleUseCase).to(DeleteModuleUseCase);
+  container.bind(useCases.UploadSupportMaterialToLessonUseCase).to(UploadSupportMaterialToLessonUseCase);
+  container.bind(useCases.DeleteSupportMaterialFromLessonUseCase).to(DeleteSupportMaterialFromLessonUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

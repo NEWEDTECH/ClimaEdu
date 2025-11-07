@@ -10,8 +10,8 @@ import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { LoadingSpinner } from '@/components/loader'
 import { CourseEditLayout } from '@/components/courses/CourseEditLayout'
-import { ActivitySection, ContentSection, DescriptionSection, Mp3UploadSection, PdfUploadSection, QuestionnaireSection, ScormSection } from '@/components/courses/admin'
-import { FileText, Upload, Music, BookOpen, ClipboardList, HelpCircle, Layers } from 'lucide-react'
+import { ActivitySection, ContentSection, DescriptionSection, Mp3UploadSection, PdfUploadSection, QuestionnaireSection, ScormSection, SupportMaterialSection } from '@/components/courses/admin'
+import { FileText, Upload, Music, BookOpen, ClipboardList, HelpCircle, Layers, FolderDown } from 'lucide-react'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository'
@@ -93,6 +93,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     'scorm',
     'pdf',
     'audio',
+    'supportMaterial',
     'activity',
     'questionnaire',
   ])
@@ -218,7 +219,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         setLessonDescription(lesson.description || '')
 
         // Load content sections order from lesson
-        if (lesson.contentSectionsOrder && lesson.contentSectionsOrder.length === 7) {
+        if (lesson.contentSectionsOrder && lesson.contentSectionsOrder.length === 8) {
           setContentSectionsOrder(lesson.contentSectionsOrder)
         }
 
@@ -716,6 +717,37 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pb-6">
                           <Mp3UploadSection
+                            contents={formData.contents}
+                            courseId={courseId}
+                            moduleId={moduleId}
+                            lessonId={lessonId}
+                            institutionId={infoUser?.currentIdInstitution}
+                            onDeleteContent={handleDeleteContent}
+                            onContentAdded={() => window.location.reload()}
+                            isSubmitting={isSubmitting}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  )
+
+                case 'supportMaterial':
+                  return (
+                    <Accordion key="supportMaterial" type="single" collapsible className="w-full">
+                      <AccordionItem value="support-material-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 dark:border-slate-700">
+                        <AccordionTrigger className="px-6 py-4 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/20 rounded-t-lg transition-colors cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                              <FolderDown className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            <div className="text-left">
+                              <h3 className="font-semibold text-slate-900 dark:text-slate-100">Material de Apoio</h3>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione materiais complementares à lição</p>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6">
+                          <SupportMaterialSection
                             contents={formData.contents}
                             courseId={courseId}
                             moduleId={moduleId}
