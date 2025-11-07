@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
@@ -50,6 +51,7 @@ type ReorderModalProps = {
 }
 
 export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderModalProps) {
+  const router = useRouter()
   const [reorderType, setReorderType] = useState<ReorderType>('modules')
   const [modules, setModules] = useState<ModuleItem[]>([])
   const [lessons, setLessons] = useState<LessonItem[]>([])
@@ -271,6 +273,9 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
       }
       
       onClose()
+      
+      // Redirecionar para a página de edição do curso
+      router.push(`/admin/courses/edit/${courseId}`)
     } catch (error) {
       console.error('Error saving order:', error)
       showToast.update(loadingToastId, {
