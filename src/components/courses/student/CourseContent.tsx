@@ -116,20 +116,17 @@ export function CourseContent({
     loadSubmission();
   }, [activeActivity, infoUser.id, institutionId]);
 
-  // Render function for videos/PDFs and other main contents
-  const renderVideoAndPDF = () => {
+  // Render function for videos only
+  const renderVideo = () => {
     if (!activeLessonData || !activeLessonData.contents) return null;
     
-    const mainContents = getSortedContents(
-      activeLessonData.contents.filter(content => content.type !== 'SUPPORT_MATERIAL'),
-      activeLessonData.contentSectionsOrder
-    );
+    const videoContents = activeLessonData.contents.filter(content => content.type === 'VIDEO');
 
-    if (mainContents.length === 0) return null;
+    if (videoContents.length === 0) return null;
 
     return (
       <>
-        {mainContents.map((content) => (
+        {videoContents.map((content) => (
           <div key={content.id}>
             <ContentRenderer
               content={content}
@@ -138,7 +135,7 @@ export function CourseContent({
             />
             
             {/* Navigation Buttons - Only after video content */}
-            {content.type === 'VIDEO' && hasVideoContent && handleNextVideo && handlePreviousVideo && handleCompleteLesson && canNavigatePrevious && canNavigateNext && (
+            {hasVideoContent && handleNextVideo && handlePreviousVideo && handleCompleteLesson && canNavigatePrevious && canNavigateNext && (
               <div className="flex justify-end mt-4">
                 <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
                   {/* Previous Button */}
@@ -178,6 +175,30 @@ export function CourseContent({
               </div>
             )}
 
+            <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
+          </div>
+        ))}
+      </>
+    );
+  };
+
+  // Render function for PDFs only
+  const renderPDF = () => {
+    if (!activeLessonData || !activeLessonData.contents) return null;
+    
+    const pdfContents = activeLessonData.contents.filter(content => content.type === 'PDF');
+
+    if (pdfContents.length === 0) return null;
+
+    return (
+      <>
+        {pdfContents.map((content) => (
+          <div key={content.id}>
+            <ContentRenderer
+              content={content}
+              onEnded={onVideoEnded}
+              handleProgress={handleVideoProgress}
+            />
             <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
           </div>
         ))}
@@ -698,8 +719,8 @@ export function CourseContent({
 
   // Map section types to render functions
   const sectionMap: Record<string, () => React.ReactElement | null> = {
-    video: renderVideoAndPDF,
-    pdf: renderVideoAndPDF,
+    video: renderVideo,
+    pdf: renderPDF,
     supportmaterial: renderSupportMaterial,
     description: renderDescription,
     activity: renderActivity,
@@ -712,17 +733,20 @@ export function CourseContent({
       // Default order if no order is specified
       return (
         <>
-          {renderVideoAndPDF()}
+          {renderVideo()}
+          {renderPDF()}
           {renderSupportMaterial()}
+          {renderDescription()}
+          {renderActivity()}
           {renderQuestionnaire()}
         </>
       );
     }
 
     return contentSectionsOrder.map((sectionType, index) => {
-      const renderFunction = sectionMap[sectionType.toLocaleLowerCase()];
-
-      return renderFunction ? <React.Fragment key={`section-${index}`}>{renderFunction()}</React.Fragment> : null;
+      const type = sectionType.toLowerCase();
+      const renderFunction = sectionMap[type];
+      return renderFunction ? <React.Fragment key={`section-${type}-${index}`}>{renderFunction()}</React.Fragment> : null;
     });
   };
 
