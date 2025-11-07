@@ -60,8 +60,9 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
     { type: 'scorm', label: 'SCORM', emoji: '📦', color: 'purple', order: 2 },
     { type: 'pdf', label: 'PDF', emoji: '📄', color: 'red', order: 3 },
     { type: 'audio', label: 'Áudio', emoji: '🎵', color: 'green', order: 4 },
-    { type: 'activity', label: 'Atividade', emoji: '✏️', color: 'teal', order: 5 },
-    { type: 'questionnaire', label: 'Questionário', emoji: '❓', color: 'orange', order: 6 },
+    { type: 'supportMaterial', label: 'Material de Apoio', emoji: '📂', color: 'indigo', order: 5 },
+    { type: 'activity', label: 'Atividade', emoji: '✏️', color: 'teal', order: 6 },
+    { type: 'questionnaire', label: 'Questionário', emoji: '❓', color: 'orange', order: 7 },
   ])
   
   const [selectedModuleId, setSelectedModuleId] = useState<string>('')
@@ -506,6 +507,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
                                       contentType.color === 'purple' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                                       contentType.color === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                                       contentType.color === 'green' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                      contentType.color === 'indigo' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
                                       contentType.color === 'teal' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' :
                                       contentType.color === 'orange' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
                                       'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
