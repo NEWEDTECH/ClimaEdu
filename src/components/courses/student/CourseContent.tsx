@@ -206,6 +206,28 @@ export function CourseContent({
     );
   };
 
+  // Render function for SCORM only
+  const renderScorm = () => {
+    if (!activeLessonData || !activeLessonData.contents) return null;
+
+    console.log()
+    
+    const scormContents = activeLessonData.contents.filter(content => content.type.toUpperCase() === 'SCORM');
+
+    if (scormContents.length === 0) return null;
+
+    return (
+      <>
+        {scormContents.map((content) => (
+          <div key={content.id}>
+            <ScormPlayer contentId={content.id} />
+            <div className="border-t dark:border-gray-700 border-gray-300 mt-6"></div>
+          </div>
+        ))}
+      </>
+    );
+  };
+
   // Render function for support materials
   const renderSupportMaterial = () => {
     if (!activeLessonData || !activeLessonData.contents) return null;
@@ -602,7 +624,7 @@ export function CourseContent({
                       <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                         Tentativas máximas:
                       </span>
-                      <span className={`font-medium ml-2 ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <span className={`font-medium ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                         {activeQuestionnaire.maxAttempts}
                       </span>
                     </div>
@@ -721,6 +743,7 @@ export function CourseContent({
   const sectionMap: Record<string, () => React.ReactElement | null> = {
     video: renderVideo,
     pdf: renderPDF,
+    scorm: renderScorm,
     supportmaterial: renderSupportMaterial,
     description: renderDescription,
     activity: renderActivity,
@@ -735,6 +758,7 @@ export function CourseContent({
         <>
           {renderVideo()}
           {renderPDF()}
+          {renderScorm()}
           {renderSupportMaterial()}
           {renderDescription()}
           {renderActivity()}
@@ -746,6 +770,7 @@ export function CourseContent({
     return contentSectionsOrder.map((sectionType, index) => {
       const type = sectionType.toLowerCase();
       const renderFunction = sectionMap[type];
+      console.log(type)
       return renderFunction ? <React.Fragment key={`section-${type}-${index}`}>{renderFunction()}</React.Fragment> : null;
     });
   };
