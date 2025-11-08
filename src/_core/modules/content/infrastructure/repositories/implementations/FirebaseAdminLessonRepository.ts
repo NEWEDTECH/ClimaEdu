@@ -121,4 +121,9 @@ export class FirebaseAdminLessonRepository implements LessonRepository {
     await batch.commit();
     return true;
   }
+
+  async updateOrder(id: string, order: number): Promise<void> {
+    const lessonRef = this.firestore.collection(this.collectionName).doc(id);
+    await lessonRef.update({ order });
+  }
 }

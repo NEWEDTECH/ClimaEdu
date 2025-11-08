@@ -226,10 +226,10 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
           Register.content.repository.ModuleRepository
         )
         
-        for (const module of modules) {
-          const moduleEntity = await moduleRepository.findById(module.id)
+        for (const moduleItem of modules) {
+          const moduleEntity = await moduleRepository.findById(moduleItem.id)
           if (moduleEntity) {
-            await moduleRepository.updateOrder(module.id, module.order)
+            await moduleRepository.updateOrder(moduleItem.id, moduleItem.order)
           }
         }
       } else if (reorderType === 'lessons') {

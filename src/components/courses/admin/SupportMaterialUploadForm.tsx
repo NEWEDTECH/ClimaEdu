@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -33,7 +32,6 @@ export function SupportMaterialUploadForm({
   lessonId,
   institutionId
 }: SupportMaterialUploadFormProps) {
-  const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState('')
   const [isUploading, setIsUploading] = useState(false)

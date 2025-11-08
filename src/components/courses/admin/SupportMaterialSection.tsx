@@ -4,11 +4,6 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
-import {
-  getContentTypeIcon,
-  getContentTypeLabel,
-  getContentTypeColor,
-} from './utils'
 import { FolderDown } from 'lucide-react'
 
 interface ContentData {
@@ -94,7 +89,7 @@ export function SupportMaterialSection({
               Nenhum material de apoio adicionado
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Clique em "Adicionar Materiais" para começar
+              Clique em &ldquo;Adicionar Materiais&rdquo; para começar
             </p>
           </div>
         ) : (

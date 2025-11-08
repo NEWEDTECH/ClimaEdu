@@ -338,9 +338,11 @@ export default function EditGestorCoursesPage() {
           selectedUserId={selectedGestorId}
           selectedInstitutionId={selectedInstitutionId}
           selectedCourses={selectedCourses}
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           onUserChange={(gestorId) => {
             // Don't change in edit mode
           }}
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           onInstitutionChange={(institutionId) => {
             // Don't change in edit mode
           }}

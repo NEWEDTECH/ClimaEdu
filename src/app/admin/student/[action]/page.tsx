@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card/card'
 import { SelectComponent } from '@/components/select'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'

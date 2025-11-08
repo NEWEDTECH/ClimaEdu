@@ -6,7 +6,6 @@ import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnai
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
 import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { useTheme } from '@/hooks/useTheme';
-import { ContentType } from '@/_core/modules/content/core/entities/ContentType';
 import { ScormPlayer } from '@/components/scorm/ScormPlayer';
 import { ActivityFileUpload } from './ActivityFileUpload';
 import { ContentRenderer } from './ContentRenderer';
@@ -40,7 +39,6 @@ type CourseContentProps = {
 };
 
 export function CourseContent({
-  activeContent,
   activeLesson,
   activeLessonData,
   activeActivity,

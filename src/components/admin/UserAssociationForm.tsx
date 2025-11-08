@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/button'
-import { Badge } from '@/components/ui/badge'
 import { SelectComponent } from '@/components/select'
 import { X, User, Building2, BookOpen, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
