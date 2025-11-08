@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card/card'
 import { SelectComponent } from '@/components/select'
 import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
@@ -467,12 +467,6 @@ export default function StudentEnrollmentPage() {
                 <CardTitle>
                   {id ? 'Informações do Estudante' : 'Informações de Inscrição'}
                 </CardTitle>
-                <CardDescription>
-                  {id
-                    ? 'Edite os detalhes do estudante e suas inscrições'
-                    : 'Selecione um estudante e um ou mais cursos para criar uma inscrição'
-                  }
-                </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
@@ -493,7 +487,7 @@ export default function StudentEnrollmentPage() {
                 <div className="space-y-4">
                   {/* Student selection/display */}
                   <div className="space-y-2">
-                    <label htmlFor="studentSearch" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="studentSearch" className="block text-sm font-medium text-gray-700 dark:text-white">
                       Estudante *
                     </label>
                     <div className="relative">
@@ -526,7 +520,7 @@ export default function StudentEnrollmentPage() {
                     {/* Student name field */}
                     {id && studentData ? (
                       <div className="mt-4">
-                        <label htmlFor="studentName" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="studentName" className="block text-sm font-medium text-gray-700 dark:text-white">
                           Nome do Estudante *
                         </label>
                         <InputText
@@ -547,7 +541,7 @@ export default function StudentEnrollmentPage() {
 
                   {/* Institution selection */}
                   <div className="space-y-2">
-                    <label htmlFor="institutionSearch" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="institutionSearch" className="block text-sm font-medium text-gray-700 dark:text-white">
                       Instituição *
                     </label>
                     <div className="relative">
@@ -568,7 +562,7 @@ export default function StudentEnrollmentPage() {
 
                   {/* Course selection */}
                   <div className="space-y-2">
-                    <label htmlFor="courseSearch" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="courseSearch" className="block text-sm font-medium text-gray-700 dark:text-white">
                       Cursos *
                     </label>
 

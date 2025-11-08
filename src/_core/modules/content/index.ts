@@ -49,6 +49,7 @@ export * from './core/use-cases/add-question-to-questionnaire/add-question-to-qu
 export * from './core/use-cases/update-question/update-question.use-case';
 export * from './core/use-cases/update-question/update-question.input';
 export * from './core/use-cases/update-question/update-question.output';
+export * from './core/use-cases/update-lesson-content-sections-order/update-lesson-content-sections-order.use-case';
 export * from './core/use-cases/delete-question/delete-question.use-case';
 export * from './core/use-cases/delete-question/delete-question.input';
 export * from './core/use-cases/delete-question/delete-question.output';
@@ -112,6 +113,12 @@ export * from './core/use-cases/approve-reject-activity-submission/approve-rejec
 export * from './core/use-cases/get-course-progress/get-course-progress.use-case';
 export * from './core/use-cases/get-course-progress/get-course-progress.input';
 export * from './core/use-cases/get-course-progress/get-course-progress.output';
+export * from './core/use-cases/upload-support-material-to-lesson/upload-support-material-to-lesson.use-case';
+export * from './core/use-cases/upload-support-material-to-lesson/upload-support-material-to-lesson.input';
+export * from './core/use-cases/upload-support-material-to-lesson/upload-support-material-to-lesson.output';
+export * from './core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.use-case';
+export * from './core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.input';
+export * from './core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.output';
 // export * from './core/use-cases/list-contents/list-contents.use-case';
 
 // Re-export repository interfaces

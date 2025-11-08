@@ -3,11 +3,6 @@
 import { InputText } from '@/components/input';
 import { SelectComponent } from '@/components/select';
 import { ImageUpload } from '@/components/upload';
-import { TutorSelector } from './TutorSelector';
-import { CourseTutorsList, type TutorInfo } from './CourseTutorsList';
-import { ContentManagerSelector } from './ContentManagerSelector';
-import { ContentManagersList, type ContentManagerInfo } from './ContentManagersList';
-import type { User } from '@/_core/modules/user/core/entities/User';
 
 export type CourseFormData = {
   title: string;
@@ -22,16 +17,6 @@ type CourseFormFieldsProps = {
   onFieldChange: (field: keyof CourseFormData, value: string) => void;
   showInstitutionSelect?: boolean;
   onImageUpload: (url: string) => void;
-  // Tutor props
-  availableTutors: User[];
-  selectedTutors: TutorInfo[];
-  onAddTutor: (tutorId: string) => void;
-  onRemoveTutor: (tutorId: string) => void;
-  // Content Manager props
-  availableContentManagers: User[];
-  selectedContentManagers: ContentManagerInfo[];
-  onAddContentManager: (managerId: string) => void;
-  onRemoveContentManager: (managerId: string) => void;
 };
 
 export function CourseFormFields({
@@ -40,14 +25,6 @@ export function CourseFormFields({
   onFieldChange,
   showInstitutionSelect = true,
   onImageUpload,
-  availableTutors,
-  selectedTutors,
-  onAddTutor,
-  onRemoveTutor,
-  availableContentManagers,
-  selectedContentManagers,
-  onAddContentManager,
-  onRemoveContentManager,
 }: CourseFormFieldsProps) {
   return (
     <div className="space-y-6">
@@ -112,33 +89,6 @@ export function CourseFormFields({
           {formData.coverImageUrl && (
             <p className="text-sm text-green-600">✓ Imagem de capa definida</p>
           )}
-
-          <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-lg font-semibold">Tutores do Curso</h3>
-            
-            <TutorSelector
-              availableTutors={availableTutors}
-              selectedTutorIds={selectedTutors.map((t) => t.id)}
-              onAddTutor={onAddTutor}
-            />
-
-            <CourseTutorsList tutors={selectedTutors} onRemoveTutor={onRemoveTutor} />
-          </div>
-
-          <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-lg font-semibold">Gestores de Conteúdo</h3>
-            
-            <ContentManagerSelector
-              availableContentManagers={availableContentManagers}
-              selectedContentManagerIds={selectedContentManagers.map((m) => m.id)}
-              onAddContentManager={onAddContentManager}
-            />
-
-            <ContentManagersList
-              contentManagers={selectedContentManagers}
-              onRemoveContentManager={onRemoveContentManager}
-            />
-          </div>
         </>
       )}
     </div>

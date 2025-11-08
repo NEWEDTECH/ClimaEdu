@@ -137,4 +137,14 @@ export class FirebaseModuleRepository implements ModuleRepository {
 
     return modulesWithLessons;
   }
+
+  /**
+   * Update the order of a module
+   * @param id Module id
+   * @param order New order value
+   */
+  async updateOrder(id: string, order: number): Promise<void> {
+    const moduleRef = doc(firestore, this.collectionName, id);
+    await updateDoc(moduleRef, { order });
+  }
 }

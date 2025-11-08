@@ -1,6 +1,6 @@
 'use client';
 
-import { ScormUploadForm } from '@/components/scorm/ScormUploadForm';
+import { SupportMaterialUploadForm } from '@/components/courses/admin';
 import { use } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/button';
@@ -16,7 +16,7 @@ interface PageProps {
   }>;
 }
 
-export default function ScormUploadPage({ params }: PageProps) {
+export default function SupportMaterialUploadPage({ params }: PageProps) {
   const { id: courseId, moduleId, lessonId, institutionId } = use(params);
 
   return (
@@ -39,7 +39,7 @@ export default function ScormUploadPage({ params }: PageProps) {
 
           {/* Conteúdo Principal */}
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <ScormUploadForm
+            <SupportMaterialUploadForm
               courseId={courseId}
               moduleId={moduleId}
               lessonId={lessonId}

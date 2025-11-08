@@ -58,6 +58,7 @@ import { DeleteTrailUseCase } from '@/_core/modules/content/core/use-cases/delet
 import { AddCourseToTrailUseCase } from '@/_core/modules/content/core/use-cases/add-course-to-trail/add-course-to-trail.use-case';
 import { RemoveCourseFromTrailUseCase } from '@/_core/modules/content/core/use-cases/remove-course-from-trail/remove-course-from-trail.use-case';
 import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-description/update-lesson-description.use-case';
+import { UpdateLessonContentSectionsOrderUseCase } from '@/_core/modules/content/core/use-cases/update-lesson-content-sections-order/update-lesson-content-sections-order.use-case';
 import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use-cases/remove-content-from-lesson/remove-content-from-lesson.use-case';
 import { UploadActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/upload-activity-files/upload-activity-files.use-case';
 import { ListActivityFilesUseCase } from '@/_core/modules/content/core/use-cases/list-activity-files/list-activity-files.use-case';
@@ -71,6 +72,8 @@ import { ListCourseTutorsUseCase } from '@/_core/modules/content/core/use-cases/
 import { RemoveTutorFromCourseUseCase } from '@/_core/modules/content/core/use-cases/remove-tutor-from-course';
 import { DeleteCourseUseCase } from '@/_core/modules/content/core/use-cases/delete-course';
 import { DeleteModuleUseCase } from '@/_core/modules/content/core/use-cases/delete-module';
+import { UploadSupportMaterialToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-support-material-to-lesson/upload-support-material-to-lesson.use-case';
+import { DeleteSupportMaterialFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.use-case';
 // import { ListContentsUseCase } from '@/_core/modules/content/core/use-cases/list-contents/list-contents.use-case';
 
 /**
@@ -125,6 +128,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.AddCourseToTrailUseCase).to(AddCourseToTrailUseCase);
   container.bind(useCases.RemoveCourseFromTrailUseCase).to(RemoveCourseFromTrailUseCase);
   container.bind(useCases.UpdateLessonDescriptionUseCase).to(UpdateLessonDescriptionUseCase);
+  container.bind(useCases.UpdateLessonContentSectionsOrderUseCase).to(UpdateLessonContentSectionsOrderUseCase);
   container.bind(useCases.RemoveContentFromLessonUseCase).to(RemoveContentFromLessonUseCase);
   container.bind(useCases.UploadActivityFilesUseCase).to(UploadActivityFilesUseCase);
   container.bind(useCases.ListActivityFilesUseCase).to(ListActivityFilesUseCase);
@@ -138,5 +142,7 @@ export function registerContentModule(container: Container): void {
   container.bind(useCases.RemoveTutorFromCourseUseCase).to(RemoveTutorFromCourseUseCase);
   container.bind(useCases.DeleteCourseUseCase).to(DeleteCourseUseCase);
   container.bind(useCases.DeleteModuleUseCase).to(DeleteModuleUseCase);
+  container.bind(useCases.UploadSupportMaterialToLessonUseCase).to(UploadSupportMaterialToLessonUseCase);
+  container.bind(useCases.DeleteSupportMaterialFromLessonUseCase).to(DeleteSupportMaterialFromLessonUseCase);
   // container.bind(useCases.ListContentsUseCase).to(ListContentsUseCase);
 }

@@ -38,4 +38,11 @@ export interface ModuleRepository {
    * @returns List of modules
    */
   listByCourse(courseId: string): Promise<Module[]>;
+
+  /**
+   * Update the order of a module
+   * @param id Module id
+   * @param order New order value
+   */
+  updateOrder(id: string, order: number): Promise<void>;
 }

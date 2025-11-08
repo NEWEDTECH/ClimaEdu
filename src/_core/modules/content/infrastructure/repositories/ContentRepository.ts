@@ -60,4 +60,18 @@ export interface ContentRepository {
    * @returns List of content
    */
   searchByTerm(term: string): Promise<Content[]>;
+
+  /**
+   * List content by lesson
+   * @param lessonId Lesson id
+   * @returns List of content
+   */
+  listByLesson(lessonId: string): Promise<Content[]>;
+
+  /**
+   * Update the order of content
+   * @param id Content id
+   * @param order New order value
+   */
+  updateOrder(id: string, order: number): Promise<void>;
 }
