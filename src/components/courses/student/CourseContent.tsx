@@ -209,10 +209,8 @@ export function CourseContent({
   // Render function for SCORM only
   const renderScorm = () => {
     if (!activeLessonData || !activeLessonData.contents) return null;
-
-    console.log()
     
-    const scormContents = activeLessonData.contents.filter(content => content.type.toUpperCase() === 'SCORM');
+    const scormContents = activeLessonData.contents.filter(content => content.type === 'SCORM');
 
     if (scormContents.length === 0) return null;
 
@@ -220,8 +218,9 @@ export function CourseContent({
       <>
         {scormContents.map((content) => (
           <div key={content.id}>
-            <ScormPlayer contentId={content.id} />
-            <div className="border-t dark:border-gray-700 border-gray-300 mt-6"></div>
+            {/* Para SCORM, o ID está armazenado na URL do Content */}
+            <ScormPlayer contentId={content.url} />
+            <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
           </div>
         ))}
       </>
