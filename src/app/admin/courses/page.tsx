@@ -22,6 +22,7 @@ import { GetUserByIdUseCase, GetUserByIdInput } from '@/_core/modules/user/core/
 import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.use-case'
 import type { Course } from '@/_core/modules/content/core/entities/Course'
 import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus'
+import { UserRole } from '@/_core/modules/user/core/entities/User'
 
 
 type CourseWithUIProps = {
@@ -29,6 +30,7 @@ type CourseWithUIProps = {
   title: string
   description: string
   instructorDisplay?: string
+  contentManagerDisplay?: string
   enrolledStudents?: number
   status: 'active' | 'inactive'
 }
@@ -37,6 +39,7 @@ const NAME_COLUMNS = [
   'Nome',
   'Descrição',
   'Instrutor',
+  'Gestores',
   'Estudantes',
   'Status',
   'Ação'
@@ -116,23 +119,31 @@ export default function CoursesPage() {
           Register.enrollment.useCase.ListEnrollmentsUseCase
         )
         
-        // Create an array of promises to fetch tutors and enrollments for each course
+        // Create an array of promises to fetch tutors, content managers and enrollments for each course
         const coursesWithDetailsPromises = coursesResult.courses.map(async (course: Course) => {
-          // Get all tutor associations for this course
-          const tutorsResult = await listCourseTutorsUseCase.execute(
+          // Get all user associations for this course (tutors and content managers)
+          const courseTutorsResult = await listCourseTutorsUseCase.execute(
             new ListCourseTutorsInput(course.id)
           )
           
-          // Get user details for each tutor
-          const tutorPromises = tutorsResult.tutors.map(async (association) => {
+          // Get user details for each association
+          const userPromises = courseTutorsResult.tutors.map(async (association) => {
             const userResult = await getUserByIdUseCase.execute(new GetUserByIdInput(association.userId))
-            return userResult.user ? { id: userResult.user.id, email: userResult.user.email.value } : null
+            return userResult.user ? { 
+              id: userResult.user.id, 
+              email: userResult.user.email.value,
+              role: userResult.user.role 
+            } : null
           })
           
-          // Wait for all tutor details to be fetched
-          const tutors = (await Promise.all(tutorPromises)).filter(tutor => tutor !== null)
+          // Wait for all user details to be fetched
+          const users = (await Promise.all(userPromises)).filter(user => user !== null)
           
-          // Determine what to display for instructors
+          // Separate tutors from content managers by role
+          const tutors = users.filter(user => user.role === UserRole.TUTOR)
+          const contentManagers = users.filter(user => user.role === UserRole.CONTENT_MANAGER)
+          
+          // Determine what to display for instructors (tutors)
           let instructorDisplay = 'Sem instrutor'
           if (tutors.length === 1) {
             instructorDisplay = tutors[0]?.email || 'Sem instrutor'
@@ -140,6 +151,16 @@ export default function CoursesPage() {
             const firstTutor = tutors[0]?.email || 'Tutor'
             const additionalCount = tutors.length - 1
             instructorDisplay = `${firstTutor} +${additionalCount}`
+          }
+          
+          // Determine what to display for content managers
+          let contentManagerDisplay = 'Sem gestor'
+          if (contentManagers.length === 1) {
+            contentManagerDisplay = contentManagers[0]?.email || 'Sem gestor'
+          } else if (contentManagers.length > 1) {
+            const firstManager = contentManagers[0]?.email || 'Gestor'
+            const additionalCount = contentManagers.length - 1
+            contentManagerDisplay = `${firstManager} +${additionalCount}`
           }
           
           // Get enrolled students count
@@ -159,6 +180,7 @@ export default function CoursesPage() {
             title: course.title,
             description: course.description,
             instructorDisplay,
+            contentManagerDisplay,
             enrolledStudents,
             status: 'active' as 'active' | 'inactive'
           }
@@ -271,6 +293,7 @@ export default function CoursesPage() {
                       <td className="py-3 px-4">{course.title}</td>
                       <td className="py-3 px-4 max-w-xs truncate">{course.description}</td>
                       <td className="py-3 px-4">{course.instructorDisplay}</td>
+                      <td className="py-3 px-4">{course.contentManagerDisplay}</td>
                       <td className="py-3 px-4 text-center">{course.enrolledStudents}</td>
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs ${

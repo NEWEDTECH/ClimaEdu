@@ -17,20 +17,16 @@ import { Institution } from '@/_core/modules/institution'
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case'
 import { ListUserInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-user-institutions/list-user-institutions.use-case'
 
-export default function AssociateTutorToCoursePage() {
+export default function EditGestorCoursesPage() {
   const router = useRouter()
   const params = useParams()
-  const action = params.action as string
-  
-  // Determine if we're in edit mode (action is a tutor ID) or create mode (action is "create")
-  const isEditMode = action !== 'create'
-  const tutorId = isEditMode ? action : ''
+  const gestorId = params.id as string
 
-  const [tutors, setTutors] = useState<UserOption[]>([])
+  const [gestores, setGestores] = useState<UserOption[]>([])
   const [institutions, setInstitutions] = useState<InstitutionOption[]>([])
   const [courses, setCourses] = useState<CourseOption[]>([])
 
-  const [selectedTutorId, setSelectedTutorId] = useState<string>('')
+  const [selectedGestorId, setSelectedGestorId] = useState<string>('')
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
   const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([])
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -38,26 +34,26 @@ export default function AssociateTutorToCoursePage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Fetch tutors and institutions on component mount
+  // Fetch gestores and institutions on component mount
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true)
 
-        // Fetch tutors
+        // Fetch content managers
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         )
 
-        const tutorsList = await userRepository.listByType(UserRole.TUTOR)
+        const gestoresList = await userRepository.listByType(UserRole.CONTENT_MANAGER)
 
-        const tutorsForDropdown = tutorsList.map(tutor => ({
-          id: tutor.id,
-          name: tutor.name,
-          email: tutor.email.value
+        const gestoresForDropdown = gestoresList.map(gestor => ({
+          id: gestor.id,
+          name: gestor.name,
+          email: gestor.email.value
         }))
 
-        setTutors(tutorsForDropdown)
+        setGestores(gestoresForDropdown)
 
         // Fetch institutions
         const institutionRepository = container.get<InstitutionRepository>(
@@ -73,28 +69,28 @@ export default function AssociateTutorToCoursePage() {
 
         setInstitutions(institutionsForDropdown)
 
-        // If in edit mode, fetch tutor data and courses
-        if (isEditMode && tutorId) {
-          // Get tutor data
-          const tutor = await userRepository.findById(tutorId)
+        // Fetch gestor data and courses
+        if (gestorId) {
+          // Get gestor data
+          const gestor = await userRepository.findById(gestorId)
 
-          if (tutor) {
-            setSelectedTutorId(tutor.id)
+          if (gestor) {
+            setSelectedGestorId(gestor.id)
 
-            // Get tutor's institution using the ListUserInstitutionsUseCase
+            // Get gestor's institution using the ListUserInstitutionsUseCase
             const listUserInstitutionsUseCase = container.get<ListUserInstitutionsUseCase>(
               Register.institution.useCase.ListUserInstitutionsUseCase
             )
 
             const userInstitutionsResult = await listUserInstitutionsUseCase.execute({
-              userId: tutor.id
+              userId: gestor.id
             })
 
-            let tutorInstitutionId: string | undefined
+            let gestorInstitutionId: string | undefined
 
-            // Get the first institution (assuming tutor belongs to one institution)
+            // Get the first institution (assuming gestor belongs to one institution)
             if (userInstitutionsResult.institutions.length > 0) {
-              tutorInstitutionId = userInstitutionsResult.institutions[0].id
+              gestorInstitutionId = userInstitutionsResult.institutions[0].id
             }
 
             const courseTutorRepository = container.get<CourseTutorRepository>(
@@ -105,17 +101,17 @@ export default function AssociateTutorToCoursePage() {
               Register.content.repository.CourseRepository
             )
 
-            // Get tutor's courses
-            const courseTutors = await courseTutorRepository.findByUserId(tutor.id)
+            // Get gestor's courses (using the same association table)
+            const courseTutors = await courseTutorRepository.findByUserId(gestor.id)
 
             if (courseTutors.length > 0) {
               // Get course details for each association
               const courseDetailsPromises = courseTutors.map(async (courseTutor) => {
                 const course = await courseRepository.findById(courseTutor.courseId)
                 if (course) {
-                  // If tutor doesn't have institutionId directly, get it from first course
-                  if (!tutorInstitutionId) {
-                    tutorInstitutionId = course.institutionId
+                  // If gestor doesn't have institutionId directly, get it from first course
+                  if (!gestorInstitutionId) {
+                    gestorInstitutionId = course.institutionId
                   }
 
                   return {
@@ -131,27 +127,27 @@ export default function AssociateTutorToCoursePage() {
                   course !== null
               )
 
-              // Set the tutor's institution
-              if (tutorInstitutionId) {
-                setSelectedInstitutionId(tutorInstitutionId)
+              // Set the gestor's institution
+              if (gestorInstitutionId) {
+                setSelectedInstitutionId(gestorInstitutionId)
 
-                // Load all courses from tutor's institution
-                const institutionCourses = await courseRepository.listByInstitution(tutorInstitutionId)
+                // Load all courses from gestor's institution
+                const institutionCourses = await courseRepository.listByInstitution(gestorInstitutionId)
                 setCourses(institutionCourses.map(c => ({
                   id: c.id,
                   title: c.title
                 })))
               }
 
-              // Set courses that tutor is already teaching
+              // Set courses that gestor is already managing
               setSelectedCourses(courseDetails)
             } else {
-              // If tutor has no courses yet, try to get institution from tutor directly
-              if (tutorInstitutionId) {
-                setSelectedInstitutionId(tutorInstitutionId)
+              // If gestor has no courses yet, try to get institution from gestor directly
+              if (gestorInstitutionId) {
+                setSelectedInstitutionId(gestorInstitutionId)
 
-                // Load all courses from tutor's institution
-                const institutionCourses = await courseRepository.listByInstitution(tutorInstitutionId)
+                // Load all courses from gestor's institution
+                const institutionCourses = await courseRepository.listByInstitution(gestorInstitutionId)
                 setCourses(institutionCourses.map(c => ({
                   id: c.id,
                   title: c.title
@@ -159,7 +155,7 @@ export default function AssociateTutorToCoursePage() {
               }
             }
           } else {
-            setError('Tutor não encontrado')
+            setError('Gestor de conteúdo não encontrado')
           }
         }
 
@@ -173,7 +169,7 @@ export default function AssociateTutorToCoursePage() {
     }
 
     fetchInitialData()
-  }, [tutorId, isEditMode])
+  }, [gestorId, selectedInstitutionId])
 
   // Fetch courses when institution changes
   useEffect(() => {
@@ -195,11 +191,6 @@ export default function AssociateTutorToCoursePage() {
         }))
 
         setCourses(coursesForDropdown)
-
-        // Only reset selected courses if not in edit mode
-        if (!isEditMode) {
-          setSelectedCourses([])
-        }
 
         setError(null)
       } catch (err) {
@@ -227,8 +218,8 @@ export default function AssociateTutorToCoursePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!selectedTutorId) {
-      setError('Por favor, selecione um tutor')
+    if (!selectedGestorId) {
+      setError('Por favor, selecione um gestor de conteúdo')
       return
     }
 
@@ -254,8 +245,8 @@ export default function AssociateTutorToCoursePage() {
         Register.content.repository.CourseTutorRepository
       )
 
-      // Get current course-tutor associations
-      const currentCourseTutors = await courseTutorRepository.findByUserId(selectedTutorId)
+      // Get current course-gestor associations
+      const currentCourseTutors = await courseTutorRepository.findByUserId(selectedGestorId)
 
       // Identify courses to add and remove
       const selectedCourseIds = selectedCourses.map(course => course.id)
@@ -267,10 +258,10 @@ export default function AssociateTutorToCoursePage() {
       // Courses to remove: in currentCourseIds but not in selectedCourseIds
       const coursesToRemove = currentCourseTutors.filter(ct => !selectedCourseIds.includes(ct.courseId))
 
-      // Add new associations
+      // Add new associations (using the same UseCase since it's the same table)
       const addPromises = coursesToAdd.map(courseId =>
         associateTutorToCourseUseCase.execute({
-          userId: selectedTutorId,
+          userId: selectedGestorId,
           courseId
         })
       )
@@ -283,15 +274,15 @@ export default function AssociateTutorToCoursePage() {
       // Execute all operations
       await Promise.all([...addPromises, ...removePromises])
 
-      setSuccessMessage('Associações do tutor atualizadas com sucesso')
+      setSuccessMessage('Associações do gestor de conteúdo atualizadas com sucesso')
 
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/admin/tutor')
+        router.push('/admin/gestor')
       }, 2000)
     } catch (err) {
-      console.error('Error updating tutor associations:', err)
-      setError('Falha ao atualizar associações do tutor. Por favor, tente novamente mais tarde.')
+      console.error('Error updating gestor associations:', err)
+      setError('Falha ao atualizar associações do gestor de conteúdo. Por favor, tente novamente mais tarde.')
     } finally {
       setIsSubmitting(false)
     }
@@ -341,34 +332,29 @@ export default function AssociateTutorToCoursePage() {
     <ProtectedContent>
       <DashboardLayout>
         <UserAssociationForm
-          users={tutors}
+          users={gestores}
           institutions={institutions}
           courses={courses}
-          selectedUserId={selectedTutorId}
+          selectedUserId={selectedGestorId}
           selectedInstitutionId={selectedInstitutionId}
           selectedCourses={selectedCourses}
-          onUserChange={(tutorId) => {
-            if (!isEditMode) {
-              setSelectedTutorId(tutorId)
-            }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          onUserChange={(gestorId) => {
+            // Don't change in edit mode
           }}
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           onInstitutionChange={(institutionId) => {
-            if (!isEditMode) {
-              setSelectedInstitutionId(institutionId)
-            }
+            // Don't change in edit mode
           }}
           onCourseAdd={handleCourseAdd}
           onCourseRemove={handleCourseRemove}
           isSubmitting={isSubmitting}
-          isEditMode={isEditMode}
-          userLabel="Tutor"
-          userPlaceholder="Selecione um tutor"
-          title={isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
-          description={isEditMode 
-            ? 'Edite as associações de cursos para este tutor' 
-            : 'Selecione um tutor e um ou mais cursos para associá-lo'
-          }
-          backUrl="/admin/tutor"
+          isEditMode={true}
+          userLabel="Gestor de Conteúdo"
+          userPlaceholder="Selecione um gestor de conteúdo"
+          title="Editar Associações do Gestor de Conteúdo"
+          description="Edite as associações de cursos para este gestor de conteúdo"
+          backUrl="/admin/gestor"
           onSubmit={handleSubmit}
           loading={loading}
         />

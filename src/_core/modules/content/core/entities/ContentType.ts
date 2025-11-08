@@ -7,4 +7,5 @@ export enum ContentType {
   PODCAST = 'PODCAST',
   SCORM = 'SCORM',
   AUDIO = 'AUDIO',
+  SUPPORT_MATERIAL = 'SUPPORT_MATERIAL',
 }

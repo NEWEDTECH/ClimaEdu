@@ -13,18 +13,10 @@ import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { showToast } from '@/components/toast';
 import { CourseFormFields, type CourseFormData } from '@/components/courses/CourseFormFields';
-import { type TutorInfo } from '@/components/courses/CourseTutorsList';
-import { type ContentManagerInfo } from '@/components/courses/ContentManagersList';
 import { UpdateCourseUseCase } from '@/_core/modules/content/core/use-cases/update-course/update-course.use-case';
-import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
-import { RemoveTutorFromCourseUseCase, RemoveTutorFromCourseInput } from '@/_core/modules/content/core/use-cases/remove-tutor-from-course';
 import { DeleteCourseUseCase, DeleteCourseInput } from '@/_core/modules/content/core/use-cases/delete-course';
-import { ListCourseTutorsUseCase, ListCourseTutorsInput } from '@/_core/modules/content/core/use-cases/list-course-tutors';
-import { GetUserByIdUseCase, GetUserByIdInput } from '@/_core/modules/user/core/use-cases/get-user-by-id';
-import { ListUsersByRoleUseCase, ListUsersByRoleInput } from '@/_core/modules/user/core/use-cases/list-users-by-role';
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case';
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
-import { UserRole, type User } from '@/_core/modules/user/core/entities/User';
 
 export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -40,12 +32,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([]);
-  const [availableTutors, setAvailableTutors] = useState<User[]>([]);
-  const [selectedTutors, setSelectedTutors] = useState<TutorInfo[]>([]);
-  const [originalTutors, setOriginalTutors] = useState<TutorInfo[]>([]);
-  const [availableContentManagers, setAvailableContentManagers] = useState<User[]>([]);
-  const [selectedContentManagers, setSelectedContentManagers] = useState<ContentManagerInfo[]>([]);
-  const [originalContentManagers, setOriginalContentManagers] = useState<ContentManagerInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -86,69 +72,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
           coverImageUrl: course.coverImageUrl || '',
         });
 
-        // Fetch tutors
-        const listUsersByRoleUseCase = container.get<ListUsersByRoleUseCase>(
-          Register.user.useCase.ListUsersByRoleUseCase
-        );
-        const tutorsResult = await listUsersByRoleUseCase.execute(
-          new ListUsersByRoleInput(UserRole.TUTOR)
-        );
-        setAvailableTutors(tutorsResult.users);
-
-        // Fetch content managers
-        const contentManagersResult = await listUsersByRoleUseCase.execute(
-          new ListUsersByRoleInput(UserRole.CONTENT_MANAGER)
-        );
-        setAvailableContentManagers(contentManagersResult.users);
-
-        // Fetch course tutors
-        const listCourseTutorsUseCase = container.get<ListCourseTutorsUseCase>(
-          Register.content.useCase.ListCourseTutorsUseCase
-        );
-        const courseTutorsResult = await listCourseTutorsUseCase.execute(
-          new ListCourseTutorsInput(courseId)
-        );
-
-        const getUserByIdUseCase = container.get<GetUserByIdUseCase>(
-          Register.user.useCase.GetUserByIdUseCase
-        );
-
-        const userPromises = courseTutorsResult.tutors.map(async (association) => {
-          const userResult = await getUserByIdUseCase.execute(
-            new GetUserByIdInput(association.userId)
-          );
-          if (userResult.user) {
-            return {
-              id: userResult.user.id,
-              email: userResult.user.email.value,
-              name: userResult.user.name,
-              role: userResult.user.role,
-            };
-          }
-          return null;
-        });
-
-        const usersWithDetails = await Promise.all(userPromises);
-        const validUsers = usersWithDetails.filter((user): user is { id: string; email: string; name: string; role: UserRole } => user !== null);
-
-        // Separate tutors and content managers by role
-        // For backward compatibility: if role is not CONTENT_MANAGER, treat as TUTOR
-        const tutors = validUsers
-          .filter((user) => user.role !== UserRole.CONTENT_MANAGER)
-          .map(({ id, email, name }) => ({ id, email, name } as TutorInfo));
-        
-        const managers = validUsers
-          .filter((user) => user.role === UserRole.CONTENT_MANAGER)
-          .map(({ id, email, name }) => ({ id, email, name } as ContentManagerInfo));
-
-        console.log('Loaded tutors:', tutors);
-        console.log('Loaded managers:', managers);
-
-        setSelectedTutors(tutors);
-        setOriginalTutors(tutors);
-        setSelectedContentManagers(managers);
-        setOriginalContentManagers(managers);
-
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -165,40 +88,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
   const handleFieldChange = (field: keyof CourseFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddTutor = (tutorId: string) => {
-    const tutor = availableTutors.find((t) => t.id === tutorId);
-    if (tutor) {
-      // Check if already added to avoid duplicates in the current course
-      if (!selectedTutors.some((t) => t.id === tutorId)) {
-        setSelectedTutors((prev) => [
-          ...prev,
-          { id: tutor.id, email: tutor.email.value, name: tutor.name },
-        ]);
-      }
-    }
-  };
-
-  const handleRemoveTutor = (tutorId: string) => {
-    setSelectedTutors((prev) => prev.filter((t) => t.id !== tutorId));
-  };
-
-  const handleAddContentManager = (managerId: string) => {
-    const manager = availableContentManagers.find((m) => m.id === managerId);
-    if (manager) {
-      // Check if already added to avoid duplicates in the current course
-      if (!selectedContentManagers.some((m) => m.id === managerId)) {
-        setSelectedContentManagers((prev) => [
-          ...prev,
-          { id: manager.id, email: manager.email.value, name: manager.name },
-        ]);
-      }
-    }
-  };
-
-  const handleRemoveContentManager = (managerId: string) => {
-    setSelectedContentManagers((prev) => prev.filter((m) => m.id !== managerId));
   };
 
   const handleDelete = async () => {
@@ -251,94 +140,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         description: formData.description,
         coverImageUrl: formData.coverImageUrl,
       });
-
-      // Handle tutor changes
-      const tutorsToRemove = originalTutors.filter(
-        (original) => !selectedTutors.some((selected) => selected.id === original.id)
-      );
-
-      const tutorsToAdd = selectedTutors.filter(
-        (selected) => !originalTutors.some((original) => original.id === selected.id)
-      );
-
-      // Remove tutors
-      if (tutorsToRemove.length > 0) {
-        const removeTutorUseCase = container.get<RemoveTutorFromCourseUseCase>(
-          Register.content.useCase.RemoveTutorFromCourseUseCase
-        );
-
-        for (const tutor of tutorsToRemove) {
-          try {
-            await removeTutorUseCase.execute(
-              new RemoveTutorFromCourseInput(tutor.id, courseId)
-            );
-          } catch (err) {
-            console.error(`Error removing tutor ${tutor.email}:`, err);
-          }
-        }
-      }
-
-      // Add tutors
-      if (tutorsToAdd.length > 0) {
-        const associateTutorUseCase = container.get<AssociateTutorToCourseUseCase>(
-          Register.content.useCase.AssociateTutorToCourseUseCase
-        );
-
-        for (const tutor of tutorsToAdd) {
-          try {
-            await associateTutorUseCase.execute({
-              userId: tutor.id,
-              courseId: courseId,
-            });
-          } catch (err) {
-            console.error(`Error associating tutor ${tutor.email}:`, err);
-          }
-        }
-      }
-
-      // Handle content manager changes
-      const managersToRemove = originalContentManagers.filter(
-        (original) => !selectedContentManagers.some((selected) => selected.id === original.id)
-      );
-
-      const managersToAdd = selectedContentManagers.filter(
-        (selected) => !originalContentManagers.some((original) => original.id === selected.id)
-      );
-
-      // Remove content managers
-      if (managersToRemove.length > 0) {
-        const removeTutorUseCase = container.get<RemoveTutorFromCourseUseCase>(
-          Register.content.useCase.RemoveTutorFromCourseUseCase
-        );
-
-        for (const manager of managersToRemove) {
-          try {
-            await removeTutorUseCase.execute(
-              new RemoveTutorFromCourseInput(manager.id, courseId)
-            );
-          } catch (err) {
-            console.error(`Error removing content manager ${manager.email}:`, err);
-          }
-        }
-      }
-
-      // Add content managers
-      if (managersToAdd.length > 0) {
-        const associateTutorUseCase = container.get<AssociateTutorToCourseUseCase>(
-          Register.content.useCase.AssociateTutorToCourseUseCase
-        );
-
-        for (const manager of managersToAdd) {
-          try {
-            await associateTutorUseCase.execute({
-              userId: manager.id,
-              courseId: courseId,
-            });
-          } catch (err) {
-            console.error(`Error associating content manager ${manager.email}:`, err);
-          }
-        }
-      }
 
       showToast.update(loadingToastId, {
         render: 'Curso atualizado com sucesso!',
@@ -415,14 +216,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                   onFieldChange={handleFieldChange}
                   showInstitutionSelect={false}
                   onImageUpload={(url) => handleFieldChange('coverImageUrl', url)}
-                  availableTutors={availableTutors}
-                  selectedTutors={selectedTutors}
-                  onAddTutor={handleAddTutor}
-                  onRemoveTutor={handleRemoveTutor}
-                  availableContentManagers={availableContentManagers}
-                  selectedContentManagers={selectedContentManagers}
-                  onAddContentManager={handleAddContentManager}
-                  onRemoveContentManager={handleRemoveContentManager}
                 />
               </CardContent>
               <CardFooter className="flex justify-between gap-2">

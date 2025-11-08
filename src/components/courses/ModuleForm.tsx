@@ -10,6 +10,7 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/create-module/create-module.use-case';
 import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
 import { DeleteModuleUseCase, DeleteModuleInput } from '@/_core/modules/content/core/use-cases/delete-module';
+import { ReorderModal } from './ReorderModal';
 
 type ModuleData = {
   id: string;
@@ -44,6 +45,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmModuleId, setDeleteConfirmModuleId] = useState<string | null>(null);
   const [isDeletingModule, setIsDeletingModule] = useState(false);
+  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
 
   const fetchModules = useCallback(async () => {
     try {
@@ -368,6 +370,25 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
           </div>
         </div>
 
+        {/* Reorder Button */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-purple-100 dark:border-gray-600 shadow-sm">
+          <div className="flex items-center mb-3">
+            <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center mr-2">
+              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Reorganizar Conteúdo</h3>
+          </div>
+          <Button
+            type="button"
+            onClick={() => setIsReorderModalOpen(true)}
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white text-sm py-2 rounded-lg shadow-sm transition-all duration-200"
+          >
+            Reordenar
+          </Button>
+        </div>
+
         {modules.length === 0 ? (
           <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -634,6 +655,16 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
           </div>
         </div>
       )}
+
+      {/* Reorder Modal */}
+      <ReorderModal
+        isOpen={isReorderModalOpen}
+        onClose={() => setIsReorderModalOpen(false)}
+        courseId={courseId}
+        onSuccess={() => {
+          fetchModules();
+        }}
+      />
     </div>
   );
 }

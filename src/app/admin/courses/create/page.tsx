@@ -13,13 +13,8 @@ import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { showToast } from '@/components/toast';
 import { CourseFormFields, type CourseFormData } from '@/components/courses/CourseFormFields';
-import { type TutorInfo } from '@/components/courses/CourseTutorsList';
-import { type ContentManagerInfo } from '@/components/courses/ContentManagersList';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
-import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case';
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case';
-import { ListUsersByRoleUseCase, ListUsersByRoleInput } from '@/_core/modules/user/core/use-cases/list-users-by-role';
-import { UserRole, type User } from '@/_core/modules/user/core/entities/User';
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -33,10 +28,6 @@ export default function CreateCoursePage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([]);
-  const [availableTutors, setAvailableTutors] = useState<User[]>([]);
-  const [selectedTutors, setSelectedTutors] = useState<TutorInfo[]>([]);
-  const [availableContentManagers, setAvailableContentManagers] = useState<User[]>([]);
-  const [selectedContentManagers, setSelectedContentManagers] = useState<ContentManagerInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,21 +55,6 @@ export default function CreateCoursePage() {
           }));
         }
 
-        // Fetch tutors
-        const listUsersByRoleUseCase = container.get<ListUsersByRoleUseCase>(
-          Register.user.useCase.ListUsersByRoleUseCase
-        );
-        const tutorsResult = await listUsersByRoleUseCase.execute(
-          new ListUsersByRoleInput(UserRole.TUTOR)
-        );
-        setAvailableTutors(tutorsResult.users);
-
-        // Fetch content managers
-        const contentManagersResult = await listUsersByRoleUseCase.execute(
-          new ListUsersByRoleInput(UserRole.CONTENT_MANAGER)
-        );
-        setAvailableContentManagers(contentManagersResult.users);
-
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -97,40 +73,6 @@ export default function CreateCoursePage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAddTutor = (tutorId: string) => {
-    const tutor = availableTutors.find((t) => t.id === tutorId);
-    if (tutor) {
-      // Check if already added to avoid duplicates in the current course
-      if (!selectedTutors.some((t) => t.id === tutorId)) {
-        setSelectedTutors((prev) => [
-          ...prev,
-          { id: tutor.id, email: tutor.email.value, name: tutor.name },
-        ]);
-      }
-    }
-  };
-
-  const handleRemoveTutor = (tutorId: string) => {
-    setSelectedTutors((prev) => prev.filter((t) => t.id !== tutorId));
-  };
-
-  const handleAddContentManager = (managerId: string) => {
-    const manager = availableContentManagers.find((m) => m.id === managerId);
-    if (manager) {
-      // Check if already added to avoid duplicates in the current course
-      if (!selectedContentManagers.some((m) => m.id === managerId)) {
-        setSelectedContentManagers((prev) => [
-          ...prev,
-          { id: manager.id, email: manager.email.value, name: manager.name },
-        ]);
-      }
-    }
-  };
-
-  const handleRemoveContentManager = (managerId: string) => {
-    setSelectedContentManagers((prev) => prev.filter((m) => m.id !== managerId));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -142,48 +84,12 @@ export default function CreateCoursePage() {
       const createCourseUseCase = container.get<CreateCourseUseCase>(
         Register.content.useCase.CreateCourseUseCase
       );
-      const result = await createCourseUseCase.execute({
+      await createCourseUseCase.execute({
         institutionId: formData.institutionId,
         title: formData.title,
         description: formData.description,
         coverImageUrl: formData.coverImageUrl,
       });
-
-      // Associate tutors
-      if (selectedTutors.length > 0) {
-        const associateTutorUseCase = container.get<AssociateTutorToCourseUseCase>(
-          Register.content.useCase.AssociateTutorToCourseUseCase
-        );
-
-        for (const tutor of selectedTutors) {
-          try {
-            await associateTutorUseCase.execute({
-              userId: tutor.id,
-              courseId: result.course.id,
-            });
-          } catch (err) {
-            console.error(`Error associating tutor ${tutor.email}:`, err);
-          }
-        }
-      }
-
-      // Associate content managers (using same UseCase as tutors)
-      if (selectedContentManagers.length > 0) {
-        const associateTutorUseCase = container.get<AssociateTutorToCourseUseCase>(
-          Register.content.useCase.AssociateTutorToCourseUseCase
-        );
-
-        for (const manager of selectedContentManagers) {
-          try {
-            await associateTutorUseCase.execute({
-              userId: manager.id,
-              courseId: result.course.id,
-            });
-          } catch (err) {
-            console.error(`Error associating content manager ${manager.email}:`, err);
-          }
-        }
-      }
 
       showToast.update(loadingToastId, {
         render: 'Curso criado com sucesso!',
@@ -247,14 +153,6 @@ export default function CreateCoursePage() {
                   onFieldChange={handleFieldChange}
                   showInstitutionSelect={true}
                   onImageUpload={(url) => handleFieldChange('coverImageUrl', url)}
-                  availableTutors={availableTutors}
-                  selectedTutors={selectedTutors}
-                  onAddTutor={handleAddTutor}
-                  onRemoveTutor={handleRemoveTutor}
-                  availableContentManagers={availableContentManagers}
-                  selectedContentManagers={selectedContentManagers}
-                  onAddContentManager={handleAddContentManager}
-                  onRemoveContentManager={handleRemoveContentManager}
                 />
               </CardContent>
               <CardFooter className="flex justify-end gap-2">

@@ -15,6 +15,7 @@ export class Lesson {
     public coverImageUrl: string | null,
     public contents: Content[],
     public order: number,
+    public contentSectionsOrder: string[],
     public activity?: Activity,
     public questionnaire?: Questionnaire
   ) {}
@@ -33,6 +34,7 @@ export class Lesson {
     coverImageUrl?: string;
     order: number;
     contents?: Content[];
+    contentSectionsOrder?: string[];
     activity?: Activity;
     questionnaire?: Questionnaire;
   }): Lesson {
@@ -52,6 +54,7 @@ export class Lesson {
       params.coverImageUrl || null,
       params.contents || [],
       params.order,
+      params.contentSectionsOrder || ['description', 'video', 'scorm', 'pdf', 'supportmaterial', 'audio', 'activity', 'questionnaire'],
       params.activity,
       params.questionnaire
     );
