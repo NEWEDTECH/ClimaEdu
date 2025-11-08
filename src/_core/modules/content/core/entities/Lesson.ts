@@ -54,7 +54,7 @@ export class Lesson {
       params.coverImageUrl || null,
       params.contents || [],
       params.order,
-      params.contentSectionsOrder || ['description', 'video', 'scorm', 'pdf', 'audio', 'activity', 'questionnaire'],
+      params.contentSectionsOrder || ['description', 'video', 'scorm', 'pdf', 'supportmaterial', 'audio', 'activity', 'questionnaire'],
       params.activity,
       params.questionnaire
     );

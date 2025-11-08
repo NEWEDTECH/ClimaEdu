@@ -56,7 +56,7 @@ export class FirebaseLessonRepository implements LessonRepository {
       coverImageUrl: data.coverImageUrl,
       order: data.order,
       contents: contents,
-      contentSectionsOrder: data.contentSectionsOrder || ['description', 'video', 'scorm', 'pdf', 'audio', 'activity', 'questionnaire'],
+      contentSectionsOrder: data.contentSectionsOrder || ['video', 'description', 'scorm', 'pdf', 'supportmaterial', 'audio', 'activity', 'questionnaire'],
       activity: data.activity,
       questionnaire: data.questionnaire
     });

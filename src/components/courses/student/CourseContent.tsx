@@ -286,14 +286,13 @@ export function CourseContent({
   };
 
   // Render functions for each section type
-  const renderDescription = () => {
+  const renderDescription = (): React.ReactElement | null => {
     // Só renderiza se tiver descrição
     if (!activeLessonData || !activeLessonData.description) return null;
 
     return (
-        (activeLessonData.description && (
-        <>
-          <section key="description" className="space-y-4">
+      <>
+        <section key="description" className="space-y-4">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,12 +333,11 @@ export function CourseContent({
 
           {/* Divider */}
           <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}></div>
-        </>
-        ))
+      </>
     );
   };
 
-  const renderActivity = () => {
+  const renderActivity = (): React.ReactElement | null => {
     // Só renderiza se tiver atividade
     if (!activeActivity) return null;
 
@@ -587,7 +585,7 @@ export function CourseContent({
     );
   };
 
-  const renderQuestionnaire = () => {
+  const renderQuestionnaire = (): React.ReactElement | null => {
     // Só renderiza se tiver questionário
     if (!activeQuestionnaire) return null;
 
@@ -752,10 +750,10 @@ export function CourseContent({
       return (
         <>
           {renderVideo()}
+          {renderDescription()}
           {renderPDF()}
           {renderScorm()}
           {renderSupportMaterial()}
-          {renderDescription()}
           {renderActivity()}
           {renderQuestionnaire()}
         </>
