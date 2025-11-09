@@ -449,16 +449,22 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Gerenciar Questionário</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-1">
-              Questionário: <span className="font-medium">{questionnaireTitle}</span>
-            </p>
-            <p className="text-gray-600 dark:text-gray-400 mb-1">
-              Lição: <span className="font-medium">{lessonTitle}</span>
-            </p>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Módulo: <span className="font-medium">{moduleName}</span>
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold mb-2">Questinário: {questionnaireTitle}</h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  Lição: <span className="font-medium">{lessonTitle}</span>
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Módulo: <span className="font-medium">{moduleName}</span>
+                </p>
+              </div>
+              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
+                <Button variant='primary'>
+                  Voltar
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Questionnaire Information */}
