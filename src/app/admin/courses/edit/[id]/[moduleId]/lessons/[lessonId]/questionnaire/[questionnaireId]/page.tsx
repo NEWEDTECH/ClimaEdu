@@ -451,7 +451,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold mb-2">Questinário</h1>
+                <h1 className="text-2xl font-bold mb-2">Questinário: {questionnaireTitle}</h1>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
                   Lição: <span className="font-medium">{lessonTitle}</span>
                 </p>
