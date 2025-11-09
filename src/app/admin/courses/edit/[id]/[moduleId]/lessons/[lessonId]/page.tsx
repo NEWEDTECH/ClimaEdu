@@ -203,8 +203,6 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
           };
         }
 
-        console.log('jdaklwjdawdwa', questionnaire?.questions.length)
-
         setFormData({
           id: lesson.id,
           title: lesson.title,

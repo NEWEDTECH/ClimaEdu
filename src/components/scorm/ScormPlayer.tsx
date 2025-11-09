@@ -8,31 +8,26 @@ import { LoadingSpinner } from '../loader/loader';
 class ScormAPI {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   LMSInitialize(_: string): string {
-    console.log('SCORM: LMSInitialize called');
     return 'true';
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   LMSFinish(_: string): string {
-    console.log('SCORM: LMSFinish called');
     return 'true';
   }
 
   LMSGetValue(key: string): string {
-    console.log(`SCORM: LMSGetValue called for: ${key}`);
     // Em uma implementação real, você buscaria dados aqui
     return '';
   }
 
   LMSSetValue(key: string, value: unknown): string {
-    console.log(`SCORM: LMSSetValue called: ${key} = ${value}`);
     // Em uma implementação real, você salvaria dados aqui
     return 'true';
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   LMSCommit(_: string): string {
-    console.log('SCORM: LMSCommit called. Data would be saved now.');
     return 'true';
   }
 

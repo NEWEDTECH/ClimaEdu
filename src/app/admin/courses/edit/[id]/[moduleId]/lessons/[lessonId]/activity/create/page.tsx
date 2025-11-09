@@ -27,13 +27,13 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
   const router = useRouter();
   const unwrappedParams = use(params);
   const { id: courseId, moduleId, lessonId } = unwrappedParams;
-  
+
   const [formData, setFormData] = useState<FormData>({
     description: '',
     instructions: '',
     resourceUrl: '',
   });
-  
+
   const [lessonTitle, setLessonTitle] = useState<string>('');
   const [moduleName, setModuleName] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -44,37 +44,37 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         );
-        
+
         const moduleRepository = container.get<ModuleRepository>(
           Register.content.repository.ModuleRepository
         );
-        
+
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
           setError('Lição não encontrada');
           setIsLoading(false);
           return;
         }
-        
+
         if (lesson.activity) {
           setError('Esta lição já possui uma atividade');
           setIsLoading(false);
           return;
         }
-        
+
         setLessonTitle(lesson.title);
-        
+
         const moduleData = await moduleRepository.findById(moduleId);
         if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
-        
+
         setModuleName(moduleData.title);
         setIsLoading(false);
       } catch (error) {
@@ -85,7 +85,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [lessonId, moduleId]);
 
@@ -97,47 +97,47 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Show loading toast
     const loadingToastId = showToast.loading('Criando atividade...');
-    
+
     try {
       const createActivityUseCase = container.get<CreateActivityUseCase>(
         Register.content.useCase.CreateActivityUseCase
       );
-      
+
       interface ActivityParams {
         lessonId: string;
         description: string;
         instructions: string;
         resourceUrl?: string;
       }
-      
+
       const params: ActivityParams = {
         lessonId,
         description: formData.description,
         instructions: formData.instructions,
       };
-      
+
       if (formData.resourceUrl.trim() !== '') {
         params.resourceUrl = formData.resourceUrl;
       }
-      
+
       await createActivityUseCase.execute(params);
-      
+
       // Update loading toast to success
       showToast.update(loadingToastId, {
         render: 'Atividade criada com sucesso!',
         type: 'success'
       });
-      
+
       // Navigate after a short delay to show the success message
       setTimeout(() => {
         router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
       }, 1000);
     } catch (error) {
       console.error('Erro ao criar atividade:', error);
-      
+
       // Update loading toast to error
       const errorMessage = `Falha ao criar atividade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
       showToast.update(loadingToastId, {
@@ -183,13 +183,22 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">Criar Atividade</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-2">
-              Adicionar atividade à lição: <span className="font-medium">{lessonTitle}</span>
-            </p>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Módulo: <span className="font-medium">{moduleName}</span>
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold mb-2">Atividades da Lição</h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  Lição: <span className="font-medium">{lessonTitle}</span>
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Módulo: <span className="font-medium">{moduleName}</span>
+                </p>
+              </div>
+              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
+                <Button variant='primary'>
+                  Voltar
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <Card>
