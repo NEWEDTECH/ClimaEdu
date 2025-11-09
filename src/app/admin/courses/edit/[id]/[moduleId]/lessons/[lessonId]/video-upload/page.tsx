@@ -205,14 +205,23 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     <ProtectedContent>
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
-          <div className="mt-4 mb-6">
-            <h1 className="text-2xl font-bold mb-2">Adicionar Vídeo Aula</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-2">
-              Adicionar vídeo à lição: <span className="font-medium">{lessonTitle}</span>
-            </p>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Módulo: <span className="font-medium">{moduleName}</span>
-            </p>
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold mb-2">Vídeo Aula</h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  Lição: <span className="font-medium">{lessonTitle}</span>
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Módulo: <span className="font-medium">{moduleName}</span>
+                </p>
+              </div>
+              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
+                <Button variant='primary'>
+                  Voltar
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <Card>
