@@ -15,6 +15,7 @@ import { useState, useEffect } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import type { ActivitySubmissionRepository } from '@/_core/modules/content';
+import { PdfPlayer  } from '@/components/pdf/PdfPlayer'
 import type { ActivitySubmission } from '@/_core/modules/content';
 import { ActivitySubmissionStatus } from '@/_core/modules/content';
 
@@ -192,10 +193,8 @@ export function CourseContent({
       <>
         {pdfContents.map((content) => (
           <div key={content.id}>
-            <ContentRenderer
-              content={content}
-              onEnded={onVideoEnded}
-              handleProgress={handleVideoProgress}
+            <PdfPlayer
+              url={content.url}
             />
             <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
           </div>
