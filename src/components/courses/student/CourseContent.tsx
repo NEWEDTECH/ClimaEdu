@@ -217,7 +217,7 @@ export function CourseContent({
           <div key={content.id}>
             {/* Para SCORM, o ID está armazenado na URL do Content */}
             <ScormPlayer contentId={content.url} />
-            <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
+            <div className="border-t dark:border-gray-700 border-gray-300 mt-6"></div>
           </div>
         ))}
       </>
