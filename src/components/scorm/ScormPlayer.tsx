@@ -16,12 +16,16 @@ class ScormAPI {
     return 'true';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   LMSGetValue(key: string): string {
+    console.log(key)
     // Em uma implementação real, você buscaria dados aqui
     return '';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   LMSSetValue(key: string, value: unknown): string {
+    console.log(key, value)
     // Em uma implementação real, você salvaria dados aqui
     return 'true';
   }
