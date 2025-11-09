@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import type { ActivitySubmissionRepository } from '@/_core/modules/content';
-import { PdfPlayer  } from '@/components/pdf/PdfPlayer'
+import { PdfPlayer } from '@/components/pdf/PdfPlayer'
 import type { ActivitySubmission } from '@/_core/modules/content';
 import { ActivitySubmissionStatus } from '@/_core/modules/content';
 
@@ -196,7 +196,7 @@ export function CourseContent({
             <PdfPlayer
               url={content.url}
             />
-            <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
+            <div className="border-t dark:border-gray-700 border-gray-300 mt-6"></div>
           </div>
         ))}
       </>
@@ -290,46 +290,46 @@ export function CourseContent({
     return (
       <>
         <section key="description" className="space-y-4">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+              Conteúdo
+            </h2>
+          </div>
+
+          <div className={`p-6 rounded-lg shadow border ${isDarkMode
+            ? 'bg-[#272727] border-gray-700'
+            : 'bg-gray-50 border-gray-200'
+            }`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div>
+                <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                  {activeLessonData.title}
+                </h3>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
+                  Descrição da lição
+                </p>
               </div>
-              <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                Conteúdo
-              </h2>
             </div>
 
-            <div className={`p-6 rounded-lg shadow border ${isDarkMode
-                ? 'bg-[#272727] border-gray-700'
-                : 'bg-gray-50 border-gray-200'
-              }`}>
-              <div className="flex items-center gap-3 mb-4">
-                <div>
-                  <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                    {activeLessonData.title}
-                  </h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                    Descrição da lição
-                  </p>
-                </div>
-              </div>
-
-              <div className="prose prose-gray dark:prose-invert max-w-none">
-                <div
-                  className={`leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    } [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400`}
-                  dangerouslySetInnerHTML={{ __html: activeLessonData.description }}
-                />
-              </div>
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              <div
+                className={`leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  } [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400`}
+                dangerouslySetInnerHTML={{ __html: activeLessonData.description }}
+              />
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Divider */}
-          <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}></div>
+        {/* Divider */}
+        <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}></div>
       </>
     );
   };
@@ -424,10 +424,10 @@ export function CourseContent({
 
                     {!loadingSubmission && activitySubmission && (
                       <div className={`p-4 rounded-lg border-2 ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                          ? isDarkMode ? 'bg-green-900/20 border-green-700' : 'bg-green-50 border-green-300'
-                          : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                            ? isDarkMode ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-300'
-                            : isDarkMode ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-300'
+                        ? isDarkMode ? 'bg-green-900/20 border-green-700' : 'bg-green-50 border-green-300'
+                        : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                          ? isDarkMode ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-300'
+                          : isDarkMode ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-300'
                         }`}>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -449,10 +449,10 @@ export function CourseContent({
                               </div>
                               <div>
                                 <p className={`font-semibold text-lg ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                                    ? isDarkMode ? 'text-green-200' : 'text-green-800'
-                                    : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                                      ? isDarkMode ? 'text-red-200' : 'text-red-800'
-                                      : isDarkMode ? 'text-yellow-200' : 'text-yellow-800'
+                                  ? isDarkMode ? 'text-green-200' : 'text-green-800'
+                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                    ? isDarkMode ? 'text-red-200' : 'text-red-800'
+                                    : isDarkMode ? 'text-yellow-200' : 'text-yellow-800'
                                   }`}>
                                   Status: {
                                     activitySubmission.status === ActivitySubmissionStatus.APPROVED
@@ -463,10 +463,10 @@ export function CourseContent({
                                   }
                                 </p>
                                 <p className={`text-sm ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                                    ? isDarkMode ? 'text-green-300' : 'text-green-700'
-                                    : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                                      ? isDarkMode ? 'text-red-300' : 'text-red-700'
-                                      : isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
+                                  ? isDarkMode ? 'text-green-300' : 'text-green-700'
+                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                    ? isDarkMode ? 'text-red-300' : 'text-red-700'
+                                    : isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
                                   }`}>
                                   {activitySubmission.reviewedAt
                                     ? `Avaliada em ${new Date(activitySubmission.reviewedAt).toLocaleString('pt-BR')}`
@@ -477,10 +477,10 @@ export function CourseContent({
                             </div>
                             <div className="flex-shrink-0">
                               <div className={`w-3 h-3 rounded-full ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                                  ? 'bg-green-500'
-                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                                    ? 'bg-red-500'
-                                    : 'bg-yellow-500 animate-pulse'
+                                ? 'bg-green-500'
+                                : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                  ? 'bg-red-500'
+                                  : 'bg-yellow-500 animate-pulse'
                                 }`}></div>
                             </div>
                           </div>
@@ -652,8 +652,8 @@ export function CourseContent({
                           Status:
                         </span>
                         <span className={`font-medium ml-2 ${hasPassedQuestionnaire
-                            ? 'text-green-600 dark:text-green-400'
-                            : isDarkMode ? 'text-white' : 'text-gray-900'
+                          ? 'text-green-600 dark:text-green-400'
+                          : isDarkMode ? 'text-white' : 'text-gray-900'
                           }`}>
                           {hasPassedQuestionnaire ? 'Aprovado' : 'Não aprovado'}
                         </span>
@@ -679,10 +679,10 @@ export function CourseContent({
                       href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}`}
                       rel="noopener noreferrer"
                       className={`block w-fit py-3 px-4 rounded-lg font-medium transition-colors text-center ${hasPassedQuestionnaire
+                        ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : attemptCount >= activeQuestionnaire.maxAttempts
                           ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : attemptCount >= activeQuestionnaire.maxAttempts
-                            ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                       onClick={(e) => {
                         if (
