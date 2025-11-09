@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { app } from '@/_core/shared/firebase/firebase-client';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
 import { 
@@ -34,13 +36,14 @@ export function ScormUploadForm({
   institutionId,
 }: ScormUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [existingScorms, setExistingScorms] = useState<ScormContent[]>([]);
-  const [selectedScorm, setSelectedScorm] = useState('');
+  const [selectedScorm, setSelectedScorm] = useState<string>('');
   const [mode, setMode] = useState<'upload' | 'select'>('upload');
-  const [loadingScorms, setLoadingScorms] = useState(true);
+  const [loadingScorms, setLoadingScorms] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -81,29 +84,75 @@ export function ScormUploadForm({
     }
 
     setUploading(true);
+    setUploadProgress(0);
     setError(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('name', name);
-    formData.append('institutionId', institutionId);
-
     try {
-      const response = await fetch('/api/scorm/upload', {
-        method: 'POST',
-        body: formData,
+      // Upload direto para Firebase Storage
+      const storage = getStorage(app);
+      const timestamp = Date.now();
+      const fileName = `scorm/${institutionId}/${timestamp}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+
+      // Criar upload task com monitoramento de progresso
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      // Aguardar conclusão do upload
+      await new Promise<string>((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            // Calcular progresso
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(Math.round(progress));
+          },
+          (error) => {
+            console.error('Upload error:', error);
+            reject(error);
+          },
+          async () => {
+            // Upload completo, obter URL
+            try {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            } catch (error) {
+              reject(error);
+            }
+          }
+        );
+      }).then(async (downloadURL) => {
+        // Registrar metadados no banco via API
+        const payload = {
+          name: name.trim(),
+          institutionId,
+          fileUrl: downloadURL,
+          storagePath: fileName,
+        };
+
+        const response = await fetch('/api/scorm/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Falha ao registrar SCORM.');
+        }
+
+        await associateScorm(data.id, name.trim());
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Falha no upload.');
-      }
-
-      await associateScorm(data.id, name);
     } catch (err) {
-      if (err instanceof Error) setError(err.message);
+      console.error('Error uploading SCORM:', err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Falha no upload. Por favor, tente novamente.');
+      }
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -302,6 +351,22 @@ export function ScormUploadForm({
                   </p>
                 </div>
 
+                {/* Barra de Progresso */}
+                {uploading && uploadProgress > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Progresso do upload</span>
+                      <span className="font-medium">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-primary h-full transition-all duration-300 ease-out"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Botão de Envio */}
                 <div className="flex items-center gap-3 pt-4">
                   <Button 
@@ -311,10 +376,7 @@ export function ScormUploadForm({
                   >
                     {uploading ? (
                       <>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 animate-spin">
-                          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                        </svg>
-                        Enviando...
+                        {uploadProgress > 0 && uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : 'Processando...'}
                       </>
                     ) : (
                       <>
