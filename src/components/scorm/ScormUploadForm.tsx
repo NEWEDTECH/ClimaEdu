@@ -121,15 +121,14 @@ export function ScormUploadForm({
           }
         );
       }).then(async (downloadURL) => {
-        // Registrar metadados no banco via API
+        // Processar SCORM via API que usa o caso de uso
         const payload = {
           name: name.trim(),
           institutionId,
-          fileUrl: downloadURL,
           storagePath: fileName,
         };
 
-        const response = await fetch('/api/scorm/register', {
+        const response = await fetch('/api/scorm/upload-and-process', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -138,7 +137,7 @@ export function ScormUploadForm({
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Falha ao registrar SCORM.');
+          throw new Error(data.error || 'Falha ao processar SCORM.');
         }
 
         await associateScorm(data.id, name.trim());
