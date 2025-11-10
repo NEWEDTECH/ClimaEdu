@@ -207,7 +207,6 @@ export default function StudentActivitiesPage() {
   };
 
   const handleViewActivities = (courseId: string, lessonId: string, activityId: string | undefined, studentId: string | null) => {
-    console.log(activityId)
     
     if (studentId && activityId) {
       // Navegar para página de atividades completadas do estudante específico
