@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 import { app } from '@/_core/shared/firebase/firebase-client';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
@@ -98,7 +98,7 @@ export function ScormUploadForm({
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       // Aguardar conclusão do upload
-      await new Promise<string>((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           'state_changed',
           (snapshot) => {
@@ -110,26 +110,20 @@ export function ScormUploadForm({
             console.error('Upload error:', error);
             reject(error);
           },
-          async () => {
-            // Upload completo, obter URL
-            try {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            } catch (error) {
-              reject(error);
-            }
+          () => {
+            // Upload completo
+            resolve();
           }
         );
-      }).then(async (downloadURL) => {
-        // Registrar metadados no banco via API
+      }).then(async () => {
+        // Processar SCORM via API que usa o caso de uso
         const payload = {
           name: name.trim(),
           institutionId,
-          fileUrl: downloadURL,
           storagePath: fileName,
         };
 
-        const response = await fetch('/api/scorm/register', {
+        const response = await fetch('/api/scorm/upload-and-process', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -138,7 +132,7 @@ export function ScormUploadForm({
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Falha ao registrar SCORM.');
+          throw new Error(data.error || 'Falha ao processar SCORM.');
         }
 
         await associateScorm(data.id, name.trim());
