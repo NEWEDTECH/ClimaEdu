@@ -31,7 +31,7 @@ export function EmulatorAuthLinks() {
     const fetchAuthLinks = async () => {
       try {
         // The Firebase Auth Emulator runs on port 9099 by default
-        const response = await fetch('http://localhost:9099/emulator/v1/projects/climaedu-18a58/oobCodes');
+        const response = await fetch('http://localhost:9099/emulator/v1/projects/climaedu-ef32d/oobCodes');
         
         if (!response.ok) {
           throw new Error(`Failed to fetch auth links: ${response.status} ${response.statusText}`);
