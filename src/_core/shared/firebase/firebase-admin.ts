@@ -5,13 +5,11 @@ import { getStorage } from 'firebase-admin/storage';
 
 let adminApp: App;
 
-const useOnlyLocalEmulators = false; // Mudar para true força o uso dos emuladores localmente
-
 // Initialize Firebase Admin SDK
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
     const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_ENV;
-    const isDevelopment = process.env.NODE_ENV === 'development' && !isVercel && !useOnlyLocalEmulators;
+    const isDevelopment = process.env.NODE_ENV === 'development' && !isVercel;
 
     // Only use emulators in development mode
     if (isDevelopment) {
