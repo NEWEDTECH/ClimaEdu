@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 import { app } from '@/_core/shared/firebase/firebase-client';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
@@ -98,7 +98,7 @@ export function ScormUploadForm({
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       // Aguardar conclusão do upload
-      await new Promise<string>((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           'state_changed',
           (snapshot) => {
@@ -110,17 +110,12 @@ export function ScormUploadForm({
             console.error('Upload error:', error);
             reject(error);
           },
-          async () => {
-            // Upload completo, obter URL
-            try {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            } catch (error) {
-              reject(error);
-            }
+          () => {
+            // Upload completo
+            resolve();
           }
         );
-      }).then(async (downloadURL) => {
+      }).then(async () => {
         // Processar SCORM via API que usa o caso de uso
         const payload = {
           name: name.trim(),
