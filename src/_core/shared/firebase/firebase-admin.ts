@@ -11,8 +11,6 @@ function initializeFirebaseAdmin() {
     const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_ENV;
     const isDevelopment = process.env.NODE_ENV === 'development' && !isVercel;
 
-    console.log(`🔧 Initializing Firebase Admin SDK. Development mode: ${isDevelopment}, Vercel: ${isVercel}`);
-
     // Only use emulators in development mode
     if (isDevelopment) {
       // Set emulator host for development BEFORE initializing
@@ -63,6 +61,8 @@ function initializeFirebaseAdmin() {
       }
 
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+      console.log(`🔒 Initializing Firebase Admin for project: ${serviceAccountConfig}`);
 
       adminApp = initializeApp({
         credential: cert(serviceAccountConfig as object),
