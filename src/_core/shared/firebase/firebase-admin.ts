@@ -11,7 +11,7 @@ let adminApp: App;
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
     // Only use emulators in development mode
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || !process.env.FIREBASE_PRIVATE_KEY) {
       // Set emulator host for development BEFORE initializing
       process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
       process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
