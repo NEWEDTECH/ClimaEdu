@@ -10,8 +10,12 @@ let adminApp: App;
 // Initialize Firebase Admin SDK
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
+    const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_ENV;
+    const isDevelopment = process.env.NODE_ENV === 'development' && !isVercel;
+
+    console.log(`🔧 Initializing Firebase Admin SDK. Development mode: ${isVercel} - ${isDevelopment}`);
     // Only use emulators in development mode
-    if (process.env.NODE_ENV === 'development' || !process.env.FIREBASE_PRIVATE_KEY) {
+    if (isDevelopment) {
       // Set emulator host for development BEFORE initializing
       process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
       process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
