@@ -10,8 +10,8 @@ let adminApp: App;
 // Initialize Firebase Admin SDK
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
-    // In development or when credentials are not available, use without service account
-    if (process.env.NODE_ENV === 'development' || !process.env.FIREBASE_PRIVATE_KEY) {
+    // Only use emulators in development mode
+    if (process.env.NODE_ENV === 'development') {
       // Set emulator host for development BEFORE initializing
       process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
       process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
