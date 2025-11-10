@@ -48,3 +48,6 @@ firebase-export-*/
 
 # local files
 /status-report
+
+# Firebase credentials (security)
+**/firebase-credentials.json
