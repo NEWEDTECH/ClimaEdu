@@ -5,7 +5,7 @@ import { getStorage } from 'firebase-admin/storage';
 
 let adminApp: App;
 
-const useOnlyLocalEmulators = true; // Mudar para true força o uso dos emuladores localmente
+const useOnlyLocalEmulators = false; // Mudar para true força o uso dos emuladores localmente
 
 // Initialize Firebase Admin SDK
 function initializeFirebaseAdmin() {
