@@ -62,7 +62,7 @@ function initializeFirebaseAdmin() {
 
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-      console.log(`🔒 Initializing Firebase Admin for project: ${serviceAccountConfig}`);
+      console.log(`🔒 Initializing Firebase Admin for project: ${JSON.stringify(serviceAccountConfig, null, 2)}`);
 
       adminApp = initializeApp({
         credential: cert(serviceAccountConfig as object),
