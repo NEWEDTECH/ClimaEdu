@@ -7,6 +7,7 @@ import { PostCard, PostCardSkeleton } from '@/components/social/post/PostCard';
 import { useProfile } from '@/context/zustand/useProfile';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout';
+import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Button } from '@/components/button'
 import { Globe, TrendingUp, Clock, Heart, MessageCircle, Plus, Sparkles, RefreshCw, Edit3 } from 'lucide-react';
 
@@ -73,8 +74,9 @@ export default function SocialPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="min-h-screen transition-all duration-300 dark:bg-black bg-gray-100">
+    <ProtectedContent>
+      <DashboardLayout>
+        <div className="min-h-screen transition-all duration-300 dark:bg-black bg-gray-100">
         {/* Hero Section */}
 
 
@@ -352,8 +354,9 @@ export default function SocialPage() {
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </ProtectedContent>
   );
 }
