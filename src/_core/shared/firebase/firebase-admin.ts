@@ -38,6 +38,17 @@ function initializeFirebaseAdmin() {
       if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
         // Production: use environment variables (recommended for Vercel)
         console.log('📝 Loading credentials from environment variables');
+        
+        const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+        console.log('🔍 [DEBUG] Raw private key length:', rawPrivateKey?.length);
+        console.log('🔍 [DEBUG] Raw private key starts with:', rawPrivateKey?.substring(0, 30));
+        console.log('🔍 [DEBUG] Raw private key contains \\n:', rawPrivateKey?.includes('\\n'));
+        
+        const formattedPrivateKey = rawPrivateKey?.replace(/\\n/g, '\n');
+        console.log('🔍 [DEBUG] Formatted private key length:', formattedPrivateKey?.length);
+        console.log('🔍 [DEBUG] Formatted private key starts with:', formattedPrivateKey?.substring(0, 30));
+        console.log('🔍 [DEBUG] Formatted private key contains real newlines:', formattedPrivateKey?.includes('\n'));
+        
         serviceAccountConfig = {
           type: "service_account",
           project_id: process.env.FIREBASE_PROJECT_ID,
@@ -51,6 +62,9 @@ function initializeFirebaseAdmin() {
           client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
           universe_domain: "googleapis.com"
         };
+        
+        console.log('🔍 [DEBUG] Client email:', process.env.FIREBASE_CLIENT_EMAIL);
+        console.log('🔍 [DEBUG] Project ID:', process.env.FIREBASE_PROJECT_ID);
       } else {
         // Fallback: use local JSON file (development only)
         console.log('📝 Loading credentials from firebase-credentials.json');

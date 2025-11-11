@@ -117,13 +117,17 @@ export function ScormUploadForm({
         );
       }).then(async () => {
         // Processar SCORM via API que usa o caso de uso
+        const fileUrl = `gs://${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}/${fileName}`;
         const payload = {
           name: name.trim(),
           institutionId,
+          fileUrl,
           storagePath: fileName,
         };
 
-        const response = await fetch('/api/scorm/upload-and-process', {
+        console.log('📤 [ScormUploadForm] Sending payload to /api/scorm/register:', payload);
+
+        const response = await fetch('/api/scorm/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
