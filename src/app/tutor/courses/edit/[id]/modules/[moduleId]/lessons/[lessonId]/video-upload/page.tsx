@@ -170,7 +170,8 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         lessonId: savedContent.lessonId,
         type: savedContent.type,
         title: savedContent.title,
-        url: savedContent.url
+        url: savedContent.url,
+        order: savedContent.order
       };
       
       const currentContents = lesson.contents || [];
