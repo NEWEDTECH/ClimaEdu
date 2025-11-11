@@ -9,7 +9,12 @@ let adminApp: App;
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
     const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_ENV;
-    const isDevelopment = process.env.NODE_ENV === 'development' && !isVercel;
+    const forceProduction = process.env.FORCE_PRODUCTION_FIREBASE === 'true';
+    const isDevelopment = process.env.NODE_ENV === 'development' && !isVercel && !forceProduction;
+
+    if (forceProduction) {
+      console.log('🚨 Force Production Mode: ENABLED - Connecting to production Firebase locally');
+    }
 
     // Only use emulators in development mode
     if (isDevelopment) {
@@ -48,7 +53,7 @@ function initializeFirebaseAdmin() {
           type: "service_account",
           project_id: process.env.FIREBASE_PROJECT_ID,
           private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-          private_key: formattedPrivateKey,
+          private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
           client_email: process.env.FIREBASE_CLIENT_EMAIL,
           client_id: process.env.FIREBASE_CLIENT_ID,
           auth_uri: "https://accounts.google.com/o/oauth2/auth",
@@ -76,7 +81,14 @@ function initializeFirebaseAdmin() {
 
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-      console.log(`🔒 Initializing Firebase Admin for project: ${projectId}`);
+      // Log credentials info (without exposing sensitive data)
+      console.log('🔒 Firebase Admin Configuration:');
+      console.log(`   📋 Project ID: ${serviceAccountConfig.project_id}`);
+      console.log(`   👤 Client Email: ${serviceAccountConfig.client_email}`);
+      console.log(`   🔑 Private Key: [REDACTED - length: ${serviceAccountConfig.private_key?.length || 0} chars]`);
+      console.log(`   🔑 Key starts with: ${serviceAccountConfig.private_key?.substring(0, 30)}...`);
+      console.log(`   🔑 Key has newlines: ${serviceAccountConfig.private_key?.includes('\n') ? 'YES' : 'NO'}`);
+      console.log(`   📦 Storage Bucket: ${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}`);
 
       adminApp = initializeApp({
         credential: cert(serviceAccountConfig as object),
