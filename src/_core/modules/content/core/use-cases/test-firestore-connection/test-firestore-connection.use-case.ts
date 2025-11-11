@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import type { IScormContentRepository } from '../../repositories/IScormContentRepository';
+import type { IScormContentRepository } from '../../../infrastructure/repositories/ScormContentRepository';
 
 interface TestFirestoreConnectionOutput {
   success: boolean;
