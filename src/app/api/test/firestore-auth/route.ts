@@ -9,10 +9,11 @@ const testContainer = new Container();
 
 const firestore = getAdminFirestore();
 const storage = getAdminStorage();
+const bucket = storage.bucket();
 
 testContainer
   .bind('IScormContentRepository')
-  .toConstantValue(new FirebaseAdminScormContentRepository(firestore, storage));
+  .toConstantValue(new FirebaseAdminScormContentRepository(firestore, bucket));
 
 testContainer
   .bind(TestFirestoreConnectionUseCase)
