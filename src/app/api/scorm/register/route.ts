@@ -149,8 +149,9 @@ export async function POST(req: NextRequest) {
     
     // Se for um erro do Firebase/Google Cloud
     if (error && typeof error === 'object' && 'code' in error) {
-      console.error('Firebase/GCP Error code:', (error as any).code);
-      console.error('Firebase/GCP Error details:', (error as any).details);
+      const firebaseError = error as { code?: string; details?: unknown };
+      console.error('Firebase/GCP Error code:', firebaseError.code);
+      console.error('Firebase/GCP Error details:', firebaseError.details);
     }
     
     const message = error instanceof Error ? error.message : 'Unknown error';
