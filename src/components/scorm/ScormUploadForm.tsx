@@ -127,7 +127,7 @@ export function ScormUploadForm({
 
         console.log('📤 [ScormUploadForm] Sending payload to /api/scorm/register:', payload);
 
-        const response = await fetch('/api/scorm/upload-and-process', {
+        const response = await fetch('/api/scorm/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
