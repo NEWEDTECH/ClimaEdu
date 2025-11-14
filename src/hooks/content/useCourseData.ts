@@ -21,9 +21,10 @@ interface UseCourseDataProps {
   courseId: string;
   userId?: string;
   institutionId?: string;
+  initialLessonId?: string;
 }
 
-export const useCourseData = ({ courseId, userId, institutionId }: UseCourseDataProps) => {
+export const useCourseData = ({ courseId, userId, institutionId, initialLessonId }: UseCourseDataProps) => {
   const [modules, setModules] = useState<Module[]>([]);
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [activeLessonData, setActiveLessonData] = useState<Lesson | null>(null);
@@ -514,15 +515,28 @@ export const useCourseData = ({ courseId, userId, institutionId }: UseCourseData
 
   // Effect to handle initial lesson selection after modules are loaded
   useEffect(() => {
-    if (modules.length > 0 && modules[0].lessons.length > 0 && !activeLesson && !initialLessonLoaded) {
-      const firstLesson = modules[0].lessons[0];
+    if (modules.length > 0 && !activeLesson && !initialLessonLoaded) {
       setInitialLessonLoaded(true);
       
-      // First lesson should always be accessible, so we can select it directly
-      // The access check will be done in handleLessonSelect
-      handleLessonSelect(firstLesson.id);
+      // If initialLessonId is provided, try to load that lesson
+      if (initialLessonId) {
+        console.log('Loading initial lesson from URL:', initialLessonId);
+        handleLessonSelect(initialLessonId);
+        
+        // Find and open the module containing this lesson
+        for (const module of modules) {
+          if (module.lessons.some(lesson => lesson.id === initialLessonId)) {
+            setOpenModules(prev => new Set(prev).add(module.id));
+            break;
+          }
+        }
+      } else if (modules[0].lessons.length > 0) {
+        // Otherwise, load the first lesson
+        const firstLesson = modules[0].lessons[0];
+        handleLessonSelect(firstLesson.id);
+      }
     }
-  }, [modules, activeLesson, handleLessonSelect, initialLessonLoaded]);
+  }, [modules, activeLesson, handleLessonSelect, initialLessonLoaded, initialLessonId, setOpenModules]);
 
   return {
     // State

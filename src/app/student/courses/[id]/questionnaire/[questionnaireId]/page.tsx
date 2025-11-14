@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 //import { ProtectedContent } from '@/components/auth';
 import { DashboardLayout } from '@/components/layout';
 import { container } from '@/_core/shared/container';
@@ -24,10 +24,12 @@ type QuestionAnswer = {
 export default function QuestionnairePage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { infoUser } = useProfile();
   
   const courseId = typeof params?.id === 'string' ? params.id : '';
   const questionnaireId = typeof params?.questionnaireId === 'string' ? params.questionnaireId : '';
+  const lessonId = searchParams.get('lessonId');
 
   const [course, setCourse] = useState<Course | null>(null);
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
@@ -137,21 +139,25 @@ export default function QuestionnairePage() {
       setIsSubmitting(true);
       setError(null);
 
-      const submitQuestionnaireUseCase = container.get<SubmitQuestionnaireUseCase>(
-        Register.content.useCase.SubmitQuestionnaireUseCase
-      );
+      //onst submitQuestionnaireUseCase = container.get<SubmitQuestionnaireUseCase>(
+      // Register.content.useCase.SubmitQuestionnaireUseCase
+      //;
 
-      await submitQuestionnaireUseCase.execute({
-        questionnaireId: questionnaire.id,
-        userId: infoUser.id,
-        institutionId: course.institutionId,
-        answers: answers.map(answer => ({
-          questionId: answer.questionId,
-          selectedOptionIndex: answer.selectedOptionIndex!
-        }))
-      });
+      //wait submitQuestionnaireUseCase.execute({
+      // questionnaireId: questionnaire.id,
+      // userId: infoUser.id,
+      // institutionId: course.institutionId,
+      // answers: answers.map(answer => ({
+      //   questionId: answer.questionId,
+      //   selectedOptionIndex: answer.selectedOptionIndex!
+      // }))
+      //);
 
-      router.push(`/student/courses/${courseId}`);
+      // Redirect back to the specific lesson if lessonId is provided
+      const redirectUrl = lessonId 
+        ? `/student/courses/${courseId}?lesson=${lessonId}`
+        : `/student/courses/${courseId}`;
+      router.push(redirectUrl);
 
     } catch (error) {
       console.error('Error submitting questionnaire:', error);
@@ -163,7 +169,10 @@ export default function QuestionnairePage() {
 
   // Handle back to course
   const handleBackToCourse = () => {
-    router.push(`/student/courses/${courseId}`);
+    const redirectUrl = lessonId 
+      ? `/student/courses/${courseId}?lesson=${lessonId}`
+      : `/student/courses/${courseId}`;
+    router.push(redirectUrl);
   };
 
   if (isLoading) {

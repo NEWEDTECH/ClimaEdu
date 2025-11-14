@@ -1,18 +1,22 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
 import { useProfile } from '@/context/zustand/useProfile';
 import { CourseSidebar, CourseContent, AutoNavigationModal } from '@/components/courses/student';
 import { useCourseData } from '@/hooks/content/useCourseData';
 import { useCourseNavigation } from '@/hooks/content/useCourseNavigation';
 import { useAutoNavigation } from '@/hooks/content/useAutoNavigation';
+import { useCallback } from 'react';
 
 
 export default function CoursePage() {
     const params = useParams();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const { infoUser } = useProfile();
     const courseId = params.id as string;
+    const initialLessonId = searchParams.get('lesson');
 
     // Use custom hooks for data management and navigation
     const {
@@ -29,14 +33,24 @@ export default function CoursePage() {
         openModules,
         lessonAccess,
         setOpenModules,
-        handleLessonSelect,
+        handleLessonSelect: originalHandleLessonSelect,
         handleCompleteLesson,
         handleVideoProgress
     } = useCourseData({
         courseId,
         userId: infoUser.id,
-        institutionId: infoUser.currentIdInstitution || ''
+        institutionId: infoUser.currentIdInstitution || '',
+        initialLessonId: initialLessonId || undefined
     });
+
+    // Wrap handleLessonSelect to update URL when lesson is selected
+    const handleLessonSelect = useCallback(async (lessonId: string) => {
+        // Update URL with lesson parameter
+        router.push(`/student/courses/${courseId}?lesson=${lessonId}`, { scroll: false });
+        
+        // Call original handler
+        await originalHandleLessonSelect(lessonId);
+    }, [courseId, router, originalHandleLessonSelect]);
 
     const {
         handleNextVideo,

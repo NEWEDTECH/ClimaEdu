@@ -677,7 +677,7 @@ export function CourseContent({
 
                   <div className="pt-4">
                     <a
-                      href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}`}
+                      href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}?lessonId=${activeLesson}`}
                       rel="noopener noreferrer"
                       className={`block w-fit py-3 px-4 rounded-lg font-medium transition-colors text-center ${hasPassedQuestionnaire
                         ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
