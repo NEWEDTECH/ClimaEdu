@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
+import { Editor } from 'primereact/editor';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card/card';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
@@ -36,6 +37,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
 
   const [lessonTitle, setLessonTitle] = useState<string>('');
   const [moduleName, setModuleName] = useState<string>('');
+  const [infomationsActivity, setInfomationsActivity] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +91,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
     fetchData();
   }, [lessonId, moduleId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -116,7 +118,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
       const params: ActivityParams = {
         lessonId,
         description: formData.description,
-        instructions: formData.instructions,
+        instructions: infomationsActivity,
       };
 
       if (formData.resourceUrl.trim() !== '') {
@@ -232,14 +234,13 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                     <label className="block text-sm font-medium mb-1">
                       Instruções Detalhadas
                     </label>
-                    <textarea
-                      className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[150px]"
-                      placeholder="Forneça instruções detalhadas sobre como realizar a atividade"
-                      name="instructions"
+
+                    <Editor
                       value={formData.instructions}
-                      onChange={handleChange}
-                      required
+                      onTextChange={(e) => setInfomationsActivity(e.htmlValue || '')}
+                      style={{ height: '320px' }}
                     />
+
                     <p className="text-xs text-gray-500 mt-1">
                       Explique passo a passo o que os alunos devem fazer, critérios de avaliação, etc.
                     </p>

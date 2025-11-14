@@ -381,9 +381,10 @@ export function CourseContent({
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <p className={`leading-relaxed whitespace-pre-wrap ${isDarkMode ? 'text-blue-200' : 'text-blue-800'}`}>
-                              {activeActivity.instructions}
-                            </p>
+                            <p className="ql-editor leading-relaxed whitespace-pre-wrap dark:text-blue-200 text-blue-800"
+                              dangerouslySetInnerHTML={{ __html: activeActivity.instructions }}
+                            />
+
                           </div>
                         </div>
                       </div>

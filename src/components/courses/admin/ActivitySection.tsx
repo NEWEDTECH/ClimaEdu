@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import 'quill/dist/quill.snow.css';
 import { Button } from '@/components/button'
 
 interface ActivityData {
@@ -89,7 +90,7 @@ export function ActivitySection({
               </Button>
             </Link>
 
-            <Button 
+            <Button
               variant='secondary'
               onClick={onDelete}
               disabled={isSubmitting}
@@ -121,9 +122,10 @@ export function ActivitySection({
                 </svg>
                 Instruções
               </h4>
-              <p className="text-green-800 dark:text-green-200 leading-relaxed">
-                {activity.instructions}
-              </p>
+              <p className="ql-editor text-green-800 dark:text-green-200 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: activity.instructions }}
+              />
+
             </div>
 
             {activity.resourceUrl && (
@@ -134,9 +136,9 @@ export function ActivitySection({
                   </svg>
                   Recurso Adicional
                 </h4>
-                <a 
-                  href={activity.resourceUrl} 
-                  target="_blank" 
+                <a
+                  href={activity.resourceUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors font-medium"
                 >
