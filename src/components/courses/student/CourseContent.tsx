@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import 'quill/dist/quill.snow.css';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
@@ -296,8 +297,8 @@ export function CourseContent({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-              Conteúdo
+            <h2 className="text-2xl font-bold dark:text-white text-gray-800">
+              Descrição
             </h2>
           </div>
 
@@ -307,8 +308,7 @@ export function CourseContent({
             }`}>
             <div className="flex items-center gap-3 mb-4">
               <div>
-                <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
+                <h3 className="text-xl font-semibold dark:text-white text-gray-900">
                   {activeLessonData.title}
                 </h3>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -320,8 +320,8 @@ export function CourseContent({
 
             <div className="prose prose-gray dark:prose-invert max-w-none">
               <div
-                className={`leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  } [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400`}
+                className="ql-editor leading-relaxed dark:text-gray-300 text-gray-700
+                  [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400"
                 dangerouslySetInnerHTML={{ __html: activeLessonData.description }}
               />
             </div>

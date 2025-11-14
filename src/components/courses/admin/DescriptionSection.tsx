@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import 'quill/dist/quill.snow.css';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/button'
 
@@ -109,7 +110,7 @@ export function DescriptionSection({
                 Conteúdo da Descrição
               </h4>
               <div 
-                className="prose prose-sm max-w-none text-indigo-800 dark:text-indigo-200 [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400"
+                className="ql-editor prose prose-sm max-w-none text-indigo-800 dark:text-indigo-200 [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400"
                 dangerouslySetInnerHTML={{ __html: description }}
               />
             </div>
