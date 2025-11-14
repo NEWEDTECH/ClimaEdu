@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/button';
 import { container } from '@/_core/shared/container';
-import { 
-  CreateNoteUseCase, 
+import {
+  CreateNoteUseCase,
   CreateNoteInput,
   ListNotesUseCase,
   ListNotesInput,
@@ -31,7 +31,7 @@ export function NotesComponent({ userId }: NotesComponentProps) {
   const [editNoteTitle, setEditNoteTitle] = useState<string>('');
   const [editNoteContent, setEditNoteContent] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  
+
   const titleInputRef = useRef<HTMLInputElement>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -42,7 +42,7 @@ export function NotesComponent({ userId }: NotesComponentProps) {
         const listNotesUseCase = container.get<ListNotesUseCase>(ListNotesUseCase);
         const input = new ListNotesInput(userId);
         const output = await listNotesUseCase.execute(input);
-        
+
         setNotes(output.notes);
       } catch (error) {
         console.error('Error loading notes:', error);
@@ -76,7 +76,7 @@ export function NotesComponent({ userId }: NotesComponentProps) {
       const createNoteUseCase = container.get<CreateNoteUseCase>(CreateNoteUseCase);
       const input = new CreateNoteInput(userId, newNoteTitle.trim(), newNoteContent.trim());
       const output = await createNoteUseCase.execute(input);
-      
+
       setNotes(prev => [output.note, ...prev]);
       setIsCreating(false);
       setSelectedNote(output.note);
@@ -101,7 +101,7 @@ export function NotesComponent({ userId }: NotesComponentProps) {
 
   const handleEditNote = () => {
     if (!selectedNote) return;
-    
+
     setIsEditing(true);
     setEditNoteTitle(selectedNote.title);
     setEditNoteContent(selectedNote.content);
@@ -117,12 +117,12 @@ export function NotesComponent({ userId }: NotesComponentProps) {
       const updateNoteUseCase = container.get<UpdateNoteUseCase>(UpdateNoteUseCase);
       const input = new UpdateNoteInput(selectedNote.id, userId, editNoteTitle.trim(), editNoteContent.trim());
       const output = await updateNoteUseCase.execute(input);
-      
+
       // Update the note in the list
-      setNotes(prev => prev.map(note => 
+      setNotes(prev => prev.map(note =>
         note.id === selectedNote.id ? output.note : note
       ));
-      
+
       setSelectedNote(output.note);
       setIsEditing(false);
       setEditNoteTitle('');
@@ -143,7 +143,7 @@ export function NotesComponent({ userId }: NotesComponentProps) {
       const deleteNoteUseCase = container.get<DeleteNoteUseCase>(DeleteNoteUseCase);
       const input = new DeleteNoteInput(noteId, userId);
       await deleteNoteUseCase.execute(input);
-      
+
       setNotes(prev => prev.filter(note => note.id !== noteId));
       if (selectedNote?.id === noteId) {
         setSelectedNote(null);
@@ -166,13 +166,13 @@ export function NotesComponent({ userId }: NotesComponentProps) {
   const formatRelativeDate = (date: Date) => {
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - new Date(date).getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Agora há pouco';
     if (diffInHours < 24) return `${diffInHours}h atrás`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}d atrás`;
-    
+
     return formatDate(date);
   };
 
@@ -194,7 +194,7 @@ export function NotesComponent({ userId }: NotesComponentProps) {
               </svg>
             </Button>
           </div>
-          
+
           {/* Search */}
           <div className="relative">
             <input
@@ -227,11 +227,10 @@ export function NotesComponent({ userId }: NotesComponentProps) {
                 <div
                   key={note.id}
                   onClick={() => handleSelectNote(note)}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors group ${
-                    selectedNote?.id === note.id
+                  className={`p-3 rounded-lg cursor-pointer transition-colors group ${selectedNote?.id === note.id
                       ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -416,12 +415,14 @@ export function NotesComponent({ userId }: NotesComponentProps) {
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Selecione uma anotação para visualizar ou crie uma nova
               </p>
-              <Button
-                onClick={handleCreateNote}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Criar Nova Anotação
-              </Button>
+              <div className='flex items-center justify-center'>
+                <Button
+                  onClick={handleCreateNote}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Criar Nova Anotação
+                </Button>
+              </div>
             </div>
           </div>
         )}

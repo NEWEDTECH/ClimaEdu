@@ -10,7 +10,8 @@ export class Content {
     readonly lessonId: string,
     public type: ContentType,
     public title: string,
-    public url: string
+    public url: string,
+    public order: number = 0
   ) {}
 
   /**
@@ -25,6 +26,7 @@ export class Content {
     type: ContentType;
     title: string;
     url: string;
+    order?: number;
   }): Content {
     if (!params.title || params.title.trim() === '') {
       throw new Error('Content title cannot be empty');
@@ -39,7 +41,8 @@ export class Content {
       params.lessonId,
       params.type,
       params.title,
-      params.url
+      params.url,
+      params.order ?? 0
     );
   }
 
@@ -65,5 +68,17 @@ export class Content {
       throw new Error('Content URL cannot be empty');
     }
     this.url = newUrl;
+  }
+
+  /**
+   * Updates the content order
+   * @param newOrder The new order
+   * @throws Error if the new order is negative
+   */
+  public updateOrder(newOrder: number): void {
+    if (newOrder < 0) {
+      throw new Error('Content order must be a non-negative number');
+    }
+    this.order = newOrder;
   }
 }

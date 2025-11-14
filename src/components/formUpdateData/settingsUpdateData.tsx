@@ -58,9 +58,9 @@ export default function FormUpdateData() {
 
     useEffect(() => {
         if (profile) {
-            setValue('nome', 'luan');
-            setValue('sobrenome', 'portugal');
-            setValue('dataNascimento', '13/12/2000');
+            setValue('nome', 'nome');
+            setValue('sobrenome', 'sobrenome');
+            setValue('dataNascimento', 'data de nascimento');
             setValue('email', 'teste@gmail.com');
         }
     }, [profile, setValue]);

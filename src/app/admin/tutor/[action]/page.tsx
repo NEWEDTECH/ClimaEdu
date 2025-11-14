@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/button'
-import { SelectComponent } from '@/components/select'
-import { FormSection } from '@/components/form/form'
 import { LoadingSpinner } from '@/components/loader'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
+import { UserAssociationForm, type UserOption, type InstitutionOption, type CourseOption } from '@/components/admin/UserAssociationForm'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
@@ -30,13 +26,13 @@ export default function AssociateTutorToCoursePage() {
   const isEditMode = action !== 'create'
   const tutorId = isEditMode ? action : ''
 
-  const [tutors, setTutors] = useState<Array<{ id: string, name: string, email: string }>>([])
-  const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
-  const [courses, setCourses] = useState<Array<{ id: string, title: string }>>([])
+  const [tutors, setTutors] = useState<UserOption[]>([])
+  const [institutions, setInstitutions] = useState<InstitutionOption[]>([])
+  const [courses, setCourses] = useState<CourseOption[]>([])
 
   const [selectedTutorId, setSelectedTutorId] = useState<string>('')
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
-  const [selectedCourses, setSelectedCourses] = useState<Array<{ id: string, title: string }>>([])
+  const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([])
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -177,9 +173,7 @@ export default function AssociateTutorToCoursePage() {
     }
 
     fetchInitialData()
-
-    // Add click event listener to handle clicks outside dropdowns
-  }, [tutorId, selectedInstitutionId, isEditMode])
+  }, [tutorId, isEditMode])
 
   // Fetch courses when institution changes
   useEffect(() => {
@@ -217,8 +211,14 @@ export default function AssociateTutorToCoursePage() {
     }
 
     fetchCourses()
-  }, [selectedInstitutionId, tutorId, isEditMode])
+  }, [selectedInstitutionId])
 
+  const handleCourseAdd = (courseId: string) => {
+    const course = courses.find(c => c.id === courseId)
+    if (course && !selectedCourses.some(c => c.id === courseId)) {
+      setSelectedCourses(prev => [...prev, course])
+    }
+  }
 
   const handleCourseRemove = (courseId: string) => {
     setSelectedCourses(prev => prev.filter(course => course.id !== courseId))
@@ -297,198 +297,81 @@ export default function AssociateTutorToCoursePage() {
     }
   }
 
-  return (
-    <ProtectedContent>
-      <DashboardLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">
-              {isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
-            </h1>
-            <Link href="/admin/tutor">
-              <Button variant='primary'>Voltar</Button>
-            </Link>
-          </div>
+  if (loading) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <LoadingSpinner />
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-          {loading && <LoadingSpinner />}
-
-          {error && (
+  if (error) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
               <strong className="font-bold">Erro!</strong>
               <span className="block sm:inline"> {error}</span>
             </div>
-          )}
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-          {successMessage && (
+  if (successMessage) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="container mx-auto p-6">
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
               <strong className="font-bold">Sucesso!</strong>
               <span className="block sm:inline"> {successMessage}</span>
             </div>
-          )}
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    )
+  }
 
-          <Card>
-            <FormSection onSubmit={handleSubmit}>
-              <CardHeader>
-                <CardTitle>
-                  {isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
-                </CardTitle>
-                <CardDescription>
-                  {isEditMode
-                    ? 'Edite as associações de cursos para este tutor'
-                    : 'Selecione um tutor e um ou mais cursos para associá-lo'
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Institution Selection */}
-                <div className="space-y-2">
-                  <label htmlFor="institution" className="text-sm font-medium">
-                    Selecionar Instituição
-                  </label>
-                  <SelectComponent
-                    value={selectedInstitutionId}
-                    onChange={(institutionId) => {
-                      if (!isEditMode) {
-                        const selectedInstitution = institutions.find(i => i.id === institutionId)
-                        if (selectedInstitution) {
-                          setSelectedInstitutionId(selectedInstitution.id)
-                        }
-                      }
-                    }}
-                    options={institutions.map(institution => ({
-                      value: institution.id,
-                      label: institution.name
-                    }))}
-                    placeholder="Selecione uma instituição"
-                    className={`${isEditMode ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}
-                  />
-                  {isEditMode && (
-                    <p className="text-xs text-gray-500">
-                      Instituição definida automaticamente baseada nos cursos do tutor
-                    </p>
-                  )}
-                </div>
-
-                {/* Tutor Selection */}
-                <div className="space-y-2">
-                  <label htmlFor="tutor" className="text-sm font-medium">
-                    Selecionar Tutor
-                  </label>
-                  <SelectComponent
-                    value={selectedTutorId}
-                    onChange={(selectedTutorIdValue) => {
-                      if (!isEditMode) {
-                        const selectedTutor = tutors.find(t => t.id === selectedTutorIdValue)
-                        if (selectedTutor) {
-                          setSelectedTutorId(selectedTutor.id)
-                        }
-                      }
-                    }}
-                    options={tutors.map(tutor => ({
-                      value: tutor.id,
-                      label: `${tutor.name} (${tutor.email})`
-                    }))}
-                    placeholder="Selecione um tutor"
-                    className={`${isEditMode ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}
-                  />
-
-                  {isEditMode && (
-                    <p className="text-xs text-gray-500">
-                      Tutor não pode ser alterado no modo de edição
-                    </p>
-                  )}
-                </div>
-
-
-
-                {/* Course Autocomplete with Tooltips */}
-                <div className="space-y-2">
-                  <label htmlFor="course" className="text-sm font-medium">
-                    Selecionar Cursos
-                  </label>
-
-                  {/* Selected Courses List */}
-                  {selectedCourses.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium mb-3">Cursos Selecionados ({selectedCourses.length})</h4>
-                      <div
-                        className={`space-y-2 dark:bg-dark ${selectedCourses.length >= 5
-                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2'
-                          : ''
-                          }`}
-                        style={selectedCourses.length >= 5 ? { maxHeight: '400px' } : {}}
-                      >
-                        {selectedCourses.map((course) => (
-                          <div key={course.id} className="flex items-center gap-3 p-3 border border-blue-200 dark:border-white dark:bg-dark rounded-lg">
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900 dark:text-white">{course.title}</div>
-                            </div>
-                            <Button
-                              type="button"
-                              onClick={() => handleCourseRemove(course.id)}
-                              className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 flex items-center gap-1 whitespace-nowrap min-w-fit"
-                              aria-label="Remover curso"
-                            >
-                              Remover
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="relative">
-                    <SelectComponent
-                      value=""
-                      onChange={(courseId) => {
-                        const selectedCourse = courses.find(c => c.id === courseId)
-                        if (selectedCourse && !selectedCourses.some(c => c.id === courseId)) {
-                          setSelectedCourses(prev => [...prev, selectedCourse])
-                        }
-                      }}
-                      options={selectedInstitutionId ? courses
-                        .filter(course => !selectedCourses.some(selected => selected.id === course.id))
-                        .map(course => ({
-                          value: course.id,
-                          label: course.title
-                        })) : []}
-                      placeholder={selectedInstitutionId ? "Selecione um curso para adicionar" : "Selecione uma instituição primeiro"}
-                    />
-                  </div>
-
-                  {courses.length === 0 && selectedInstitutionId && (
-                    <p className="text-sm text-gray-500">
-                      Nenhum curso disponível para a instituição selecionada
-                    </p>
-                  )}
-
-                  {!selectedInstitutionId && !isEditMode && (
-                    <p className="text-sm text-gray-500">
-                      Por favor, selecione uma instituição para ver os cursos
-                    </p>
-                  )}
-                </div>
-
-
-
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Link href="/admin/tutor">
-                  <Button variant='secondary' type="button">Cancelar</Button>
-                </Link>
-                <Button
-                  variant='primary'
-                  type="submit"
-                  disabled={isSubmitting || loading}>
-                  {isSubmitting
-                    ? (isEditMode ? 'Salvando...' : 'Associando...')
-                    : (isEditMode ? 'Salvar' : 'Associar Tutor a Cursos')
-                  }
-                </Button>
-              </CardFooter>
-            </FormSection>
-          </Card>
-        </div>
+  return (
+    <ProtectedContent>
+      <DashboardLayout>
+        <UserAssociationForm
+          users={tutors}
+          institutions={institutions}
+          courses={courses}
+          selectedUserId={selectedTutorId}
+          selectedInstitutionId={selectedInstitutionId}
+          selectedCourses={selectedCourses}
+          onUserChange={(tutorId) => {
+            if (!isEditMode) {
+              setSelectedTutorId(tutorId)
+            }
+          }}
+          onInstitutionChange={(institutionId) => {
+            if (!isEditMode) {
+              setSelectedInstitutionId(institutionId)
+            }
+          }}
+          onCourseAdd={handleCourseAdd}
+          onCourseRemove={handleCourseRemove}
+          isSubmitting={isSubmitting}
+          isEditMode={isEditMode}
+          userLabel="Tutor"
+          userPlaceholder="Selecione um tutor"
+          title={isEditMode ? 'Editar Associações do Tutor' : 'Associar Tutor a Cursos'}
+          description={isEditMode 
+            ? 'Edite as associações de cursos para este tutor' 
+            : 'Selecione um tutor e um ou mais cursos para associá-lo'
+          }
+          backUrl="/admin/tutor"
+          onSubmit={handleSubmit}
+          loading={loading}
+        />
       </DashboardLayout>
     </ProtectedContent>
   )

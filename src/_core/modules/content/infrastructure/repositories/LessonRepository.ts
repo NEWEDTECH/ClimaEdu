@@ -54,4 +54,11 @@ export interface LessonRepository {
    * @returns true if successful
    */
   reorderLessons(moduleId: string, startOrder: number): Promise<boolean>;
+
+  /**
+   * Update the order of a lesson
+   * @param id Lesson id
+   * @param order New order value
+   */
+  updateOrder(id: string, order: number): Promise<void>;
 }

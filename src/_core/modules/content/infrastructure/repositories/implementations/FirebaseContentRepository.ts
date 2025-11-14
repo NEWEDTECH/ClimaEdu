@@ -34,7 +34,8 @@ export class FirebaseContentRepository implements ContentRepository {
       lessonId: data.lessonId,
       type: data.type,
       title: data.title,
-      url: data.url
+      url: data.url,
+      order: data.order ?? 0
     });
   }
 
@@ -69,7 +70,8 @@ export class FirebaseContentRepository implements ContentRepository {
       lessonId: content.lessonId,
       type: content.type,
       title: content.title,
-      url: content.url
+      url: content.url,
+      order: content.order
     };
 
     // Check if the content already exists
@@ -174,5 +176,31 @@ export class FirebaseContentRepository implements ContentRepository {
         const data = doc.data();
         return this.mapToEntity({ id: doc.id, ...data });
       });
+  }
+
+  /**
+   * List content by lesson
+   * @param lessonId Lesson id
+   * @returns List of content
+   */
+  async listByLesson(lessonId: string): Promise<Content[]> {
+    const contentsRef = collection(firestore, this.collectionName);
+    const q = query(contentsRef, where('lessonId', '==', lessonId));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
+  }
+
+  /**
+   * Update the order of content
+   * @param id Content id
+   * @param order New order value
+   */
+  async updateOrder(id: string, order: number): Promise<void> {
+    const contentRef = doc(firestore, this.collectionName, id);
+    await updateDoc(contentRef, { order });
   }
 }
