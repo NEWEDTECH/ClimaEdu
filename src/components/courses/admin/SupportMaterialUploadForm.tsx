@@ -321,12 +321,12 @@ export function SupportMaterialUploadForm({
                       <p className="text-xs text-gray-500">Material de Apoio</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <a
                       href={material.url.split('#storagePath=')[0]}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800"
+                      className="text-sm text-blue-600 hover:text-blue-800 px-2 py-1 flex items-center"
                     >
                       Abrir
                     </a>
