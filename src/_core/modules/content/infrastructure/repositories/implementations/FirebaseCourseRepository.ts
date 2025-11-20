@@ -106,14 +106,13 @@ export class FirebaseCourseRepository implements CourseRepository {
   async save(course: Course): Promise<Course> {
     const courseRef = doc(firestore, this.collectionName, course.id);
     
-    // Prepare the course data for Firestore
+    // Prepare the course data for Firestore (without modules - they're stored separately)
     const courseData = {
       id: course.id,
       institutionId: course.institutionId,
       title: course.title,
       description: course.description,
       coverImageUrl: course.coverImageUrl,
-      modules: course.modules,
       createdAt: course.createdAt,
       updatedAt: course.updatedAt
     };
