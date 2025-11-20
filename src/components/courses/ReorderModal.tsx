@@ -62,7 +62,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
     { type: 'scorm', label: 'SCORM', emoji: '📦', color: 'purple', order: 2 },
     { type: 'pdf', label: 'PDF', emoji: '📄', color: 'red', order: 3 },
     { type: 'audio', label: 'Áudio', emoji: '🎵', color: 'green', order: 4 },
-    { type: 'supportMaterial', label: 'Material de Apoio', emoji: '📂', color: 'indigo', order: 5 },
+    { type: 'supportmaterial', label: 'Material de Apoio', emoji: '📂', color: 'indigo', order: 5 },
     { type: 'activity', label: 'Atividade', emoji: '✏️', color: 'teal', order: 6 },
     { type: 'questionnaire', label: 'Questionário', emoji: '❓', color: 'orange', order: 7 },
   ])
