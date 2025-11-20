@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card/card';
+import { Editor } from 'primereact/editor';
+import 'quill/dist/quill.snow.css';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
 import { FormSection } from '@/components/form';
@@ -186,11 +188,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     }));
   };
 
-  const handleQuestionTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setQuestionFormData(prev => ({
-      ...prev,
-      questionText: e.target.value
-    }));
+  const handleQuestionTextChange = (e: React.ChangeEvent<HTMLInputElement> | any) => {
+    setQuestionFormData(e.target.value);
   };
 
 
@@ -536,7 +535,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               </div>
               <div className="flex justify-end mt-4">
                 <Button
-                className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
+                  className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
                   onClick={handleUpdateQuestionnaire}
                   disabled={isUpdatingQuestionnaire}
                 >
@@ -558,7 +557,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                 </CardDescription>
               </div>
               <Button
-              className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
+                className='hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3'
                 onClick={startAddQuestion}
                 disabled={isAddingQuestion || isEditingQuestion}
               >
@@ -583,20 +582,21 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                             <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-2 flex-shrink-0 text-blue-500 text-xs font-medium">
                               {index + 1}
                             </div>
-                            <h3 className="font-medium">
-                              {question.questionText}
-                            </h3>
+                            <div
+                              className="ql-editor font-medium"
+                              dangerouslySetInnerHTML={{ __html: question.questionText }}
+                            />
                           </div>
                           <div className="ml-8 space-y-1">
                             {question.options.map((option, optIndex) => (
                               <div key={optIndex} className="flex items-center">
                                 <div className={`w-4 h-4 rounded-full mr-2 flex-shrink-0 ${optIndex === question.correctAnswerIndex
-                                    ? 'bg-green-500'
-                                    : 'bg-gray-200 dark:bg-gray-700'
+                                  ? 'bg-green-500'
+                                  : 'bg-gray-200 dark:bg-gray-700'
                                   }`}></div>
                                 <p className={`text-sm ${optIndex === question.correctAnswerIndex
-                                    ? 'font-medium text-green-600 dark:text-green-400'
-                                    : 'text-gray-600 dark:text-gray-400'
+                                  ? 'font-medium text-green-600 dark:text-green-400'
+                                  : 'text-gray-600 dark:text-gray-400'
                                   }`}>
                                   {option}
                                 </p>
@@ -656,13 +656,24 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                       <label className="block text-sm font-medium mb-1">
                         Texto da Pergunta
                       </label>
-                      <textarea
+
+                      <Editor
+                        value={questionFormData.questionText}
+                        onTextChange={(e) =>
+                          setQuestionFormData(prev => ({
+                            ...prev,
+                            questionText: e.htmlValue || ''
+                          }))
+                        }
+                        style={{ height: '320px' }}
+                      />
+                      {/*<textarea
                         className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[80px]"
                         placeholder="Digite o enunciado da pergunta"
                         value={questionFormData.questionText}
                         onChange={handleQuestionTextChange}
                         required
-                      />
+                      />*/}
                     </div>
 
                     <div>
@@ -684,8 +695,8 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                           <div key={index} className="flex items-center gap-2">
                             <div
                               className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer ${index === questionFormData.correctAnswerIndex
-                                  ? 'bg-green-500 text-white'
-                                  : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                                 }`}
                               onClick={() => handleSetCorrectAnswer(index)}
                               title="Marcar como resposta correta"
@@ -749,7 +760,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                   <div className="flex justify-end space-x-3">
                     <Button
                       type="button"
-                      className="border border-gray-300 bg-transparent hover:bg-gray-100"
+                      className="border border-gray-300 bg-transparent dark:text-gray-100"
                       onClick={resetFormData}
                     >
                       Cancelar

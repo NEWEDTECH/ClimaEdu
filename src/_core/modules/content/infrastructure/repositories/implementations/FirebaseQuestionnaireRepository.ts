@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, DocumentData } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { Questionnaire } from '../../../core/entities/Questionnaire';
+import { Question } from '../../../core/entities/Question';
 import type { QuestionnaireRepository } from '../QuestionnaireRepository';
 import type { QuestionnaireSubmissionRepository } from '../QuestionnaireSubmissionRepository';
 import { container } from '@/_core/shared/container';
@@ -31,12 +32,22 @@ export class FirebaseQuestionnaireRepository implements QuestionnaireRepository 
    * @returns Questionnaire entity
    */
   private mapToEntity(data: DocumentData): Questionnaire {
+    // Map plain question objects to Question entity instances
+    const questions = (data.questions || []).map((q: any) => 
+      Question.create({
+        id: q.id,
+        questionText: q.questionText,
+        options: q.options,
+        correctAnswerIndex: q.correctAnswerIndex
+      })
+    );
+
     // Create and return a Questionnaire entity
     return Questionnaire.create({
       id: data.id,
       lessonId: data.lessonId,
       title: data.title,
-      questions: data.questions || [],
+      questions: questions,
       maxAttempts: data.maxAttempts,
       passingScore: data.passingScore
     });
