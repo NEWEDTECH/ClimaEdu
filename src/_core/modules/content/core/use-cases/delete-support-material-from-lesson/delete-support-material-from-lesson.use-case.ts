@@ -40,43 +40,39 @@ export class DeleteSupportMaterialFromLessonUseCase {
         }
       }
 
-      // Extrair o path do Storage a partir da URL
-      let storagePath: string
-      try {
-        if (content.url.includes('#storagePath=')) {
-          // Novo formato: URL#storagePath=encodedPath
-          const hashPart = content.url.split('#storagePath=')[1]
-          storagePath = decodeURIComponent(hashPart)
-        } else {
-          // Formato antigo: tentar extrair da URL do Firebase Storage
-          const url = new URL(content.url)
-          const pathMatch = url.pathname.match(/\/o\/(.+)\?/) || url.pathname.match(/\/o\/(.+)$/)
-          if (pathMatch) {
-            storagePath = decodeURIComponent(pathMatch[1])
+      const isStorageFile = content.url.includes('#storagePath=') || 
+                           content.url.includes('firebasestorage.googleapis.com')
+      
+      if (isStorageFile) {
+        let storagePath: string
+        try {
+          if (content.url.includes('#storagePath=')) {
+            // Novo formato: URL#storagePath=encodedPath
+            const hashPart = content.url.split('#storagePath=')[1]
+            storagePath = decodeURIComponent(hashPart)
           } else {
-            // Fallback: tentar extrair do pathname
-            const fullPath = url.pathname.replace('/v0/b/', '').replace('/o/', '')
-            if (fullPath) {
-              storagePath = decodeURIComponent(fullPath.split('?')[0])
+            // Formato antigo: tentar extrair da URL do Firebase Storage
+            const url = new URL(content.url)
+            const pathMatch = url.pathname.match(/\/o\/(.+)\?/) || url.pathname.match(/\/o\/(.+)$/)
+            if (pathMatch) {
+              storagePath = decodeURIComponent(pathMatch[1])
             } else {
-              throw new Error('Não foi possível extrair o path do storage da URL')
+              // Fallback: tentar extrair do pathname
+              const fullPath = url.pathname.replace('/v0/b/', '').replace('/o/', '')
+              if (fullPath) {
+                storagePath = decodeURIComponent(fullPath.split('?')[0])
+              } else {
+                throw new Error('Não foi possível extrair o path do storage da URL')
+              }
             }
           }
-        }
-      } catch (error) {
-        console.error('Error parsing storage path from URL:', error)
-        return {
-          success: false,
-          message: 'URL do arquivo inválida'
-        }
-      }
 
-      // Deletar o arquivo do Firebase Storage
-      try {
-        const storageRef = ref(storage, storagePath)
-        await deleteObject(storageRef)
-      } catch (error) {
-        console.warn('Erro ao deletar arquivo do Storage (pode não existir):', error)
+          // Deletar o arquivo do Firebase Storage
+          const storageRef = ref(storage, storagePath)
+          await deleteObject(storageRef)
+        } catch (error) {
+          console.warn('Erro ao deletar arquivo do Storage (pode não existir):', error)
+        }
       }
 
       // Remover o conteúdo da lição
