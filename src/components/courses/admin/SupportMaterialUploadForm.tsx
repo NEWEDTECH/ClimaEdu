@@ -34,13 +34,17 @@ export function SupportMaterialUploadForm({
   institutionId
 }: SupportMaterialUploadFormProps) {
   const [file, setFile] = useState<File | null>(null)
-  const [title, setTitle] = useState('')
-  const [isUploading, setIsUploading] = useState(false)
+  const [title, setTitle] = useState<string>('')
+  const [isUploading, setIsUploading] = useState<boolean>(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [materials, setMaterials] = useState<SupportMaterial[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [uploadType, setUploadType] = useState<'file' | 'link'>('file')
-  const [linkUrl, setLinkUrl] = useState('')
+  const [linkUrl, setLinkUrl] = useState<string>('')
+  const [editingMaterial, setEditingMaterial] = useState<SupportMaterial | null>(null)
+  const [editTitle, setEditTitle] = useState<string>('')
+  const [editUrl, setEditUrl] = useState<string>('')
+  const [isEditing, setIsEditing] = useState<boolean>(false)
 
   // Load existing materials
   useEffect(() => {
@@ -404,6 +408,122 @@ export function SupportMaterialUploadForm({
         </CardContent>
       </Card>
 
+      {/* Edit Modal */}
+      {editingMaterial && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Editar Material</CardTitle>
+              <CardDescription>
+                {editingMaterial.url.includes('#storagePath=') 
+                  ? 'Altere o título do arquivo'
+                  : 'Altere o título e o link'
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Título
+                </label>
+                <InputText
+                  id="edit-title-input"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Título do material"
+                />
+              </div>
+
+              {!editingMaterial.url.includes('#storagePath=') && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    URL
+                  </label>
+                  <InputText
+                    id="edit-url-input"
+                    value={editUrl}
+                    onChange={(e) => setEditUrl(e.target.value)}
+                    placeholder="https://exemplo.com/material"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => {
+                    setEditingMaterial(null)
+                    setEditTitle('')
+                    setEditUrl('')
+                  }}
+                  variant="secondary"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!editTitle.trim()) {
+                      showToast.error('Por favor, forneça um título')
+                      return
+                    }
+
+                    const isLink = !editingMaterial.url.includes('#storagePath=')
+                    if (isLink && !editUrl.trim()) {
+                      showToast.error('Por favor, forneça um link válido')
+                      return
+                    }
+
+                    try {
+                      setIsEditing(true)
+
+                      // Delete old content
+                      const deleteUseCase = container.get<DeleteSupportMaterialFromLessonUseCase>(
+                        Register.content.useCase.DeleteSupportMaterialFromLessonUseCase
+                      )
+                      await deleteUseCase.execute({ lessonId, contentId: editingMaterial.id })
+
+                      // Create new content with updated info
+                      const addContentUseCase = container.get<AddContentToLessonUseCase>(
+                        Register.content.useCase.AddContentToLessonUseCase
+                      )
+
+                      const result = await addContentUseCase.execute({
+                        lessonId,
+                        type: ContentType.SUPPORT_MATERIAL,
+                        title: editTitle.trim(),
+                        url: isLink ? editUrl.trim() : editingMaterial.url
+                      })
+
+                      // Update materials list
+                      setMaterials(prev => prev.map(m => 
+                        m.id === editingMaterial.id 
+                          ? { id: result.content.id, title: editTitle.trim(), url: isLink ? editUrl.trim() : m.url }
+                          : m
+                      ))
+
+                      showToast.success('Material atualizado com sucesso!')
+                      
+                      // Close modal
+                      setEditingMaterial(null)
+                      setEditTitle('')
+                      setEditUrl('')
+                    } catch (error) {
+                      console.error('Error updating material:', error)
+                      showToast.error('Erro ao atualizar material')
+                    } finally {
+                      setIsEditing(false)
+                    }
+                  }}
+                  variant="primary"
+                  disabled={isEditing}
+                >
+                  {isEditing ? 'Salvando...' : 'Salvar'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Materials List */}
       <Card>
         <CardHeader>
@@ -439,6 +559,17 @@ export function SupportMaterialUploadForm({
                     >
                       Abrir
                     </a>
+                    <Button
+                      onClick={() => {
+                        setEditingMaterial(material)
+                        setEditTitle(material.title)
+                        setEditUrl(material.url.split('#storagePath=')[0])
+                      }}
+                      variant="secondary"
+                      className="text-xs px-2 py-1"
+                    >
+                      Editar
+                    </Button>
                     <Button
                       onClick={() => handleDelete(material.id)}
                       variant="secondary"
