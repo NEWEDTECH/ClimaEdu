@@ -9,6 +9,7 @@ import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { UploadSupportMaterialToLessonUseCase } from '@/_core/modules/content/core/use-cases/upload-support-material-to-lesson/upload-support-material-to-lesson.use-case'
 import { DeleteSupportMaterialFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.use-case'
+import { AddContentToLessonUseCase } from '@/_core/modules/content/core/use-cases/add-content-to-lesson/add-content-to-lesson.use-case'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 import { showToast } from '@/components/toast'
@@ -38,6 +39,8 @@ export function SupportMaterialUploadForm({
   const [uploadProgress, setUploadProgress] = useState(0)
   const [materials, setMaterials] = useState<SupportMaterial[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [uploadType, setUploadType] = useState<'file' | 'link'>('file')
+  const [linkUrl, setLinkUrl] = useState('')
 
   // Load existing materials
   useEffect(() => {
@@ -215,8 +218,34 @@ export function SupportMaterialUploadForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Upload Area */}
-          <div
+          {/* Type Selector */}
+          <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <button
+              onClick={() => setUploadType('file')}
+              className={`flex-1 px-4 py-2 rounded-md transition-colors ${
+                uploadType === 'file'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm font-medium'
+                  : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              📁 Arquivo
+            </button>
+            <button
+              onClick={() => setUploadType('link')}
+              className={`flex-1 px-4 py-2 rounded-md transition-colors ${
+                uploadType === 'link'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm font-medium'
+                  : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              🔗 Link
+            </button>
+          </div>
+
+          {uploadType === 'file' ? (
+            <>
+              {/* Upload Area */}
+              <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
             className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer"
@@ -283,15 +312,95 @@ export function SupportMaterialUploadForm({
             </div>
           )}
 
-          {/* Upload Button */}
-          <Button
-            onClick={handleUpload}
-            disabled={!file || !title.trim() || isUploading}
-            variant="primary"
-            className="w-full"
-          >
-            {isUploading ? 'Enviando...' : 'Enviar Material'}
-          </Button>
+              {/* Upload Button */}
+              <Button
+                onClick={handleUpload}
+                disabled={!file || !title.trim() || isUploading}
+                variant="primary"
+                className="w-full"
+              >
+                {isUploading ? 'Enviando...' : 'Enviar Material'}
+              </Button>
+            </>
+          ) : (
+            <>
+              {/* Link Input */}
+              <div>
+                <label htmlFor="link-url-input" className="block text-sm font-medium mb-2">
+                  URL do Link
+                </label>
+                <InputText
+                  id="link-url-input"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://exemplo.com/material"
+                  disabled={isUploading}
+                />
+              </div>
+
+              {/* Title Input */}
+              <div>
+                <label htmlFor="link-title-input" className="block text-sm font-medium mb-2">
+                  Título do Material
+                </label>
+                <InputText
+                  id="link-title-input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ex: Artigo Científico"
+                  disabled={isUploading}
+                />
+              </div>
+
+              {/* Save Link Button */}
+              <Button
+                onClick={async () => {
+                  if (!linkUrl.trim() || !title.trim()) {
+                    showToast.error('Por favor, forneça um link e um título')
+                    return
+                  }
+
+                  try {
+                    setIsUploading(true)
+
+                    const addContentUseCase = container.get<AddContentToLessonUseCase>(
+                      Register.content.useCase.AddContentToLessonUseCase
+                    )
+
+                    const result = await addContentUseCase.execute({
+                      lessonId,
+                      type: ContentType.SUPPORT_MATERIAL,
+                      title: title.trim(),
+                      url: linkUrl.trim()
+                    })
+
+                    // Add to materials list
+                    setMaterials(prev => [...prev, {
+                      id: result.content.id,
+                      title: title.trim(),
+                      url: linkUrl.trim()
+                    }])
+
+                    showToast.success('Link salvo com sucesso!')
+                    
+                    // Reset form
+                    setLinkUrl('')
+                    setTitle('')
+                  } catch (error) {
+                    console.error('Error saving link:', error)
+                    showToast.error('Erro ao salvar link')
+                  } finally {
+                    setIsUploading(false)
+                  }
+                }}
+                disabled={!linkUrl.trim() || !title.trim() || isUploading}
+                variant="primary"
+                className="w-full"
+              >
+                {isUploading ? 'Salvando...' : 'Salvar Link'}
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
 
