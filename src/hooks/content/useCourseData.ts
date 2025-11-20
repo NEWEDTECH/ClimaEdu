@@ -16,6 +16,7 @@ import { Lesson } from '@/_core/modules/content/core/entities/Lesson';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
+import { useCourseProgress } from '@/context/zustand/useCourseProgress';
 
 interface UseCourseDataProps {
   courseId: string;
@@ -25,6 +26,7 @@ interface UseCourseDataProps {
 }
 
 export const useCourseData = ({ courseId, userId, institutionId, initialLessonId }: UseCourseDataProps) => {
+  const { setLastAccessedLesson, getLastAccessedLesson } = useCourseProgress();
   const [modules, setModules] = useState<Module[]>([]);
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [activeLessonData, setActiveLessonData] = useState<Lesson | null>(null);
@@ -386,11 +388,26 @@ export const useCourseData = ({ courseId, userId, institutionId, initialLessonId
     // Save current video progress before navigating away
     saveCurrentVideoProgress();
 
+    // Find the module that contains this lesson
+    let moduleId = '';
+    for (const module of modules) {
+      if (module.lessons.some(lesson => lesson.id === lessonId)) {
+        moduleId = module.id;
+        break;
+      }
+    }
+
+    // Save last accessed lesson to localStorage
+    if (moduleId) {
+      setLastAccessedLesson(courseId, moduleId, lessonId);
+      console.log(`Saved last accessed lesson: ${lessonId} in module: ${moduleId}`);
+    }
+
     setActiveLesson(lessonId);
     await loadLessonContent(lessonId);
     
     console.log(`Navigation to lesson ${lessonId} completed`);
-  }, [loadLessonContent, checkLessonAccess, saveCurrentVideoProgress]);
+  }, [loadLessonContent, checkLessonAccess, saveCurrentVideoProgress, modules, courseId, setLastAccessedLesson]);
 
 
   const handleVideoProgress = useCallback((data: { 
@@ -518,7 +535,7 @@ export const useCourseData = ({ courseId, userId, institutionId, initialLessonId
     if (modules.length > 0 && !activeLesson && !initialLessonLoaded) {
       setInitialLessonLoaded(true);
       
-      // If initialLessonId is provided, try to load that lesson
+      // Priority 1: If initialLessonId is provided via URL, use it
       if (initialLessonId) {
         console.log('Loading initial lesson from URL:', initialLessonId);
         handleLessonSelect(initialLessonId);
@@ -530,13 +547,38 @@ export const useCourseData = ({ courseId, userId, institutionId, initialLessonId
             break;
           }
         }
-      } else if (modules[0].lessons.length > 0) {
-        // Otherwise, load the first lesson
+        return;
+      }
+
+      // Priority 2: Check for last accessed lesson in localStorage
+      const lastAccessed = getLastAccessedLesson(courseId);
+      if (lastAccessed) {
+        console.log('Found last accessed lesson:', lastAccessed);
+        
+        // Verify the module and lesson still exist in the course
+        const moduleExists = modules.some(m => m.id === lastAccessed.moduleId);
+        const lessonExists = modules.some(m => 
+          m.lessons.some(l => l.id === lastAccessed.lessonId)
+        );
+        
+        if (moduleExists && lessonExists) {
+          console.log('Restoring last accessed lesson:', lastAccessed.lessonId);
+          handleLessonSelect(lastAccessed.lessonId);
+          setOpenModules(prev => new Set(prev).add(lastAccessed.moduleId));
+          return;
+        } else {
+          console.log('Last accessed lesson no longer exists in course, falling back to first lesson');
+        }
+      }
+
+      // Priority 3: Fallback to first lesson
+      if (modules[0].lessons.length > 0) {
+        console.log('Loading first lesson as fallback');
         const firstLesson = modules[0].lessons[0];
         handleLessonSelect(firstLesson.id);
       }
     }
-  }, [modules, activeLesson, handleLessonSelect, initialLessonLoaded, initialLessonId, setOpenModules]);
+  }, [modules, activeLesson, handleLessonSelect, initialLessonLoaded, initialLessonId, setOpenModules, courseId, getLastAccessedLesson]);
 
   return {
     // State
