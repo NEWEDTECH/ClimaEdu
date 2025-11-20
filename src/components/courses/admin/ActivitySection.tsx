@@ -84,9 +84,9 @@ export function ActivitySection({
             <span>Atividade</span>
           </CardTitle>
           <div className="flex gap-2">
-            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create`}>
+            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/activity/create?edit=true`}>
               <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">
-                Adicionar Atividade
+                Editar
               </Button>
             </Link>
 
