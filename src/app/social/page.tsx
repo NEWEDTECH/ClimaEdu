@@ -9,11 +9,13 @@ import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Button } from '@/components/button'
-import { Globe, TrendingUp, Clock, Heart, MessageCircle, Plus, Sparkles, RefreshCw, Edit3 } from 'lucide-react';
+import { Globe, TrendingUp, Clock, Heart, MessageCircle, Plus, Sparkles, RefreshCw, Edit3, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function SocialPage() {
+  const router = useRouter();
   const [filter, setFilter] = useState<'all' | 'recent' | 'popular'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Get real user and institution data
   const { infoUser, infoInstitutions } = useProfile();
@@ -106,15 +108,24 @@ export default function SocialPage() {
                       <span>Meus Posts</span>
                     </div>
                   </Link>
-                  <Button
+                  <button
                     onClick={refreshPosts}
-                    className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
+                    className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
                       <RefreshCw className="w-5 h-5 group-hover:scale-110 transition-transform" />
                       <span>Atualizar</span>
                     </div>
-                  </Button>
+                  </button>
+                  <button
+                    onClick={() => router.back()}
+                    className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ArrowLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      <span>Voltar</span>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Search and Filters */}

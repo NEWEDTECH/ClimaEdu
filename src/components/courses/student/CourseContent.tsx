@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import 'quill/dist/quill.snow.css';
 import { Content } from '@/_core/modules/content/core/entities/Content';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { Activity } from '@/_core/modules/content/core/entities/Activity';
@@ -60,7 +61,7 @@ export function CourseContent({
   const { isDarkMode } = useTheme();
   const { infoUser } = useProfile();
   const [activitySubmission, setActivitySubmission] = useState<ActivitySubmission | null>(null);
-  const [loadingSubmission, setLoadingSubmission] = useState(false);
+  const [loadingSubmission, setLoadingSubmission] = useState<boolean>(false);
 
   // Helper function to sort contents
   const getSortedContents = (contents: Content[], sectionsOrder: string[]) => {
@@ -244,36 +245,50 @@ export function CourseContent({
               Materiais de Apoio
             </h3>
             <div className="space-y-3">
-              {supportMaterials.map(material => (
-                <div
-                  key={material.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="text-2xl">📄</div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {material.title}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Material complementar
-                      </p>
-                    </div>
-                  </div>
-                  <a
-                    href={material.url.split('#storagePath=')[0]}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors whitespace-nowrap"
+              {supportMaterials.map(material => {
+                const isLink = !material.url.includes('#storagePath=');
+                return (
+                  <div
+                    key={material.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download
-                  </a>
-                </div>
-              ))}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="text-2xl">{isLink ? '🔗' : '📄'}</div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {material.title}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {isLink ? 'Link externo' : 'Material complementar'}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={isLink ? material.url : material.url.split('#storagePath=')[0]}
+                      download={!isLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors whitespace-nowrap"
+                    >
+                      {isLink ? (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          Link
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download
+                        </>
+                      )}
+                    </a>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -296,8 +311,8 @@ export function CourseContent({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-              Conteúdo
+            <h2 className="text-2xl font-bold dark:text-white text-gray-800">
+              Descrição
             </h2>
           </div>
 
@@ -307,8 +322,7 @@ export function CourseContent({
             }`}>
             <div className="flex items-center gap-3 mb-4">
               <div>
-                <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
+                <h3 className="text-xl font-semibold dark:text-white text-gray-900">
                   {activeLessonData.title}
                 </h3>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -320,8 +334,8 @@ export function CourseContent({
 
             <div className="prose prose-gray dark:prose-invert max-w-none">
               <div
-                className={`leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  } [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400`}
+                className="ql-editor leading-relaxed dark:text-gray-300 text-gray-700
+                  [&_a]:text-blue-600 [&_a]:underline [&_a:hover]:text-blue-800 [&_a:visited]:text-purple-600 dark:[&_a]:text-blue-400 dark:[&_a:hover]:text-blue-300 dark:[&_a:visited]:text-purple-400"
                 dangerouslySetInnerHTML={{ __html: activeLessonData.description }}
               />
             </div>
@@ -381,9 +395,10 @@ export function CourseContent({
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <p className={`leading-relaxed whitespace-pre-wrap ${isDarkMode ? 'text-blue-200' : 'text-blue-800'}`}>
-                              {activeActivity.instructions}
-                            </p>
+                            <p className="ql-editor leading-relaxed whitespace-pre-wrap dark:text-blue-200 text-blue-800"
+                              dangerouslySetInnerHTML={{ __html: activeActivity.instructions }}
+                            />
+
                           </div>
                         </div>
                       </div>
@@ -676,7 +691,7 @@ export function CourseContent({
 
                   <div className="pt-4">
                     <a
-                      href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}`}
+                      href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}?lessonId=${activeLesson}`}
                       rel="noopener noreferrer"
                       className={`block w-fit py-3 px-4 rounded-lg font-medium transition-colors text-center ${hasPassedQuestionnaire
                         ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'

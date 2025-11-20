@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
+import { Editor } from 'primereact/editor';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card/card';
 import { Button } from '@/components/button';
 import { InputText } from '@/components/input';
@@ -15,6 +16,7 @@ import { Register } from '@/_core/shared/container';
 import { CreateActivityUseCase } from '@/_core/modules/content/core/use-cases/create-activity/create-activity.use-case';
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository';
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
+import { ActivityRepository } from '@/_core/modules/content/infrastructure/repositories/ActivityRepository';
 import { showToast } from '@/components/toast';
 
 type FormData = {
@@ -25,6 +27,9 @@ type FormData = {
 
 export default function CreateActivityPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get('edit') === 'true';
+  
   const unwrappedParams = use(params);
   const { id: courseId, moduleId, lessonId } = unwrappedParams;
 
@@ -36,6 +41,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
 
   const [lessonTitle, setLessonTitle] = useState<string>('');
   const [moduleName, setModuleName] = useState<string>('');
+  const [infomationsActivity, setInfomationsActivity] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +66,21 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
           return;
         }
 
-        if (lesson.activity) {
+        // Check if we're in edit mode and if activity exists
+        if (isEditMode && lesson.activity) {
+          // Load existing activity data
+          setFormData({
+            description: lesson.activity.description,
+            instructions: lesson.activity.instructions,
+            resourceUrl: lesson.activity.resourceUrl || '',
+          });
+          setInfomationsActivity(lesson.activity.instructions);
+        } else if (!isEditMode && lesson.activity) {
           setError('Esta lição já possui uma atividade');
+          setIsLoading(false);
+          return;
+        } else if (isEditMode && !lesson.activity) {
+          setError('Nenhuma atividade encontrada para editar');
           setIsLoading(false);
           return;
         }
@@ -87,9 +106,9 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
     };
 
     fetchData();
-  }, [lessonId, moduleId]);
+  }, [lessonId, moduleId, isEditMode]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -99,47 +118,74 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
     setIsSubmitting(true);
 
     // Show loading toast
-    const loadingToastId = showToast.loading('Criando atividade...');
+    const loadingToastId = showToast.loading(isEditMode ? 'Atualizando atividade...' : 'Criando atividade...');
 
     try {
-      const createActivityUseCase = container.get<CreateActivityUseCase>(
-        Register.content.useCase.CreateActivityUseCase
-      );
+      if (isEditMode) {
+        // Update existing activity
+        const activityRepository = container.get<ActivityRepository>(
+          Register.content.repository.ActivityRepository
+        );
 
-      interface ActivityParams {
-        lessonId: string;
-        description: string;
-        instructions: string;
-        resourceUrl?: string;
+        const activity = await activityRepository.findByLessonId(lessonId);
+        if (!activity) {
+          throw new Error('Atividade não encontrada');
+        }
+
+        // Update activity fields using entity methods
+        activity.updateDescription(formData.description);
+        activity.updateInstructions(infomationsActivity);
+        activity.updateResourceUrl(formData.resourceUrl);
+
+        // Save updated activity
+        await activityRepository.save(activity);
+
+        // Update loading toast to success
+        showToast.update(loadingToastId, {
+          render: 'Atividade atualizada com sucesso!',
+          type: 'success'
+        });
+      } else {
+        // Create new activity
+        const createActivityUseCase = container.get<CreateActivityUseCase>(
+          Register.content.useCase.CreateActivityUseCase
+        );
+
+        interface ActivityParams {
+          lessonId: string;
+          description: string;
+          instructions: string;
+          resourceUrl?: string;
+        }
+
+        const params: ActivityParams = {
+          lessonId,
+          description: formData.description,
+          instructions: infomationsActivity,
+        };
+
+        if (formData.resourceUrl.trim() !== '') {
+          params.resourceUrl = formData.resourceUrl;
+        }
+
+        await createActivityUseCase.execute(params);
+
+        // Update loading toast to success
+        showToast.update(loadingToastId, {
+          render: 'Atividade criada com sucesso!',
+          type: 'success'
+        });
       }
-
-      const params: ActivityParams = {
-        lessonId,
-        description: formData.description,
-        instructions: formData.instructions,
-      };
-
-      if (formData.resourceUrl.trim() !== '') {
-        params.resourceUrl = formData.resourceUrl;
-      }
-
-      await createActivityUseCase.execute(params);
-
-      // Update loading toast to success
-      showToast.update(loadingToastId, {
-        render: 'Atividade criada com sucesso!',
-        type: 'success'
-      });
 
       // Navigate after a short delay to show the success message
       setTimeout(() => {
         router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
       }, 1000);
     } catch (error) {
-      console.error('Erro ao criar atividade:', error);
+      console.error(isEditMode ? 'Erro ao atualizar atividade:' : 'Erro ao criar atividade:', error);
 
       // Update loading toast to error
-      const errorMessage = `Falha ao criar atividade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
+      const errorMessage = `Falha ao ${isEditMode ? 'atualizar' : 'criar'} atividade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
       showToast.update(loadingToastId, {
         render: errorMessage,
         type: 'error'
@@ -203,9 +249,12 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
 
           <Card>
             <CardHeader>
-              <CardTitle>Nova Atividade</CardTitle>
+              <CardTitle>{isEditMode ? 'Editar Atividade' : 'Nova Atividade'}</CardTitle>
               <CardDescription>
-                Crie uma atividade para os alunos realizarem após estudarem o conteúdo da lição
+                {isEditMode 
+                  ? 'Atualize as informações da atividade'
+                  : 'Crie uma atividade para os alunos realizarem após estudarem o conteúdo da lição'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -232,14 +281,13 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                     <label className="block text-sm font-medium mb-1">
                       Instruções Detalhadas
                     </label>
-                    <textarea
-                      className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[150px]"
-                      placeholder="Forneça instruções detalhadas sobre como realizar a atividade"
-                      name="instructions"
+
+                    <Editor
                       value={formData.instructions}
-                      onChange={handleChange}
-                      required
+                      onTextChange={(e) => setInfomationsActivity(e.htmlValue || '')}
+                      style={{ height: '320px' }}
                     />
+
                     <p className="text-xs text-gray-500 mt-1">
                       Explique passo a passo o que os alunos devem fazer, critérios de avaliação, etc.
                     </p>
@@ -275,7 +323,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                     type="submit"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Salvando...' : 'Criar Atividade'}
+                    {isSubmitting ? 'Salvando...' : (isEditMode ? 'Atualizar Atividade' : 'Criar Atividade')}
                   </Button>
                 </div>
               </FormSection>

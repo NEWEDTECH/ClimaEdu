@@ -32,6 +32,20 @@ export function CardSubject({
   const [progressPercentage, setProgressPercentage] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Add cache-busting parameter to image URL to prevent browser caching issues
+  const getCacheBustedImageUrl = (url: string): string => {
+    if (!url) return url;
+    
+    // Don't add cache-busting to external URLs (like unsplash)
+    if (!url.includes('firebasestorage.googleapis.com')) {
+      return url;
+    }
+    
+    // Add timestamp as query parameter to force browser to fetch new image
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}t=${Date.now()}`;
+  };
+
   // Load course progress
   useEffect(() => {
     const loadProgress = async () => {
@@ -102,7 +116,7 @@ export function CardSubject({
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
-            src={imageUrl}
+            src={getCacheBustedImageUrl(imageUrl)}
             alt={title || "Content thumbnail"}
             className={cn(
               "w-full h-full object-cover transition-all duration-700",

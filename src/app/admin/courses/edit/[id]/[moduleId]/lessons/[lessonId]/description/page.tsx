@@ -3,12 +3,12 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Editor } from 'primereact/editor';
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card/card'
 import { Button } from '@/components/button'
 import { LoadingSpinner } from '@/components/loader'
-import { RichTextEditor } from '@/components/rich-text-editor/RichTextEditor'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
@@ -157,7 +157,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold mb-2">Descrição da Lição</h1>
+                <h1 className="text-2xl font-bold mb-2">Descrição da Lição33</h1>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
                   Lição: <span className="font-medium">{lessonTitle}</span>
                 </p>
@@ -179,10 +179,11 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <RichTextEditor
-                  value={description}
-                  onChange={setDescription}
-                  placeholder="Digite a descrição da lição aqui..."
+
+                <Editor 
+                  value={description} 
+                  onTextChange={(e) => setDescription(e.htmlValue || '')} 
+                  style={{ height: '320px' }} 
                 />
 
                 <div className="flex justify-end space-x-3">
