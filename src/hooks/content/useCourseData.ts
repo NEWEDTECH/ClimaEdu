@@ -390,9 +390,9 @@ export const useCourseData = ({ courseId, userId, institutionId, initialLessonId
 
     // Find the module that contains this lesson
     let moduleId = '';
-    for (const module of modules) {
-      if (module.lessons.some(lesson => lesson.id === lessonId)) {
-        moduleId = module.id;
+    for (const courseModule of modules) {
+      if (courseModule.lessons.some(lesson => lesson.id === lessonId)) {
+        moduleId = courseModule.id;
         break;
       }
     }
@@ -541,9 +541,9 @@ export const useCourseData = ({ courseId, userId, institutionId, initialLessonId
         handleLessonSelect(initialLessonId);
         
         // Find and open the module containing this lesson
-        for (const module of modules) {
-          if (module.lessons.some(lesson => lesson.id === initialLessonId)) {
-            setOpenModules(prev => new Set(prev).add(module.id));
+        for (const courseModule of modules) {
+          if (courseModule.lessons.some(lesson => lesson.id === initialLessonId)) {
+            setOpenModules(prev => new Set(prev).add(courseModule.id));
             break;
           }
         }

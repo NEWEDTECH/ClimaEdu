@@ -188,10 +188,6 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
     }));
   };
 
-  const handleQuestionTextChange = (e: React.ChangeEvent<HTMLInputElement> | any) => {
-    setQuestionFormData(e.target.value);
-  };
-
 
   const resetFormData = () => {
     setQuestionFormData({
@@ -667,13 +663,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                         }
                         style={{ height: '320px' }}
                       />
-                      {/*<textarea
-                        className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[80px]"
-                        placeholder="Digite o enunciado da pergunta"
-                        value={questionFormData.questionText}
-                        onChange={handleQuestionTextChange}
-                        required
-                      />*/}
+
                     </div>
 
                     <div>

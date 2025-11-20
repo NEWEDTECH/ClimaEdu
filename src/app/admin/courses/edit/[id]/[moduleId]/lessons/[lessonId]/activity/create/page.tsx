@@ -45,7 +45,6 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activityId, setActivityId] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,7 +69,6 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
         // Check if we're in edit mode and if activity exists
         if (isEditMode && lesson.activity) {
           // Load existing activity data
-          setActivityId(lesson.activity.id);
           setFormData({
             description: lesson.activity.description,
             instructions: lesson.activity.instructions,
@@ -110,7 +108,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
     fetchData();
   }, [lessonId, moduleId, isEditMode]);
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };

@@ -33,7 +33,7 @@ export class FirebaseQuestionnaireRepository implements QuestionnaireRepository 
    */
   private mapToEntity(data: DocumentData): Questionnaire {
     // Map plain question objects to Question entity instances
-    const questions = (data.questions || []).map((q: any) => 
+    const questions = (data.questions || []).map((q: DocumentData) => 
       Question.create({
         id: q.id,
         questionText: q.questionText,
