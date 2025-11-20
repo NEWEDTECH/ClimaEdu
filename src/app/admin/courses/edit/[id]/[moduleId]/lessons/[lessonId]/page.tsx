@@ -729,9 +729,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                     </Accordion>
                   )
 
-                case 'supportMaterial':
+                case 'supportmaterial':
                   return (
-                    <Accordion key="supportMaterial" type="single" collapsible className="w-full">
+                    <Accordion key="supportmaterial" type="single" collapsible className="w-full">
                       <AccordionItem value="support-material-section" className="border border-slate-200 rounded-lg shadow-sm bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 dark:border-slate-700">
                         <AccordionTrigger className="px-6 py-4 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/20 rounded-t-lg transition-colors cursor-pointer">
                           <div className="flex items-center gap-3">
