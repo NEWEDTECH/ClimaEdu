@@ -276,11 +276,11 @@ export default function Home() {
             
             {/* Cover Image - if exists */}
             {institutionCoverUrl && (
-              <div className="w-full h-[400px] max-h-[400px] relative overflow-hidden">
+              <div className="w-full h-[400px] max-h-[400px] relative overflow-hidden px-4 sm:px-6 lg:px-8">
                 <img 
                   src={institutionCoverUrl} 
                   alt="Capa da instituição" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 {/* Gradient overlay for better text readability */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"></div>
