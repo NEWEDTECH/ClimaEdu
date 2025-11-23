@@ -153,23 +153,22 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         const activity = await activityRepository.findByLessonId(lessonId)
 
         let activityData: ActivityData | undefined = undefined;
-        if (lesson.activity) {
-          activityData = {
-            id: lesson.activity.id,
-            description: lesson.activity.description,
-            instructions: lesson.activity.instructions,
-            resourceUrl: lesson.activity.resourceUrl
-          };
-        } else if (activity) {
 
+        if (activity) {
           activityData = {
             id: activity.id,
             description: activity.description,
             instructions: activity.instructions,
             resourceUrl: activity.resourceUrl
           };
+        } else {
+          activityData = {
+            id: '',
+            description: '',
+            instructions: '',
+            resourceUrl: ''
+          };
         }
-
         const questionnaire = await questionnaireRepository.findByLessonId(lessonId)
 
         let questionnaireData: QuestionnaireData | undefined = undefined;
