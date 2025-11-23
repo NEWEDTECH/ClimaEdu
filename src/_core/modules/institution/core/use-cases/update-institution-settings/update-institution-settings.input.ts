@@ -5,6 +5,7 @@ export interface UpdateInstitutionSettingsInput {
   institutionId: string;
   settings: {
     logoUrl?: string;
+    coverImageUrl?: string;
     primaryColor?: string;
     secondaryColor?: string;
   };

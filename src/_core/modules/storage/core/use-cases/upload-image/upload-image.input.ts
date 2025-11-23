@@ -1,4 +1,4 @@
-export type ImageType = 'podcast' | 'course' | 'institution-logo' | 'trail';
+export type ImageType = 'podcast' | 'course' | 'institution-logo' | 'institution-cover' | 'trail';
 
 export interface UploadImageInput {
   file: File;
