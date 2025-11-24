@@ -41,6 +41,7 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
     // Convert settings object to InstitutionSettings value object
     const settings = InstitutionSettings.create({
       logoUrl: data.settings?.logoUrl,
+      coverImageUrl: data.settings?.coverImageUrl,
       primaryColor: data.settings?.primaryColor,
       secondaryColor: data.settings?.secondaryColor,
       settings: Object.keys(advancedSettings).length > 0 ? advancedSettings : undefined
@@ -136,6 +137,7 @@ export class FirebaseInstitutionRepository implements InstitutionRepository {
       domain: institution.domain,
       settings: removeUndefined({
         logoUrl: institution.settings.logoUrl,
+        coverImageUrl: institution.settings.coverImageUrl,
         primaryColor: institution.settings.primaryColor,
         secondaryColor: institution.settings.secondaryColor,
         // Flatten the advanced settings into the main settings object

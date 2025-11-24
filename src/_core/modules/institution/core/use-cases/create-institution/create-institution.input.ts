@@ -18,6 +18,11 @@ export interface CreateInstitutionInput {
   logoUrl?: string;
 
   /**
+   * Optional cover image URL for the institution
+   */
+  coverImageUrl?: string;
+
+  /**
    * Optional primary color for the institution's branding
    */
   primaryColor?: string;

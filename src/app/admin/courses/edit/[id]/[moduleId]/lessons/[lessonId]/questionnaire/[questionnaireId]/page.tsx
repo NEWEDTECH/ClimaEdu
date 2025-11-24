@@ -572,51 +572,175 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                       key={question.id}
                       className="p-4 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-2 flex-shrink-0 text-blue-500 text-xs font-medium">
-                              {index + 1}
-                            </div>
-                            <div
-                              className="ql-editor font-medium"
-                              dangerouslySetInnerHTML={{ __html: question.questionText }}
-                            />
-                          </div>
-                          <div className="ml-8 space-y-1">
-                            {question.options.map((option, optIndex) => (
-                              <div key={optIndex} className="flex items-center">
-                                <div className={`w-4 h-4 rounded-full mr-2 flex-shrink-0 ${optIndex === question.correctAnswerIndex
-                                  ? 'bg-green-500'
-                                  : 'bg-gray-200 dark:bg-gray-700'
-                                  }`}></div>
-                                <p className={`text-sm ${optIndex === question.correctAnswerIndex
-                                  ? 'font-medium text-green-600 dark:text-green-400'
-                                  : 'text-gray-600 dark:text-gray-400'
-                                  }`}>
-                                  {option}
-                                </p>
+                      {editingQuestionId === question.id ? (
+                        /* Editing Mode - Inline */
+                        <FormSection onSubmit={handleUpdateQuestion} error={null}>
+                          <div className="space-y-4">
+                            <div className="flex items-center mb-2">
+                              <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-2 flex-shrink-0 text-blue-500 text-xs font-medium">
+                                {index + 1}
                               </div>
-                            ))}
+                              <span className="font-medium text-sm">Editando Pergunta</span>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium mb-1">
+                                Texto da Pergunta
+                              </label>
+                              <Editor
+                                value={questionFormData.questionText}
+                                onTextChange={(e) =>
+                                  setQuestionFormData(prev => ({
+                                    ...prev,
+                                    questionText: e.htmlValue || ''
+                                  }))
+                                }
+                                style={{ height: '200px' }}
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between items-center mb-2">
+                                <label className="block text-sm font-medium">
+                                  Opções de Resposta
+                                </label>
+                                <Button
+                                  type="button"
+                                  className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 text-xs"
+                                  onClick={handleAddOption}
+                                >
+                                  Adicionar Opção
+                                </Button>
+                              </div>
+
+                              <div className="space-y-3">
+                                {questionFormData.options.map((option, optIndex) => (
+                                  <div key={optIndex} className="flex items-center gap-2">
+                                    <div
+                                      className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer ${optIndex === questionFormData.correctAnswerIndex
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                        }`}
+                                      onClick={() => handleSetCorrectAnswer(optIndex)}
+                                      title="Marcar como resposta correta"
+                                    >
+                                      {optIndex === questionFormData.correctAnswerIndex && (
+                                        <svg
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M5 13l4 4L19 7"
+                                          />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <InputText
+                                      id={`option-${optIndex}`}
+                                      placeholder={`Opção ${optIndex + 1}`}
+                                      value={option}
+                                      onChange={(e) => handleOptionChange(optIndex, e.target.value)}
+                                      required
+                                      className="flex-1"
+                                    />
+                                    <Button
+                                      type="button"
+                                      className="bg-red-600 hover:bg-red-700 text-white text-sm px-2 py-1"
+                                      onClick={() => handleRemoveOption(optIndex)}
+                                      disabled={questionFormData.options.length <= 2}
+                                      title="Remover opção"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                      </svg>
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Clique no círculo à esquerda para marcar a resposta correta
+                              </p>
+                            </div>
+
+                            <div className="flex justify-end space-x-3 pt-2">
+                              <Button
+                                type="button"
+                                className="border border-gray-300 bg-transparent dark:text-gray-100"
+                                onClick={resetFormData}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button type="submit">
+                                Salvar Alterações
+                              </Button>
+                            </div>
+                          </div>
+                        </FormSection>
+                      ) : (
+                        /* Display Mode */
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center mb-2">
+                              <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-2 flex-shrink-0 text-blue-500 text-xs font-medium">
+                                {index + 1}
+                              </div>
+                              <div
+                                className="ql-editor font-medium"
+                                dangerouslySetInnerHTML={{ __html: question.questionText }}
+                              />
+                            </div>
+                            <div className="ml-8 space-y-1">
+                              {question.options.map((option, optIndex) => (
+                                <div key={optIndex} className="flex items-center">
+                                  <div className={`w-4 h-4 rounded-full mr-2 flex-shrink-0 ${optIndex === question.correctAnswerIndex
+                                    ? 'bg-green-500'
+                                    : 'bg-gray-200 dark:bg-gray-700'
+                                    }`}></div>
+                                  <p className={`text-sm ${optIndex === question.correctAnswerIndex
+                                    ? 'font-medium text-green-600 dark:text-green-400'
+                                    : 'text-gray-600 dark:text-gray-400'
+                                    }`}>
+                                    {option}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
+                              onClick={() => startEditQuestion(question)}
+                              disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
+                              onClick={() => startDeleteQuestion(question.id)}
+                              disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
+                            >
+                              Excluir
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3"
-                            onClick={() => startEditQuestion(question)}
-                            disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
-                            onClick={() => startDeleteQuestion(question.id)}
-                            disabled={isAddingQuestion || isEditingQuestion || isDeletingQuestion}
-                          >
-                            Excluir
-                          </Button>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -633,20 +757,16 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
             </CardFooter>
           </Card>
 
-          {(isAddingQuestion || isEditingQuestion) && (
+          {isAddingQuestion && (
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>
-                  {isAddingQuestion ? 'Adicionar Nova Pergunta' : 'Editar Pergunta'}
-                </CardTitle>
+                <CardTitle>Adicionar Nova Pergunta</CardTitle>
                 <CardDescription>
-                  {isAddingQuestion
-                    ? 'Crie uma nova pergunta para o questionário'
-                    : 'Atualize os detalhes da pergunta'}
+                  Crie uma nova pergunta para o questionário
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <FormSection onSubmit={isAddingQuestion ? handleAddQuestion : handleUpdateQuestion} error={null}>
+                <FormSection onSubmit={handleAddQuestion} error={null}>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -758,7 +878,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                     <Button
                       type="submit"
                     >
-                      {isAddingQuestion ? 'Adicionar Pergunta' : 'Salvar Alterações'}
+                      Adicionar Pergunta
                     </Button>
                   </div>
                 </FormSection>

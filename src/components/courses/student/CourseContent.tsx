@@ -373,32 +373,34 @@ export function CourseContent({
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div>
-                      <h5 className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <h5 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">
                         Descrição
                       </h5>
-                      <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
-                        <p className={`leading-relaxed whitespace-pre-wrap ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <div className="p-4 rounded-lg border bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-600">
+                        <p className="leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                           {activeActivity.description}
                         </p>
                       </div>
                     </div>
 
                     <div>
-                      <h5 className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <h5 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">
                         Instruções
                       </h5>
-                      <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'}`}>
+
+                      <div className="p-4 rounded-lg border bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 mt-1">
                             <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
+
                           <div className="flex-1">
-                            <p className="ql-editor leading-relaxed whitespace-pre-wrap dark:text-blue-200 text-blue-800"
+                            <p
+                              className="ql-editor leading-relaxed whitespace-pre-wrap dark:text-blue-200"
                               dangerouslySetInnerHTML={{ __html: activeActivity.instructions }}
                             />
-
                           </div>
                         </div>
                       </div>
@@ -406,25 +408,28 @@ export function CourseContent({
 
                     {activeActivity.resourceUrl && (
                       <div>
-                        <h5 className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <h5 className="text-lg font-medium mb-3 text-gray-900 dark:text-white">
                           Recursos
                         </h5>
-                        <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-200'}`}>
+
+                        <div className="p-4 rounded-lg border bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0">
                               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
                             </div>
+
                             <div className="flex-1">
-                              <p className={`font-medium mb-1 ${isDarkMode ? 'text-green-200' : 'text-green-800'}`}>
+                              <p className="font-medium mb-1 text-green-800 dark:text-green-200">
                                 Material de apoio disponível
                               </p>
+
                               <a
                                 href={activeActivity.resourceUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`inline-flex items-center gap-2 transition-colors ${isDarkMode ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'}`}
+                                className="inline-flex items-center gap-2 transition-colors text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
                               >
                                 <span>Acessar recurso</span>
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -437,13 +442,17 @@ export function CourseContent({
                       </div>
                     )}
 
+
                     {!loadingSubmission && activitySubmission && (
-                      <div className={`p-4 rounded-lg border-2 ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                        ? isDarkMode ? 'bg-green-900/20 border-green-700' : 'bg-green-50 border-green-300'
-                        : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                          ? isDarkMode ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-300'
-                          : isDarkMode ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-300'
-                        }`}>
+                      <div
+                        className={`p-4 rounded-lg border-2
+                            ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                            ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700'
+                            : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                              ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700'
+                              : 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-700'
+                          }`}>
+
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -462,13 +471,16 @@ export function CourseContent({
                                   </svg>
                                 )}
                               </div>
+
                               <div>
-                                <p className={`font-semibold text-lg ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                                  ? isDarkMode ? 'text-green-200' : 'text-green-800'
-                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                                    ? isDarkMode ? 'text-red-200' : 'text-red-800'
-                                    : isDarkMode ? 'text-yellow-200' : 'text-yellow-800'
-                                  }`}>
+                                <p
+                                  className={`font-semibold text-lg ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                                    ? 'text-green-800 dark:text-green-200'
+                                    : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                      ? 'text-red-800 dark:text-red-200'
+                                      : 'text-yellow-800 dark:text-yellow-200'
+                                    }`}
+                                >
                                   Status: {
                                     activitySubmission.status === ActivitySubmissionStatus.APPROVED
                                       ? '✅ Aprovada'
@@ -477,18 +489,23 @@ export function CourseContent({
                                         : '⏳ Aguardando Avaliação'
                                   }
                                 </p>
-                                <p className={`text-sm ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
-                                  ? isDarkMode ? 'text-green-300' : 'text-green-700'
-                                  : activitySubmission.status === ActivitySubmissionStatus.REJECTED
-                                    ? isDarkMode ? 'text-red-300' : 'text-red-700'
-                                    : isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
-                                  }`}>
+
+                                <p
+                                  className={`text-sm ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
+                                    ? 'text-green-700 dark:text-green-300'
+                                    : activitySubmission.status === ActivitySubmissionStatus.REJECTED
+                                      ? 'text-red-700 dark:text-red-300'
+                                      : 'text-yellow-700 dark:text-yellow-300'
+                                    }`}
+                                >
                                   {activitySubmission.reviewedAt
                                     ? `Avaliada em ${new Date(activitySubmission.reviewedAt).toLocaleString('pt-BR')}`
                                     : `Enviada em ${new Date(activitySubmission.submittedAt).toLocaleString('pt-BR')}`
                                   }
                                 </p>
                               </div>
+
+
                             </div>
                             <div className="flex-shrink-0">
                               <div className={`w-3 h-3 rounded-full ${activitySubmission.status === ActivitySubmissionStatus.APPROVED
@@ -501,31 +518,39 @@ export function CourseContent({
                           </div>
 
                           {activitySubmission.feedback && (
-                            <div className={`p-3 rounded border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'}`}>
+                            <div className="p-3 rounded border bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-600">
                               <div className="flex items-start gap-2 mb-2">
-                                <svg className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg
+                                  className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600 dark:text-blue-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                 </svg>
+
                                 <div className="flex-1">
-                                  <p className={`text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                  <p className="text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
                                     Feedback do Professor:
                                   </p>
-                                  <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+
+                                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                                     {activitySubmission.feedback}
                                   </p>
                                 </div>
                               </div>
                             </div>
                           )}
+
                         </div>
                       </div>
                     )}
 
                     {loadingSubmission && (
-                      <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="p-4 rounded-lg border dark:bg-gray-800 dark:border-gray-700 bg-gray-50 border-gray-200">
                         <div className="flex items-center gap-3">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                          <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                          <p className="dark:text-gray-300 text-gray-600">
                             Carregando status da atividade...
                           </p>
                         </div>
@@ -533,7 +558,7 @@ export function CourseContent({
                     )}
 
                     {!loadingSubmission && !activitySubmission && (
-                      <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'}`}>
+                      <div className="p-4 rounded-lg border dark:bg-blue-900/20 dark:border-blue-800 bg-blue-50 border-blue-200">
                         <div className="flex items-center gap-3">
                           <div className="flex-shrink-0">
                             <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -541,10 +566,10 @@ export function CourseContent({
                             </svg>
                           </div>
                           <div>
-                            <p className={`font-medium ${isDarkMode ? 'text-blue-200' : 'text-blue-800'}`}>
+                            <p className="font-medium dark:text-blue-200 text-blue-800">
                               Atividade Prática
                             </p>
-                            <p className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                            <p className="text-sm dark:text-blue-300 text-blue-700">
                               Envie seus arquivos abaixo para que o professor possa avaliar
                             </p>
                           </div>
@@ -554,7 +579,7 @@ export function CourseContent({
 
                     {activeActivity && activeLesson && (
                       <div>
-                        <h5 className={`text-lg font-medium mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <h5 className="text-lg font-medium mb-4 dark:text-white text-gray-900">
                           Envio de Arquivos
                         </h5>
                         <ActivityFileUpload
@@ -619,57 +644,50 @@ export function CourseContent({
           {activeLesson ? (
             <div>
               {activeQuestionnaire ? (
-                <div className="">
+
+                <div>
                   <div className="space-y-4">
-                    <h4 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <h4 className="text-xl font-semibold text-gray-900 dark:text-white">
                       {activeQuestionnaire.title}
                     </h4>
 
                     <div className="text-sm">
-                      <div className={`flex py-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          Tentativas máximas:
-                        </span>
-                        <span className={`font-medium ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <div className="flex py-2 border-gray-200 dark:border-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">Tentativas máximas:</span>
+                        <span className="font-medium ml-2 text-gray-900 dark:text-white">
                           {activeQuestionnaire.maxAttempts}
                         </span>
                       </div>
 
-                      <div className={`flex py-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          Tentativas realizadas:
-                        </span>
-                        <span className={`font-medium ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <div className="flex py-2 border-gray-200 dark:border-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">Tentativas realizadas:</span>
+                        <span className="font-medium ml-2 text-gray-900 dark:text-white">
                           {attemptCount}
                         </span>
                       </div>
 
-                      <div className={`flex py-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          Nota de aprovação:
-                        </span>
-                        <span className={`font-medium ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <div className="flex py-2 border-gray-200 dark:border-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">Nota de aprovação:</span>
+                        <span className="font-medium ml-2 text-gray-900 dark:text-white">
                           {activeQuestionnaire.passingScore}%
                         </span>
                       </div>
 
-                      <div className={`flex py-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          Total de perguntas:
-                        </span>
-                        <span className={`font-medium ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <div className="flex py-2 border-gray-200 dark:border-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">Total de perguntas:</span>
+                        <span className="font-medium ml-2 text-gray-900 dark:text-white">
                           {activeQuestionnaire.questions.length}
                         </span>
                       </div>
 
                       <div className="flex py-2">
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          Status:
-                        </span>
-                        <span className={`font-medium ml-2 ${hasPassedQuestionnaire
-                          ? 'text-green-600 dark:text-green-400'
-                          : isDarkMode ? 'text-white' : 'text-gray-900'
-                          }`}>
+                        <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                        <span
+                          className={`font-medium ml-2 ${hasPassedQuestionnaire
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-gray-900 dark:text-white'
+                            }`}
+                        >
                           {hasPassedQuestionnaire ? 'Aprovado' : 'Não aprovado'}
                         </span>
                       </div>
@@ -677,12 +695,12 @@ export function CourseContent({
                   </div>
 
                   {attemptCount >= activeQuestionnaire.maxAttempts && !hasPassedQuestionnaire && (
-                    <div className={`p-4 border rounded-lg ${isDarkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200'}`}>
+                    <div className="p-4 border rounded-lg bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
                       <div className="flex items-center">
                         <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className={`font-medium ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>
+                        <span className="font-medium text-red-700 dark:text-red-300">
                           Você excedeu o número máximo de tentativas para este questionário.
                         </span>
                       </div>
@@ -693,10 +711,8 @@ export function CourseContent({
                     <a
                       href={`/student/courses/${courseId}/questionnaire/${activeQuestionnaire.id}?lessonId=${activeLesson}`}
                       rel="noopener noreferrer"
-                      className={`block w-fit py-3 px-4 rounded-lg font-medium transition-colors text-center ${hasPassedQuestionnaire
-                        ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : attemptCount >= activeQuestionnaire.maxAttempts
-                          ? isDarkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      className={`block w-fit py-3 px-4 rounded-lg font-medium transition-colors text-center ${hasPassedQuestionnaire || attemptCount >= activeQuestionnaire.maxAttempts
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
                           : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                       onClick={(e) => {
@@ -716,6 +732,8 @@ export function CourseContent({
                     </a>
                   </div>
                 </div>
+
+
               ) : (
                 <div className="text-center py-8">
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>

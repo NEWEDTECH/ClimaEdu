@@ -33,6 +33,7 @@ export class UpdateInstitutionSettingsUseCase {
     const currentSettings = institution.settings;
     const newSettings = InstitutionSettings.create({
       logoUrl: input.settings.logoUrl ?? currentSettings.logoUrl,
+      coverImageUrl: input.settings.coverImageUrl ?? currentSettings.coverImageUrl,
       primaryColor: input.settings.primaryColor ?? currentSettings.primaryColor,
       secondaryColor: input.settings.secondaryColor ?? currentSettings.secondaryColor
     });

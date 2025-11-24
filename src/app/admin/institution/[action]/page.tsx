@@ -28,6 +28,7 @@ import { InputText } from '@/components/ui/input/input-text/InputText';
 import { SelectComponent } from '@/components/select';
 import { AdvancedSettingsSection } from '@/components/institution/AdvancedSettingsSection';
 import { LoadingSpinner } from '@/components/loader'
+import { ImageUpload } from '@/components/upload/ImageUpload';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -44,6 +45,7 @@ type InstitutionFormFields = {
   name: string;
   domain: string;
   logoUrl?: string;
+  coverImageUrl?: string;
   primaryColor?: string;
   secondaryColor?: string;
 };
@@ -59,6 +61,7 @@ const formSchema = z.object({
       message: 'Formato de domínio inválido (ex: exemplo.com)',
     }),
   logoUrl: z.string().url({ message: 'URL inválida' }).optional().or(z.literal('')),
+  coverImageUrl: z.string().url({ message: 'URL inválida' }).optional().or(z.literal('')),
   primaryColor: z
     .string()
     .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
@@ -90,6 +93,11 @@ const inputFields: Record<keyof InstitutionFormFields, InputFieldMeta> = {
     label: "URL do Logo",
     placeholder: "https://exemplo.com/logo.png",
     description: "URL da imagem do logo da instituição",
+  },
+  coverImageUrl: {
+    label: "Imagem de Capa",
+    placeholder: "https://exemplo.com/capa.jpg",
+    description: "URL da imagem de capa da instituição (será exibida na página inicial)",
   },
   primaryColor: {
     label: "Cor Primária",
@@ -138,6 +146,7 @@ export default function InstitutionPage() {
       name: '',
       domain: '',
       logoUrl: '',
+      coverImageUrl: '',
       primaryColor: '',
       secondaryColor: '',
     },
@@ -199,6 +208,7 @@ export default function InstitutionPage() {
             name: fetchedInstitution.name,
             domain: fetchedInstitution.domain,
             logoUrl: fetchedInstitution.settings.logoUrl || '',
+            coverImageUrl: fetchedInstitution.settings.coverImageUrl || '',
             primaryColor: fetchedInstitution.settings.primaryColor || '',
             secondaryColor: fetchedInstitution.settings.secondaryColor || '',
           });
@@ -281,6 +291,7 @@ export default function InstitutionPage() {
           institutionId: institution.id,
           settings: {
             logoUrl: data.logoUrl || undefined,
+            coverImageUrl: data.coverImageUrl || undefined,
             primaryColor: data.primaryColor || undefined,
             secondaryColor: data.secondaryColor || undefined
           }
@@ -313,6 +324,7 @@ export default function InstitutionPage() {
           name: data.name.trim(),
           domain: data.domain.trim(),
           logoUrl: data.logoUrl ? data.logoUrl.trim() : undefined,
+          coverImageUrl: data.coverImageUrl ? data.coverImageUrl.trim() : undefined,
           primaryColor: data.primaryColor ? data.primaryColor.trim() : undefined,
           secondaryColor: data.secondaryColor ? data.secondaryColor.trim() : undefined,
         };
@@ -518,6 +530,26 @@ export default function InstitutionPage() {
                             </p>
                           </div>
                         )}
+                      </div>
+                    );
+                  }
+
+                  if (id === 'coverImageUrl') {
+                    return (
+                      <div key={id} className="space-y-2">
+                        <ImageUpload
+                          imageType="institution-cover"
+                          institutionId={institutionId || 'temp'}
+                          onUploadSuccess={(url) => {setValue('coverImageUrl', url)}}
+                          currentImageUrl={value || ''}
+                          label={field.label}
+                          className="mt-4"
+                        />
+                        {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
+                        {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
+                        <div className="text-xs text-gray-500 mt-2">
+                          {value && <span>✅ URL atual: {value}</span>}
+                        </div>
                       </div>
                     );
                   }

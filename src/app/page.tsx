@@ -8,6 +8,7 @@ import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
 import { Register } from '@/_core/shared/container';
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
+import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.use-case';
 import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus';
 import { Course } from '@/_core/modules/content/core/entities/Course';
@@ -52,6 +53,7 @@ export default function Home() {
   const [podcasts, setPodcasts] = useState<PodcastDisplayData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [institutionCoverUrl, setInstitutionCoverUrl] = useState<string | null>(null);
   
   // Search states
   const [searchResults, setSearchResults] = useState<SearchResultEntity[]>([]);
@@ -119,6 +121,15 @@ export default function Home() {
         console.log('📋 Home: Loading course data for user:', infoUser.name);
         setIsLoading(true);
         setError(null);
+
+        const institutionRepository = container.get<InstitutionRepository>(
+          Register.institution.repository.InstitutionRepository
+        );
+        const institution = await institutionRepository.findById(infoUser.currentIdInstitution);
+
+        if (institution?.settings.coverImageUrl) {
+          setInstitutionCoverUrl(institution.settings.coverImageUrl);
+        }
 
         // Carregar cursos matriculados
         const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
@@ -262,14 +273,35 @@ export default function Home() {
         <div className="min-h-screen transition-all duration-300 dark:bg-black bg-gray-100">
           {/* Hero Section */}
           <div className="relative overflow-hidden">
-            <div className="absolute inset-0 backdrop-blur-3xl dark:bg-black bg-gray-200/30 "></div>
-            <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+            
+            {/* Cover Image - if exists */}
+            {institutionCoverUrl && (
+              <div className="w-full h-[400px] max-h-[400px] relative overflow-hidden px-4 sm:px-6 lg:px-8">
+                <img 
+                  src={institutionCoverUrl} 
+                  alt="Capa da instituição" 
+                  className="w-full h-full object-contain"
+                />
+                {/* Gradient overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"></div>
+              </div>
+            )}
+
+            {/* Background blur for non-cover sections */}
+            {!institutionCoverUrl && (
+              <div className="absolute inset-0 backdrop-blur-3xl dark:bg-black bg-gray-200/30"></div>
+            )}
+            
+            <div className={`relative px-4 sm:px-6 lg:px-8 ${institutionCoverUrl ? 'py-8' : 'py-12 sm:py-16 lg:py-20'}`}>
 
               <div className="flex flex-col text-center space-y-6">
 
-                <p className="text-xl max-w-2xl mx-auto leading-relaxed dark:text-white/80 text-gray-700 ">
-                  Continue sua jornada de aprendizado com conteúdos personalizados e experiências imersivas
-                </p>
+                {/* Show text only if there's no cover */}
+                {!institutionCoverUrl && (
+                  <p className="text-xl max-w-2xl mx-auto leading-relaxed dark:text-white/80 text-gray-700">
+                    Continue sua jornada de aprendizado com conteúdos personalizados e experiências imersivas
+                  </p>
+                )}
 
                 {/* Quick Stats */}
                 <div className="flex flex-wrap justify-center gap-6 mt-8">
