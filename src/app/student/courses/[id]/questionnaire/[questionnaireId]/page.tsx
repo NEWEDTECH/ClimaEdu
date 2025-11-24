@@ -289,10 +289,15 @@ export default function QuestionnairePage() {
 
                 return (
                   <div key={question.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <h3
-                      className="ql-editor flex text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
-                      dangerouslySetInnerHTML={{ __html: questionIndex + 1 + "." + question.questionText }}
-                    />
+                    <div className="mb-4">
+                      <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 block mb-2">
+                        Pergunta {questionIndex + 1}:
+                      </span>
+                      <div
+                        className="ql-editor !pl-0 text-lg font-semibold text-gray-900 dark:text-gray-100"
+                        dangerouslySetInnerHTML={{ __html: question.questionText }}
+                      />
+                    </div>
 
                     <div className="space-y-3">
                       {question.options.map((option: string, optionIndex: number) => (

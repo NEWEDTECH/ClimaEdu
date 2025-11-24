@@ -29,7 +29,7 @@ export function ActivitySection({
   onDelete,
   isSubmitting
 }: ActivitySectionProps) {
-  if (!activity) {
+  if (!activity || activity.id === '') {
     return (
       <Card>
         <CardHeader className="pb-3">

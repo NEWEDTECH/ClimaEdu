@@ -34,9 +34,10 @@ export class CreateInstitutionUseCase {
     const id = await this.institutionRepository.generateId();
     
     // Create settings if any of the settings fields are provided
-    const settings = input.logoUrl || input.primaryColor || input.secondaryColor
+    const settings = input.logoUrl || input.coverImageUrl || input.primaryColor || input.secondaryColor
       ? InstitutionSettings.create({
           logoUrl: input.logoUrl,
+          coverImageUrl: input.coverImageUrl,
           primaryColor: input.primaryColor,
           secondaryColor: input.secondaryColor,
         })

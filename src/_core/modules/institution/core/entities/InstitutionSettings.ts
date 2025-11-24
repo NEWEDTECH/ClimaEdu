@@ -7,6 +7,7 @@ import { defaultInstitutionSettings, InstitutionSettings as GlobalSettings } fro
 export class InstitutionSettings {
   private constructor(
     public logoUrl?: string,
+    public coverImageUrl?: string,
     public primaryColor?: string,
     public secondaryColor?: string,
     public settings?: Partial<GlobalSettings['settings']>
@@ -19,12 +20,14 @@ export class InstitutionSettings {
    */
   public static create(params?: {
     logoUrl?: string;
+    coverImageUrl?: string;
     primaryColor?: string;
     secondaryColor?: string;
     settings?: Partial<GlobalSettings['settings']>;
   }): InstitutionSettings {
     return new InstitutionSettings(
       params?.logoUrl,
+      params?.coverImageUrl,
       params?.primaryColor,
       params?.secondaryColor,
       params?.settings
@@ -85,6 +88,22 @@ export class InstitutionSettings {
   public updateLogoUrl(newLogoUrl: string): InstitutionSettings {
     return new InstitutionSettings(
       newLogoUrl,
+      this.coverImageUrl,
+      this.primaryColor,
+      this.secondaryColor,
+      this.settings
+    );
+  }
+
+  /**
+   * Updates the cover image URL
+   * @param newCoverImageUrl The new cover image URL
+   * @returns A new InstitutionSettings instance with the updated cover image URL
+   */
+  public updateCoverImageUrl(newCoverImageUrl: string): InstitutionSettings {
+    return new InstitutionSettings(
+      this.logoUrl,
+      newCoverImageUrl,
       this.primaryColor,
       this.secondaryColor,
       this.settings
@@ -99,6 +118,7 @@ export class InstitutionSettings {
   public updatePrimaryColor(newColor: string): InstitutionSettings {
     return new InstitutionSettings(
       this.logoUrl,
+      this.coverImageUrl,
       newColor,
       this.secondaryColor,
       this.settings
@@ -113,6 +133,7 @@ export class InstitutionSettings {
   public updateSecondaryColor(newColor: string): InstitutionSettings {
     return new InstitutionSettings(
       this.logoUrl,
+      this.coverImageUrl,
       this.primaryColor,
       newColor,
       this.settings
@@ -140,6 +161,7 @@ export class InstitutionSettings {
 
     return new InstitutionSettings(
       this.logoUrl,
+      this.coverImageUrl,
       this.primaryColor,
       this.secondaryColor,
       mergedSettings
