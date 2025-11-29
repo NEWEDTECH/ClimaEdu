@@ -7,9 +7,10 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { usePost } from '@/hooks/social/usePosts';
 import { useProfile } from '@/context/zustand/useProfile';
+import { useUserInfo } from '@/hooks/social/useUserInfo';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button';
-import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, Edit } from 'lucide-react';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -25,8 +26,10 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
   const { post, loading, error } = usePost(id, userId);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
-
   
+  // Fetch author info
+  const { userInfo: authorInfo } = useUserInfo(post?.authorId);
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -143,7 +146,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900 dark:text-white">
-                      {post.author?.name || 'Usuário'}
+                      {authorInfo?.name || 'Usuário'}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <span>{timeAgo}</span>

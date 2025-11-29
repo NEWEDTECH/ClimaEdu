@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SocialPost } from '@/context/zustand/useSocialStore';
-import { Button } from '@/components/button'
+import { Button } from '@/components/button';
+import { useUserInfo } from '@/hooks/social/useUserInfo';
 
 interface PostCardProps {
   post: SocialPost;
@@ -24,6 +25,9 @@ export function PostCard({
 }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
+  
+  // Fetch author info by authorId
+  const { userInfo: authorInfo } = useUserInfo(post.authorId);
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -89,7 +93,7 @@ export function PostCard({
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-                {post.author?.name || 'Usuário'}
+                {authorInfo?.name || 'Usuário'}
               </h3>
               {post.status === 'PUBLISHED' && (
                 <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
