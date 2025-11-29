@@ -8,7 +8,8 @@ import { useFormValidation, postSchema } from '@/components/social/validation/So
 import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button'
-import { Edit3, Save, Send, ArrowLeft, AlertTriangle, Clock, History, Sparkles } from 'lucide-react';
+import { Edit3, Save, Send, ArrowLeft, AlertTriangle, Clock, History } from 'lucide-react';
+import { RichTextEditor } from '@/components/social/RichTextEditor';
 
 interface EditPostPageProps {
   params: Promise<{
@@ -341,13 +342,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
                       <span className="font-semibold">Rascunho</span>
                     </div>
                   </div>
-                  <div className="backdrop-blur-sm rounded-lg px-6 py-3 dark:bg-white/10 dark:border dark:border-white/20 bg-white/80 border border-gray-200/50 shadow-sm">
-                    <div className="flex items-center space-x-2 dark:text-white text-gray-800">
-                      <Sparkles className="w-5 h-5 text-purple-400" />
-                      <span className="font-semibold">Markdown</span>
-                      <span className="dark:text-white/80 text-gray-600">Suportado</span>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -418,47 +413,12 @@ export default function EditPostPage({ params }: EditPostPageProps) {
                 </div>
 
                 {/* Content Editor */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-1 h-6 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
-                    <label htmlFor="content" className="text-lg font-semibold dark:text-white text-gray-800">
-                      Conteúdo *
-                    </label>
-                  </div>
-                  <textarea
-                    id="content"
-                    name="content"
-                    rows={16}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Escreva seu conteúdo aqui... 
-
-Você pode usar Markdown para formatação:
-- **negrito** ou *itálico*
-- # Títulos
-- - Listas
-- [links](url)
-
-Compartilhe suas experiências, conhecimentos e insights!"
-                    className={`w-full px-4 py-3 rounded-lg backdrop-blur-sm border-2 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all duration-200 resize-vertical dark:bg-white/5 dark:border-white/20 dark:text-white dark:placeholder-white/60 bg-white/80 border-gray-200/50 text-gray-800 placeholder-gray-500 ${
-                      getFieldError('content') ? 'border-red-500/50 dark:border-red-500/50' : ''
-                    }`}
-                    maxLength={50000}
-                    disabled={isSubmitting}
-                  />
-                  {getFieldError('content') && (
-                    <p className="text-sm dark:text-red-400 text-red-600 flex items-center gap-2">
-                      <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                      {getFieldError('content')}
-                    </p>
-                  )}
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs dark:text-white/60 text-gray-500">
-                      {content.length}/50.000 caracteres • Markdown suportado
-                    </p>
-                    <div className={`w-2 h-2 rounded-full ${content.length >= 10 ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-                  </div>
-                </div>
+                <RichTextEditor
+                  value={content}
+                  onChange={setContent}
+                  error={getFieldError('content')}
+                  disabled={isSubmitting}
+                />
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-6 border-t dark:border-white/10 border-gray-200/50">
@@ -470,9 +430,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                         <span className="text-sm font-medium dark:text-yellow-400 text-yellow-600">Rascunho</span>
                       </div>
                     </div>
-                    <span className="text-xs dark:text-white/60 text-gray-500">
-                      Post ID: {id}
-                    </span>
+
                     {hasChanges && (
                       <span className="text-xs dark:text-yellow-400 text-yellow-600 font-medium">
                         • Alterações não salvas
@@ -484,6 +442,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                     {hasChanges && (
                       <Button
                         type="button"
+                        variant='secondary'
                         onClick={handleDiscard}
                         disabled={isSubmitting}
                         className="px-4 py-2 dark:text-white/60 text-gray-600 hover:dark:text-white hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

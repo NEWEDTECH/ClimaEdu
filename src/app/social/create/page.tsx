@@ -9,6 +9,7 @@ import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button'
 import {Save, Send, ArrowLeft, Lightbulb } from 'lucide-react';
+import { RichTextEditor } from '@/components/social/RichTextEditor';
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -21,9 +22,10 @@ export default function CreatePostPage() {
     [infoInstitutions?.institutions?.idInstitution]
   );
   
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState<string>('');
+  const [content, setContent] = useState<string>('');
+  const [isSavingDraft, setIsSavingDraft] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { createPost, publishPost } = usePosts({
@@ -58,7 +60,7 @@ export default function CreatePostPage() {
     }
 
     try {
-      setIsSubmitting(true);
+      setIsSavingDraft(true);
       setSubmitError(null);
 
       const result = await createPost({
@@ -77,7 +79,7 @@ export default function CreatePostPage() {
       console.error('Error saving draft:', error);
       setSubmitError('Erro inesperado ao salvar rascunho');
     } finally {
-      setIsSubmitting(false);
+      setIsSavingDraft(false);
     }
   }, [infoUser, institutionId, validateForm, createPost, router]);
 
@@ -95,7 +97,7 @@ export default function CreatePostPage() {
     }
 
     try {
-      setIsSubmitting(true);
+      setIsPublishing(true);
       setSubmitError(null);
 
       // First create as draft
@@ -125,12 +127,13 @@ export default function CreatePostPage() {
       console.error('Error publishing post:', error);
       setSubmitError('Erro inesperado ao publicar post');
     } finally {
-      setIsSubmitting(false);
+      setIsPublishing(false);
     }
   }, [infoUser, institutionId, validateForm, createPost, publishPost, router]);
 
   // Check if form is valid
   const isFormValid = title.trim().length >= 5 && content.trim().length >= 10;
+  const isSubmitting = isSavingDraft || isPublishing;
   const canSubmit = isFormValid && !isSubmitting && infoUser?.id && institutionId;
 
   return (
@@ -208,47 +211,12 @@ export default function CreatePostPage() {
                 </div>
 
                 {/* Content Editor */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-1 h-6 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
-                    <label htmlFor="content" className="text-lg font-semibold dark:text-white text-gray-800">
-                      Conteúdo *
-                    </label>
-                  </div>
-                  <textarea
-                    id="content"
-                    name="content"
-                    rows={16}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Escreva seu conteúdo aqui... 
-
-Você pode usar Markdown para formatação:
-- **negrito** ou *itálico*
-- # Títulos
-- - Listas
-- [links](url)
-
-Compartilhe suas experiências, conhecimentos e insights!"
-                    className={`w-full px-4 py-3 rounded-lg backdrop-blur-sm border-2 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all duration-200 resize-vertical dark:bg-white/5 dark:border-white/20 dark:text-white dark:placeholder-white/60 bg-white/80 border-gray-200/50 text-gray-800 placeholder-gray-500 ${
-                      getFieldError('content') ? 'border-red-500/50 dark:border-red-500/50' : ''
-                    }`}
-                    maxLength={50000}
-                    disabled={isSubmitting}
-                  />
-                  {getFieldError('content') && (
-                    <p className="text-sm dark:text-red-400 text-red-600 flex items-center gap-2">
-                      <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                      {getFieldError('content')}
-                    </p>
-                  )}
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs dark:text-white/60 text-gray-500">
-                      {content.length}/50.000 caracteres • Markdown suportado
-                    </p>
-                    <div className={`w-2 h-2 rounded-full ${content.length >= 10 ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-                  </div>
-                </div>
+                <RichTextEditor
+                  value={content}
+                  onChange={setContent}
+                  error={getFieldError('content')}
+                  disabled={isSubmitting}
+                />
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-6 border-t dark:border-white/10 border-gray-200/50">
@@ -270,7 +238,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                       className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
                     >
                       <div className="flex items-center gap-2">
-                        {isSubmitting ? (
+                        {isSavingDraft ? (
                           <>
                             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                             <span>Salvando...</span>
@@ -291,7 +259,7 @@ Compartilhe suas experiências, conhecimentos e insights!"
                       className="group px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       <div className="flex items-center gap-2">
-                        {isSubmitting ? (
+                        {isPublishing ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             <span>Publicando...</span>

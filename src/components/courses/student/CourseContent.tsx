@@ -78,10 +78,6 @@ export function CourseContent({
     });
   };
 
-  // Check if lesson has video content
-  const hasVideoContent = activeLessonData?.contents.some(c => c.type === 'VIDEO') || false;
-
-  // Load activity submission status
   useEffect(() => {
     const loadSubmission = async () => {
       if (!activeActivity || !infoUser.id || !institutionId) {
@@ -134,47 +130,6 @@ export function CourseContent({
               handleProgress={handleVideoProgress}
             />
 
-            {/* Navigation Buttons - Only after video content */}
-            {hasVideoContent && handleNextVideo && handlePreviousVideo && handleCompleteLesson && canNavigatePrevious && canNavigateNext && (
-              <div className="flex justify-end mt-4">
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-                  {/* Previous Button */}
-                  <Button
-                    onClick={handlePreviousVideo}
-                    className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!canNavigatePrevious()}
-                    title="Lição anterior"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </Button>
-
-                  {/* Complete Button */}
-                  <Button
-                    onClick={handleCompleteLesson}
-                    className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!activeLesson}
-                    title="Concluir lição"
-                  >
-                    <span className="text-sm font-medium">Concluir</span>
-                  </Button>
-
-                  {/* Next Button */}
-                  <Button
-                    onClick={handleNextVideo}
-                    className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!canNavigateNext()}
-                    title="Próxima lição"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Button>
-                </div>
-              </div>
-            )}
-
             <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
           </div>
         ))}
@@ -212,12 +167,55 @@ export function CourseContent({
 
     if (scormContents.length === 0) return null;
 
+    const handleFullscreen = (containerId: string) => {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    };
+
     return (
       <>
+        <style>
+          {`
+            [id^="scorm-container-"]:fullscreen {
+              width: 100vw !important;
+              height: 100vh !important;
+              background-color: #000;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            [id^="scorm-container-"]:fullscreen iframe {
+              width: 100% !important;
+              height: 100% !important;
+              border: none !important;
+            }
+          `}
+        </style>
         {scormContents.map((content) => (
           <div key={content.id}>
-            {/* Para SCORM, o ID está armazenado na URL do Content */}
-            <ScormPlayer contentId={content.url} />
+            <div id={`scorm-container-${content.id}`} className="relative">
+              {/* Para SCORM, o ID está armazenado na URL do Content */}
+              <ScormPlayer contentId={content.url} />
+              
+              {/* Fullscreen Button */}
+              <button
+                onClick={() => handleFullscreen(`scorm-container-${content.id}`)}
+                className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors"
+                title="Tela cheia"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
             <div className="border-t dark:border-gray-700 border-gray-300 mt-6"></div>
           </div>
         ))}
@@ -292,6 +290,7 @@ export function CourseContent({
             </div>
           </div>
         </section>
+
         <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} mt-6`}></div>
       </>
     );
@@ -801,6 +800,46 @@ export function CourseContent({
   return (
     <div className="space-y-8 dark:bg-black bg-white rounded-lg">
       {renderSections()}
+      
+      {handleNextVideo && handlePreviousVideo && handleCompleteLesson && canNavigatePrevious && canNavigateNext && (
+        <div className="flex justify-end mt-4">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
+            {/* Previous Button */}
+            <Button
+              onClick={handlePreviousVideo}
+              className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!canNavigatePrevious()}
+              title="Lição anterior"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </Button>
+
+            {/* Complete Button */}
+            <Button
+              onClick={handleCompleteLesson}
+              className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!activeLesson}
+              title="Concluir lição"
+            >
+              <span className="text-sm font-medium">Concluir</span>
+            </Button>
+
+            {/* Next Button */}
+            <Button
+              onClick={handleNextVideo}
+              className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!canNavigateNext()}
+              title="Próxima lição"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
