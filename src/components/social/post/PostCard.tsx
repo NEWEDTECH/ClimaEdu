@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,6 +22,8 @@ export function PostCard({
   showActions = true, 
   compact = false 
 }: PostCardProps) {
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -32,6 +34,12 @@ export function PostCard({
     e.preventDefault();
     e.stopPropagation();
     onComment?.(post.id);
+  };
+
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
   };
 
   // Truncate content for preview
@@ -98,9 +106,10 @@ export function PostCard({
             {post.title}
           </h2>
           
-          <div className={`text-gray-600 dark:text-gray-300 line-clamp-3 ${compact ? 'text-sm' : 'text-base'}`}>
-            {getPreviewContent(post.content)}
-          </div>
+          <div 
+            className={`ql-editor text-gray-600 dark:text-gray-300 ${!isExpanded ? 'line-clamp-3' : ''} ${compact ? 'text-sm' : 'text-base'}`}
+            dangerouslySetInnerHTML={{ __html: isExpanded ? post.content : getPreviewContent(post.content)}}
+          />
         </div>
 
         {/* Post Actions */}
@@ -167,10 +176,14 @@ export function PostCard({
               </Button>
             </div>
 
-            {/* Read More */}
-            <div className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
-              Ler mais →
-            </div>
+            {/* Read More / Collapse Button */}
+            <Button
+              onClick={toggleExpand}
+              variant="ghost"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors w-auto px-3"
+            >
+              {isExpanded ? 'Recolher ↑' : 'Ler mais →'}
+            </Button>
           </div>
         )}
       </Link>
