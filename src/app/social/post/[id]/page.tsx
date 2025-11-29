@@ -21,14 +21,12 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = React.use(params);
   const router = useRouter();
   const { infoUser } = useProfile();
-
-  // Memoize userId
   const userId = useMemo(() => infoUser?.id, [infoUser?.id]);
 
-  // Get post data
   const { post, loading, error } = usePost(id, userId);
+  const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
 
-  // Loading state
+  
   if (loading) {
     return (
       <DashboardLayout>
@@ -96,7 +94,6 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   });
 
   const isAuthor = post.authorId === userId;
-  const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
 
   const handleShare = async () => {
     const url = `${window.location.origin}/social/post/${id}`;
