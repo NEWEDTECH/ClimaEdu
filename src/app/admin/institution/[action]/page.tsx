@@ -417,7 +417,7 @@ export default function InstitutionPage() {
         }
       }
 
-      router.push('/admin/institution');
+      router.refresh()
     } catch (err: unknown) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} institution:`, err);
       const errorMessage = err instanceof Error ? err.message : `Falha ao ${isEditMode ? 'atualizar' : 'criar'} instituição. Por favor, tente novamente.`;
@@ -511,11 +511,11 @@ export default function InstitutionPage() {
                         </div>
                         {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
                         {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
-                        
+
                         {/* Preview Button - Show after secondary color */}
                         {id === 'secondaryColor' && (
                           <div className="mt-4 space-y-2">
-                            <div 
+                            <div
                               className="inline-flex items-center px-6 py-3 rounded-lg font-medium text-sm transition-colors duration-200 border-2"
                               style={{
                                 backgroundColor: watch('primaryColor') || '#3B82F6',
@@ -540,11 +540,14 @@ export default function InstitutionPage() {
                         <ImageUpload
                           imageType="institution-cover"
                           institutionId={institutionId || 'temp'}
-                          onUploadSuccess={(url) => {setValue('coverImageUrl', url)}}
+                          onUploadSuccess={(url) => { setValue('coverImageUrl', url) }}
                           currentImageUrl={value || ''}
                           label={field.label}
                           className="mt-4"
                         />
+                        <p className="text-red-600 text-xs font-medium mt-1">
+                          Tamanho recomendado: 2500x450 pixels
+                        </p>
                         {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
                         {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
                         <div className="text-xs text-gray-500 mt-2">
@@ -583,8 +586,8 @@ export default function InstitutionPage() {
                       <h4 className="text-sm font-medium mb-3">Administradores Selecionados ({selectedAdministrators.length})</h4>
                       <div
                         className={`space-y-2 ${selectedAdministrators.length >= 5
-                            ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50'
-                            : ''
+                          ? 'max-h-96 overflow-y-scroll border border-gray-200 rounded-lg p-2 bg-gray-50'
+                          : ''
                           }`}
                         style={selectedAdministrators.length >= 5 ? { maxHeight: '400px' } : {}}
                       >
