@@ -1,143 +1,106 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { usePosts } from '@/hooks/social/usePosts';
-import { useFormValidation, postSchema } from '@/components/social/validation/SocialValidation';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { usePost } from '@/hooks/social/usePosts';
 import { useProfile } from '@/context/zustand/useProfile';
-import { Button } from '@/components/button'
 import { DashboardLayout } from '@/components/layout';
-import { Save, Send, ArrowLeft, Lightbulb } from 'lucide-react';
-import { RichTextEditor } from '@/components/social/RichTextEditor';
+import { Button } from '@/components/button';
+import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Trash2 } from 'lucide-react';
 
-export default function CreatePostPage() {
+interface PostDetailPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export default function PostDetailPage({ params }: PostDetailPageProps) {
+  const { id } = React.use(params);
   const router = useRouter();
-  const { infoUser, infoInstitutions } = useProfile();
-  
-  // Memoize values to prevent infinite loops
-  const userId = useMemo(() => infoUser?.id, [infoUser?.id]);
-  const institutionId = useMemo(() => 
-    infoInstitutions?.institutions?.idInstitution, 
-    [infoInstitutions?.institutions?.idInstitution]
-  );
-  
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { infoUser } = useProfile();
 
-  const { createPost, publishPost } = usePosts({
-    institutionId,
-    userId,
-    autoFetch: false
+  // Memoize userId
+  const userId = useMemo(() => infoUser?.id, [infoUser?.id]);
+
+  // Get post data
+  const { post, loading, error } = usePost(id, userId);
+
+  // Loading state
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="min-h-screen transition-all duration-300 dark:bg-black bg-gray-100">
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 backdrop-blur-3xl dark:bg-black bg-gray-200/30"></div>
+            <div className="relative px-4 sm:px-6 lg:px-8 py-12">
+              <div className="max-w-4xl mx-auto">
+                <div className="animate-pulse space-y-8">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+                  <div className="backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-xl p-8 space-y-6">
+                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Error state
+  if (error || !post) {
+    return (
+      <DashboardLayout>
+        <div className="min-h-screen transition-all duration-300 dark:bg-black bg-gray-100">
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 backdrop-blur-3xl dark:bg-black bg-gray-200/30"></div>
+            <div className="relative px-4 sm:px-6 lg:px-8 py-12">
+              <div className="max-w-4xl mx-auto">
+                <div className="backdrop-blur-sm rounded-xl dark:bg-red-500/10 dark:border dark:border-red-500/20 bg-red-50 border border-red-200 shadow-xl p-8">
+                  <div className="text-center space-y-6">
+                    <h2 className="text-2xl font-bold dark:text-red-200 text-red-800 mb-2">
+                      Post não encontrado
+                    </h2>
+                    <p className="dark:text-red-300 text-red-700 mb-6">
+                      {error || 'O post que você está procurando não existe ou foi removido.'}
+                    </p>
+                    <Link
+                      href="/social"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:scale-105 transition-all duration-200"
+                    >
+                      <ArrowLeft className="w-5 h-5 mr-2" />
+                      Voltar ao Feed
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const timeAgo = formatDistanceToNow(post.createdAt, {
+    addSuffix: true,
+    locale: ptBR
   });
 
-  const { validate, getFieldError } = useFormValidation(postSchema);
-
-  // Validate form data
-  const validateForm = useCallback(() => {
-    const formData = {
-      title: title.trim(),
-      content: content.trim(),
-      status: 'draft' as const
-    };
-    return validate(formData) ? formData : null;
-  }, [title, content, validate]);
-
-  // Handle save as draft
-  const handleSaveDraft = useCallback(async () => {
-    if (!infoUser?.id || !institutionId) {
-      setSubmitError('Usuário ou instituição não identificados');
-      return;
-    }
-
-    const formData = validateForm();
-    if (!formData) {
-      setSubmitError('Por favor, corrija os erros no formulário');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setSubmitError(null);
-
-      const result = await createPost({
-        title: formData.title,
-        content: formData.content,
-        authorId: infoUser.id,
-        institutionId: institutionId
-      });
-
-      if (result.success) {
-        router.push('/social/my-posts?tab=drafts');
-      } else {
-        setSubmitError(result.error || 'Erro ao salvar rascunho');
-      }
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      setSubmitError('Erro inesperado ao salvar rascunho');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [infoUser, institutionId, validateForm, createPost, router]);
-
-  // Handle publish post
-  const handlePublish = useCallback(async () => {
-    if (!infoUser?.id || !institutionId) {
-      setSubmitError('Usuário ou instituição não identificados');
-      return;
-    }
-
-    const formData = validateForm();
-    if (!formData) {
-      setSubmitError('Por favor, corrija os erros no formulário');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setSubmitError(null);
-
-      // First create as draft
-      const createResult = await createPost({
-        title: formData.title,
-        content: formData.content,
-        authorId: infoUser.id,
-        institutionId: institutionId
-      });
-
-      if (createResult.success && createResult.post) {
-        // Then publish it
-        const publishResult = await publishPost({
-          postId: createResult.post.id,
-          userId: infoUser.id
-        });
-
-        if (publishResult.success) {
-          router.push('/social');
-        } else {
-          setSubmitError(publishResult.error || 'Erro ao publicar post');
-        }
-      } else {
-        setSubmitError(createResult.error || 'Erro ao criar post');
-      }
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      setSubmitError('Erro inesperado ao publicar post');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [infoUser, institutionId, validateForm, createPost, publishPost, router]);
-
-  // Check if form is valid
-  const isFormValid = title.trim().length >= 5 && content.trim().length >= 10;
-  const canSubmit = isFormValid && !isSubmitting && infoUser?.id && institutionId;
+  const isAuthor = post.authorId === userId;
 
   return (
     <DashboardLayout>
       <div className="min-h-screen transition-all duration-300 dark:bg-black bg-gray-100">
-        {/* Hero Section */}
+        {/* Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 backdrop-blur-3xl dark:bg-black bg-gray-200/30"></div>
           <div className="relative px-4 sm:px-6 lg:px-8 py-12">
@@ -152,175 +115,95 @@ export default function CreatePostPage() {
                   Voltar ao Feed
                 </Link>
               </div>
-
             </div>
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto space-y-8">
-            {/* Error Message */}
-            {submitError && (
-              <div className="backdrop-blur-sm rounded-lg p-4 dark:bg-red-500/10 dark:border dark:border-red-500/20 bg-red-50 border border-red-200">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <p className="dark:text-red-400 text-red-800 font-medium">{submitError}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Post Creation Form */}
-            <div className="backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-xl">
-              <form className="p-8 space-y-8" onSubmit={(e) => e.preventDefault()}>
-                {/* Title Input */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
-                    <label htmlFor="title" className="text-lg font-semibold dark:text-white text-gray-800">
-                      Título do Post *
-                    </label>
+        {/* Content */}
+        <div className="px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="max-w-4xl mx-auto">
+            {/* Post Card */}
+            <article className="backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-xl p-8">
+              {/* Author Info */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-lg">
+                      {post.author?.name?.charAt(0).toUpperCase() || post.authorId.charAt(0).toUpperCase()}
+                    </span>
                   </div>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Digite um título atrativo que desperte curiosidade..."
-                    className={`w-full px-4 py-3 rounded-lg backdrop-blur-sm border-2 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 dark:bg-white/5 dark:border-white/20 dark:text-white dark:placeholder-white/60 bg-white/80 border-gray-200/50 text-gray-800 placeholder-gray-500 ${
-                      getFieldError('title') ? 'border-red-500/50 dark:border-red-500/50' : ''
-                    }`}
-                    maxLength={200}
-                    disabled={isSubmitting}
-                  />
-                  {getFieldError('title') && (
-                    <p className="text-sm dark:text-red-400 text-red-600 flex items-center gap-2">
-                      <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                      {getFieldError('title')}
-                    </p>
-                  )}
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs dark:text-white/60 text-gray-500">
-                      {title.length}/200 caracteres
-                    </p>
-                    <div className={`w-2 h-2 rounded-full ${title.length >= 5 ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-                  </div>
-                </div>
-
-                {/* Content Editor */}
-                <RichTextEditor
-                  value={content}
-                  onChange={setContent}
-                  error={getFieldError('content')}
-                  disabled={isSubmitting}
-                />
-
-                {/* Actions */}
-                <div className="flex items-center justify-between pt-6 border-t dark:border-white/10 border-gray-200/50">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm dark:text-white/80 text-gray-600">Status:</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium dark:text-yellow-400 text-yellow-600">Rascunho</span>
-                      </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      {post.author?.name || 'Usuário'}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span>{timeAgo}</span>
+                      {post.status !== 'PUBLISHED' && (
+                        <>
+                          <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            post.status === 'DRAFT' 
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                          }`}>
+                            {post.status === 'DRAFT' ? 'Rascunho' : 'Arquivado'}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
-                  
-                  <div className="flex gap-4">
+                </div>
+
+                {/* Actions for author */}
+                {isAuthor && post.status === 'DRAFT' && (
+                  <div className="flex gap-2">
                     <Button
-                      type="button"
-                      onClick={handleSaveDraft}
-                      disabled={!canSubmit}
-                      className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
+                      onClick={() => router.push(`/social/edit/${post.id}`)}
+                      className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Editar post"
                     >
-                      <div className="flex items-center gap-2">
-                        {isSubmitting ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                            <span>Salvando...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            <span>Salvar Rascunho</span>
-                          </>
-                        )}
-                      </div>
-                    </Button>
-                    
-                    <Button
-                      type="button"
-                      onClick={handlePublish}
-                      disabled={!canSubmit}
-                      className="group px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    >
-                      <div className="flex items-center gap-2">
-                        {isSubmitting ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Publicando...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            <span>Publicar Post</span>
-                          </>
-                        )}
-                      </div>
+                      <Edit className="w-5 h-5" />
                     </Button>
                   </div>
-                </div>
-              </form>
-            </div>
-
-            {/* Writing Tips */}
-            <div className="backdrop-blur-sm rounded-xl dark:bg-blue-500/10 dark:border dark:border-blue-500/20 bg-blue-50/80 border border-blue-200/50 shadow-lg">
-              <div className="p-8">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
-                  <h3 className="text-xl font-bold flex items-center space-x-3 dark:text-blue-100 text-blue-900">
-                    <Lightbulb className="w-6 h-6 text-blue-400" />
-                    <span>Dicas para um Post Incrível</span>
-                  </h3>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="font-medium dark:text-blue-200 text-blue-800">Título Atrativo</p>
-                        <p className="text-sm dark:text-blue-300 text-blue-700">Use palavras que despertem curiosidade (mínimo 5 caracteres)</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="font-medium dark:text-blue-200 text-blue-800">Conteúdo Estruturado</p>
-                        <p className="text-sm dark:text-blue-300 text-blue-700">Organize em parágrafos e use markdown (mínimo 10 caracteres)</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="font-medium dark:text-blue-200 text-blue-800">Experiências Práticas</p>
-                        <p className="text-sm dark:text-blue-300 text-blue-700">Compartilhe casos reais e conhecimentos aplicáveis</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-pink-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="font-medium dark:text-blue-200 text-blue-800">Tom Respeitoso</p>
-                        <p className="text-sm dark:text-blue-300 text-blue-700">Seja construtivo e inspire discussões saudáveis</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
-            </div>
+
+              {/* Title */}
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                {post.title}
+              </h1>
+
+              {/* Content */}
+              <div 
+                className="ql-editor text-gray-600 dark:text-gray-300 text-base prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+
+              {/* Stats & Actions */}
+              <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-6">
+                  {/* Like */}
+                  <div className="flex items-center gap-2">
+                    <Heart className={`w-5 h-5 ${post.isLikedByUser ? 'fill-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`} />
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{post.likesCount}</span>
+                  </div>
+
+                  {/* Comments */}
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{post.commentsCount}</span>
+                  </div>
+                </div>
+
+                {/* Share */}
+                <Button
+                  className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span className="text-sm">Compartilhar</span>
+                </Button>
+              </div>
+            </article>
           </div>
         </div>
       </div>
