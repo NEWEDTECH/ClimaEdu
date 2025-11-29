@@ -25,7 +25,7 @@ export default function MyPostsPage() {
     [infoInstitutions?.institutions?.idInstitution]
   );
 
-  const { posts, loading, error, refreshMyPosts } = useMyPosts({
+  const { posts, loading, error, refreshMyPosts, archivePost, deletePost } = useMyPosts({
     userId,
     institutionId,
     autoFetch: true
@@ -47,20 +47,54 @@ export default function MyPostsPage() {
     window.location.href = `/social/edit/${postId}`;
   };
 
-  const handlePublish = (postId: string) => {
+  const handlePublish = async (postId: string) => {
+    if (!userId) return;
     console.log('Publish post:', postId);
-    // In real implementation, this would call the backend to publish the post
   };
 
-  const handleArchive = (postId: string) => {
-    console.log('Archive post:', postId);
-    // In real implementation, this would call the backend to archive the post
+  const handleArchive = async (postId: string) => {
+    if (!userId) return;
+    
+    try {
+      const result = await archivePost({
+        postId,
+        userId
+      });
+      
+      if (result.success) {
+        // Refresh the list
+        await refreshMyPosts();
+      } else {
+        alert(result.error || 'Erro ao arquivar post');
+      }
+    } catch (error) {
+      console.error('Error archiving post:', error);
+      alert('Erro ao arquivar post');
+    }
   };
 
-  const handleDelete = (postId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este post?')) {
-      console.log('Delete post:', postId);
-      // In real implementation, this would call the backend to delete the post
+  const handleDelete = async (postId: string) => {
+    if (!userId) return;
+    
+    if (!window.confirm('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+    
+    try {
+      const result = await deletePost({
+        postId,
+        userId
+      });
+      
+      if (result.success) {
+        // Refresh the list
+        await refreshMyPosts();
+      } else {
+        alert(result.error || 'Erro ao excluir post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Erro ao excluir post');
     }
   };
 

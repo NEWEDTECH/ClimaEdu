@@ -12,6 +12,8 @@ import type { GetPostInput } from '@/_core/modules/social/core/use-cases/post/ge
 import type { CreatePostInput } from '@/_core/modules/social/core/use-cases/post/create-post.input';
 import type { UpdatePostInput } from '@/_core/modules/social/core/use-cases/post/update-post.input';
 import type { PublishPostInput } from '@/_core/modules/social/core/use-cases/post/publish-post.input';
+import type { ArchivePostInput } from '@/_core/modules/social/core/use-cases/post/archive-post.input';
+import type { DeletePostInput } from '@/_core/modules/social/core/use-cases/post/delete-post.input';
 
 // Helper function to convert backend post data to frontend format
 function convertPostWithMetadata(postData: PostWithMetadata): SocialPost {
@@ -211,6 +213,70 @@ export function usePosts(options: UsePostsOptions = {}) {
     }
   }, [container, fetchPosts]);
 
+  // Archive post
+  const archivePost = useCallback(async (input: ArchivePostInput) => {
+    const store = useSocialStore.getState();
+    
+    try {
+      store.setPostsLoading(true);
+      store.setPostsError(null);
+
+      const archivePostUseCase = container.archivePost();
+      if (!archivePostUseCase) {
+        throw new Error('ArchivePostUseCase not available');
+      }
+
+      const result = await archivePostUseCase.execute(input);
+
+      if (result.success) {
+        // Refresh posts to reflect changes
+        await fetchPosts(true);
+        return result;
+      } else {
+        store.setPostsError(result.error || 'Erro ao arquivar post');
+        return result;
+      }
+    } catch (error) {
+      console.error('Error archiving post:', error);
+      store.setPostsError('Erro inesperado ao arquivar post');
+      return { success: false, error: 'Erro inesperado ao arquivar post' };
+    } finally {
+      store.setPostsLoading(false);
+    }
+  }, [container, fetchPosts]);
+
+  // Delete post
+  const deletePost = useCallback(async (input: DeletePostInput) => {
+    const store = useSocialStore.getState();
+    
+    try {
+      store.setPostsLoading(true);
+      store.setPostsError(null);
+
+      const deletePostUseCase = container.deletePost();
+      if (!deletePostUseCase) {
+        throw new Error('DeletePostUseCase not available');
+      }
+
+      const result = await deletePostUseCase.execute(input);
+
+      if (result.success) {
+        // Refresh posts to reflect changes
+        await fetchPosts(true);
+        return result;
+      } else {
+        store.setPostsError(result.error || 'Erro ao excluir post');
+        return result;
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      store.setPostsError('Erro inesperado ao excluir post');
+      return { success: false, error: 'Erro inesperado ao excluir post' };
+    } finally {
+      store.setPostsLoading(false);
+    }
+  }, [container, fetchPosts]);
+
   return {
     posts,
     loading: postsLoading,
@@ -220,6 +286,8 @@ export function usePosts(options: UsePostsOptions = {}) {
     createPost,
     updatePost,
     publishPost,
+    archivePost,
+    deletePost,
     isEmpty: posts.length === 0 && !postsLoading
   };
 }
@@ -241,7 +309,7 @@ export function useMyPosts(options: UsePostsOptions = {}) {
 
   const container = useSocialContainer();
 
-  // For now, use the same ListPostsUseCase but filter by user
+  // Use ListMyPostsUseCase to get ALL user's posts (including archived)
   const fetchMyPosts = useCallback(async (force = false) => {
     if (!institutionId || !userId) return;
 
@@ -256,23 +324,21 @@ export function useMyPosts(options: UsePostsOptions = {}) {
       store.setPostsLoading(true);
       store.setPostsError(null);
 
-      const listPostsUseCase = container.listPosts();
-      if (!listPostsUseCase) {
-        throw new Error('ListPostsUseCase not available');
+      const listMyPostsUseCase = container.listMyPosts();
+      if (!listMyPostsUseCase) {
+        throw new Error('ListMyPostsUseCase not available');
       }
 
       const input: ListPostsInput = {
         institutionId,
         userId,
-        limit: 50
+        limit: 100 // Get all user's posts including archived
       };
 
-      const result = await listPostsUseCase.execute(input);
+      const result = await listMyPostsUseCase.execute(input);
 
       if (result.success && result.posts) {
-        // Filter posts by current user (temporary solution)
-        const userPosts = result.posts.filter(p => p.post.authorId === userId);
-        const convertedPosts = userPosts.map(convertPostWithMetadata);
+        const convertedPosts = result.posts.map(convertPostWithMetadata);
         store.setMyPosts(convertedPosts);
         store.updateLastFetchTime(cacheKey);
       } else {
@@ -297,12 +363,78 @@ export function useMyPosts(options: UsePostsOptions = {}) {
     return fetchMyPosts(true);
   }, [fetchMyPosts]);
 
+  // Archive post (for my posts)
+  const archivePost = useCallback(async (input: ArchivePostInput) => {
+    const store = useSocialStore.getState();
+    
+    try {
+      store.setPostsLoading(true);
+      store.setPostsError(null);
+
+      const archivePostUseCase = container.archivePost();
+      if (!archivePostUseCase) {
+        throw new Error('ArchivePostUseCase not available');
+      }
+
+      const result = await archivePostUseCase.execute(input);
+
+      if (result.success) {
+        // Refresh my posts to reflect changes
+        await fetchMyPosts(true);
+        return result;
+      } else {
+        store.setPostsError(result.error || 'Erro ao arquivar post');
+        return result;
+      }
+    } catch (error) {
+      console.error('Error archiving post:', error);
+      store.setPostsError('Erro inesperado ao arquivar post');
+      return { success: false, error: 'Erro inesperado ao arquivar post' };
+    } finally {
+      store.setPostsLoading(false);
+    }
+  }, [container, fetchMyPosts]);
+
+  // Delete post (for my posts)
+  const deletePost = useCallback(async (input: DeletePostInput) => {
+    const store = useSocialStore.getState();
+    
+    try {
+      store.setPostsLoading(true);
+      store.setPostsError(null);
+
+      const deletePostUseCase = container.deletePost();
+      if (!deletePostUseCase) {
+        throw new Error('DeletePostUseCase not available');
+      }
+
+      const result = await deletePostUseCase.execute(input);
+
+      if (result.success) {
+        // Refresh my posts to reflect changes
+        await fetchMyPosts(true);
+        return result;
+      } else {
+        store.setPostsError(result.error || 'Erro ao excluir post');
+        return result;
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      store.setPostsError('Erro inesperado ao excluir post');
+      return { success: false, error: 'Erro inesperado ao excluir post' };
+    } finally {
+      store.setPostsLoading(false);
+    }
+  }, [container, fetchMyPosts]);
+
   return {
     posts: myPosts,
     loading: postsLoading,
     error: postsError,
     fetchMyPosts,
     refreshMyPosts,
+    archivePost,
+    deletePost,
     isEmpty: myPosts.length === 0 && !postsLoading
   };
 }
