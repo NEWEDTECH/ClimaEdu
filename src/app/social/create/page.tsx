@@ -22,9 +22,10 @@ export default function CreatePostPage() {
     [infoInstitutions?.institutions?.idInstitution]
   );
   
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState<string>('');
+  const [content, setContent] = useState<string>('');
+  const [isSavingDraft, setIsSavingDraft] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { createPost, publishPost } = usePosts({
@@ -59,7 +60,7 @@ export default function CreatePostPage() {
     }
 
     try {
-      setIsSubmitting(true);
+      setIsSavingDraft(true);
       setSubmitError(null);
 
       const result = await createPost({
@@ -78,7 +79,7 @@ export default function CreatePostPage() {
       console.error('Error saving draft:', error);
       setSubmitError('Erro inesperado ao salvar rascunho');
     } finally {
-      setIsSubmitting(false);
+      setIsSavingDraft(false);
     }
   }, [infoUser, institutionId, validateForm, createPost, router]);
 
@@ -96,7 +97,7 @@ export default function CreatePostPage() {
     }
 
     try {
-      setIsSubmitting(true);
+      setIsPublishing(true);
       setSubmitError(null);
 
       // First create as draft
@@ -126,12 +127,13 @@ export default function CreatePostPage() {
       console.error('Error publishing post:', error);
       setSubmitError('Erro inesperado ao publicar post');
     } finally {
-      setIsSubmitting(false);
+      setIsPublishing(false);
     }
   }, [infoUser, institutionId, validateForm, createPost, publishPost, router]);
 
   // Check if form is valid
   const isFormValid = title.trim().length >= 5 && content.trim().length >= 10;
+  const isSubmitting = isSavingDraft || isPublishing;
   const canSubmit = isFormValid && !isSubmitting && infoUser?.id && institutionId;
 
   return (
@@ -236,7 +238,7 @@ export default function CreatePostPage() {
                       className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
                     >
                       <div className="flex items-center gap-2">
-                        {isSubmitting ? (
+                        {isSavingDraft ? (
                           <>
                             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                             <span>Salvando...</span>
@@ -257,7 +259,7 @@ export default function CreatePostPage() {
                       className="group px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       <div className="flex items-center gap-2">
-                        {isSubmitting ? (
+                        {isPublishing ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             <span>Publicando...</span>
