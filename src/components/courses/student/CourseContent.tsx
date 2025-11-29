@@ -78,10 +78,6 @@ export function CourseContent({
     });
   };
 
-  // Check if lesson has video content
-  const hasVideoContent = activeLessonData?.contents.some(c => c.type === 'VIDEO') || false;
-
-  // Load activity submission status
   useEffect(() => {
     const loadSubmission = async () => {
       if (!activeActivity || !infoUser.id || !institutionId) {

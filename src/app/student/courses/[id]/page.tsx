@@ -67,11 +67,7 @@ export default function CoursePage() {
 
     // Auto-navigation hook for video completion
     const {
-        isActive: showAutoNav,
-        countdown,
-        isNavigating,
         startAutoNavigation,
-        cancelAutoNavigation,
     } = useAutoNavigation({
         onNavigate: handleNextVideo,
         countdownSeconds: 5

@@ -27,7 +27,7 @@ export default function SocialPage() {
     [infoInstitutions?.institutions?.idInstitution]
   );
   
-  const { posts, loading, error, refreshPosts } = usePosts({
+  const { posts, loading, refreshPosts } = usePosts({
     userId,
     institutionId,
     autoFetch: true

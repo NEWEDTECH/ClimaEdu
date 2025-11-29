@@ -8,7 +8,7 @@ import { useFormValidation, postSchema } from '@/components/social/validation/So
 import { useProfile } from '@/context/zustand/useProfile';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button'
-import { Edit3, Save, Send, ArrowLeft, AlertTriangle, Clock, History, Sparkles } from 'lucide-react';
+import { Edit3, Save, Send, ArrowLeft, AlertTriangle, Clock, History } from 'lucide-react';
 import { RichTextEditor } from '@/components/social/RichTextEditor';
 
 interface EditPostPageProps {
