@@ -23,6 +23,7 @@ export function PostCard({
   compact = false 
 }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -40,6 +41,21 @@ export function PostCard({
     e.preventDefault();
     e.stopPropagation();
     setIsExpanded(!isExpanded);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const postUrl = `${window.location.origin}/social/post/${post.id}`;
+    
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      setShowCopiedMessage(true);
+      setTimeout(() => setShowCopiedMessage(false), 2000);
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+    }
   };
 
   // Truncate content for preview
@@ -160,20 +176,30 @@ export function PostCard({
               </Button>
 
               {/* Share Button */}
-              <Button 
-                variant="ghost"
-                className="flex flex-col items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors w-auto px-3"
-              >
-                <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" 
-                  />
-                </svg>
-                <span className="text-center">Compartilhar</span>
-              </Button>
+              <div className="relative">
+                <Button 
+                  onClick={handleShare}
+                  variant="ghost"
+                  className="flex flex-col items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors w-auto px-3"
+                >
+                  <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" 
+                    />
+                  </svg>
+                  <span className="text-center">Compartilhar</span>
+                </Button>
+                
+                {/* Copied Message */}
+                {showCopiedMessage && (
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-lg whitespace-nowrap shadow-lg animate-fade-in">
+                    Link copiado!
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Read More / Collapse Button */}
