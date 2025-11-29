@@ -4,7 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { useProfile } from '@/context/zustand/useProfile';
-import { CourseSidebar, CourseContent, AutoNavigationModal } from '@/components/courses/student';
+import { CourseSidebar, CourseContent } from '@/components/courses/student';
 import { useCourseData } from '@/hooks/content/useCourseData';
 import { useCourseNavigation } from '@/hooks/content/useCourseNavigation';
 import { useAutoNavigation } from '@/hooks/content/useAutoNavigation';
@@ -146,14 +146,6 @@ export default function CoursePage() {
                         lessonAccess={lessonAccess}
                     />
 
-                    {/* Auto-navigation modal */}
-                    <AutoNavigationModal
-                        isOpen={showAutoNav}
-                        countdown={countdown}
-                        isNavigating={isNavigating}
-                        onCancel={cancelAutoNavigation}
-                        onProceed={handleNextVideo}
-                    />
                 </div>
             </DashboardLayout>
         </ProtectedContent>
