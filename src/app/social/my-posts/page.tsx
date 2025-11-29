@@ -25,7 +25,7 @@ export default function MyPostsPage() {
     [infoInstitutions?.institutions?.idInstitution]
   );
 
-  const { posts, loading, error, refreshMyPosts } = useMyPosts({
+  const { posts, loading, error, refreshMyPosts, archivePost, deletePost } = useMyPosts({
     userId,
     institutionId,
     autoFetch: true
@@ -47,20 +47,54 @@ export default function MyPostsPage() {
     window.location.href = `/social/edit/${postId}`;
   };
 
-  const handlePublish = (postId: string) => {
+  const handlePublish = async (postId: string) => {
+    if (!userId) return;
     console.log('Publish post:', postId);
-    // In real implementation, this would call the backend to publish the post
   };
 
-  const handleArchive = (postId: string) => {
-    console.log('Archive post:', postId);
-    // In real implementation, this would call the backend to archive the post
+  const handleArchive = async (postId: string) => {
+    if (!userId) return;
+    
+    try {
+      const result = await archivePost({
+        postId,
+        userId
+      });
+      
+      if (result.success) {
+        // Refresh the list
+        await refreshMyPosts();
+      } else {
+        alert(result.error || 'Erro ao arquivar post');
+      }
+    } catch (error) {
+      console.error('Error archiving post:', error);
+      alert('Erro ao arquivar post');
+    }
   };
 
-  const handleDelete = (postId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este post?')) {
-      console.log('Delete post:', postId);
-      // In real implementation, this would call the backend to delete the post
+  const handleDelete = async (postId: string) => {
+    if (!userId) return;
+    
+    if (!window.confirm('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+    
+    try {
+      const result = await deletePost({
+        postId,
+        userId
+      });
+      
+      if (result.success) {
+        // Refresh the list
+        await refreshMyPosts();
+      } else {
+        alert(result.error || 'Erro ao excluir post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Erro ao excluir post');
     }
   };
 
@@ -121,8 +155,8 @@ export default function MyPostsPage() {
                 <div className="text-center lg:text-left space-y-6">
                   <div className="flex items-center justify-center lg:justify-start space-x-3">
                     <div className="w-1 h-12 bg-gradient-to-b from-blue-400 to-purple-400 rounded-full"></div>
-                    <h1 className="text-4xl sm:text-5xl font-bold flex items-center space-x-4 dark:text-white text-gray-800">
-                      <FileText className="w-12 h-12 text-blue-400" />
+                    <h1 className="text-xl sm:text-3xl font-bold flex items-center space-x-4 dark:text-white text-gray-800">
+                      <FileText className="w-8 h-8 text-blue-400" />
                       <span>Meus Posts</span>
                     </h1>
                     <div className="w-1 h-12 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full"></div>
@@ -131,15 +165,6 @@ export default function MyPostsPage() {
                 </div>
 
                 <div className="hidden lg:flex gap-4">
-                  <Button
-                    onClick={refreshMyPosts}
-                    className="group px-6 py-3 backdrop-blur-sm rounded-lg border-2 transition-all duration-200 hover:scale-105 dark:bg-white/5 dark:border-white/20 dark:text-white dark:hover:bg-white/10 bg-white/80 border-gray-200/50 text-gray-800 hover:bg-white"
-                  >
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span>Atualizar</span>
-                    </div>
-                  </Button>
                   <Link
                     href="/social/create"
                     className="group px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
@@ -330,13 +355,13 @@ export default function MyPostsPage() {
                       )}
                       
                       {post.status === 'PUBLISHED' && (
-                        <Button
-                          onClick={() => handleArchive(post.id)}
-                          className="p-2 backdrop-blur-sm rounded-lg dark:bg-yellow-500/20 dark:border dark:border-yellow-500/30 bg-yellow-50 border border-yellow-200 text-yellow-600 hover:scale-110 transition-all duration-200"
-                          title="Arquivar"
-                        >
-                          <Archive className="w-4 h-4" />
-                        </Button>
+                          <Button
+                            onClick={() => handleArchive(post.id)}
+                            className="p-2 backdrop-blur-sm rounded-lg dark:bg-yellow-500/20 dark:border dark:border-yellow-500/30 bg-yellow-50 border border-yellow-200 text-yellow-600 hover:scale-110 transition-all duration-200"
+                            title="Arquivar"
+                          >
+                            <Archive className="w-4 h-4" />
+                          </Button>                    
                       )}
                       
                       <Button

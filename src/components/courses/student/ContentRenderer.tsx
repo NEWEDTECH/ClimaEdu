@@ -27,7 +27,7 @@ export function ContentRenderer({ content, onEnded, handleProgress }: ContentRen
         // <div className="aspect-video">
           <VideoPlayer
             url={content.url}
-            autoPlay={true}
+            autoPlay={false}
             showControls={true}
             onEnded={onEnded}
             handleProgress={enhancedHandleProgress}

@@ -27,7 +27,7 @@ export default function SocialPage() {
     [infoInstitutions?.institutions?.idInstitution]
   );
   
-  const { posts, loading, error, refreshPosts } = usePosts({
+  const { posts, loading, refreshPosts } = usePosts({
     userId,
     institutionId,
     autoFetch: true
@@ -187,18 +187,6 @@ export default function SocialPage() {
                     </Button>
                   </div>
                 </div>
-
-                {/* Error State */}
-                {error && (
-                  <div className="backdrop-blur-sm rounded-lg p-4 dark:bg-red-500/10 dark:border dark:border-red-500/20 bg-red-50 border border-red-200">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                      <p className="dark:text-red-400 text-red-800 font-medium">
-                        Erro ao carregar posts: {error}
-                      </p>
-                    </div>
-                  </div>
-                )}
 
                 {/* Posts Feed */}
                 <div className="space-y-6">

@@ -276,22 +276,17 @@ export default function Home() {
             
             {/* Cover Image - if exists */}
             {institutionCoverUrl && (
-              <div className="w-full h-[400px] max-h-[400px] relative overflow-hidden px-4 sm:px-6 lg:px-8">
+              <div className="w-full h-[450px] relative overflow-hidden">
                 <img 
                   src={institutionCoverUrl} 
                   alt="Capa da instituição" 
-                  className="w-full h-full object-contain"
+                  className="w-full h-[450px] block"
                 />
                 {/* Gradient overlay for better text readability */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"></div>
               </div>
             )}
 
-            {/* Background blur for non-cover sections */}
-            {!institutionCoverUrl && (
-              <div className="absolute inset-0 backdrop-blur-3xl dark:bg-black bg-gray-200/30"></div>
-            )}
-            
             <div className={`relative px-4 sm:px-6 lg:px-8 ${institutionCoverUrl ? 'py-8' : 'py-12 sm:py-16 lg:py-20'}`}>
 
               <div className="flex flex-col text-center space-y-6">

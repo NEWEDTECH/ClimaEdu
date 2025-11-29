@@ -14,7 +14,6 @@ export function ProtectedContent({ children }: ProtectedContentProps) {
   // Initialize theme once when ProtectedContent mounts
   useEffect(() => {
     initializeTheme();
-    console.log('✅ Theme initialized from ProtectedContent');
   }, [initializeTheme]);
   
   return <ProtectedRoute> {children} </ProtectedRoute>

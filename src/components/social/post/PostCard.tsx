@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SocialPost } from '@/context/zustand/useSocialStore';
-import { Button } from '@/components/button'
+import { Button } from '@/components/button';
+import { useUserInfo } from '@/hooks/social/useUserInfo';
 
 interface PostCardProps {
   post: SocialPost;
@@ -22,6 +23,12 @@ export function PostCard({
   showActions = true, 
   compact = false 
 }: PostCardProps) {
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
+  
+  // Fetch author info by authorId
+  const { userInfo: authorInfo } = useUserInfo(post.authorId);
+
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -32,6 +39,27 @@ export function PostCard({
     e.preventDefault();
     e.stopPropagation();
     onComment?.(post.id);
+  };
+
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const postUrl = `${window.location.origin}/social/post/${post.id}`;
+    
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      setShowCopiedMessage(true);
+      setTimeout(() => setShowCopiedMessage(false), 2000);
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+    }
   };
 
   // Truncate content for preview
@@ -65,7 +93,7 @@ export function PostCard({
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-medium text-gray-900 dark:text-white text-sm">
-                {post.author?.name || 'Usuário'}
+                {authorInfo?.name || 'Usuário'}
               </h3>
               {post.status === 'PUBLISHED' && (
                 <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -98,9 +126,10 @@ export function PostCard({
             {post.title}
           </h2>
           
-          <div className={`text-gray-600 dark:text-gray-300 line-clamp-3 ${compact ? 'text-sm' : 'text-base'}`}>
-            {getPreviewContent(post.content)}
-          </div>
+          <div 
+            className={`ql-editor text-gray-600 dark:text-gray-300 ${!isExpanded ? 'line-clamp-3' : ''} ${compact ? 'text-sm' : 'text-base'}`}
+            dangerouslySetInnerHTML={{ __html: isExpanded ? post.content : getPreviewContent(post.content)}}
+          />
         </div>
 
         {/* Post Actions */}
@@ -151,26 +180,40 @@ export function PostCard({
               </Button>
 
               {/* Share Button */}
-              <Button 
-                variant="ghost"
-                className="flex flex-col items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors w-auto px-3"
-              >
-                <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" 
-                  />
-                </svg>
-                <span className="text-center">Compartilhar</span>
-              </Button>
+              <div className="relative">
+                <Button 
+                  onClick={handleShare}
+                  variant="ghost"
+                  className="flex flex-col items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors w-auto px-3"
+                >
+                  <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" 
+                    />
+                  </svg>
+                  <span className="text-center">Compartilhar</span>
+                </Button>
+                
+                {/* Copied Message */}
+                {showCopiedMessage && (
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-lg whitespace-nowrap shadow-lg animate-fade-in">
+                    Link copiado!
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Read More */}
-            <div className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
-              Ler mais →
-            </div>
+            {/* Read More / Collapse Button */}
+            <Button
+              onClick={toggleExpand}
+              variant="ghost"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors w-auto px-3"
+            >
+              {isExpanded ? 'Recolher ↑' : 'Ler mais →'}
+            </Button>
           </div>
         )}
       </Link>
