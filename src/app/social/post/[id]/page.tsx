@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -96,6 +96,18 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   });
 
   const isAuthor = post.authorId === userId;
+  const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/social/post/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShowCopiedMessage(true);
+      setTimeout(() => setShowCopiedMessage(false), 2000);
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -196,12 +208,21 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                 </div>
 
                 {/* Share */}
-                <Button
-                  className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                >
-                  <Share2 className="w-5 h-5" />
-                  <span className="text-sm">Compartilhar</span>
-                </Button>
+                <div className="relative">
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer"
+                  >
+                    <Share2 className="w-5 h-5" />
+                    <span className="text-sm">Compartilhar</span>
+                  </button>
+
+                  {showCopiedMessage && (
+                    <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-lg whitespace-nowrap shadow-lg animate-fade-in">
+                      Link copiado!
+                    </div>
+                  )}
+                </div>
               </div>
             </article>
           </div>
