@@ -18,7 +18,6 @@ export function CommentForm({
   loading = false,
   placeholder = 'Adicione um comentário...',
   maxLength = 1000,
-  autoFocus = false,
   className = ''
 }: CommentFormProps) {
   const [content, setContent] = useState('');

@@ -10,8 +10,7 @@ import {
   XIcon, 
   ClockIcon, 
   CalendarIcon,
-  AlertCircleIcon,
-  SaveIcon
+  AlertCircleIcon
 } from 'lucide-react'
 
 const DAYS_OF_WEEK = [
