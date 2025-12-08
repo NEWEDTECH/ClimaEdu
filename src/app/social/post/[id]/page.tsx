@@ -19,7 +19,7 @@ import { CommentFormWithAvatar } from '@/components/social/comment/CommentForm';
 import { CommentList } from '@/components/social/comment/CommentList';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button';
-import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Loader2 } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Loader2, X } from 'lucide-react';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -394,9 +394,18 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
             {/* Comments Section */}
             {showComments && (
               <div className="mt-8 backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                  Comentários
-                </h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Comentários
+                  </h2>
+                  <button
+                    onClick={() => setShowComments(false)}
+                    className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    title="Fechar comentários"
+                  >
+                    <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
 
                 {/* Comment Form */}
                 <div className="mb-8">
