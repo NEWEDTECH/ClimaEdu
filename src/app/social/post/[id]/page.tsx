@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -8,9 +8,18 @@ import { ptBR } from 'date-fns/locale';
 import { usePost } from '@/hooks/social/usePosts';
 import { useProfile } from '@/context/zustand/useProfile';
 import { useUserInfo } from '@/hooks/social/useUserInfo';
+import { useSocialStore } from '@/context/zustand/useSocialStore';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import type { LikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/like-post.use-case';
+import type { UnlikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/unlike-post.use-case';
+import type { CreateCommentUseCase } from '@/_core/modules/social/core/use-cases/comment/create-comment.use-case';
+import type { ListPostCommentsUseCase } from '@/_core/modules/social/core/use-cases/comment/list-post-comments.use-case';
+import { CommentFormWithAvatar } from '@/components/social/comment/CommentForm';
+import { CommentList } from '@/components/social/comment/CommentList';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button';
-import { ArrowLeft, Heart, MessageCircle, Share2, Edit } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Loader2, X } from 'lucide-react';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -26,9 +35,96 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
   const { post, loading, error } = usePost(id, userId);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
+  const [isLiking, setIsLiking] = useState<boolean>(false);
+  const [showComments, setShowComments] = useState<boolean>(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState<boolean>(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState<boolean>(false);
+  const { togglePostLike } = useSocialStore();
+  const { infoInstitutions } = useProfile();
   
   // Fetch author info
   const { userInfo: authorInfo } = useUserInfo(post?.authorId);
+
+  // Load comments when toggled
+  useEffect(() => {
+    if (showComments && comments.length === 0) {
+      loadComments();
+    }
+  }, [showComments]);
+
+  const loadComments = async () => {
+    if (!id) return;
+    
+    try {
+      setCommentsLoading(true);
+      const listCommentsUseCase = container.get<ListPostCommentsUseCase>(
+        Register.social.useCase.ListPostCommentsUseCase
+      );
+
+      const result = await listCommentsUseCase.execute({ 
+        postId: id,
+        userId: userId || ''
+      });
+      
+      if (result.success && result.comments) {
+        // Transform and validate comments
+        const validComments = result.comments.map((comment: any) => ({
+          ...comment,
+          id: comment.id || `cmt_${Date.now()}`,
+          createdAt: comment.createdAt instanceof Date ? comment.createdAt : new Date(comment.createdAt),
+          updatedAt: comment.updatedAt instanceof Date ? comment.updatedAt : new Date(comment.updatedAt),
+          likesCount: comment.likesCount || 0,
+          isLikedByUser: comment.isLikedByUser || false,
+          replies: comment.replies || []
+        }));
+        setComments(validComments);
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const handleCreateComment = async (content: string) => {
+    if (!userId || !id) return;
+
+    try {
+      setIsSubmittingComment(true);
+      const institutionId = infoInstitutions?.institutions?.idInstitution;
+      
+      if (!institutionId) {
+        console.error('Institution ID not found');
+        return;
+      }
+
+      const createCommentUseCase = container.get<CreateCommentUseCase>(
+        Register.social.useCase.CreateCommentUseCase
+      );
+
+      const result = await createCommentUseCase.execute({
+        postId: id,
+        authorId: userId,
+        institutionId,
+        content
+      });
+
+      if (result.success) {
+        // Reload comments
+        await loadComments();
+        console.log('Comment created successfully');
+      } else {
+        console.error('Error creating comment:', result.error);
+        alert('Erro ao criar comentário: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      alert('Erro ao criar comentário');
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -97,6 +193,64 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   });
 
   const isAuthor = post.authorId === userId;
+
+  const handleLike = async () => {
+    if (!post || !userId || isLiking) return;
+    
+    setIsLiking(true);
+    
+    try {
+      const institutionId = infoInstitutions?.institutions?.idInstitution;
+      
+      if (!institutionId) {
+        console.error('Institution ID not found');
+        setIsLiking(false);
+        return;
+      }
+
+      if (post.isLikedByUser) {
+        // Unlike
+        console.log('Attempting to unlike post...');
+        const unlikePostUseCase = container.get<UnlikePostUseCase>(
+          Register.social.useCase.UnlikePostUseCase
+        );
+        
+        const result = await unlikePostUseCase.execute({
+          postId: id,
+          userId
+        });
+         
+        if (result.success) {
+          togglePostLike(id);
+        } else {
+          console.error('Error unliking post:', result.error);
+        }
+      } else {
+        // Like
+        console.log('Attempting to like post...');
+        const likePostUseCase = container.get<LikePostUseCase>(
+          Register.social.useCase.LikePostUseCase
+        );
+        
+        const result = await likePostUseCase.execute({
+          postId: id,
+          userId,
+          institutionId
+        });
+        
+        if (result.success) {
+          togglePostLike(id);
+          console.log('Post liked successfully');
+        } else {
+          console.error('Error liking post:', result.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   const handleShare = async () => {
     const url = `${window.location.origin}/social/post/${id}`;
@@ -187,7 +341,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
               {/* Content */}
               <div 
-                className="ql-editor text-gray-600 dark:text-gray-300 text-base prose dark:prose-invert max-w-none"
+                className="ql-editor prose prose-base dark:prose-invert max-w-none text-gray-600 dark:text-gray-300"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
@@ -195,16 +349,27 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
               <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-6">
                   {/* Like */}
-                  <div className="flex items-center gap-2">
-                    <Heart className={`w-5 h-5 ${post.isLikedByUser ? 'fill-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`} />
+                  <button
+                    onClick={handleLike}
+                    disabled={isLiking}
+                    className="flex items-center gap-2 hover:scale-110 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLiking ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-500 dark:text-gray-400" />
+                    ) : (
+                      <Heart className={`w-5 h-5 ${post.isLikedByUser ? 'fill-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400 hover:text-red-500'}`} />
+                    )}
                     <span className="text-sm text-gray-600 dark:text-gray-300">{post.likesCount}</span>
-                  </div>
+                  </button>
 
                   {/* Comments */}
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <button
+                    onClick={() => setShowComments(!showComments)}
+                    className="flex items-center gap-2 hover:scale-110 transition-transform cursor-pointer"
+                  >
+                    <MessageCircle className={`w-5 h-5 ${showComments ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400 hover:text-blue-500'}`} />
                     <span className="text-sm text-gray-600 dark:text-gray-300">{post.commentsCount}</span>
-                  </div>
+                  </button>
                 </div>
 
                 {/* Share */}
@@ -225,6 +390,41 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                 </div>
               </div>
             </article>
+
+            {/* Comments Section */}
+            {showComments && (
+              <div className="mt-8 backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-xl p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Comentários
+                  </h2>
+                  <button
+                    onClick={() => setShowComments(false)}
+                    className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    title="Fechar comentários"
+                  >
+                    <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+
+                {/* Comment Form */}
+                <div className="mb-8">
+                  <CommentFormWithAvatar
+                    onSubmit={handleCreateComment}
+                    loading={isSubmittingComment}
+                    currentUserName={infoUser?.name}
+                    placeholder="Adicione um comentário..."
+                  />
+                </div>
+
+                {/* Comments List */}
+                <CommentList
+                  comments={comments}
+                  loading={commentsLoading}
+                  currentUserId={userId}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

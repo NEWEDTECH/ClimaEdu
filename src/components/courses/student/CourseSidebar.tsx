@@ -5,6 +5,7 @@ import { Module } from '@/_core/modules/content/core/entities/Module';
 import { ChatDropdown } from '@/components/courses/chat';
 import { HeaderSideBar } from '@/components/courses/header';
 import { NotesComponent } from './NotesComponent';
+import { MessageSquare } from 'lucide-react';
 
 type CourseSidebarProps = {
   modules: Module[];
@@ -242,11 +243,7 @@ export function CourseSidebar({
                 title='Chat da Turma'
                 subTitle='Converse com seus colegas'
                 onClose={() => setSidebarMode('hidden')}
-                icon={
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z" />
-                  </svg>
-                }
+                icon={<MessageSquare className="w-5 h-5 text-white" />}
               />
               <div className="flex-1 overflow-hidden">
                 <ChatDropdown

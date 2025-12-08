@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Editor } from 'primereact/editor';
 import { Button } from '@/components/button'
 
 interface CommentFormProps {
@@ -26,57 +27,29 @@ export function CommentForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (content.trim() && !loading) {
-      onSubmit(content.trim());
+    const textContent = content.replace(/<[^>]*>/g, '').trim();
+    
+    if (textContent && !loading) {
+      onSubmit(content);
       setContent('');
       setIsFocused(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
-  const isValid = content.trim().length > 0;
-  const remainingChars = maxLength - content.length;
+  const textContent = content.replace(/<[^>]*>/g, '');
+  const isValid = textContent.trim().length > 0;
+  const remainingChars = maxLength - textContent.length;
 
   return (
     <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
       <div className="relative">
-        <textarea
+        <Editor
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onTextChange={(e) => setContent(e.htmlValue || '')}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => !content.trim() && setIsFocused(false)}
-          onKeyDown={handleKeyDown}
+          style={{ height: isFocused || content ? '200px' : '100px' }}
           placeholder={placeholder}
-          maxLength={maxLength}
-          autoFocus={autoFocus}
-          className={`
-            w-full px-4 py-3 border rounded-lg resize-none transition-all duration-200
-            focus:ring-2 focus:ring-blue-500 focus:border-transparent
-            bg-white dark:bg-gray-700 
-            border-gray-300 dark:border-gray-600
-            text-gray-900 dark:text-white 
-            placeholder-gray-500 dark:placeholder-gray-400
-            ${isFocused || content ? 'min-h-[100px]' : 'min-h-[60px]'}
-          `}
-          rows={isFocused || content ? 4 : 2}
         />
-        
-        {/* Character count */}
-        {(isFocused || content) && (
-          <div className="absolute bottom-2 right-2 text-xs text-gray-400 dark:text-gray-500">
-            {remainingChars < 100 && (
-              <span className={remainingChars < 0 ? 'text-red-500' : 'text-yellow-500'}>
-                {remainingChars}
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Actions */}
@@ -84,22 +57,20 @@ export function CommentForm({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {content.length}/{maxLength} caracteres
-            </span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              Ctrl+Enter para enviar
+              {textContent.length}/{maxLength} caracteres
             </span>
           </div>
           
           <div className="flex gap-2">
             {content && (
               <Button
+              variant='secondary'
                 type="button"
                 onClick={() => {
                   setContent('');
                   setIsFocused(false);
                 }}
-                className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                className="px-3 py-1.5 text-sm  transition-colors"
               >
                 Cancelar
               </Button>

@@ -25,7 +25,7 @@ export function PostCard({
 }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
-  
+
   // Fetch author info by authorId
   const { userInfo: authorInfo } = useUserInfo(post.authorId);
 
@@ -127,7 +127,7 @@ export function PostCard({
           </h2>
           
           <div 
-            className={`ql-editor text-gray-600 dark:text-gray-300 ${!isExpanded ? 'line-clamp-3' : ''} ${compact ? 'text-sm' : 'text-base'}`}
+            className={`ql-editor text-gray-600 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none ${!isExpanded ? 'line-clamp-3' : ''} ${compact ? 'text-sm' : 'text-base'}`}
             dangerouslySetInnerHTML={{ __html: isExpanded ? post.content : getPreviewContent(post.content)}}
           />
         </div>

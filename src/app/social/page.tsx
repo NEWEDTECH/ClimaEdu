@@ -5,6 +5,10 @@ import { usePosts } from '@/hooks/social/usePosts';
 import { useSocialStore } from '@/context/zustand/useSocialStore';
 import { PostCard, PostCardSkeleton } from '@/components/social/post/PostCard';
 import { useProfile } from '@/context/zustand/useProfile';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import type { LikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/like-post.use-case';
+import type { UnlikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/unlike-post.use-case';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/layout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
@@ -35,9 +39,57 @@ export default function SocialPage() {
 
   const { togglePostLike } = useSocialStore();
 
-  const handleLike = (postId: string) => {
-    togglePostLike(postId);
-    // In real implementation, this would also call the backend
+  const handleLike = async (postId: string) => {
+    if (!userId) return;
+    
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    try {
+      const institutionId = infoInstitutions?.institutions?.idInstitution;
+      
+      if (!institutionId) {
+        console.error('Institution ID not found');
+        return;
+      }
+
+      if (post.isLikedByUser) {
+        // Unlike
+        const unlikePostUseCase = container.get<UnlikePostUseCase>(
+          Register.social.useCase.UnlikePostUseCase
+        );
+        
+        const result = await unlikePostUseCase.execute({
+          postId,
+          userId
+        });
+        
+        if (result.success) {
+          togglePostLike(postId);
+        } else {
+          console.error('Error unliking post:', result.error);
+        }
+      } else {
+        // Like
+        const likePostUseCase = container.get<LikePostUseCase>(
+          Register.social.useCase.LikePostUseCase
+        );
+        
+        const result = await likePostUseCase.execute({
+          postId,
+          userId,
+          institutionId
+        });
+        
+        if (result.success) {
+          togglePostLike(postId);
+        } else {
+          console.error('Error liking post:', result.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
   };
 
   const handleComment = (postId: string) => {

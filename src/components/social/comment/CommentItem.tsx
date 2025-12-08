@@ -36,19 +36,44 @@ export function CommentItem({
 
   const isOwner = currentUserId === comment.authorId;
   const canReply = level < maxLevel;
-  const canEdit = isOwner && isWithin24Hours(comment.createdAt);
+  
+  // Safely check if within 24 hours
+  const checkIfWithin24Hours = () => {
+    try {
+      const date = comment.createdAt instanceof Date ? comment.createdAt : new Date(comment.createdAt);
+      if (isNaN(date.getTime())) {
+        return false;
+      }
+      const now = new Date();
+      const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+      return diffInHours <= 24;
+    } catch (error) {
+      return false;
+    }
+  };
+  
+  const canEdit = isOwner && checkIfWithin24Hours();
   const canDelete = isOwner;
 
-  const timeAgo = formatDistanceToNow(comment.createdAt, {
-    addSuffix: true,
-    locale: ptBR
-  });
+  // Safely handle date formatting
+  const getTimeAgo = () => {
+    try {
+      const date = comment.createdAt instanceof Date ? comment.createdAt : new Date(comment.createdAt);
+      if (isNaN(date.getTime())) {
+        return 'agora mesmo';
+      }
+      return formatDistanceToNow(date, {
+        addSuffix: true,
+        locale: ptBR
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error, comment);
+      return 'agora mesmo';
+    }
+  };
+  
+  const timeAgo = getTimeAgo();
 
-  function isWithin24Hours(date: Date): boolean {
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    return diffInHours <= 24;
-  }
 
   const handleLike = () => {
     onLike?.(comment.id);
@@ -94,7 +119,7 @@ export function CommentItem({
           <div className="flex-shrink-0">
             <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
               <span className="text-white font-medium text-xs">
-                {comment.author?.name?.charAt(0).toUpperCase() || comment.authorId.charAt(0).toUpperCase()}
+                {comment.author?.name?.charAt(0).toUpperCase() || comment.authorId?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
           </div>
@@ -109,11 +134,19 @@ export function CommentItem({
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {timeAgo}
               </span>
-              {comment.updatedAt > comment.createdAt && (
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  (editado)
-                </span>
-              )}
+              {(() => {
+                try {
+                  const updated = comment.updatedAt instanceof Date ? comment.updatedAt : new Date(comment.updatedAt);
+                  const created = comment.createdAt instanceof Date ? comment.createdAt : new Date(comment.createdAt);
+                  return updated > created && (
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      (editado)
+                    </span>
+                  );
+                } catch {
+                  return null;
+                }
+              })()}
             </div>
 
             {/* Comment Text */}
@@ -133,8 +166,9 @@ export function CommentItem({
                   </span>
                   <div className="flex gap-2">
                     <Button
+                      variant='secondary'
                       onClick={handleCancelEdit}
-                      className="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                      className="px-3 py-1 text-xs  transition-colors"
                     >
                       Cancelar
                     </Button>
@@ -149,9 +183,10 @@ export function CommentItem({
                 </div>
               </div>
             ) : (
-              <div className="text-gray-700 dark:text-gray-300 text-sm mb-3 whitespace-pre-wrap">
-                {comment.content}
-              </div>
+              <div 
+                className="text-gray-700 dark:text-gray-300 text-sm mb-3 prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: comment.content }}
+              />
             )}
 
             {/* Actions */}
@@ -167,7 +202,7 @@ export function CommentItem({
               {canReply && !isEditing && (
                 <Button
                   onClick={() => setIsReplying(!isReplying)}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="text-xs transition-colors"
                 >
                   Responder
                 </Button>
@@ -242,7 +277,7 @@ export function CommentItem({
         <div className="mt-4">
           {comment.replies.map((reply) => (
             <CommentItem
-              key={reply.id}
+              key={`reply-${reply.id}`}
               comment={reply}
               onLike={onLike}
               onReply={onReply}

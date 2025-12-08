@@ -102,10 +102,10 @@ export function AvailabilityManager({ tutorId }: AvailabilityManagerProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Gerenciar Disponibilidade
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 mt-1 dark:text-white">
             Configure seus horários disponíveis para tutoria
           </p>
         </div>
@@ -113,7 +113,6 @@ export function AvailabilityManager({ tutorId }: AvailabilityManagerProps) {
           onClick={() => handleAddTimeSlot()}
           className="flex items-center gap-2"
         >
-          <PlusIcon size={16} />
           Adicionar Horário
         </Button>
       </div>
