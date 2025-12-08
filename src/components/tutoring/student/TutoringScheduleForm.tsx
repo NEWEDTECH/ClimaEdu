@@ -129,8 +129,9 @@ export function TutoringScheduleForm({ studentId, onSchedule }: TutoringSchedule
     try {
       // Create the scheduled date with the selected time
       const [hours, minutes] = selectedTimeSlot.startTime.split(':').map(Number)
-      const scheduledDate = new Date(data.date)
-      scheduledDate.setHours(hours, minutes, 0, 0)
+      
+      const [year, month, day] = data.date.split('-').map(Number)
+      const scheduledDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
       
       await scheduleSession({
         studentId,

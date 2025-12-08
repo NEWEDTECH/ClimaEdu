@@ -218,10 +218,10 @@ export function TimeSlotEditor({
             </label>
             <select
               {...register('dayOfWeek', { valueAsNumber: true })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-black"
             >
               {DAYS_OF_WEEK.map((day) => (
-                <option key={day.value} value={day.value}>
+                <option key={day.value} value={day.value} className='dark:text-black'>
                   {day.label}
                 </option>
               ))}
@@ -240,10 +240,10 @@ export function TimeSlotEditor({
               </label>
               <select
                 {...register('startTime')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-black"
               >
                 {TIME_OPTIONS.map((time) => (
-                  <option key={time} value={time}>
+                  <option key={time} value={time} className='dark:text-black'>
                     {time}
                   </option>
                 ))}
@@ -260,10 +260,10 @@ export function TimeSlotEditor({
               </label>
               <select
                 {...register('endTime')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-black"
               >
                 {TIME_OPTIONS.map((time) => (
-                  <option key={time} value={time}>
+                  <option key={time} value={time} className='dark:text-black'>
                     {time}
                   </option>
                 ))}
@@ -303,7 +303,7 @@ export function TimeSlotEditor({
               type="date"
               {...register('recurrenceEndDate')}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-black"
             />
             <p className="text-xs text-gray-500 mt-1">
               Se não especificado, o horário será recorrente indefinidamente
@@ -317,11 +317,6 @@ export function TimeSlotEditor({
               disabled={saving || !!conflictWarning}
               className="flex-1 flex items-center justify-center gap-2"
             >
-              {saving ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              ) : (
-                <SaveIcon size={16} />
-              )}
               {saving ? 'Salvando...' : 'Salvar Horário'}
             </Button>
             
