@@ -183,9 +183,10 @@ export function CommentItem({
                 </div>
               </div>
             ) : (
-              <div className="text-gray-700 dark:text-gray-300 text-sm mb-3 whitespace-pre-wrap">
-                {comment.content}
-              </div>
+              <div 
+                className="text-gray-700 dark:text-gray-300 text-sm mb-3 prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: comment.content }}
+              />
             )}
 
             {/* Actions */}
