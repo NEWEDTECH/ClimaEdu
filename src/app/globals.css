@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Quill Editor Styles */
+@import "quill/dist/quill.core.css";
+@import "quill/dist/quill.snow.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

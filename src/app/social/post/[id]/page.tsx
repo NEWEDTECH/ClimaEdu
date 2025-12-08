@@ -341,7 +341,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
               {/* Content */}
               <div 
-                className="ql-editor text-gray-600 dark:text-gray-300 text-base prose dark:prose-invert max-w-none"
+                className="ql-editor prose prose-base dark:prose-invert max-w-none text-gray-600 dark:text-gray-300"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
