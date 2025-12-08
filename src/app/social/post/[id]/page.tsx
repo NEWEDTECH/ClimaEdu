@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -13,6 +13,10 @@ import { container } from '@/_core/shared/container/container';
 import { Register } from '@/_core/shared/container/symbols';
 import type { LikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/like-post.use-case';
 import type { UnlikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/unlike-post.use-case';
+import type { CreateCommentUseCase } from '@/_core/modules/social/core/use-cases/comment/create-comment.use-case';
+import type { ListPostCommentsUseCase } from '@/_core/modules/social/core/use-cases/comment/list-post-comments.use-case';
+import { CommentFormWithAvatar } from '@/components/social/comment/CommentForm';
+import { CommentList } from '@/components/social/comment/CommentList';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button';
 import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Loader2 } from 'lucide-react';
@@ -32,11 +36,95 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const { post, loading, error } = usePost(id, userId);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
   const [isLiking, setIsLiking] = useState<boolean>(false);
+  const [showComments, setShowComments] = useState<boolean>(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState<boolean>(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState<boolean>(false);
   const { togglePostLike } = useSocialStore();
   const { infoInstitutions } = useProfile();
   
   // Fetch author info
   const { userInfo: authorInfo } = useUserInfo(post?.authorId);
+
+  // Load comments when toggled
+  useEffect(() => {
+    if (showComments && comments.length === 0) {
+      loadComments();
+    }
+  }, [showComments]);
+
+  const loadComments = async () => {
+    if (!id) return;
+    
+    try {
+      setCommentsLoading(true);
+      const listCommentsUseCase = container.get<ListPostCommentsUseCase>(
+        Register.social.useCase.ListPostCommentsUseCase
+      );
+
+      const result = await listCommentsUseCase.execute({ 
+        postId: id,
+        userId: userId || ''
+      });
+      
+      if (result.success && result.comments) {
+        // Transform and validate comments
+        const validComments = result.comments.map((comment: any) => ({
+          ...comment,
+          id: comment.id || `cmt_${Date.now()}`,
+          createdAt: comment.createdAt instanceof Date ? comment.createdAt : new Date(comment.createdAt),
+          updatedAt: comment.updatedAt instanceof Date ? comment.updatedAt : new Date(comment.updatedAt),
+          likesCount: comment.likesCount || 0,
+          isLikedByUser: comment.isLikedByUser || false,
+          replies: comment.replies || []
+        }));
+        setComments(validComments);
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const handleCreateComment = async (content: string) => {
+    if (!userId || !id) return;
+
+    try {
+      setIsSubmittingComment(true);
+      const institutionId = infoInstitutions?.institutions?.idInstitution;
+      
+      if (!institutionId) {
+        console.error('Institution ID not found');
+        return;
+      }
+
+      const createCommentUseCase = container.get<CreateCommentUseCase>(
+        Register.social.useCase.CreateCommentUseCase
+      );
+
+      const result = await createCommentUseCase.execute({
+        postId: id,
+        authorId: userId,
+        institutionId,
+        content
+      });
+
+      if (result.success) {
+        // Reload comments
+        await loadComments();
+        console.log('Comment created successfully');
+      } else {
+        console.error('Error creating comment:', result.error);
+        alert('Erro ao criar comentário: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      alert('Erro ao criar comentário');
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -275,10 +363,13 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                   </button>
 
                   {/* Comments */}
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <button
+                    onClick={() => setShowComments(!showComments)}
+                    className="flex items-center gap-2 hover:scale-110 transition-transform cursor-pointer"
+                  >
+                    <MessageCircle className={`w-5 h-5 ${showComments ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400 hover:text-blue-500'}`} />
                     <span className="text-sm text-gray-600 dark:text-gray-300">{post.commentsCount}</span>
-                  </div>
+                  </button>
                 </div>
 
                 {/* Share */}
@@ -299,6 +390,32 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                 </div>
               </div>
             </article>
+
+            {/* Comments Section */}
+            {showComments && (
+              <div className="mt-8 backdrop-blur-sm rounded-xl dark:bg-white/5 dark:border dark:border-white/10 bg-white/90 border border-gray-200/50 shadow-xl p-8">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                  Comentários
+                </h2>
+
+                {/* Comment Form */}
+                <div className="mb-8">
+                  <CommentFormWithAvatar
+                    onSubmit={handleCreateComment}
+                    loading={isSubmittingComment}
+                    currentUserName={infoUser?.name}
+                    placeholder="Adicione um comentário..."
+                  />
+                </div>
+
+                {/* Comments List */}
+                <CommentList
+                  comments={comments}
+                  loading={commentsLoading}
+                  currentUserId={userId}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
