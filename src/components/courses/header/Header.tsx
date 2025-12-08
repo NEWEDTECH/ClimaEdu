@@ -30,9 +30,9 @@ export function HeaderSideBar({ title, subTitle, icon, onClose }: HeaderSidebar)
             {onClose && (
                 <Button
                     onClick={onClose}
-                    className="text-gray-400 bg-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 rounded-full hover:bg-white/20 dark:hover:bg-black/20"
+                    className="text-gray-400 bg-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 rounded-full hover:bg-black dark:hover:bg-black/20"
                 >
-                    <X className="w-5 h-5" />
+                    <X className="w-5 h-5 text-white" />
                 </Button>
             )}
         </div>

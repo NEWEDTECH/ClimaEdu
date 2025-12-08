@@ -143,9 +143,6 @@ export function AvailableTimeSlotsList({
             {/* Tutor Info */}
             <div className="flex items-center gap-2 mb-3">
               <UserIcon size={16} className="text-gray-600" />
-              <span className="font-medium text-gray-900">
-                Tutor ID: {slot.tutorId}
-              </span>
               <span className="text-sm text-gray-500">
                 • {slot.timeSlot.getDayName()}
               </span>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { CalendarIcon } from 'lucide-react'
 
 interface DatePickerProps {
@@ -9,6 +10,8 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ selectedDate, onDateChange, error }: DatePickerProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0]
   
@@ -31,10 +34,20 @@ export function DatePicker({ selectedDate, onDateChange, error }: DatePickerProp
     onDateChange(dateString)
   }
 
+  const handleContainerClick = () => {
+    if (inputRef.current) {
+      inputRef.current.showPicker?.()
+    }
+  }
+
   return (
     <div className="space-y-1">
-      <div className="relative">
+      <div 
+        className="relative cursor-pointer"
+        onClick={handleContainerClick}
+      >
         <input
+          ref={inputRef}
           type="date"
           value={selectedDate}
           onChange={(e) => handleDateChange(e.target.value)}
@@ -43,7 +56,7 @@ export function DatePicker({ selectedDate, onDateChange, error }: DatePickerProp
           className={`
             flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm 
             transition-colors focus-visible:outline-none focus-visible:ring-2 
-            focus-visible:ring-ring focus-visible:ring-offset-2
+            focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer
             ${error ? 'border-red-500' : 'border-input'}
           `}
         />
