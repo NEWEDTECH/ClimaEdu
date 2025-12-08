@@ -8,9 +8,14 @@ import { ptBR } from 'date-fns/locale';
 import { usePost } from '@/hooks/social/usePosts';
 import { useProfile } from '@/context/zustand/useProfile';
 import { useUserInfo } from '@/hooks/social/useUserInfo';
+import { useSocialStore } from '@/context/zustand/useSocialStore';
+import { container } from '@/_core/shared/container/container';
+import { Register } from '@/_core/shared/container/symbols';
+import type { LikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/like-post.use-case';
+import type { UnlikePostUseCase } from '@/_core/modules/social/core/use-cases/post-like/unlike-post.use-case';
 import { DashboardLayout } from '@/components/layout';
 import { Button } from '@/components/button';
-import { ArrowLeft, Heart, MessageCircle, Share2, Edit } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share2, Edit, Loader2 } from 'lucide-react';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -26,6 +31,9 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
   const { post, loading, error } = usePost(id, userId);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
+  const [isLiking, setIsLiking] = useState<boolean>(false);
+  const { togglePostLike } = useSocialStore();
+  const { infoInstitutions } = useProfile();
   
   // Fetch author info
   const { userInfo: authorInfo } = useUserInfo(post?.authorId);
@@ -97,6 +105,64 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   });
 
   const isAuthor = post.authorId === userId;
+
+  const handleLike = async () => {
+    if (!post || !userId || isLiking) return;
+    
+    setIsLiking(true);
+    
+    try {
+      const institutionId = infoInstitutions?.institutions?.idInstitution;
+      
+      if (!institutionId) {
+        console.error('Institution ID not found');
+        setIsLiking(false);
+        return;
+      }
+
+      if (post.isLikedByUser) {
+        // Unlike
+        console.log('Attempting to unlike post...');
+        const unlikePostUseCase = container.get<UnlikePostUseCase>(
+          Register.social.useCase.UnlikePostUseCase
+        );
+        
+        const result = await unlikePostUseCase.execute({
+          postId: id,
+          userId
+        });
+         
+        if (result.success) {
+          togglePostLike(id);
+        } else {
+          console.error('Error unliking post:', result.error);
+        }
+      } else {
+        // Like
+        console.log('Attempting to like post...');
+        const likePostUseCase = container.get<LikePostUseCase>(
+          Register.social.useCase.LikePostUseCase
+        );
+        
+        const result = await likePostUseCase.execute({
+          postId: id,
+          userId,
+          institutionId
+        });
+        
+        if (result.success) {
+          togglePostLike(id);
+          console.log('Post liked successfully');
+        } else {
+          console.error('Error liking post:', result.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   const handleShare = async () => {
     const url = `${window.location.origin}/social/post/${id}`;
@@ -195,10 +261,18 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
               <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-6">
                   {/* Like */}
-                  <div className="flex items-center gap-2">
-                    <Heart className={`w-5 h-5 ${post.isLikedByUser ? 'fill-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400'}`} />
+                  <button
+                    onClick={handleLike}
+                    disabled={isLiking}
+                    className="flex items-center gap-2 hover:scale-110 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLiking ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-500 dark:text-gray-400" />
+                    ) : (
+                      <Heart className={`w-5 h-5 ${post.isLikedByUser ? 'fill-red-500 text-red-500' : 'text-gray-500 dark:text-gray-400 hover:text-red-500'}`} />
+                    )}
                     <span className="text-sm text-gray-600 dark:text-gray-300">{post.likesCount}</span>
-                  </div>
+                  </button>
 
                   {/* Comments */}
                   <div className="flex items-center gap-2">
