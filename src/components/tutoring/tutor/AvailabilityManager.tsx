@@ -9,7 +9,6 @@ import { TimeSlotEditor } from './TimeSlotEditor'
 import { 
   CalendarIcon, 
   ClockIcon, 
-  PlusIcon,
   AlertCircleIcon,
   CheckCircleIcon
 } from 'lucide-react'
