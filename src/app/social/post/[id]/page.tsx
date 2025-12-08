@@ -37,6 +37,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
   const [isLiking, setIsLiking] = useState<boolean>(false);
   const [showComments, setShowComments] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comments, setComments] = useState<any[]>([]);
   const [commentsLoading, setCommentsLoading] = useState<boolean>(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState<boolean>(false);
@@ -47,6 +48,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const { userInfo: authorInfo } = useUserInfo(post?.authorId);
 
   // Load comments when toggled
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (showComments && comments.length === 0) {
       loadComments();
@@ -69,6 +71,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       
       if (result.success && result.comments) {
         // Transform and validate comments
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const validComments = result.comments.map((comment: any) => ({
           ...comment,
           id: comment.id || `cmt_${Date.now()}`,

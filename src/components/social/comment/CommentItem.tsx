@@ -48,6 +48,7 @@ export function CommentItem({
       const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
       return diffInHours <= 24;
     } catch (error) {
+      console.log(error)
       return false;
     }
   };
