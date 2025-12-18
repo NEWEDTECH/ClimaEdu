@@ -11,6 +11,7 @@ import { UserRepository } from '@/_core/modules/user/infrastructure/repositories
 import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/get-user-associations/get-user-associations.use-case';
 import { RecordDailyAccessUseCase } from '@/_core/modules/user/core/use-cases/record-daily-access/record-daily-access.use-case';
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
+import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository';
 import { LoadingSpinner } from '@/components/loader';
 import { Button } from '@/components/button'
 
@@ -44,7 +45,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
       // console.log('✅ AuthGuard: User found:', user.name);
 
-      let currentInstitutionId = null;
+      let currentInstitutionId: string | null = null;
+      let institutionsRoleData: any[] = [];
 
       if (user.role !== 'SUPER_ADMIN') {
         // Passo 2: Listar todas as instituições que o usuário pertence
@@ -56,28 +58,53 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           userId: user.id
         });
 
-        const institutionsRoleData = userAssociations.map(association => ({
-          idInstitution: association.id,
-          nameInstitution: association.name,
-          roleInstitution: null,
-          primary_color: association.settings.primaryColor!,
-          secondary_color: association.settings.secondaryColor!,
-        }));
+        // Buscar roles do usuário em cada instituição
+        const userInstitutionRepository = container.get<UserInstitutionRepository>(
+          Register.institution.repository.UserInstitutionRepository
+        );
+        
+        const userInstitutionAssociations = await userInstitutionRepository.findByUserId(user.id);
 
-        // console.log('✅ AuthGuard: User associations found:', institutionsRoleData.length);
+        console.log('🔍 AuthGuard: userInstitutionAssociations:', userInstitutionAssociations);
+
+        // Criar um map único de instituição+role (suporta múltiplas roles na mesma instituição)
+        const institutionsRoleData = userInstitutionAssociations.map(assoc => {
+          const association = userAssociations.find(ua => ua.id === assoc.institutionId);
+          
+          if (!association) return null;
+          
+          return {
+            idInstitution: association.id,
+            nameInstitution: association.name,
+            roleInstitution: assoc.userRole,
+            primary_color: association.settings.primaryColor!,
+            secondary_color: association.settings.secondaryColor!,
+          };
+        }).filter((item): item is NonNullable<typeof item> => item !== null);
+
+        console.log('✅ AuthGuard: institutionsRoleData final:', institutionsRoleData);
 
         // Salvar no context/zustand: infoInstitutionsRole
         setInfoInstitutionsRole(institutionsRoleData);
 
-        // Passo 3: Buscar no localStorage o último ID da instituição que está salvo
-        // currentInstitutionId = getLastInstitutionId();
+        // Passo 3: Buscar no localStorage o último ID da instituição e role salvos
+        const savedInstitutionId = localStorage.getItem('last-institution-id');
+        const savedRole = localStorage.getItem('last-selected-role');
 
-        // Se não tiver nenhum, pegar qualquer ID de instituição que foi obtido
+        // Se tiver uma instituição E role salvos, tentar usar essa combinação específica
+        if (savedInstitutionId && savedRole) {
+          const matchingAssociation = institutionsRoleData.find(
+            inst => inst.idInstitution === savedInstitutionId && inst.roleInstitution === savedRole
+          );
+          if (matchingAssociation) {
+            currentInstitutionId = savedInstitutionId;
+          }
+        }
+        
+        // Se não encontrou, usar a primeira disponível
         if (!currentInstitutionId && institutionsRoleData.length > 0) {
           currentInstitutionId = institutionsRoleData[0].idInstitution;
         }
-
-        currentInstitutionId = institutionsRoleData[0].idInstitution;
 
         if (!currentInstitutionId) {
           throw new Error('Nenhuma instituição encontrada para o usuário');
@@ -96,21 +123,47 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
         // console.log('✅ AuthGuard: Institution found:', institution.name);
 
-        // Passo 5: Salvar os dados da instituição
+        // Buscar a role correta para esta instituição
+        const currentInstitutionRole = institutionsRoleData.find(
+          inst => inst.idInstitution === currentInstitutionId
+        );
+
+        // Passo 5: Salvar os dados da instituição com a role correta
         setInfoInstitutions({
           institutions: {
             idInstitution: institution.id,
             nameInstitution: institution.name,
             urlImage: institution.settings.logoUrl || '',
-            roleInstitution: user.role,
+            roleInstitution: currentInstitutionRole?.roleInstitution || user.role,
             primary_color: institution.settings.primaryColor!,
             secondary_color: institution.settings.secondaryColor!
           }
         });
       }
 
-      // Passo 6: Salvar os dados do usuário
-      const currentRole = user.role;
+      // Passo 6: Salvar os dados do usuário com a role correta da instituição selecionada
+      let currentRole = user.role;
+      
+      if (user.role !== 'SUPER_ADMIN') {
+        const savedRole = localStorage.getItem('last-selected-role');
+        
+        // Tentar usar a role salva se existir e for válida para esta instituição
+        if (savedRole && currentInstitutionId) {
+          const matchingAssociation = institutionsRoleData.find(
+            inst => inst.idInstitution === currentInstitutionId && inst.roleInstitution === savedRole
+          );
+          currentRole = matchingAssociation?.roleInstitution || institutionsRoleData.find(
+            inst => inst.idInstitution === currentInstitutionId
+          )?.roleInstitution || user.role;
+        } else {
+          // Se não tem role salva, usar a primeira role desta instituição
+          const currentInstitutionRole = institutionsRoleData.find(
+            inst => inst.idInstitution === currentInstitutionId
+          );
+          currentRole = currentInstitutionRole?.roleInstitution || user.role;
+        }
+      }
+      
       setInfoUser({
         ...infoUser,
         id: user.id,
