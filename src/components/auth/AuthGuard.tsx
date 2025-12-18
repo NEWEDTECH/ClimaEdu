@@ -13,6 +13,7 @@ import { GetUserAssociationsUseCase } from '@/_core/modules/user/core/use-cases/
 import { RecordDailyAccessUseCase } from '@/_core/modules/user/core/use-cases/record-daily-access/record-daily-access.use-case';
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository';
+import { UserRole } from '@/_core/modules/user/core/entities/User';
 import { LoadingSpinner } from '@/components/loader';
 import { Button } from '@/components/button'
 
@@ -102,7 +103,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // console.log('✅ AuthGuard: User found:', user.name);
 
       let currentInstitutionId: string | null = null;
-      let institutionsRoleData: any[] = [];
+      let institutionsRoleData: Array<{
+        idInstitution: string;
+        nameInstitution: string;
+        roleInstitution: UserRole;
+        primary_color: string;
+        secondary_color: string;
+      }> = [];
 
       if (user.role !== 'SUPER_ADMIN') {
         // Passo 2: Listar todas as instituições que o usuário pertence
@@ -124,7 +131,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         console.log('🔍 AuthGuard: userInstitutionAssociations:', userInstitutionAssociations);
 
         // Criar um map único de instituição+role (suporta múltiplas roles na mesma instituição)
-        const institutionsRoleData = userInstitutionAssociations.map(assoc => {
+        institutionsRoleData = userInstitutionAssociations.map(assoc => {
           const association = userAssociations.find(ua => ua.id === assoc.institutionId);
           
           if (!association) return null;
@@ -132,7 +139,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           return {
             idInstitution: association.id,
             nameInstitution: association.name,
-            roleInstitution: assoc.userRole,
+            roleInstitution: assoc.userRole as UserRole,
             primary_color: association.settings.primaryColor!,
             secondary_color: association.settings.secondaryColor!,
           };
@@ -190,7 +197,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             idInstitution: institution.id,
             nameInstitution: institution.name,
             urlImage: institution.settings.logoUrl || '',
-            roleInstitution: currentInstitutionRole?.roleInstitution || user.role,
+            roleInstitution: (currentInstitutionRole?.roleInstitution || user.role) as UserRole,
             primary_color: institution.settings.primaryColor!,
             secondary_color: institution.settings.secondaryColor!
           }
@@ -210,20 +217,20 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           );
           
           if (matchingAssociation) {
-            currentRole = matchingAssociation.roleInstitution;
+            currentRole = matchingAssociation.roleInstitution as UserRole;
           } else {
             // Se não encontrou a role salva, buscar qualquer role desta instituição
             const anyRoleForInstitution = institutionsRoleData.find(
               inst => inst.idInstitution === currentInstitutionId
             );
-            currentRole = anyRoleForInstitution?.roleInstitution || user.role;
+            currentRole = (anyRoleForInstitution?.roleInstitution || user.role) as UserRole;
           }
         } else {
           // Se não tem role salva, usar a primeira role desta instituição
           const currentInstitutionRole = institutionsRoleData.find(
             inst => inst.idInstitution === currentInstitutionId
           );
-          currentRole = currentInstitutionRole?.roleInstitution || user.role;
+          currentRole = (currentInstitutionRole?.roleInstitution || user.role) as UserRole;
         }
       }
       
