@@ -2,6 +2,7 @@
 
 import { auth } from "@/_core/shared/firebase/firebase-client";
 import { useEffect, useState, useCallback } from "react";
+import { useRouter, usePathname } from 'next/navigation';
 import { useProfile } from '@/context/zustand/useProfile';
 import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 import { container } from '@/_core/shared/container';
@@ -15,7 +16,42 @@ import { UserInstitutionRepository } from '@/_core/modules/institution/infrastru
 import { LoadingSpinner } from '@/components/loader';
 import { Button } from '@/components/button'
 
+// Definir mapeamento de rotas e roles permitidas
+const ROUTE_PERMISSIONS: Record<string, string[]> = {
+  // Rotas de estudante
+  '/student': ['STUDENT'],
+  '/student/activities': ['STUDENT'],
+  '/student/tutoring': ['STUDENT'],
+  '/student/certificates': ['STUDENT'],
+  '/student/achievements': ['STUDENT'],
+  '/student/settings': ['STUDENT'],
+  
+  // Rotas de tutor
+  '/tutor': ['TUTOR', 'CONTENT_MANAGER'],
+  '/tutor/follow-up': ['TUTOR', 'CONTENT_MANAGER'],
+  '/tutor/reports': ['TUTOR', 'CONTENT_MANAGER', 'LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/tutor/courses': ['TUTOR', 'CONTENT_MANAGER'],
+  '/tutor/tutoring': ['TUTOR', 'CONTENT_MANAGER'],
+  
+  // Rotas de admin
+  '/admin': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/institution': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/achievements': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/podcast': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/student': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/turmas': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/tutor': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/gestor': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/trails': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/courses': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/allusers': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/create-user': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/settings': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+};
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(null);
@@ -28,6 +64,26 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   } = useProfile();
   
   const { /*getLastInstitutionId,*/ setLastInstitutionId } = useInstitutionStorage();
+
+  // Função para verificar se usuário tem acesso à rota atual
+  const checkRouteAccess = useCallback((currentPath: string, userRole: string | null): boolean => {
+    if (!userRole) return true; // Se não tem role ainda, permite (está inicializando)
+    
+    // Rotas públicas ou que todos podem acessar
+    const publicRoutes = ['/', '/login', '/social', '/podcast'];
+    if (publicRoutes.includes(currentPath)) return true;
+    
+    // Verificar se a rota atual está no mapeamento
+    for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
+      // Verificar se a rota atual começa com a rota definida
+      if (currentPath.startsWith(route)) {
+        return allowedRoles.includes(userRole);
+      }
+    }
+    
+    // Se a rota não está mapeada, permite acesso
+    return true;
+  }, []);
 
   const initializeUserData = useCallback(async (userId: string) => {
     try {
@@ -263,6 +319,35 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     return () => unsubscribe();
   }, [clearUserData, initializeUserData, isInitialized, isLoading]);
+
+  // Verificar acesso à rota atual quando usuário estiver inicializado
+  useEffect(() => {
+    if (isInitialized && infoUser.currentRole && pathname) {
+      const hasAccess = checkRouteAccess(pathname, infoUser.currentRole);
+      
+      if (!hasAccess) {
+        console.warn(`⛔ AuthGuard: User with role "${infoUser.currentRole}" attempted to access restricted route: ${pathname}`);
+        
+        // Redirecionar para a página inicial apropriada baseado na role
+        switch (infoUser.currentRole) {
+          case 'STUDENT':
+            router.push('/');
+            break;
+          case 'TUTOR':
+          case 'CONTENT_MANAGER':
+            router.push('/');
+            break;
+          case 'LOCAL_ADMIN':
+          case 'SYSTEM_ADMIN':
+          case 'SUPER_ADMIN':
+            router.push('/');
+            break;
+          default:
+            router.push('/');
+        }
+      }
+    }
+  }, [isInitialized, infoUser.currentRole, pathname, checkRouteAccess, router]);
 
   // Mostrar loading durante a inicialização
   if (isLoading) {
