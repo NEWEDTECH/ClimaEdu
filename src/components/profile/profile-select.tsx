@@ -116,7 +116,7 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
       localStorage.setItem('last-selected-role', roleString);
       
       // Force page reload to ensure all components refresh with the new role
-      //window.location.reload();
+      window.location.reload();
     }
   };
 

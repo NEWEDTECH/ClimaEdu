@@ -14,7 +14,7 @@ import { UserInstitution } from '@/_core/modules/institution/core/entities/UserI
 import { SelectComponent } from '@/components/select';
 import { Button } from '@/components/button';
 import { LoadingSpinner } from '@/components/loader';
-import { FiTrash2, FiPlus, FiArrowLeft, FiUser, FiMail, FiShield, FiCalendar, FiCheck } from 'react-icons/fi';
+import { FiTrash2, FiPlus, FiUser, FiMail, FiShield, FiCheck } from 'react-icons/fi';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 
@@ -347,14 +347,10 @@ export default function EditUserPage() {
             <SelectComponent
               value={newRoleInstitution}
               onChange={setNewRoleInstitution}
-              options={[
-                { value: '', label: 'Selecione uma instituição' },
-                ...institutions.map(inst => ({
-                  value: inst.id,
-                  label: inst.name
-                }))
-              ]}
-              placeholder="Selecione uma instituição"
+              options={institutions.map(inst => ({
+                value: inst.id,
+                label: inst.name
+              }))}
             />
           </div>
 
@@ -366,14 +362,10 @@ export default function EditUserPage() {
             <SelectComponent
               value={newRoleType}
               onChange={(value) => setNewRoleType(value as UserRole)}
-              options={[
-                { value: '', label: 'Selecione uma role' },
-                ...availableRoles.map(role => ({
-                  value: role,
-                  label: getRoleLabel(role)
-                }))
-              ]}
-              placeholder="Selecione uma role"
+              options={availableRoles.map(role => ({
+                value: role,
+                label: getRoleLabel(role)
+              }))}
             />
           </div>
         </div>

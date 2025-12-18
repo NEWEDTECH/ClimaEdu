@@ -208,9 +208,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           const matchingAssociation = institutionsRoleData.find(
             inst => inst.idInstitution === currentInstitutionId && inst.roleInstitution === savedRole
           );
-          currentRole = matchingAssociation?.roleInstitution || institutionsRoleData.find(
-            inst => inst.idInstitution === currentInstitutionId
-          )?.roleInstitution || user.role;
+          
+          if (matchingAssociation) {
+            currentRole = matchingAssociation.roleInstitution;
+          } else {
+            // Se não encontrou a role salva, buscar qualquer role desta instituição
+            const anyRoleForInstitution = institutionsRoleData.find(
+              inst => inst.idInstitution === currentInstitutionId
+            );
+            currentRole = anyRoleForInstitution?.roleInstitution || user.role;
+          }
         } else {
           // Se não tem role salva, usar a primeira role desta instituição
           const currentInstitutionRole = institutionsRoleData.find(
