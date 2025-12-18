@@ -14,7 +14,7 @@ import { Dropdown, DropdownMenuContent, DropdownMenuItem } from '@/components/ui
 import { ProfileDropdownOptions } from './index'
 import { ButtonLogout } from '@/components/logout'
 import { useProfile } from '@/context/zustand/useProfile';
-//import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
+import { useInstitutionStorage } from '@/context/zustand/useInstitutionStorage';
 
 export interface ProfileSelectProps {
   avatarUrl?: string;
@@ -65,6 +65,7 @@ const adminItems: DropdownItem[] = [
   { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
   { label: 'Trilhas', href: '/admin/trails', icon: <FiHome /> },
   { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
+  { label: 'Usuários', href: '/admin/allusers', icon: <FiUserPlus /> },
   { label: 'Criar Usuário', href: '/admin/create-user', icon: <FiUserPlus /> },
   { label: 'Configurações', href: '/admin/settings', icon: <FiSettings /> },
 ];
@@ -78,15 +79,46 @@ const sections: DropdownSection[] = [
 
 
 export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
-  const { infoUser } = useProfile();
-  //const { infoUser, updateCurrentInstitution } = useProfile();
-  //const { setLastInstitutionId } = useInstitutionStorage();
-  //const isAdmin = infoUser.currentRole === 'LOCAL_ADMIN' || infoUser.currentRole === 'SYSTEM_ADMIN' || infoUser.currentRole === 'SUPER_ADMIN';
+  const { infoUser, infoInstitutionsRole, setInfoUser, setInfoInstitutions } = useProfile();
+  const { setLastInstitutionId } = useInstitutionStorage();
 
-  //const handleInstitutionChange = (institutionId: string) => {
-  //  updateCurrentInstitution(institutionId);
-  //  setLastInstitutionId(institutionId);
-  //};
+  const handleInstitutionChange = (value: string) => {
+    // Value format: "institutionId|role"
+    const [institutionId, roleString] = value.split('|');
+    
+    // Find the selected institution-role association
+    const selectedAssociation = infoInstitutionsRole.find(
+      inst => inst.idInstitution === institutionId && inst.roleInstitution === roleString
+    );
+
+    if (selectedAssociation) {
+      // Update the current institution and role in the profile store
+      setInfoUser({
+        ...infoUser,
+        currentIdInstitution: institutionId,
+        currentRole: selectedAssociation.roleInstitution
+      });
+
+      // Update the current institution data
+      setInfoInstitutions({
+        institutions: {
+          idInstitution: selectedAssociation.idInstitution,
+          nameInstitution: selectedAssociation.nameInstitution,
+          urlImage: selectedAssociation.urlImage,
+          roleInstitution: selectedAssociation.roleInstitution,
+          primary_color: selectedAssociation.primary_color,
+          secondary_color: selectedAssociation.secondary_color
+        }
+      });
+
+      // Save both institution and role to localStorage
+      setLastInstitutionId(institutionId);
+      localStorage.setItem('last-selected-role', roleString);
+      
+      // Force page reload to ensure all components refresh with the new role
+      window.location.reload();
+    }
+  };
 
   // Helper function to check if user has access to a section
   const hasAccessToSection = (sectionRole: UserRole | UserRole[]) => {
@@ -98,22 +130,24 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
 
 
   // Função para obter o texto da role em português
-  //const getRoleText = (role: 'STUDENT' | 'TUTOR' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'CONTENT_MANAGER' | 'SUPER_ADMIN' | null) => {
-  //  switch (role) {
-  //    case 'LOCAL_ADMIN':
-  //    case 'SYSTEM_ADMIN':
-  //    case 'SUPER_ADMIN':
-  //      return 'Admin';
-  //    case 'TUTOR':
-  //      return 'Tutor';
-  //    case 'CONTENT_MANAGER':
-  //      return 'Gestor de Conteúdo';
-  //    case 'STUDENT':
-  //      return 'Estudante';
-  //    default:
-  //      return '';
-  //  }
-  //};
+  const getRoleText = (role: 'STUDENT' | 'TUTOR' | 'LOCAL_ADMIN' | 'SYSTEM_ADMIN' | 'CONTENT_MANAGER' | 'SUPER_ADMIN' | null) => {
+    switch (role) {
+      case 'LOCAL_ADMIN':
+        return 'Admin Local';
+      case 'SYSTEM_ADMIN':
+        return 'Admin do Sistema';
+      case 'SUPER_ADMIN':
+        return 'Super Admin';
+      case 'TUTOR':
+        return 'Tutor';
+      case 'CONTENT_MANAGER':
+        return 'Gestor de Conteúdo';
+      case 'STUDENT':
+        return 'Estudante';
+      default:
+        return '';
+    }
+  };
 
   // Get current institution name
   //const getCurrentInstitutionName = () => {
@@ -151,6 +185,29 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
           "w-56"
         )}
       >
+        {/* Role Switcher - Only show if user has multiple roles */}
+        {infoInstitutionsRole.length > 1 && (
+          <>
+            <div className="px-2 py-1.5">
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                Trocar Instituição/Role
+              </div>
+              <select
+                value={`${infoUser.currentIdInstitution}|${infoUser.currentRole}`}
+                onChange={(e) => handleInstitutionChange(e.target.value)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {infoInstitutionsRole.map((inst) => (
+                  <option key={`${inst.idInstitution}|${inst.roleInstitution}`} value={`${inst.idInstitution}|${inst.roleInstitution}`}>
+                    {getRoleText(inst.roleInstitution)} - {inst.nameInstitution}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="h-px my-1 bg-gray-200 dark:bg-gray-700" />
+          </>
+        )}
+
         {/* Navigation sections based on user role */}
         {sections.map((section) => {
           if (hasAccessToSection(section.role)) {

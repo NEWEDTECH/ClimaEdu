@@ -40,7 +40,7 @@ export class FirebaseUserInstitutionRepository implements UserInstitutionReposit
       id: data.id,
       userId: data.userId,
       institutionId: data.institutionId,
-      userRole: UserRole.LOCAL_ADMIN,
+      userRole: data.userRole as UserRole,
       createdAt,
       updatedAt
     });
@@ -135,6 +135,7 @@ export class FirebaseUserInstitutionRepository implements UserInstitutionReposit
       id: userInstitution.id,
       userId: userInstitution.userId,
       institutionId: userInstitution.institutionId,
+      userRole: userInstitution.userRole,
       createdAt: userInstitution.createdAt,
       updatedAt: userInstitution.updatedAt
     };
