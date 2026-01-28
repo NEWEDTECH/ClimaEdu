@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
@@ -16,6 +16,15 @@ import { EngagementRetentionMetrics } from './engagement-sections/EngagementRete
 import { EngagementTrends } from './engagement-sections/EngagementTrends';
 import { EngagementRecommendations } from './engagement-sections/EngagementRecommendations';
 
+const CACHE_DURATION = 5 * 60 * 1000;
+
+type CacheEntry = {
+  data: GenerateEngagementRetentionReportOutput;
+  timestamp: number;
+};
+
+const reportCache: Map<string, CacheEntry> = new Map();
+
 interface EngagementRetentionReportProps {
   courseId: string | null;
   classId: string | null;
@@ -26,38 +35,69 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
   const [report, setReport] = useState<GenerateEngagementRetentionReportOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const getCacheKey = useCallback(() => {
+    return `engagement_${user?.id}_${user?.currentIdInstitution}_${courseId}_${classId}`;
+  }, [user?.id, user?.currentIdInstitution, courseId, classId]);
+
+  const fetchReport = useCallback(async () => {
     if (!user || !courseId || !classId) {
       setReport(null);
       return;
-    };
+    }
 
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const useCase = container.get<GenerateEngagementRetentionReportUseCase>(ReportSymbols.useCases.GenerateStudentEngagementRetentionReportUseCase);
-        const result = await useCase.execute({
-          tutorId: user.id,
-          institutionId: user.currentIdInstitution,
-          classId,
-          courseId,
-          includeStudentDetails: true,
-          includeTrendAnalysis: true,
-          includeRecommendations: true,
-        });
-        setReport(result);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load report');
-      } finally {
-        setLoading(false);
+    const cacheKey = getCacheKey();
+    const cached = reportCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setReport(cached.data);
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    try {
+      setLoading(true);
+      setError(null);
+      const useCase = container.get<GenerateEngagementRetentionReportUseCase>(ReportSymbols.useCases.GenerateStudentEngagementRetentionReportUseCase);
+      const result = await useCase.execute({
+        tutorId: user.id,
+        institutionId: user.currentIdInstitution,
+        classId,
+        courseId,
+        includeStudentDetails: true,
+        includeTrendAnalysis: true,
+        includeRecommendations: true,
+      });
+
+      reportCache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
+
+      setReport(result);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error(err);
+      setError('Failed to load report');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, courseId, classId, getCacheKey]);
+
+  useEffect(() => {
+    fetchReport();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-
-    fetchReport();
-  }, [user, courseId, classId]);
+  }, [fetchReport]);
 
   if (loading) {
     return <div>Carregando...</div>;

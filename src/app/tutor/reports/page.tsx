@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 import { Tabs, TabsList } from "@/components/ui/tabs";
@@ -21,6 +21,16 @@ import { ListClassesUseCase } from '@/_core/modules/enrollment/core/use-cases/li
 import { useProfile } from '@/context/zustand/useProfile';
 import { Class } from '@/_core/modules/enrollment/core/entities/Class';
 import { Register } from '@/_core/shared/container/symbols';
+import { LoadingSpinner } from '@/components/loader';
+
+const CACHE_DURATION = 5 * 60 * 1000;
+
+type CacheEntry<T> = {
+  data: T;
+  timestamp: number;
+};
+
+const classesCache: Map<string, CacheEntry<Class[]>> = new Map();
 
 export default function TutorReports() {
   const { infoUser: user } = useProfile();
@@ -28,26 +38,71 @@ export default function TutorReports() {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('class-overview');
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
+  const fetchClasses = useCallback(async () => {
+    if (!user?.currentIdInstitution) return;
 
-    const fetchClasses = async () => {
+    const cacheKey = user.currentIdInstitution;
+    const cached = classesCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setClasses(cached.data);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
       const listClassesUseCase = container.get<ListClassesUseCase>(Register.enrollment.useCase.ListClassesUseCase);
       const result = await listClassesUseCase.execute({ institutionId: user.currentIdInstitution });
+
+      classesCache.set(cacheKey, {
+        data: result.classes,
+        timestamp: Date.now()
+      });
+
       setClasses(result.classes);
-    };
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.currentIdInstitution]);
 
+  useEffect(() => {
     fetchClasses();
-  }, [user]);
+  }, [fetchClasses]);
 
-  const handleClassSelect = (classId: string) => {
+  const handleClassSelect = useCallback((classId: string) => {
     const selected = classes.find(c => c.id === classId);
     if (selected) {
       setSelectedClass(selected.id);
       setSelectedCourse(selected.courseId);
     }
-  };
+  }, [classes]);
+
+  const selectedClassName = useMemo(() => {
+    if (!selectedClass) return "Selecione uma turma";
+    return classes.find(c => c.id === selectedClass)?.name || "Selecione uma turma";
+  }, [selectedClass, classes]);
+
+  const reportProps = useMemo(() => ({
+    courseId: selectedCourse,
+    classId: selectedClass
+  }), [selectedCourse, selectedClass]);
+
+  if (isLoading) {
+    return (
+      <ProtectedContent>
+        <DashboardLayout>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <LoadingSpinner />
+          </div>
+        </DashboardLayout>
+      </ProtectedContent>
+    );
+  }
 
   return (
     <ProtectedContent>
@@ -63,16 +118,20 @@ export default function TutorReports() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-[280px] justify-between">
-                <span>{selectedClass ? classes.find(c => c.id === selectedClass)?.name : "Selecione uma turma"}</span>
+                <span>{selectedClassName}</span>
                 <span>▼</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[280px]">
-              {classes.map((cls) => (
-                <DropdownMenuItem key={cls.id} onSelect={() => handleClassSelect(cls.id)}>
-                  {cls.name}
-                </DropdownMenuItem>
-              ))}
+              {classes.length === 0 ? (
+                <DropdownMenuItem disabled>Nenhuma turma encontrada</DropdownMenuItem>
+              ) : (
+                classes.map((cls) => (
+                  <DropdownMenuItem key={cls.id} onSelect={() => handleClassSelect(cls.id)}>
+                    {cls.name}
+                  </DropdownMenuItem>
+                ))
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -89,18 +148,18 @@ export default function TutorReports() {
             </Tabs>
           </div>
           <div className="mt-4">
-            <div style={{ display: activeTab === 'class-overview' ? 'block' : 'none' }}>
-              <ClassOverviewReport courseId={selectedCourse} classId={selectedClass} />
-            </div>
-            <div style={{ display: activeTab === 'assessment-performance' ? 'block' : 'none' }}>
-              <ClassAssessmentPerformanceReport courseId={selectedCourse} classId={selectedClass} />
-            </div>
-            <div style={{ display: activeTab === 'engagement-retention' ? 'block' : 'none' }}>
-              <EngagementRetentionReport courseId={selectedCourse} classId={selectedClass} />
-            </div>
-            <div style={{ display: activeTab === 'individual-tracking' ? 'block' : 'none' }}>
-              <IndividualStudentTrackingReport courseId={selectedCourse} classId={selectedClass} />
-            </div>
+            {activeTab === 'class-overview' && (
+              <ClassOverviewReport {...reportProps} />
+            )}
+            {activeTab === 'assessment-performance' && (
+              <ClassAssessmentPerformanceReport {...reportProps} />
+            )}
+            {activeTab === 'engagement-retention' && (
+              <EngagementRetentionReport {...reportProps} />
+            )}
+            {activeTab === 'individual-tracking' && (
+              <IndividualStudentTrackingReport {...reportProps} />
+            )}
           </div>
         </div>
       </DashboardLayout>
