@@ -17,12 +17,10 @@ import { UpdateTrailInput } from '@/_core/modules/content/core/use-cases/update-
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { Trail } from '@/_core/modules/content/core/entities/Trail'
 import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case'
-import { EnrollInTrailInput } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.input'
-import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.use-case'
-import { ListEnrollmentsInput } from '@/_core/modules/enrollment/core/use-cases/list-enrollments/list-enrollments.input'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
+import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
 import { ImageUpload } from '@/components/upload'
 
 type CourseInfo = {
@@ -48,14 +46,15 @@ export default function EditTrailPage() {
     const [saving, setSaving] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
 
-    // Student enrollment states
     const [students, setStudents] = useState<User[]>([])
     const [filteredStudents, setFilteredStudents] = useState<User[]>([])
     const [searchStudentTerm, setSearchStudentTerm] = useState<string>('')
     const [showStudentDropdown, setShowStudentDropdown] = useState<boolean>(false)
     const [trailStudents, setTrailStudents] = useState<Array<{ id: string, name: string, email: string, isEnrolled: boolean }>>([])
+    const [originalEnrolledIds, setOriginalEnrolledIds] = useState<string[]>([])
+    const [studentsToAdd, setStudentsToAdd] = useState<Array<{ id: string, name: string, email: string }>>([])
+    const [studentsToRemove, setStudentsToRemove] = useState<string[]>([])
 
-    // Load enrolled students for the trail
     const loadTrailStudents = useCallback(async () => {
         if (!trail || trailCourses.length === 0) {
             setTrailStudents([])
@@ -63,37 +62,46 @@ export default function EditTrailPage() {
         }
 
         try {
-            const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
-                Register.enrollment.useCase.ListEnrollmentsUseCase
+            const enrollmentRepository = container.get<EnrollmentRepository>(
+                Register.enrollment.repository.EnrollmentRepository
             )
 
             const userRepository = container.get<UserRepository>(
                 Register.user.repository.UserRepository
             )
 
-            // Get enrollments for all courses in the trail
+            const userInstitutionRepository = container.get<UserInstitutionRepository>(
+                Register.institution.repository.UserInstitutionRepository
+            )
+
             const enrollmentPromises = trailCourses.map(async (course) => {
-                const input: ListEnrollmentsInput = { courseId: course.id }
-                const output = await listEnrollmentsUseCase.execute(input)
-                return output.enrollments
+                return enrollmentRepository.listByCourse(course.id)
             })
 
             const allEnrollments = (await Promise.all(enrollmentPromises)).flat()
 
-            // Get unique user IDs from enrollments
             const uniqueUserIds = [...new Set(allEnrollments.map(enrollment => enrollment.userId))]
 
-            // Fetch user details for each unique user ID
             const userPromises = uniqueUserIds.map(async (userId) => {
                 const user = await userRepository.findById(userId)
+                if (!user) return null
+
+                const userInstitution = await userInstitutionRepository.findByUserAndInstitution(
+                    userId,
+                    trail.institutionId
+                )
+
+                if (!userInstitution || userInstitution.userRole !== UserRole.STUDENT) {
+                    return null
+                }
+
                 return user
             })
 
             const allUsers = await Promise.all(userPromises)
 
-            // Filter out null users and only keep students, mark them as enrolled
             const enrolledStudentsList = allUsers
-                .filter((user): user is User => user !== null && user.role === UserRole.STUDENT)
+                .filter((user): user is User => user !== null)
                 .map(user => ({
                     id: user.id,
                     name: user.name,
@@ -102,32 +110,35 @@ export default function EditTrailPage() {
                 }))
 
             setTrailStudents(enrolledStudentsList)
+            setOriginalEnrolledIds(enrolledStudentsList.map(s => s.id))
+            setStudentsToAdd([])
+            setStudentsToRemove([])
         } catch (err) {
             console.error('Error fetching enrolled students:', err)
         }
     }, [trail, trailCourses])
 
-    // Load students for the institution
     useEffect(() => {
         const fetchStudents = async () => {
             if (!trail) return
 
             try {
-                const enrollmentRepository = container.get<EnrollmentRepository>(
-                    Register.enrollment.repository.EnrollmentRepository
+                const userInstitutionRepository = container.get<UserInstitutionRepository>(
+                    Register.institution.repository.UserInstitutionRepository
                 )
 
                 const userRepository = container.get<UserRepository>(
                     Register.user.repository.UserRepository
                 )
 
-                // Get all enrollments for this institution
-                const enrollments = await enrollmentRepository.listByInstitution(trail.institutionId)
+                const userInstitutions = await userInstitutionRepository.findByInstitutionId(trail.institutionId)
 
-                // Get unique user IDs from enrollments
-                const uniqueUserIds = [...new Set(enrollments.map(enrollment => enrollment.userId))]
+                const studentAssociations = userInstitutions.filter(
+                    assoc => assoc.userRole === UserRole.STUDENT
+                )
 
-                // Fetch user details for each unique user ID
+                const uniqueUserIds = [...new Set(studentAssociations.map(assoc => assoc.userId))]
+
                 const studentPromises = uniqueUserIds.map(async (userId) => {
                     const user = await userRepository.findById(userId)
                     return user
@@ -135,10 +146,7 @@ export default function EditTrailPage() {
 
                 const allUsers = await Promise.all(studentPromises)
 
-                // Filter out null users and only keep students
-                const institutionStudents = allUsers.filter((user): user is User =>
-                    user !== null && user.role === UserRole.STUDENT
-                )
+                const institutionStudents = allUsers.filter((user): user is User => user !== null)
 
                 setStudents(institutionStudents)
                 setFilteredStudents(institutionStudents)
@@ -270,7 +278,6 @@ export default function EditTrailPage() {
             setSaving(true)
             setError(null)
 
-            // Update trail information
             const updateTrailUseCase = container.get<UpdateTrailUseCase>(
                 Register.content.useCase.UpdateTrailUseCase
             )
@@ -288,11 +295,6 @@ export default function EditTrailPage() {
             const output = await updateTrailUseCase.execute(input)
             setTrail(output.trail)
 
-            // Handle student enrollments/removals
-            const listEnrollmentsUseCase = container.get<ListEnrollmentsUseCase>(
-                Register.enrollment.useCase.ListEnrollmentsUseCase
-            )
-
             const enrollmentRepository = container.get<EnrollmentRepository>(
                 Register.enrollment.repository.EnrollmentRepository
             )
@@ -301,46 +303,25 @@ export default function EditTrailPage() {
                 Register.enrollment.useCase.EnrollInTrailUseCase
             )
 
-            // Process each student in trailStudents
-            for (const student of trailStudents) {
-                if (student.isEnrolled) {
-                    // Student should be enrolled - check if they need to be enrolled
-                    const enrollmentPromises = trailCourses.map(async (course) => {
-                        const input: ListEnrollmentsInput = { courseId: course.id }
-                        const output = await listEnrollmentsUseCase.execute(input)
-                        const existingEnrollment = output.enrollments.find(e => e.userId === student.id)
-                        
-                        if (!existingEnrollment) {
-                            // Need to enroll this student in this course
-                            const enrollInput = new EnrollInTrailInput(
-                                student.id,
-                                trailId,
-                                trail!.institutionId
-                            )
-                            await enrollInTrailUseCase.execute(enrollInput)
-                        }
-                    })
-                    await Promise.all(enrollmentPromises)
-                } else {
-                    // Student should be removed - remove from all courses
-                    const removalPromises = trailCourses.map(async (course) => {
-                        const input: ListEnrollmentsInput = { courseId: course.id }
-                        const output = await listEnrollmentsUseCase.execute(input)
-                        const enrollment = output.enrollments.find(e => e.userId === student.id)
-                        
-                        if (enrollment) {
-                            await enrollmentRepository.delete(enrollment.id)
-                        }
-                    })
-                    await Promise.all(removalPromises)
-                }
+            for (const studentId of studentsToRemove) {
+                const removalPromises = trailCourses.map(async (course) => {
+                    const enrollment = await enrollmentRepository.findByUserAndCourse(studentId, course.id)
+                    if (enrollment) {
+                        await enrollmentRepository.delete(enrollment.id)
+                    }
+                })
+                await Promise.all(removalPromises)
             }
 
-            // Refresh trail students list
-            await loadTrailStudents()
+            for (const student of studentsToAdd) {
+                await enrollInTrailUseCase.execute({
+                    userId: student.id,
+                    trailId: trailId,
+                    institutionId: trail!.institutionId
+                })
+            }
 
-            // Show success message
-            console.log('Trail updated successfully')
+            router.push('/admin/trails')
         } catch (err) {
             console.error('Error updating trail:', err)
             setError('Failed to update trail. Please try again later.')
@@ -358,7 +339,35 @@ export default function EditTrailPage() {
         }
     }
 
+    const handleAddTrailStudent = (student: { id: string; name: string; email: { value: string } }) => {
+        if (studentsToRemove.includes(student.id)) {
+            setStudentsToRemove(prev => prev.filter(id => id !== student.id))
+        }
+
+        if (!originalEnrolledIds.includes(student.id)) {
+            setStudentsToAdd(prev => [...prev, { id: student.id, name: student.name, email: student.email.value }])
+        }
+
+        setTrailStudents(prev => [
+            ...prev,
+            {
+                id: student.id,
+                name: student.name,
+                email: student.email.value,
+                isEnrolled: true
+            }
+        ])
+    }
+
     const handleRemoveTrailStudent = (studentId: string) => {
+        if (studentsToAdd.some(s => s.id === studentId)) {
+            setStudentsToAdd(prev => prev.filter(s => s.id !== studentId))
+        }
+
+        if (originalEnrolledIds.includes(studentId)) {
+            setStudentsToRemove(prev => [...prev, studentId])
+        }
+
         setTrailStudents(prev => prev.filter(student => student.id !== studentId))
     }
 
@@ -480,17 +489,7 @@ export default function EditTrailPage() {
                                     }}
                                     onSearchFocus={() => setShowStudentDropdown(true)}
                                     onRemoveStudent={handleRemoveTrailStudent}
-                                    onAddStudent={(student) => {
-                                        setTrailStudents(prev => [
-                                            ...prev,
-                                            {
-                                                id: student.id,
-                                                name: student.name,
-                                                email: student.email.value,
-                                                isEnrolled: true
-                                            }
-                                        ])
-                                    }}
+                                    onAddStudent={handleAddTrailStudent}
                                     onClearSearch={() => setSearchStudentTerm('')}
                                     onHideDropdown={() => setShowStudentDropdown(false)}
                                 />

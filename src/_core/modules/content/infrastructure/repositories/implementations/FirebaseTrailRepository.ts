@@ -7,6 +7,7 @@ import {
   query,
   setDoc,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { firestore } from "@/_core/shared/firebase/firebase-client";
 import { nanoid } from "nanoid";
@@ -20,11 +21,18 @@ interface TrailDocument {
   description: string;
   courseIds: string[];
   coverImageUrl?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
 }
 
 class TrailMapper {
+  private static toDate(value: Timestamp | Date): Date {
+    if (value instanceof Timestamp) {
+      return value.toDate();
+    }
+    return value;
+  }
+
   public static toDomain(doc: TrailDocument): Trail {
     return Trail.from({
       id: doc.id,
@@ -33,8 +41,8 @@ class TrailMapper {
       description: doc.description,
       courseIds: doc.courseIds,
       coverImageUrl: doc.coverImageUrl,
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
+      createdAt: TrailMapper.toDate(doc.createdAt),
+      updatedAt: TrailMapper.toDate(doc.updatedAt),
     });
   }
 
