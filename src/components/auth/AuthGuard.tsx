@@ -107,6 +107,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         idInstitution: string;
         nameInstitution: string;
         roleInstitution: UserRole;
+        urlImage: string;
         primary_color: string;
         secondary_color: string;
       }> = [];
@@ -128,24 +129,20 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         
         const userInstitutionAssociations = await userInstitutionRepository.findByUserId(user.id);
 
-        console.log('🔍 AuthGuard: userInstitutionAssociations:', userInstitutionAssociations);
-
-        // Criar um map único de instituição+role (suporta múltiplas roles na mesma instituição)
         institutionsRoleData = userInstitutionAssociations.map(assoc => {
           const association = userAssociations.find(ua => ua.id === assoc.institutionId);
-          
+
           if (!association) return null;
-          
+
           return {
             idInstitution: association.id,
             nameInstitution: association.name,
             roleInstitution: assoc.userRole as UserRole,
+            urlImage: association.settings.logoUrl || '',
             primary_color: association.settings.primaryColor!,
             secondary_color: association.settings.secondaryColor!,
           };
         }).filter((item): item is NonNullable<typeof item> => item !== null);
-
-        console.log('✅ AuthGuard: institutionsRoleData final:', institutionsRoleData);
 
         // Salvar no context/zustand: infoInstitutionsRole
         setInfoInstitutionsRole(institutionsRoleData);

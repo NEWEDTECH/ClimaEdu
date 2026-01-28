@@ -7,6 +7,7 @@ import {
   query,
   setDoc,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { firestore } from "@/_core/shared/firebase/firebase-client";
 import { nanoid } from "nanoid";
@@ -20,11 +21,18 @@ interface ClassDocument {
   courseId: string | null;
   trailId: string | null;
   enrollmentIds: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
 }
 
 class ClassMapper {
+  private static toDate(value: Timestamp | Date): Date {
+    if (value instanceof Timestamp) {
+      return value.toDate();
+    }
+    return value;
+  }
+
   public static toDomain(doc: ClassDocument): Class {
     return Class.from({
       id: doc.id,
@@ -33,8 +41,8 @@ class ClassMapper {
       courseId: doc.courseId,
       trailId: doc.trailId,
       enrollmentIds: doc.enrollmentIds,
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
+      createdAt: ClassMapper.toDate(doc.createdAt),
+      updatedAt: ClassMapper.toDate(doc.updatedAt),
     });
   }
 
