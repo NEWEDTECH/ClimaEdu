@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
 import { GenerateClassOverviewReportUseCase } from '@/_core/modules/report/core/use-cases/generate-class-overview-report/generate-class-overview-report.use-case';
@@ -13,6 +13,15 @@ import { OverviewTrends } from './overview-sections/OverviewTrends';
 import { OverviewBenchmarks } from './overview-sections/OverviewBenchmarks';
 import { OverviewInsights } from './overview-sections/OverviewInsights';
 
+const CACHE_DURATION = 5 * 60 * 1000;
+
+type CacheEntry = {
+  data: GenerateClassOverviewReportOutput;
+  timestamp: number;
+};
+
+const reportCache: Map<string, CacheEntry> = new Map();
+
 interface ClassOverviewReportProps {
   courseId: string | null;
   classId: string | null;
@@ -23,36 +32,67 @@ export function ClassOverviewReport({ courseId, classId }: ClassOverviewReportPr
   const [report, setReport] = useState<GenerateClassOverviewReportOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const getCacheKey = useCallback(() => {
+    return `overview_${user?.id}_${user?.currentIdInstitution}_${courseId}_${classId}`;
+  }, [user?.id, user?.currentIdInstitution, courseId, classId]);
+
+  const fetchReport = useCallback(async () => {
     if (!user || !courseId) {
       setReport(null);
       return;
     }
 
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const useCase = container.get<GenerateClassOverviewReportUseCase>(ReportSymbols.useCases.GenerateClassOverviewReportUseCase);
-        const result = await useCase.execute({
-          userId: user.id,
-          tutorId: user.id,
-          institutionId: user.currentIdInstitution,
-          classId: classId || undefined,
-          courseId,
-        });
-        setReport(result);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load report');
-      } finally {
-        setLoading(false);
+    const cacheKey = getCacheKey();
+    const cached = reportCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setReport(cached.data);
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    try {
+      setLoading(true);
+      setError(null);
+      const useCase = container.get<GenerateClassOverviewReportUseCase>(ReportSymbols.useCases.GenerateClassOverviewReportUseCase);
+      const result = await useCase.execute({
+        userId: user.id,
+        tutorId: user.id,
+        institutionId: user.currentIdInstitution,
+        classId: classId || undefined,
+        courseId,
+      });
+
+      reportCache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
+
+      setReport(result);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error(err);
+      setError('Failed to load report');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, courseId, classId, getCacheKey]);
+
+  useEffect(() => {
+    fetchReport();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-
-    fetchReport();
-  }, [user, courseId, classId]);
+  }, [fetchReport]);
 
   if (loading) {
     return <div>Carregando...</div>;
