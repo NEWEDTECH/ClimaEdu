@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
@@ -21,6 +21,16 @@ import { LearningInsights } from './sections/LearningInsights';
 import { TutorRecommendations } from './sections/TutorRecommendations';
 import { Button } from '@/components/button'
 
+const CACHE_DURATION = 5 * 60 * 1000;
+
+type CacheEntry<T> = {
+  data: T;
+  timestamp: number;
+};
+
+const studentsCache: Map<string, CacheEntry<User[]>> = new Map();
+const reportCache: Map<string, CacheEntry<GenerateIndividualStudentReportOutput>> = new Map();
+
 interface IndividualStudentTrackingReportProps {
   courseId: string | null;
   classId: string | null;
@@ -33,55 +43,104 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
   const [error, setError] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [students, setStudents] = useState<User[]>([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const fetchStudents = useCallback(async () => {
     if (!user || !classId) {
       setStudents([]);
       return;
     }
 
-    const fetchStudents = async () => {
+    const cacheKey = `students_${classId}_${user.currentIdInstitution}`;
+    const cached = studentsCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setStudents(cached.data);
+      return;
+    }
+
+    try {
       const useCase = container.get<ListClassStudentsUseCase>(ListClassStudentsUseCase);
       const result = await useCase.execute({ classId, institutionId: user.currentIdInstitution });
-      setStudents(result.students);
-    };
 
-    fetchStudents();
+      studentsCache.set(cacheKey, {
+        data: result.students,
+        timestamp: Date.now()
+      });
+
+      setStudents(result.students);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+    }
   }, [user, classId]);
 
   useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
+  const getCacheKey = useCallback(() => {
+    return `individual_${user?.id}_${user?.currentIdInstitution}_${selectedStudent}_${classId}`;
+  }, [user?.id, user?.currentIdInstitution, selectedStudent, classId]);
+
+  const fetchReport = useCallback(async () => {
     if (!user || !selectedStudent || !courseId || !classId) {
       setReport(null);
       return;
-    };
+    }
 
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const useCase = container.get<GenerateIndividualStudentReportUseCase>(ReportSymbols.useCases.GenerateIndividualStudentTrackingReportUseCase);
-        const result = await useCase.execute({
-          tutorId: user.id,
-          institutionId: user.currentIdInstitution,
-          studentId: selectedStudent,
-          classId,
-          includeProgressDetails: true,
-          includeAssessments: true,
-          includeEngagement: true,
-          includeFeedbackHistory: true,
-          includeClassComparison: true,
-        });
-        setReport(result);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load report');
-      } finally {
-        setLoading(false);
+    const cacheKey = getCacheKey();
+    const cached = reportCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setReport(cached.data);
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    try {
+      setLoading(true);
+      setError(null);
+      const useCase = container.get<GenerateIndividualStudentReportUseCase>(ReportSymbols.useCases.GenerateIndividualStudentTrackingReportUseCase);
+      const result = await useCase.execute({
+        tutorId: user.id,
+        institutionId: user.currentIdInstitution,
+        studentId: selectedStudent,
+        classId,
+        includeProgressDetails: true,
+        includeAssessments: true,
+        includeEngagement: true,
+        includeFeedbackHistory: true,
+        includeClassComparison: true,
+      });
+
+      reportCache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
+
+      setReport(result);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error(err);
+      setError('Failed to load report');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, selectedStudent, courseId, classId, getCacheKey]);
+
+  useEffect(() => {
+    fetchReport();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-
-    fetchReport();
-  }, [user, selectedStudent, courseId, classId]);
+  }, [fetchReport]);
 
   return (
     <Card>
