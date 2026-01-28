@@ -66,23 +66,23 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   
   const { /*getLastInstitutionId,*/ setLastInstitutionId } = useInstitutionStorage();
 
-  // Função para verificar se usuário tem acesso à rota atual
   const checkRouteAccess = useCallback((currentPath: string, userRole: string | null): boolean => {
-    if (!userRole) return true; // Se não tem role ainda, permite (está inicializando)
-    
-    // Rotas públicas ou que todos podem acessar
+    if (!userRole) return true;
+
+    const adminRoles = ['SUPER_ADMIN', 'SYSTEM_ADMIN', 'LOCAL_ADMIN'];
+    if (adminRoles.includes(userRole)) {
+      return true;
+    }
+
     const publicRoutes = ['/', '/login', '/social', '/podcast'];
     if (publicRoutes.includes(currentPath)) return true;
-    
-    // Verificar se a rota atual está no mapeamento
+
     for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
-      // Verificar se a rota atual começa com a rota definida
       if (currentPath.startsWith(route)) {
         return allowedRoles.includes(userRole);
       }
     }
-    
-    // Se a rota não está mapeada, permite acesso
+
     return true;
   }, []);
 
