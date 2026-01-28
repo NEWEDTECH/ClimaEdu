@@ -27,6 +27,16 @@ export class EnrollInTrailUseCase {
     const enrollments: Enrollment[] = [];
 
     for (const courseId of trail.courseIds) {
+      const existingEnrollment = await this.enrollmentRepository.findByUserAndCourse(
+        input.userId,
+        courseId
+      );
+
+      if (existingEnrollment) {
+        enrollments.push(existingEnrollment);
+        continue;
+      }
+
       const enrollment = Enrollment.create({
         userId: input.userId,
         courseId: courseId,

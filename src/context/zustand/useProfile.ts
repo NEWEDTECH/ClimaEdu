@@ -25,7 +25,7 @@ type InfoUser = {
 type InstitutionInfo = {
   idInstitution: string;
   nameInstitution: string;
-  urlImage?: string;
+  urlImage: string;
   roleInstitution: UserRole;
   primary_color: string;
   secondary_color: string;

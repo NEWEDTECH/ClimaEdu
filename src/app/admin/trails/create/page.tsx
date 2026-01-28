@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
-import { TrailForm, CourseManager, InstitutionSelector } from '@/components/trails'
+import { TrailForm, CourseManager, InstitutionSelector, StudentManager } from '@/components/trails'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { CreateTrailUseCase } from '@/_core/modules/content/core/use-cases/create-trail/create-trail.use-case'
@@ -16,6 +16,10 @@ import { CourseRepository } from '@/_core/modules/content/infrastructure/reposit
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { ImageUpload } from '@/components/upload'
+import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
+import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
+import { User, UserRole } from '@/_core/modules/user/core/entities/User'
+import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case'
 
 type CourseInfo = {
   id: string
@@ -36,6 +40,12 @@ export default function CreateTrailPage() {
   const [loading, setLoading] = useState<boolean>(false)
   const [institutionsLoading, setInstitutionsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+
+  const [students, setStudents] = useState<User[]>([])
+  const [filteredStudents, setFilteredStudents] = useState<User[]>([])
+  const [searchStudentTerm, setSearchStudentTerm] = useState<string>('')
+  const [showStudentDropdown, setShowStudentDropdown] = useState<boolean>(false)
+  const [selectedStudents, setSelectedStudents] = useState<Array<{ id: string, name: string, email: string, isEnrolled: boolean }>>([])
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -102,6 +112,73 @@ export default function CreateTrailPage() {
     fetchCourses()
   }, [selectedInstitutionId])
 
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (!selectedInstitutionId) return
+
+      try {
+        const userInstitutionRepository = container.get<UserInstitutionRepository>(
+          Register.institution.repository.UserInstitutionRepository
+        )
+
+        const userRepository = container.get<UserRepository>(
+          Register.user.repository.UserRepository
+        )
+
+        const userInstitutions = await userInstitutionRepository.findByInstitutionId(selectedInstitutionId)
+
+        const studentAssociations = userInstitutions.filter(
+          assoc => assoc.userRole === UserRole.STUDENT
+        )
+
+        const uniqueUserIds = [...new Set(studentAssociations.map(assoc => assoc.userId))]
+
+        const studentPromises = uniqueUserIds.map(async (userId) => {
+          const user = await userRepository.findById(userId)
+          return user
+        })
+
+        const allUsers = await Promise.all(studentPromises)
+
+        const institutionStudents = allUsers.filter((user): user is User => user !== null)
+
+        setStudents(institutionStudents)
+        setFilteredStudents(institutionStudents)
+        setSelectedStudents([])
+      } catch (err) {
+        console.error('Error fetching students:', err)
+      }
+    }
+
+    fetchStudents()
+  }, [selectedInstitutionId])
+
+  useEffect(() => {
+    if (searchStudentTerm.trim() === '') {
+      setFilteredStudents(students)
+    } else {
+      const filtered = students.filter(student =>
+        student.email.value.toLowerCase().includes(searchStudentTerm.toLowerCase()) ||
+        student.name.toLowerCase().includes(searchStudentTerm.toLowerCase())
+      )
+      setFilteredStudents(filtered)
+    }
+  }, [searchStudentTerm, students])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('#studentSearch') && !target.closest('.student-dropdown')) {
+        setShowStudentDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
   const handleAddCourse = () => {
     if (!selectedCourseId) {
       setError('Selecione um curso para adicionar')
@@ -123,6 +200,22 @@ export default function CreateTrailPage() {
       setAvailableCourses(prev => [...prev, courseToRemove])
       setSelectedCourses(prev => prev.filter(course => course.id !== courseId))
     }
+  }
+
+  const handleAddStudent = (student: { id: string; name: string; email: { value: string } }) => {
+    setSelectedStudents(prev => [
+      ...prev,
+      {
+        id: student.id,
+        name: student.name,
+        email: student.email.value,
+        isEnrolled: true
+      }
+    ])
+  }
+
+  const handleRemoveStudent = (studentId: string) => {
+    setSelectedStudents(prev => prev.filter(student => student.id !== studentId))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,9 +248,9 @@ export default function CreateTrailPage() {
       const createTrailUseCase = container.get<CreateTrailUseCase>(
         Register.content.useCase.CreateTrailUseCase
       )
-      
+
       const courseIds = selectedCourses.map(course => course.id)
-      
+
       const input = new CreateTrailInput(
         selectedInstitutionId,
         title.trim(),
@@ -165,10 +258,23 @@ export default function CreateTrailPage() {
         courseIds,
         coverImageUrl.trim() || null
       )
-      
-      await createTrailUseCase.execute(input)
-      
-      // Redirect to trails list
+
+      const result = await createTrailUseCase.execute(input)
+
+      if (selectedStudents.length > 0 && result.trail) {
+        const enrollInTrailUseCase = container.get<EnrollInTrailUseCase>(
+          Register.enrollment.useCase.EnrollInTrailUseCase
+        )
+
+        for (const student of selectedStudents) {
+          await enrollInTrailUseCase.execute({
+            userId: student.id,
+            trailId: result.trail.id,
+            institutionId: selectedInstitutionId
+          })
+        }
+      }
+
       router.push('/admin/trails')
     } catch (err) {
       console.error('Error creating trail:', err)
@@ -255,6 +361,22 @@ export default function CreateTrailPage() {
                     onCourseSelect={setSelectedCourseId}
                     onAddCourse={handleAddCourse}
                     onRemoveCourse={handleRemoveCourse}
+                  />
+
+                  <StudentManager
+                    trailStudents={selectedStudents}
+                    filteredStudents={filteredStudents}
+                    searchStudentTerm={searchStudentTerm}
+                    showStudentDropdown={showStudentDropdown}
+                    onSearchChange={(value) => {
+                      setSearchStudentTerm(value)
+                      setShowStudentDropdown(true)
+                    }}
+                    onSearchFocus={() => setShowStudentDropdown(true)}
+                    onRemoveStudent={handleRemoveStudent}
+                    onAddStudent={handleAddStudent}
+                    onClearSearch={() => setSearchStudentTerm('')}
+                    onHideDropdown={() => setShowStudentDropdown(false)}
                   />
 
                   <div className="flex gap-4 pt-4">
