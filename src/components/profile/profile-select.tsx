@@ -62,7 +62,7 @@ const adminItems: DropdownItem[] = [
   { label: 'Classes', href: '/admin/turmas', icon: <FiLayers /> },
   { label: 'Tutores', href: '/admin/tutor', icon: <FiUserCheck /> },
   { label: 'Gestor de conteudo', href: '/admin/gestor', icon: <FiUserCheck /> },
-  { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
+  { label: 'Relatórios', href: '/admin/reports', icon: <FiBarChart /> },
   { label: 'Trilhas', href: '/admin/trails', icon: <FiHome /> },
   { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
   { label: 'Usuários', href: '/admin/allusers', icon: <FiUserPlus /> },
