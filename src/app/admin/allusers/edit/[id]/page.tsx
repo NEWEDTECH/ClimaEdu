@@ -8,13 +8,15 @@ import { Register } from '@/_core/shared/container';
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository';
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository';
 import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository';
+import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository';
+import { TimeSlotRepository } from '@/_core/modules/tutoring/infrastructure/repositories/TimeSlotRepository';
 import { User, UserRole } from '@/_core/modules/user/core/entities/User';
 import { Institution } from '@/_core/modules/institution/core/entities/Institution';
 import { UserInstitution } from '@/_core/modules/institution/core/entities/UserInstitution';
 import { SelectComponent } from '@/components/select';
 import { Button } from '@/components/button';
 import { LoadingSpinner } from '@/components/loader';
-import { FiTrash2, FiPlus, FiUser, FiMail, FiShield, FiCheck } from 'react-icons/fi';
+import { FiTrash2, FiPlus, FiUser, FiMail, FiShield, FiCheck, FiAlertTriangle } from 'react-icons/fi';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
 
@@ -37,8 +39,8 @@ export default function EditUserPage() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
-  
-  // New role form
+  const [tutorWarningRole, setTutorWarningRole] = useState<UserRoleAssignment | null>(null);
+
   const [newRoleInstitution, setNewRoleInstitution] = useState<string>('');
   const [newRoleType, setNewRoleType] = useState<UserRole | ''>('');
 
@@ -164,19 +166,50 @@ export default function EditUserPage() {
   };
 
   const handleRemoveRole = async (roleAssignment: UserRoleAssignment) => {
+    if (userRoles.length <= 1) {
+      alert('O usuário deve ter pelo menos 1 permissão. Não é possível remover a última role.');
+      return;
+    }
+
+    if (roleAssignment.role === UserRole.TUTOR) {
+      setTutorWarningRole(roleAssignment);
+      return;
+    }
+
     if (!confirm(`Tem certeza que deseja remover a role "${getRoleLabel(roleAssignment.role)}" da instituição "${roleAssignment.institutionName}"?`)) {
       return;
     }
 
+    await executeRemoveRole(roleAssignment);
+  };
+
+  const executeRemoveRole = async (roleAssignment: UserRoleAssignment) => {
     try {
       setRemoving(roleAssignment.id);
-      
-      const userInstitutionRepository = container.get<UserInstitutionRepository>(Register.institution.repository.UserInstitutionRepository);
-      
-      await userInstitutionRepository.delete(roleAssignment.id);
+      setTutorWarningRole(null);
 
-      // Remove from local state
-      setUserRoles(userRoles.filter(r => r.id !== roleAssignment.id));
+      const userInstitutionRepository = container.get<UserInstitutionRepository>(Register.institution.repository.UserInstitutionRepository);
+
+      if (roleAssignment.role === UserRole.TUTOR) {
+        const courseTutorRepository = container.get<CourseTutorRepository>(Register.content.repository.CourseTutorRepository);
+        const timeSlotRepository = container.get<TimeSlotRepository>(Register.tutoring.repository.TimeSlotRepository);
+
+        const courseTutors = await courseTutorRepository.findByUserId(userId);
+        await Promise.all(courseTutors.map(ct => courseTutorRepository.delete(ct.id)));
+
+        await timeSlotRepository.deleteByTutorId(userId);
+
+        const allUserInstitutions = await userInstitutionRepository.findByUserId(userId);
+        const tutorInstitutions = allUserInstitutions.filter(
+          ui => ui.userRole === UserRole.TUTOR
+        );
+        await Promise.all(tutorInstitutions.map(ui => userInstitutionRepository.delete(ui.id)));
+
+        setUserRoles(prev => prev.filter(r => r.role !== UserRole.TUTOR));
+      } else {
+        await userInstitutionRepository.delete(roleAssignment.id);
+        setUserRoles(prev => prev.filter(r => r.id !== roleAssignment.id));
+      }
 
       alert('Role removida com sucesso!');
     } catch (error) {
@@ -382,6 +415,42 @@ export default function EditUserPage() {
         </Button>
       </div>
         </div>
+
+        {tutorWarningRole && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 max-w-md w-full mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                  <FiAlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Remover permissão de Tutor
+                </h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <strong className="text-red-600">AVISO:</strong> Os vínculos serão removidos e é irreversível. Deseja continuar?
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Serão excluídos: vínculos com cursos, horários de disponibilidade e associações com instituições como tutor.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  onClick={() => setTutorWarningRole(null)}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => executeRemoveRole(tutorWarningRole)}
+                  disabled={removing === tutorWarningRole.id}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all disabled:opacity-50"
+                >
+                  {removing === tutorWarningRole.id ? 'Removendo...' : 'Sim, remover'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </DashboardLayout>
     </ProtectedContent>
   );
