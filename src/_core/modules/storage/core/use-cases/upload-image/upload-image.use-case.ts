@@ -53,8 +53,12 @@ export class UploadImageUseCase {
       const fileExtension = input.file.name.split('.').pop() || 'jpg';
       const fileName = input.fileName || `${timestamp}.${fileExtension}`;
 
-      // Build storage path: institutions/{institutionId}/{imageType}/{fileName}
-      const filePath = `institutions/${input.institutionId}/${input.imageType}/${fileName}`;
+      let filePath: string;
+      if (input.imageType === 'avatar' && input.userId) {
+        filePath = `users/${input.userId}/avatar/${fileName}`;
+      } else {
+        filePath = `institutions/${input.institutionId}/${input.imageType}/${fileName}`;
+      }
 
       // Upload the file
       const downloadUrl = await this.storageService.uploadImage(input.file, filePath);

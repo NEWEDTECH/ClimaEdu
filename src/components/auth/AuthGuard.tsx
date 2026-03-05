@@ -230,13 +230,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           currentRole = (currentInstitutionRole?.roleInstitution || user.role) as UserRole;
         }
       }
-      
+    
       setInfoUser({
         ...infoUser,
         id: user.id,
         name: user.name,
         currentRole: currentRole,
-        currentIdInstitution: currentInstitutionId!
+        currentIdInstitution: currentInstitutionId!,
+        avatarUrl: user.profile?.avatarUrl,
       });
 
       // Passo 7: Salvar esse ID da instituição no localStorage
@@ -284,6 +285,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       name: '',
       currentRole: null,
       currentIdInstitution: '',
+      avatarUrl: undefined,
     });
     setInfoInstitutions({
       institutions: {
