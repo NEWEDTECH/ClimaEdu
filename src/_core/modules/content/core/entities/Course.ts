@@ -13,15 +13,10 @@ export class Course {
     public coverImageUrl: string | null,
     public modules: Module[],
     readonly createdAt: Date,
-    public updatedAt: Date
+    public updatedAt: Date,
+    public isActive: boolean
   ) {}
 
-  /**
-   * Creates a new Course instance
-   * @param params Course properties
-   * @returns A new Course instance
-   * @throws Error if validation fails
-   */
   public static create(params: {
     id: string;
     institutionId: string;
@@ -31,6 +26,7 @@ export class Course {
     modules?: Module[];
     createdAt?: Date;
     updatedAt?: Date;
+    isActive?: boolean;
   }): Course {
     if (!params.institutionId || params.institutionId.trim() === '') {
       throw new Error('Institution ID cannot be empty');
@@ -53,7 +49,8 @@ export class Course {
       params.coverImageUrl || null,
       params.modules || [],
       params.createdAt ?? now,
-      params.updatedAt ?? now
+      params.updatedAt ?? now,
+      params.isActive !== undefined ? params.isActive : true
     );
   }
 
@@ -101,9 +98,16 @@ export class Course {
     this.touch();
   }
 
-  /**
-   * Updates the timestamp
-   */
+  public deactivate(): void {
+    this.isActive = false;
+    this.touch();
+  }
+
+  public activate(): void {
+    this.isActive = true;
+    this.touch();
+  }
+
   public touch(): void {
     this.updatedAt = new Date();
   }

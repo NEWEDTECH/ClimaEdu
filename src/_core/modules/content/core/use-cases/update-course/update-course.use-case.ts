@@ -41,6 +41,12 @@ export class UpdateCourseUseCase {
       course.updateCoverImageUrl(input.coverImageUrl);
     }
 
+    if (input.isActive === false) {
+      course.deactivate();
+    } else if (input.isActive === true) {
+      course.activate();
+    }
+
     // Save the updated course
     const updatedCourse = await this.courseRepository.save(course);
 

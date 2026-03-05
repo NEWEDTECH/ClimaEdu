@@ -73,7 +73,8 @@ export class FirebaseCourseRepository implements CourseRepository {
       coverImageUrl: data.coverImageUrl,
       modules,
       createdAt,
-      updatedAt
+      updatedAt,
+      isActive: data.isActive !== undefined ? data.isActive : true
     });
   }
 
@@ -114,7 +115,8 @@ export class FirebaseCourseRepository implements CourseRepository {
       description: course.description,
       coverImageUrl: course.coverImageUrl,
       createdAt: course.createdAt,
-      updatedAt: course.updatedAt
+      updatedAt: course.updatedAt,
+      isActive: course.isActive
     };
 
     // Check if the course already exists
@@ -153,12 +155,11 @@ export class FirebaseCourseRepository implements CourseRepository {
    * @param institutionId Institution id
    * @returns List of courses
    */
-  async listByInstitution(institutionId: string): Promise<Course[]> {
+  async listByInstitution(institutionId: string, onlyActive?: boolean): Promise<Course[]> {
     const coursesRef = collection(firestore, this.collectionName);
     const q = query(coursesRef, where('institutionId', '==', institutionId));
     const querySnapshot = await getDocs(q);
 
-    // Fetch modules for each course
     const coursesWithModules = await Promise.all(
       querySnapshot.docs.map(async (docSnapshot) => {
         const data = docSnapshot.data();
@@ -166,6 +167,10 @@ export class FirebaseCourseRepository implements CourseRepository {
         return this.mapToEntity({ id: docSnapshot.id, ...data, modules });
       })
     );
+
+    if (onlyActive) {
+      return coursesWithModules.filter((course) => course.isActive !== false);
+    }
 
     return coursesWithModules;
   }
