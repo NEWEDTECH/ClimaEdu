@@ -80,7 +80,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
 
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
-          setError('Lição não encontrada');
+          setError('Unidade não encontrada');
           setIsLoading(false);
           return;
         }
@@ -99,14 +99,14 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
 
         // If we're creating, check if the lesson already has a questionnaire
         if (lesson.questionnaire) {
-          setError('Esta lição já possui um questionário');
+          setError('Esta unidade já possui um questionário');
           setIsLoading(false);
           return;
         }
 
         const existingQuestionnaire = await questionnaireRepository.findByLessonId(lessonId);
         if (existingQuestionnaire) {
-          setError('Esta lição já possui um questionário. Volte para a página da lição para visualizá-lo.');
+          setError('Esta unidade já possui um questionário. Volte para a página da unidade para visualizá-lo.');
           setIsLoading(false);
           return;
         }
@@ -341,7 +341,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -360,7 +360,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
               Salvar
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
-              Adicionar questionário à lição <span className="font-medium">{lessonTitle}</span>
+              Adicionar questionário à unidade <span className="font-medium">{lessonTitle}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Módulo: <span className="font-medium">{moduleName}</span>
@@ -770,7 +770,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                   <div>
                     <p className="font-medium">Teste Conhecimentos Relevantes</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Foque em conceitos importantes da lição, não em detalhes triviais.
+                      Foque em conceitos importantes da unidade, não em detalhes triviais.
                     </p>
                   </div>
                 </div>

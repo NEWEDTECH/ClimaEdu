@@ -129,7 +129,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
         setLessons(lessonsData)
       } catch (error) {
         console.error('Error loading lessons:', error)
-        showToast.error('Erro ao carregar lições')
+        showToast.error('Erro ao carregar unidades')
       } finally {
         setLoading(false)
       }
@@ -245,7 +245,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
         }
       } else if (reorderType === 'content') {
         if (!selectedLessonId) {
-          throw new Error('Nenhuma lição selecionada')
+          throw new Error('Nenhuma unidade selecionada')
         }
 
         // Usar o caso de uso para salvar a ordem no banco de dados
@@ -338,7 +338,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
               }`}
             >
               <BookOpen className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <p className="text-sm font-medium">Lições</p>
+              <p className="text-sm font-medium">Unidades</p>
             </button>
             <button
               onClick={() => handleTypeChange('content')}
@@ -384,12 +384,12 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
               </div>
               {selectedModuleId && (
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Selecione a Lição</label>
+                  <label className="text-sm font-medium mb-2 block">Selecione a Unidade</label>
                   <SelectComponent
                     value={selectedLessonId}
                     onChange={setSelectedLessonId}
                     options={lessons.map(l => ({ value: l.id, label: l.title }))}
-                    placeholder="Selecione uma lição"
+                    placeholder="Selecione uma unidade"
                   />
                 </div>
               )}
@@ -537,14 +537,14 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
               {reorderType === 'lessons' && !selectedModuleId && (
                 <div className="text-center py-12 text-gray-500">
                   <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Selecione um módulo para ver as lições</p>
+                  <p>Selecione um módulo para ver as unidades</p>
                 </div>
               )}
 
               {reorderType === 'lessons' && selectedModuleId && lessons.length === 0 && !loading && (
                 <div className="text-center py-12 text-gray-500">
                   <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Este módulo não possui lições</p>
+                  <p>Este módulo não possui unidades</p>
                 </div>
               )}
 
@@ -558,7 +558,7 @@ export function ReorderModal({ isOpen, onClose, courseId, onSuccess }: ReorderMo
               {reorderType === 'content' && selectedModuleId && !selectedLessonId && (
                 <div className="text-center py-12 text-gray-500">
                   <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Selecione uma lição para reordenar os conteúdos</p>
+                  <p>Selecione uma unidade para reordenar os conteúdos</p>
                 </div>
               )}
 

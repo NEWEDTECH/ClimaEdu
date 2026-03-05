@@ -102,7 +102,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         const lesson = await lessonRepository.findById(lessonId)
  
         if (!lesson) {
-          setError('Lição não encontrada')
+          setError('Unidade não encontrada')
           setIsLoading(false)
           return
         }
@@ -190,7 +190,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching lesson data:', error)
-        setError('Falha ao carregar dados da lição')
+        setError('Falha ao carregar dados da unidade')
         setIsLoading(false)
       }
     }
@@ -225,7 +225,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       const lesson = await lessonRepository.findById(lessonId)
       
       if (!lesson) {
-        throw new Error('Lição não encontrada')
+        throw new Error('Unidade não encontrada')
       }
       
       lesson.updateTitle(formData.title)
@@ -245,8 +245,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       
       router.push(`/courses/edit/${courseId}/modules/${moduleId}`)
     } catch (error) {
-      console.error('Erro ao atualizar lição:', error)
-      alert(`Falha ao atualizar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      console.error('Erro ao atualizar unidade:', error)
+      alert(`Falha ao atualizar unidade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -378,7 +378,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Editar Lição</h1>
+              <h1 className="text-3xl font-bold">Editar Unidade</h1>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
             <Link href={`/admin/courses/edit/${courseId}/modules/${moduleId}`}>
@@ -388,23 +388,23 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
           <Card>
             <CardHeader>
-              <CardTitle>Informações da Lição</CardTitle>
+              <CardTitle>Informações da Unidade</CardTitle>
               <CardDescription>
-                Atualize os detalhes da lição
+                Atualize os detalhes da unidade
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormSection onSubmit={handleSubmit} error={error}>
                 <div className="space-y-2">
                   <label htmlFor="title" className="text-sm font-medium">
-                    Título da Lição
+                    Título da Unidade
                   </label>
                   <InputText
                     id="title"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    placeholder="Digite o título da lição"
+                    placeholder="Digite o título da unidade"
                     required
                   />
                 </div>
@@ -413,7 +413,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                 <Card>
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
-                      <CardTitle>Conteúdos da Lição</CardTitle>
+                      <CardTitle>Conteúdos da Unidade</CardTitle>
                       <div className="flex gap-2">
                         <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
                           <Button className="border bg-transparent hover:bg-gray-100 text-xs px-3 py-1">Adicionar Vídeo</Button>
@@ -427,13 +427,13 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                       </div>
                     </div>
                     <CardDescription>
-                      Gerencie os conteúdos desta lição
+                      Gerencie os conteúdos desta unidade
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {formData.contents.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        Esta lição ainda não possui conteúdos. Adicione um conteúdo para começar.
+                        Esta unidade ainda não possui conteúdos. Adicione um conteúdo para começar.
                       </div>
                     ) : (
                       <div className="space-y-3">

@@ -72,7 +72,7 @@ export function QuestionnaireSection({
               Nenhum questionário criado
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              Crie um questionário para avaliar o conhecimento dos estudantes sobre esta lição.
+              Crie um questionário para avaliar o conhecimento dos estudantes sobre esta unidade.
             </p>
           </div>
         </CardContent>
@@ -128,7 +128,7 @@ export function QuestionnaireSection({
                   {questionnaire.title}
                 </h4>
                 <p className="text-purple-700 dark:text-purple-300 text-sm">
-                  Avaliação de conhecimento da lição
+                  Avaliação de conhecimento da unidade
                 </p>
               </div>
             </div>

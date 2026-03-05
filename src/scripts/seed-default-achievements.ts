@@ -18,8 +18,8 @@ const defaultAchievements = [
   },
   {
     id: 'def_ach_' + nanoid(10),
-    name: 'Primeira Lição',
-    description: 'Complete sua primeira lição',
+    name: 'Primeira Unidade',
+    description: 'Complete sua primeira unidade',
     iconUrl: '/icons/achievements/first-lesson.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 1,

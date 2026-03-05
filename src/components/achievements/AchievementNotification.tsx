@@ -137,8 +137,8 @@ export function useAchievementNotifications() {
 export function showDemoAchievementNotification(): void {
   showAchievementNotification({
     id: 'demo_' + Date.now(),
-    name: 'Primeira Lição',
-    description: 'Parabéns! Você completou sua primeira lição na plataforma.',
+    name: 'Primeira Unidade',
+    description: 'Parabéns! Você completou sua primeira unidade na plataforma.',
     iconUrl: '/icons/achievements/first-lesson.svg',
     category: 'Primeiros Passos'
   });

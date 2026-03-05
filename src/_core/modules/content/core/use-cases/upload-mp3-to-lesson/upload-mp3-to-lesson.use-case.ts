@@ -28,21 +28,21 @@ export class UploadMp3ToLessonUseCase {
       // Validações
       this.validateInput(file);
 
-      // Verificar se a lição existe
+      // Verificar se a unidade existe
       const lesson = await this.lessonRepository.findById(lessonId);
       if (!lesson) {
         return {
           success: false,
-          message: 'Lição não encontrada'
+          message: 'Unidade não encontrada'
         };
       }
 
-      // Verificar se já existe um MP3 na lição
+      // Verificar se já existe um MP3 na unidade
       const existingMp3Content = lesson.contents.find(content => content.type === ContentType.AUDIO);
       if (existingMp3Content) {
         return {
           success: false,
-          message: 'Já existe um áudio MP3 nesta lição. Remova-o primeiro para enviar um novo.'
+          message: 'Já existe um áudio MP3 nesta unidade. Remova-o primeiro para enviar um novo.'
         };
       }
 
@@ -70,7 +70,7 @@ export class UploadMp3ToLessonUseCase {
       // Salvar o conteúdo
       await this.contentRepository.save(content);
 
-      // Adicionar o conteúdo à lição
+      // Adicionar o conteúdo à unidade
       lesson.contents.push(content);
       await this.lessonRepository.save(lesson);
 

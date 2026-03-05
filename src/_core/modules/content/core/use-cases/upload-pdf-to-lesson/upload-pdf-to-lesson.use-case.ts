@@ -28,21 +28,21 @@ export class UploadPdfToLessonUseCase {
       // Validações
       this.validateInput(file);
 
-      // Verificar se a lição existe
+      // Verificar se a unidade existe
       const lesson = await this.lessonRepository.findById(lessonId);
       if (!lesson) {
         return {
           success: false,
-          message: 'Lição não encontrada'
+          message: 'Unidade não encontrada'
         };
       }
 
-      // Verificar se já existe um PDF na lição
+      // Verificar se já existe um PDF na unidade
       const existingPdfContent = lesson.contents.find(content => content.type === ContentType.PDF);
       if (existingPdfContent) {
         return {
           success: false,
-          message: 'Já existe um PDF nesta lição. Remova-o primeiro para enviar um novo.'
+          message: 'Já existe um PDF nesta unidade. Remova-o primeiro para enviar um novo.'
         };
       }
 
@@ -70,7 +70,7 @@ export class UploadPdfToLessonUseCase {
       // Salvar o conteúdo
       await this.contentRepository.save(content);
 
-      // Adicionar o conteúdo à lição
+      // Adicionar o conteúdo à unidade
       lesson.contents.push(content);
       await this.lessonRepository.save(lesson);
 

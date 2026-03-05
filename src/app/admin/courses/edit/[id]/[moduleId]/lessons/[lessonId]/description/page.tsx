@@ -43,7 +43,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
 
         const lesson = await lessonRepository.findById(lessonId)
         if (!lesson) {
-          setError('Lição não encontrada')
+          setError('Unidade não encontrada')
           setIsLoading(false)
           return
         }
@@ -157,9 +157,9 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold mb-2">Descrição da Lição33</h1>
+                <h1 className="text-2xl font-bold mb-2">Descrição da Unidade33</h1>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  Lição: <span className="font-medium">{lessonTitle}</span>
+                  Unidade: <span className="font-medium">{lessonTitle}</span>
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Módulo: <span className="font-medium">{moduleName}</span>
@@ -223,7 +223,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                     <div>
                       <p className="font-medium">Seja Claro e Objetivo</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Explique claramente o que o aluno aprenderá nesta lição.
+                        Explique claramente o que o aluno aprenderá nesta unidade.
                       </p>
                     </div>
                   </div>
@@ -267,7 +267,7 @@ export default function LessonDescriptionPage({ params }: { params: Promise<{ id
                     <div>
                       <p className="font-medium">Inclua Pré-requisitos</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Mencione conhecimentos necessários para a lição.
+                        Mencione conhecimentos necessários para a unidade.
                       </p>
                     </div>
                   </div>

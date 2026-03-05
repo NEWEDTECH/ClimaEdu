@@ -36,7 +36,7 @@ export default function ConquistasPage() {
     [BadgeCriteriaType.STUDY_TIME]: 'Tempo de Estudo',
     [BadgeCriteriaType.PERFECT_SCORE]: 'Nota Perfeita',
     [BadgeCriteriaType.COURSE_COMPLETION]: 'Conclusão de Cursos',
-    [BadgeCriteriaType.LESSON_COMPLETION]: 'Conclusão de Lições',
+    [BadgeCriteriaType.LESSON_COMPLETION]: 'Conclusão de Unidades',
     [BadgeCriteriaType.QUESTIONNAIRE_COMPLETION]: 'Desempenho em Questionários',
     [BadgeCriteriaType.DAILY_LOGIN]: 'Login Diário',
     [BadgeCriteriaType.CERTIFICATE_ACHIEVED]: 'Certificados Obtidos',

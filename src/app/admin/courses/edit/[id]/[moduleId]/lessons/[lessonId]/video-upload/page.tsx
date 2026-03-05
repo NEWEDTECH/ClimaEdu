@@ -48,7 +48,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
-          setError('Lição não encontrada');
+          setError('Unidade não encontrada');
           setIsLoading(false);
           return;
         }
@@ -93,7 +93,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     setIsSaving(true);
 
     // Show loading toast
-    const loadingToastId = showToast.loading('Adicionando vídeo à lição...');
+    const loadingToastId = showToast.loading('Adicionando vídeo à unidade...');
 
     try {
 
@@ -122,7 +122,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       const lesson = await lessonRepository.findById(lessonId);
 
       if (!lesson) {
-        throw new Error('Lição não encontrada');
+        throw new Error('Unidade não encontrada');
       }
 
       const contentData = {
@@ -145,7 +145,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
       // Update loading toast to success
       showToast.update(loadingToastId, {
-        render: 'Vídeo adicionado com sucesso à lição!',
+        render: 'Vídeo adicionado com sucesso à unidade!',
         type: 'success'
       });
 
@@ -192,7 +192,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -211,7 +211,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
               <div>
                 <h1 className="text-2xl font-bold mb-2">Vídeo Aula</h1>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  Lição: <span className="font-medium">{lessonTitle}</span>
+                  Unidade: <span className="font-medium">{lessonTitle}</span>
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Módulo: <span className="font-medium">{moduleName}</span>

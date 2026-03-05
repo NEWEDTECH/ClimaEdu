@@ -63,7 +63,7 @@ export function ActivitySection({
               Nenhuma atividade criada
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              Crie uma atividade prática para engajar os estudantes e reforçar o aprendizado desta lição.
+              Crie uma atividade prática para engajar os estudantes e reforçar o aprendizado desta unidade.
             </p>
           </div>
         </CardContent>

@@ -111,7 +111,7 @@ export default function StudentActivitiesPage() {
     }
   }, []);
 
-  // Buscar módulos e lições do curso selecionado
+  // Buscar módulos e unidades do curso selecionado
   const fetchCourseModulesAndLessons = useCallback(async (courseId: string) => {
     if (!courseId) {
       setModules([]);
@@ -128,7 +128,7 @@ export default function StudentActivitiesPage() {
       const courseModules = await moduleRepository.listByCourse(courseId);
       setModules(courseModules);
 
-      // Buscar lições de todos os módulos
+      // Buscar unidades de todos os módulos
       const lessonRepository = container.get<LessonRepository>(
         Register.content.repository.LessonRepository
       );
@@ -142,7 +142,7 @@ export default function StudentActivitiesPage() {
       setLessons(allLessons);
     } catch (err) {
       console.error('Error fetching course modules and lessons:', err);
-      showToast.error('Erro ao carregar módulos e lições');
+      showToast.error('Erro ao carregar módulos e unidades');
       setModules([]);
       setLessons([]);
     }
@@ -182,7 +182,7 @@ export default function StudentActivitiesPage() {
     }))
   ];
 
-  // Preparar dados para a tabela - uma linha para cada lição
+  // Preparar dados para a tabela - uma linha para cada unidade
   const selectedStudent = selectedStudentId ? students.find(s => s.id === selectedStudentId) : null;
   const selectedCourse = selectedCourseId ? courses.find(c => c.id === selectedCourseId) : null;
 
@@ -280,7 +280,7 @@ export default function StudentActivitiesPage() {
                         Módulos
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
-                        Lições
+                      Unidades
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-white uppercase tracking-wider">
                         Ações
@@ -298,7 +298,7 @@ export default function StudentActivitiesPage() {
                             Nenhum conteúdo encontrado
                           </h3>
                           <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-                            Este curso ainda não possui módulos ou lições.
+                            Este curso ainda não possui módulos ou unidades.
                           </p>
                         </td>
                       </tr>

@@ -88,8 +88,8 @@ export default function TutorEditCoursePage({ params }: { params: Promise<{ id: 
           <CardContent className="p-6">
             <div className="text-center py-8 text-gray-500">
               <h2 className="text-xl font-semibold mb-2">Bem-vindo à Edição do Curso</h2>
-              <p className="mb-4">Use a sidebar à esquerda para navegar pelos módulos e lições.</p>
-              <p className="text-sm">Selecione uma lição para começar a editar seu conteúdo.</p>
+              <p className="mb-4">Use a sidebar à esquerda para navegar pelos módulos e unidades.</p>
+              <p className="text-sm">Selecione uma unidade para começar a editar seu conteúdo.</p>
             </div>
           </CardContent>
         </Card>

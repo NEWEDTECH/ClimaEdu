@@ -84,7 +84,7 @@ const ModuleDropdown = ({
           <div>
             <span className="font-semibold w-auto text-gray-800 dark:text-gray-200">{module.title}</span>
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {module.lessons.length} {module.lessons.length === 1 ? 'lição' : 'lições'}
+              {module.lessons.length} {module.lessons.length === 1 ? 'unidade' : 'unidades'}
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     id: 'default_achievement_first_lesson',
     name: 'Primeiro Passo',
-    description: 'Complete sua primeira lição e inicie sua jornada de aprendizado!',
+    description: 'Complete sua primeira unidade e inicie sua jornada de aprendizado!',
     iconUrl: '/icons/achievements/first-step.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 1,
@@ -51,7 +51,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     id: 'default_achievement_lesson_milestone_5',
     name: 'Aprendiz',
-    description: 'Complete 5 lições e demonstre seu comprometimento com o aprendizado.',
+    description: 'Complete 5 unidades e demonstre seu comprometimento com o aprendizado.',
     iconUrl: '/icons/achievements/apprentice.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 5,
@@ -60,7 +60,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     id: 'default_achievement_lesson_milestone_10',
     name: 'Estudante Dedicado',
-    description: 'Complete 10 lições e mostre sua dedicação aos estudos.',
+    description: 'Complete 10 unidades e mostre sua dedicação aos estudos.',
     iconUrl: '/icons/achievements/dedicated-student.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 10,
@@ -69,7 +69,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     id: 'default_achievement_lesson_milestone_25',
     name: 'Leitor Assíduo',
-    description: 'Complete 25 lições e torne-se um leitor verdadeiramente assíduo.',
+    description: 'Complete 25 unidades e torne-se um leitor verdadeiramente assíduo.',
     iconUrl: '/icons/achievements/avid-reader.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 25,
@@ -78,7 +78,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     id: 'default_achievement_lesson_milestone_50',
     name: 'Mestre do Conhecimento',
-    description: 'Complete 50 lições e alcance o nível de mestre em aprendizado.',
+    description: 'Complete 50 unidades e alcance o nível de mestre em aprendizado.',
     iconUrl: '/icons/achievements/knowledge-master.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 50,

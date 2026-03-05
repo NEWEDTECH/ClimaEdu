@@ -61,20 +61,20 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
         
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
-          setError('Lição não encontrada');
+          setError('Unidade não encontrada');
           setIsLoading(false);
           return;
         }
         
         if (lesson.questionnaire) {
-          setError('Esta lição já possui um questionário');
+          setError('Esta unidade já possui um questionário');
           setIsLoading(false);
           return;
         }
         
         const existingQuestionnaire = await questionnaireRepository.findByLessonId(lessonId);
         if (existingQuestionnaire) {
-          setError('Esta lição já possui um questionário. Volte para a página da lição para visualizá-lo.');
+          setError('Esta unidade já possui um questionário. Volte para a página da unidade para visualizá-lo.');
           setIsLoading(false);
           return;
         }
@@ -154,7 +154,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -171,7 +171,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-2">Criar Questionário</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
-              Adicionar questionário à lição: <span className="font-medium">{lessonTitle}</span>
+              Adicionar questionário à unidade: <span className="font-medium">{lessonTitle}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Módulo: <span className="font-medium">{moduleName}</span>
@@ -182,7 +182,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
             <CardHeader>
               <CardTitle>Novo Questionário</CardTitle>
               <CardDescription>
-                Crie um questionário para avaliar o conhecimento dos alunos sobre o conteúdo da lição
+                Crie um questionário para avaliar o conhecimento dos alunos sobre o conteúdo da unidade
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -375,7 +375,7 @@ export default function CreateQuestionnairePage({ params }: { params: Promise<{ 
                   <div>
                     <p className="font-medium">Cobertura Abrangente</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Crie perguntas que cubram todos os principais tópicos da lição.
+                      Crie perguntas que cubram todos os principais tópicos da unidade.
                     </p>
                   </div>
                 </div>
