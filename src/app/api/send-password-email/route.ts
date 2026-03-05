@@ -61,23 +61,25 @@ export async function POST(request: NextRequest) {
     // Verify transporter configuration
     await transporter.verify();
 
+    const safeEmail = email.replace('@', '&#8203;@');
+
     // Compose email
     const mailOptions = {
       from: `"${emailConfig.fromName}" <${emailConfig.fromAddress}>`,
       to: email,
       subject: 'Sua senha de acesso - ClimaEdu',
-      text: `
-        ${userName ? `Olá, ${userName}!\n\n` : ''}Sua conta foi criada com sucesso na plataforma ClimaEdu.
-        
-        Sua senha temporária de acesso é: ${password}
-        
-        Email de acesso: ${email}
-        
-        IMPORTANTE: Por questões de segurança, recomendamos que você altere esta senha após o primeiro acesso.
-        
-        Se você não solicitou esta conta, por favor ignore este email.
-        
-        © ${new Date().getFullYear()} ClimaEdu. Todos os direitos reservados.
+      html: `
+        <p>${userName ? `Olá, <strong>${userName}</strong>!<br><br>` : ''}Sua conta foi criada com sucesso na plataforma <strong>ClimaEdu</strong>.</p>
+
+        <p><strong>Sua senha temporária de acesso é:</strong> ${password}</p>
+
+        <p><strong>Email de acesso:</strong> ${safeEmail}</p>
+
+        <p><strong>IMPORTANTE:</strong> Por questões de segurança, recomendamos que você altere esta senha após o primeiro acesso.</p>
+
+        <p>Se você não solicitou esta conta, por favor ignore este email.</p>
+
+        <p>© ${new Date().getFullYear()} ClimaEdu. Todos os direitos reservados.</p>
       `,
     };
 
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-      
+
       return NextResponse.json(
         { error: `Falha ao enviar email: ${error.message}` },
         { status: 500 }
