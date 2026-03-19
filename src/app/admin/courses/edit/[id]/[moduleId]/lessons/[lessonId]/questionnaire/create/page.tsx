@@ -17,6 +17,7 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { showToast } from '@/components/toast';
+import { QuestionnairePreview } from '@/components/admin/QuestionnairePreview';
 
 type QuestionFormData = {
   questionText: string;
@@ -60,6 +61,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
   const [error, setError] = useState<string | null>(null);
   const [isEditingQuestion, setIsEditingQuestion] = useState<boolean>(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -650,14 +652,19 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
             {/* Submit Buttons */}
             <div className="flex justify-end space-x-3 mt-6">
               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                
-                <Button
-                  type="button"
-                  variant='secondary'
-                >
+                <Button type="button" variant='secondary'>
                   Cancelar
                 </Button>
               </Link>
+
+              <Button
+                type="button"
+                variant='secondary'
+                disabled={questions.length === 0}
+                onClick={() => setShowPreview(true)}
+              >
+                Visualizar
+              </Button>
 
               <Button
                 type="submit"
@@ -779,6 +786,16 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
           </Card>
         </div>
       </DashboardLayout>
+
+      {showPreview && (
+        <QuestionnairePreview
+          title={questionnaireFormData.title}
+          maxAttempts={questionnaireFormData.maxAttempts}
+          passingScore={questionnaireFormData.passingScore}
+          questions={questions.map(q => ({ questionText: q.questionText, options: q.options }))}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </ProtectedContent>
   );
 }

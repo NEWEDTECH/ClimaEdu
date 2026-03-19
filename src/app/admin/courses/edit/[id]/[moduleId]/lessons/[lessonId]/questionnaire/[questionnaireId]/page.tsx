@@ -24,6 +24,7 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { Question } from '@/_core/modules/content/core/entities/Question';
 import { Questionnaire } from '@/_core/modules/content/core/entities/Questionnaire';
 import { showToast } from '@/components/toast';
+import { QuestionnairePreview } from '@/components/admin/QuestionnairePreview';
 
 type QuestionFormData = {
   questionText: string;
@@ -67,6 +68,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
 
   const [isDeletingQuestion, setIsDeletingQuestion] = useState<boolean>(false);
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -454,11 +456,20 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                   Módulo: <span className="font-medium">{moduleName}</span>
                 </p>
               </div>
-              <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                <Button variant='primary'>
-                  Voltar
+              <div className="flex gap-2">
+                <Button
+                  variant='secondary'
+                  disabled={questions.length === 0}
+                  onClick={() => setShowPreview(true)}
+                >
+                  Visualizar
                 </Button>
-              </Link>
+                <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
+                  <Button variant='primary'>
+                    Voltar
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -1025,6 +1036,16 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
           </Card>
         </div>
       </DashboardLayout>
+
+      {showPreview && (
+        <QuestionnairePreview
+          title={questionnaireFormData.title}
+          maxAttempts={questionnaireFormData.maxAttempts}
+          passingScore={questionnaireFormData.passingScore}
+          questions={questions.map(q => ({ questionText: q.questionText, options: q.options }))}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </ProtectedContent>
   );
 }
