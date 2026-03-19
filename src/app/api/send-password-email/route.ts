@@ -69,17 +69,25 @@ export async function POST(request: NextRequest) {
       to: email,
       subject: 'Sua senha de acesso - ClimaEdu',
       html: `
-        <p>${userName ? `Olá, <strong>${userName}</strong>!<br><br>` : ''}Sua conta foi criada com sucesso na plataforma <strong>ClimaEdu</strong>.</p>
+        <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222; line-height: 1.6;">
+          <p>Olá, <strong>${userName || ''}</strong>!</p>
+          <p>Sua conta foi criada com sucesso na plataforma <strong>ClimaEdu</strong>.</p>
 
-        <p><strong>Sua senha temporária de acesso é:</strong> ${password}</p>
+          <p><strong>Email de acesso:</strong> ${safeEmail}</p>
+          <p><strong>Sua senha temporária de acesso é:</strong> ${password}</p>
 
-        <p><strong>Email de acesso:</strong> ${safeEmail}</p>
+          <p><strong>Link para acessar:</strong><br>
+            <a href="https://climaedu.newedtech.com.br/" style="color: #1a73e8; text-decoration: underline;">
+              https://climaedu.newedtech.com.br/
+            </a>
+          </p>
 
-        <p><strong>IMPORTANTE:</strong> Por questões de segurança, recomendamos que você altere esta senha após o primeiro acesso.</p>
+          <p><strong>IMPORTANTE:</strong> Por questões de segurança, recomendamos que você altere esta senha após o primeiro acesso.</p>
 
-        <p>Se você não solicitou esta conta, por favor ignore este email.</p>
+          <p>Se você não solicitou esta conta, por favor ignore este email.</p>
 
-        <p>© ${new Date().getFullYear()} ClimaEdu. Todos os direitos reservados.</p>
+          <p>© ${new Date().getFullYear()} ClimaEdu. Todos os direitos reservados.</p>
+        </div>
       `,
     };
 
