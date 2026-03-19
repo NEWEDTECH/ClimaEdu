@@ -159,7 +159,7 @@ export class FirebaseUserRepository implements UserRepository {
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      profile: user.profile?.avatarUrl ? { avatar: user.profile.avatarUrl } : null
+      profile: user.profile?.avatarUrl ? { avatarUrl: user.profile.avatarUrl } : null
     };
 
     // Check if the user already exists
