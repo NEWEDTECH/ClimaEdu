@@ -38,7 +38,6 @@ type DropdownSection = {
 
 const studentItems: DropdownItem[] = [
   { label: 'Social', href: '/social', icon: <FiUsers /> },
-  { label: 'Atividades', href: '/student/activities', icon: <FiActivity /> },
   { label: 'Tutoria', href: '/student/tutoring', icon: <FiUserCheck /> },
   { label: 'Certificados', href: '/student/certificates', icon: <PiCertificate /> },
   { label: 'Conquistas', href: '/student/achievements', icon: <FiAward /> },
@@ -49,8 +48,12 @@ const teacherItems: DropdownItem[] = [
   { label: 'Social', href: '/social', icon: <FiUsers /> },
   { label: 'Acompanhamento', href: '/tutor/follow-up', icon: <FiUserCheck /> },
   { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
-  { label: 'Cursos', href: '/tutor/courses', icon: <FiBookOpen /> },
-  { label: 'Tutoria', href: '/tutor/tutoring', icon: <FiUserCheck /> },
+  { label: 'Tutoria', href: '/tutor/tutoring', icon: <FiUserCheck /> }
+];
+
+const content_managerItems: DropdownItem[] = [
+  { label: 'Social', href: '/social', icon: <FiUsers /> },
+  { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> }
 ];
 
 const adminItems: DropdownItem[] = [
@@ -72,7 +75,8 @@ const adminItems: DropdownItem[] = [
 
 const sections: DropdownSection[] = [
   { title: 'Área do Aluno', items: studentItems, role: 'STUDENT' },
-  { title: 'Área do Tutor', items: teacherItems, role: ['TUTOR', 'CONTENT_MANAGER'] },
+  { title: 'Área do Tutor', items: teacherItems, role: 'TUTOR' },
+  { title: 'Área do Gestor de conteúdo', items: content_managerItems, role: 'CONTENT_MANAGER' },
   { title: 'Área do Admin', items: adminItems, role: ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'] }
 ];
 

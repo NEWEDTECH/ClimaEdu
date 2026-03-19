@@ -295,13 +295,13 @@ export function AdvancedSettingsSection({ settings = {}, onChange }: AdvancedSet
             Navegação do Curso
           </h3>
           <p className="text-sm text-gray-600">
-            Configure como os estudantes podem navegar pelos cursos e lições.
+            Configure como os estudantes podem navegar pelos cursos e unidades.
           </p>
           
           <div className="space-y-4">
             <ToggleSettings
               label="Progresso Sequencial Obrigatório"
-              description="Os estudantes devem completar as lições em ordem sequencial"
+              description="Os estudantes devem completar as unidades em ordem sequencial"
               enabled={getCourseNavigation('requireSequentialProgress')}
               onChange={(value) => updateNestedSetting('courseNavigation', 'requireSequentialProgress', value)}
               defaultValue={defaultInstitutionSettings.settings.courseNavigation.requireSequentialProgress}
@@ -309,8 +309,8 @@ export function AdvancedSettingsSection({ settings = {}, onChange }: AdvancedSet
             />
             
             <ToggleSettings
-              label="Permitir Pular Lições"
-              description="Os estudantes podem pular lições sem completá-las"
+              label="Permitir Pular Unidades"
+              description="Os estudantes podem pular unidades sem completá-las"
               enabled={getCourseNavigation('allowSkipLesson')}
               onChange={(value) => updateNestedSetting('courseNavigation', 'allowSkipLesson', value)}
               defaultValue={defaultInstitutionSettings.settings.courseNavigation.allowSkipLesson}

@@ -6,4 +6,5 @@ export interface UpdateCourseInput {
   title?: string;
   description?: string;
   coverImageUrl?: string;
+  isActive?: boolean;
 }

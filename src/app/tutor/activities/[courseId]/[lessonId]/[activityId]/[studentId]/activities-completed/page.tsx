@@ -39,7 +39,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
   const institutionId = infoUser.currentIdInstitution;
   const tutorId = infoUser.id;
 
-  // Buscar dados do curso, lição, aluno e submissões
+  // Buscar dados do curso, unidade, aluno e submissões
   useEffect(() => {
     const fetchData = async () => {
       if (!courseId || !lessonId || !studentId || !activityId) return;
@@ -54,7 +54,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
         const courseData = await courseRepository.findById(courseId);
         setCourse(courseData);
 
-        // Buscar lição
+        // Buscar unidade
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         );
@@ -68,7 +68,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
         const studentData = await userRepository.findById(studentId);
         setStudent(studentData);
 
-        // Buscar atividades da lição
+        // Buscar atividades da unidade
         const activityRepository = container.get<ActivityRepository>(
           Register.content.repository.ActivityRepository
         );
@@ -159,7 +159,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
 
       alert('✅ ' + result.message);
       
-      // Atualizar o progresso da lição - marcar atividade como completa
+      // Atualizar o progresso da unidade - marcar atividade como completa
       try {
         const updateProgressUseCase = container.get<UpdateContentProgressUseCase>(
           Register.content.useCase.UpdateContentProgressUseCase
@@ -173,9 +173,9 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
           timeSpent: 0
         });
         
-        console.log('✅ Progresso da lição atualizado - atividade marcada como completa');
+        console.log('✅ Progresso da unidade atualizado - atividade marcada como completa');
       } catch (progressError) {
-        console.error('⚠️ Erro ao atualizar progresso da lição:', progressError);
+        console.error('⚠️ Erro ao atualizar progresso da unidade:', progressError);
         // Não bloquear o fluxo se houver erro ao atualizar o progresso
       }
       
@@ -269,7 +269,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
                 'Carregando informações...'
               ) : (
                 <>
-                  Curso: {course?.title || courseId} | Lição: {lesson?.title || lessonId} | Aluno: {student?.name || studentId}
+                  Curso: {course?.title || courseId} | Unidade: {lesson?.title || lessonId} | Aluno: {student?.name || studentId}
                 </>
               )}
             </p>
@@ -314,7 +314,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
             </div>
           )}
 
-          {/* Renderizar atividades encontradas na lição */}
+          {/* Renderizar atividades encontradas na unidade */}
           {!loading && activities.length > 0 ? (
             <div className="space-y-6">
               {activities.map((activity) => (
@@ -394,7 +394,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
                 Nenhuma atividade encontrada
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Esta lição não possui atividades cadastradas.
+                Esta unidade não possui atividades cadastradas.
               </p>
             </div>
           ) : loading ? (
@@ -406,7 +406,7 @@ export default function StudentActivitiesCompletedPage({ params }: { params: Pro
                 Carregando atividades...
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Buscando atividades da lição.
+                Buscando atividades da unidade.
               </p>
             </div>
           ) : null}

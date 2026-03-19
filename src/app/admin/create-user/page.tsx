@@ -14,7 +14,6 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { CSVUpload } from '@/components/admin/CSVUpload'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
-import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
 import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case'
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case'
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case'
@@ -89,6 +88,7 @@ const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
 
 export default function CreateUserPage() {
   const router = useRouter()
+  const [mode, setMode] = useState<'individual' | 'csv'>('individual')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<boolean>(false)
@@ -109,7 +109,7 @@ export default function CreateUserPage() {
   })
   const { infoUser } = useProfile()
 
-  const currentUserRole: UserRole = UserRole.SUPER_ADMIN;
+  const currentUserRole = infoUser.currentRole as UserRole;
 
   const allowedRoles = getAllowedRolesToCreate(currentUserRole);
 
@@ -135,8 +135,10 @@ export default function CreateUserPage() {
     fetchInstitutions()
   }, [currentUserRole])
 
-  // Fetch courses and trails for CSV upload
+  // Fetch courses and trails only when the user switches to CSV mode
   useEffect(() => {
+    if (mode !== 'csv') return
+
     const fetchCoursesAndTrails = async () => {
       try {
         const listCoursesUseCase = container.get<ListCoursesByInstitutionUseCase>(
@@ -171,14 +173,14 @@ export default function CreateUserPage() {
           })))
         }
       } catch (err) {
-        console.error('Error fetching courses and trails:', err)
+        console.error('Erro ao buscar cursos e trilhas:', err)
       }
     }
 
     if (infoUser.id) {
       fetchCoursesAndTrails()
     }
-  }, [infoUser.id, infoUser.currentRole, infoUser.currentIdInstitution, institutions])
+  }, [mode, infoUser.id, infoUser.currentRole, infoUser.currentIdInstitution, institutions])
 
   const {
     register,
@@ -201,70 +203,53 @@ export default function CreateUserPage() {
     setIsSubmitting(true)
 
     try {
-      // Criar o usuário
-      const createUserUseCase = container.get<CreateUserUseCase>(
-        Register.user.useCase.CreateUserUseCase
-      )
-
-      const createUserResult = await createUserUseCase.execute({
-        name: data.name,
-        email: data.email,
-        password: '',
-        type: data.role
+      // Criar o usuário via API server-side (Admin SDK não faz auto-login)
+      const createResponse = await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: data.name, email: data.email, role: data.role }),
       })
 
-      // Associate user to institution based on user role and selected institution
-      if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
-        if (infoUser.currentIdInstitution && createUserResult.user) {
-          const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
-            Register.institution.useCase.AssociateUserToInstitutionUseCase
-          )
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json()
+        throw new Error(errorData.error || 'Falha ao criar usuário')
+      }
 
-          await associateUserUseCase.execute({
-            userId: createUserResult.user.id,
-            institutionId: infoUser.currentIdInstitution,
-            userRole: data.role
-          })
-        }
-      } else if ((infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) && data.institutionId && createUserResult.user) {
-        const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
-          Register.institution.useCase.AssociateUserToInstitutionUseCase
-        )
+      const { userId, temporaryPassword } = await createResponse.json()
 
+      // Associar usuário à instituição
+      const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+        Register.institution.useCase.AssociateUserToInstitutionUseCase
+      )
+
+      const institutionId =
+        infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER
+          ? infoUser.currentIdInstitution
+          : data.institutionId
+
+      if (institutionId) {
         await associateUserUseCase.execute({
-          userId: createUserResult.user.id,
-          institutionId: data.institutionId,
+          userId,
+          institutionId,
           userRole: data.role
         })
       }
 
-      // Send temporary password via email
-      if (createUserResult.temporaryPassword) {
+      // Enviar senha temporária por email
+      if (temporaryPassword) {
         try {
           const emailResponse = await fetch('/api/send-password-email', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: data.email,
-              password: createUserResult.temporaryPassword,
-              userName: data.name,
-            }),
-          });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.email, password: temporaryPassword, userName: data.name }),
+          })
 
           if (!emailResponse.ok) {
-            const errorData = await emailResponse.json();
-            console.error('Erro ao enviar email:', errorData.error);
-            // Don't fail user creation if email fails
-            setError(`Usuário criado com sucesso, mas houve um erro ao enviar o email: ${errorData.error || 'Erro desconhecido'}`);
-          } else {
-            console.log('✅ Email com senha enviado com sucesso');
+            const errorData = await emailResponse.json()
+            setError(`Usuário criado com sucesso, mas houve um erro ao enviar o email: ${errorData.error || 'Erro desconhecido'}`)
           }
-        } catch (emailError) {
-          console.error('Erro ao enviar email:', emailError);
-          // Don't fail user creation if email fails
-          setError('Usuário criado com sucesso, mas houve um erro ao enviar o email. Por favor, reenvie a senha manualmente.');
+        } catch {
+          setError('Usuário criado com sucesso, mas houve um erro ao enviar o email.')
         }
       }
 
@@ -280,7 +265,7 @@ export default function CreateUserPage() {
   }
 
   const handleCSVUpload = async (
-    file: File, 
+    _file: File,
     data: Record<string, string>[], 
     enrollmentType: 'course' | 'trail', 
     enrollmentId: string
@@ -322,28 +307,17 @@ export default function CreateUserPage() {
         Register.user.useCase.ProcessCSVUsersUseCase
       );
 
-      console.log(data)
-
       const result = await processCSVUseCase.execute({
         csvData: data,
         institutionId,
         createdByUserId: infoUser.id,
         createdByUserRole: infoUser.currentRole as UserRole,
         onProgress: (current, total, currentEmail) => {
-          console.log(`🎯 Frontend received progress update: ${current}/${total} - ${currentEmail}`);
-          setCsvProgress(prev => {
-            console.log(`📱 Updating state from ${prev.current}/${prev.total} to ${current}/${total}`);
-            return {
-              ...prev,
-              current,
-              total,
-              currentEmail
-            };
-          });
+          setCsvProgress(prev => ({ ...prev, current, total, currentEmail }));
         }
       });
 
-      // Associate each created user to the institution and enroll them
+      // Associa e matricula todos os usuários em paralelo
       const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
         Register.institution.useCase.AssociateUserToInstitutionUseCase
       );
@@ -354,105 +328,69 @@ export default function CreateUserPage() {
         EnrollmentSymbols.useCases.EnrollInTrailUseCase
       );
 
-      const associationFailures: Array<{ email: string; error: string }> = [];
       const enrollmentFailures: Array<{ email: string; error: string }> = [];
       const emailFailures: Array<{ email: string; error: string }> = [];
-      
-      for (const userWithPassword of result.createdUsers) {
-        try {
-          // Extract user data from result
-          const user = userWithPassword.user;
-          const temporaryPassword = userWithPassword.temporaryPassword;
-          const email = userWithPassword.email;
-          const name = userWithPassword.name;
 
-          // Associate user to institution
+      const settledResults = await Promise.allSettled(
+        result.createdUsers.map(async (userWithPassword) => {
+          const { user, temporaryPassword, email, name } = userWithPassword;
+
           await associateUserUseCase.execute({
             userId: user.id,
             institutionId,
             userRole: user.role
           });
 
-          // Enroll user based on enrollment type
           if (enrollmentType === 'course') {
-            // Enroll in single course using use case
             await enrollInCourseUseCase.execute({
               userId: user.id,
               courseId: enrollmentId,
               institutionId
             });
-            console.log(`✅ Enrolled ${email} in course ${enrollmentId}`);
           } else if (enrollmentType === 'trail') {
-            // Enroll in trail (will enroll in all courses of the trail) using use case
             await enrollInTrailUseCase.execute({
               userId: user.id,
               trailId: enrollmentId,
               institutionId
             });
-            console.log(`✅ Enrolled ${email} in all courses of trail ${enrollmentId}`);
           }
 
-          // Send password via email
           if (temporaryPassword) {
             try {
               const emailResponse = await fetch('/api/send-password-email', {
                 method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  email,
-                  password: temporaryPassword,
-                  userName: name,
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: temporaryPassword, userName: name }),
               });
-
               if (!emailResponse.ok) {
                 const errorData = await emailResponse.json();
-                console.error('Erro ao enviar email:', errorData.error);
                 emailFailures.push({
                   email,
-                  error: `Failed to send email: ${errorData.error || 'Unknown error'}`
+                  error: `Falha ao enviar e-mail: ${errorData.error || 'Erro desconhecido'}`
                 });
-              } else {
-                console.log(`✅ Email com senha enviado para: ${email}`);
               }
-            } catch (emailError) {
-              console.error('Erro ao enviar email:', emailError);
-              emailFailures.push({
-                email,
-                error: `Failed to send email: ${emailError instanceof Error ? emailError.message : 'Unknown error'}`
-              });
+            } catch {
+              emailFailures.push({ email, error: 'Falha ao enviar e-mail de boas-vindas' });
             }
           }
+        })
+      );
 
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          const email = userWithPassword.email || 'unknown';
-          
-          if (errorMessage.toLowerCase().includes('institution')) {
-            associationFailures.push({
-              email,
-              error: `Failed to associate user to institution: ${errorMessage}`
-            });
-          } else {
-            enrollmentFailures.push({
-              email,
-              error: `Failed to enroll user: ${errorMessage}`
-            });
-          }
+      settledResults.forEach((settled, index) => {
+        if (settled.status === 'rejected') {
+          const email = result.createdUsers[index]?.email || 'desconhecido';
+          const errorMessage = settled.reason instanceof Error ? settled.reason.message : 'Erro desconhecido';
+          enrollmentFailures.push({ email, error: errorMessage });
         }
-      }
+      });
 
-      // Log email failures for information (don't add to total failures as user was created)
       if (emailFailures.length > 0) {
-        console.warn(`⚠️ ${emailFailures.length} emails falharam ao enviar:`, emailFailures);
+        console.warn(`⚠️ ${emailFailures.length} e-mails falharam ao enviar:`, emailFailures);
       }
 
-      // Update result with failures
-      if (associationFailures.length > 0 || enrollmentFailures.length > 0) {
-        result.failedEmails.push(...associationFailures, ...enrollmentFailures);
-        result.totalFailed += (associationFailures.length + enrollmentFailures.length);
+      if (enrollmentFailures.length > 0) {
+        result.failedEmails.push(...enrollmentFailures);
+        result.totalFailed += enrollmentFailures.length;
       }
 
       // Analyze results for better messaging
@@ -512,8 +450,8 @@ export default function CreateUserPage() {
   return (
     <ProtectedContent>
       <DashboardLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="mb-6">
+        <div className="container mx-auto p-6 max-w-2xl space-y-6">
+          <div>
             <Button
               icon={<ArrowLeftIcon size={16} />}
               variant='primary'
@@ -524,8 +462,34 @@ export default function CreateUserPage() {
             </Button>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
-            <Card className="flex-1">
+          {/* Toggle */}
+          <div className="flex rounded-lg border border-input bg-muted p-1 gap-1">
+            <button
+              type="button"
+              onClick={() => { setMode('individual'); setError(null); setSuccess(false); }}
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                mode === 'individual'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Cadastro Individual
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode('csv'); setError(null); setSuccess(false); }}
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                mode === 'csv'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Upload via CSV
+            </button>
+          </div>
+
+          {mode === 'individual' && (
+            <Card>
               <CardHeader>
                 <CardTitle>Criar Usuário Individual</CardTitle>
                 <CardDescription>
@@ -536,7 +500,7 @@ export default function CreateUserPage() {
               <FormSection onSubmit={handleSubmit(onSubmit)} error={error}>
                 <CardContent className="space-y-4">
                   {success && (
-                    <div className="p-3 rounded-md bg-green-100 text-green-800 mb-4">
+                    <div className="p-3 rounded-md bg-green-100 text-green-800">
                       Usuário criado com sucesso!
                     </div>
                   )}
@@ -639,17 +603,18 @@ export default function CreateUserPage() {
                 </CardFooter>
               </FormSection>
             </Card>
+          )}
 
-            <div className="flex-1 flex flex-col">
-              <CSVUpload 
+          {mode === 'csv' && (
+            <div className="space-y-4">
+              <CSVUpload
                 onFileUpload={handleCSVUpload}
                 courses={courses}
                 trails={trails}
               />
 
-              {/* Progress Bar */}
               {csvProgress.isProcessing && (
-                <Card className="mt-4">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Processando Planilha</CardTitle>
                   </CardHeader>
@@ -665,7 +630,7 @@ export default function CreateUserPage() {
                           style={{
                             width: `${csvProgress.total > 0 ? (csvProgress.current / csvProgress.total) * 100 : 0}%`
                           }}
-                        ></div>
+                        />
                       </div>
                       <div className="text-xs text-gray-600">
                         Processando: {csvProgress.currentEmail}
@@ -674,8 +639,14 @@ export default function CreateUserPage() {
                   </CardContent>
                 </Card>
               )}
+
+              {error && (
+                <div className="p-3 rounded-md bg-red-100 text-red-800 text-sm">
+                  {error}
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedContent>

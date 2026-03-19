@@ -135,7 +135,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
 
   const handleCreateLesson = async (moduleId: string, lessonTitle: string) => {
     if (!lessonTitle.trim()) {
-      alert('O título da lição não pode estar vazio');
+      alert('O título da unidade não pode estar vazio');
       return;
     }
 
@@ -169,8 +169,8 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
         )
       );
     } catch (error) {
-      console.error('Erro ao criar lição:', error);
-      alert(`Falha ao criar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      console.error('Erro ao criar unidade:', error);
+      alert(`Falha ao criar unidade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setIsCreatingLesson(prev => ({ ...prev, [moduleId]: false }));
     }
@@ -282,7 +282,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
       setModules(prevModules => prevModules.filter(m => m.id !== moduleId));
       setDeleteConfirmModuleId(null);
       
-      alert('Módulo e suas lições excluídos com sucesso!');
+      alert('Módulo e suas unidades excluídos com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir módulo:', error);
       alert(`Falha ao excluir módulo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -524,7 +524,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                         onClick={() => handleAddLesson(module.id)}
                         variant='primary'
                       >
-                        + Lição
+                        + Unidade
                       </Button>
                     </div>
                   )}
@@ -532,7 +532,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                   {/* Add lesson section */}
                   {module.isAddingLesson && (
                     <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <h4 className="text-xs font-medium mb-2 text-green-800 dark:text-green-200">Adicionar Nova Lição</h4>
+                      <h4 className="text-xs font-medium mb-2 text-green-800 dark:text-green-200">Adicionar Nova Unidade</h4>
                       <div className="space-y-2">
                         <InputText
                           id={`newLessonTitle-${module.id}`}
@@ -546,7 +546,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                               )
                             );
                           }}
-                          placeholder="Digite o título da lição"
+                          placeholder="Digite o título da unidade"
                           required
                           className="bg-white dark:bg-gray-800"
                         />
@@ -576,16 +576,16 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
                   {isLoadingLessons[module.id] ? (
                     <div className="flex flex-col justify-center items-center py-4 space-y-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Carregando lições...</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Carregando unidades...</p>
                     </div>
                   ) : module.lessons.length === 0 ? (
                     <div className="text-center py-4 text-gray-500 text-xs bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      Este módulo ainda não possui lições.
+                      Este módulo ainda não possui unidades.
                     </div>
                   ) : (
                     <div className="space-y-2 ml-2 border-l-2 border-blue-200 dark:border-gray-600 pl-4">
                       <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Lições:
+                        Unidades:
                       </h4>
                       {module.lessons.map((lesson, lessonIndex) => (
                         <Link 
@@ -631,7 +631,7 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
             </p>
             <ul className="list-disc list-inside mb-4 space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <li>O módulo completo</li>
-              <li>Todas as lições deste módulo</li>
+              <li>Todas as unidades deste módulo</li>
               <li>Todo o conteúdo associado</li>
             </ul>
             <div className="flex gap-2 justify-end">

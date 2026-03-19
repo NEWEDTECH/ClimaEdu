@@ -124,7 +124,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         const lesson = await lessonRepository.findById(lessonId)
 
         if (!lesson) {
-          setError('Lição não encontrada')
+          setError('Unidade não encontrada')
           setIsLoading(false)
           return
         }
@@ -223,7 +223,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching lesson data:', error)
-        const errorMessage = 'Falha ao carregar dados da lição'
+        const errorMessage = 'Falha ao carregar dados da unidade'
         setError(errorMessage)
         showToast.error(errorMessage)
         setIsLoading(false)
@@ -240,7 +240,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
   const handleSaveLessonTitle = async () => {
     if (!formData.title.trim()) {
-      showToast.error('O título da lição não pode estar vazio')
+      showToast.error('O título da unidade não pode estar vazio')
       return
     }
 
@@ -254,7 +254,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       const lesson = await lessonRepository.findById(lessonId)
 
       if (!lesson) {
-        throw new Error('Lição não encontrada')
+        throw new Error('Unidade não encontrada')
       }
 
       // Update lesson title
@@ -263,9 +263,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       // Save the updated lesson
       await lessonRepository.save(lesson)
 
-      showToast.success('Título da lição atualizado com sucesso!')
+      showToast.success('Título da unidade atualizado com sucesso!')
     } catch (error) {
-      console.error('Erro ao salvar título da lição:', error)
+      console.error('Erro ao salvar título da unidade:', error)
       showToast.error(`Falha ao salvar título: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setIsSubmitting(false)
@@ -293,7 +293,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       const lesson = await lessonRepository.findById(lessonId)
 
       if (!lesson) {
-        throw new Error('Lição não encontrada')
+        throw new Error('Unidade não encontrada')
       }
 
       // Delete the questionnaire
@@ -368,7 +368,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleDeleteContent = async (contentId: string) => {
-    if (!confirm('Tem certeza que deseja remover este conteúdo da lição?')) {
+    if (!confirm('Tem certeza que deseja remover este conteúdo da unidade?')) {
       return
     }
 
@@ -393,7 +393,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleDeleteDescription = async () => {
-    if (!confirm('Tem certeza que deseja excluir a descrição desta lição?')) {
+    if (!confirm('Tem certeza que deseja excluir a descrição desta unidade?')) {
       return
     }
 
@@ -416,7 +416,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleDeleteLesson = async () => {
-    if (!confirm('Tem certeza que deseja excluir esta lição? Esta ação não pode ser desfeita e todos os conteúdos, atividades e questionários associados serão removidos.')) {
+    if (!confirm('Tem certeza que deseja excluir esta unidade? Esta ação não pode ser desfeita e todos os conteúdos, atividades e questionários associados serão removidos.')) {
       return
     }
 
@@ -424,7 +424,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       setIsSubmitting(true)
 
       // Show loading toast
-      const loadingToastId = showToast.loading('Excluindo lição...')
+      const loadingToastId = showToast.loading('Excluindo unidade...')
 
       const lessonRepository = container.get<LessonRepository>(
         Register.content.repository.LessonRepository
@@ -450,7 +450,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       const lesson = await lessonRepository.findById(lessonId)
 
       if (!lesson) {
-        throw new Error('Lição não encontrada')
+        throw new Error('Unidade não encontrada')
       }
 
       // Delete all associated content
@@ -472,7 +472,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       const deleted = await lessonRepository.delete(lessonId)
 
       if (!deleted) {
-        throw new Error('Não foi possível excluir a lição')
+        throw new Error('Não foi possível excluir a unidade')
       }
 
       // Get the module and remove the lesson reference
@@ -484,7 +484,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
       // Update loading toast to success
       showToast.update(loadingToastId, {
-        render: 'Lição excluída com sucesso!',
+        render: 'Unidade excluída com sucesso!',
         type: 'success'
       })
 
@@ -493,10 +493,10 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         router.push(`/admin/courses/edit/${courseId}`)
       }, 1000)
     } catch (error) {
-      console.error('Erro ao excluir lição:', error)
+      console.error('Erro ao excluir unidade:', error)
 
       // Update loading toast to error
-      const errorMessage = `Falha ao excluir lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      const errorMessage = `Falha ao excluir unidade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
       showToast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -536,9 +536,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Editar Lição</h1>
+            <h1 className="text-3xl font-bold">Editar Unidade</h1>
             <p className="text-gray-500">Módulo: {moduleName}</p>
-            <p className="text-gray-500">Título da Lição: {formData.title}</p>
+            <p className="text-gray-500">Título da Unidade: {formData.title}</p>
           </div>
           <Link href={`/admin/courses/edit/${courseId}`}>
             <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>
@@ -547,12 +547,12 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
 
         <Card>
           <CardHeader>
-            <CardTitle>Informações da Lição</CardTitle>
+            <CardTitle>Informações da Unidade</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="title" className="text-sm font-medium">
-                Título da Lição
+                Título da Unidade
               </label>
               <div className="flex gap-2 items-center">
                 <InputText
@@ -560,7 +560,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="Digite o título da lição"
+                  placeholder="Digite o título da unidade"
                   className="flex-1 h-10"
                 />
                 <Button
@@ -589,7 +589,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="text-left">
                               <h3 className="font-semibold text-slate-900 dark:text-slate-100">Descrição</h3>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione ou edite a descrição da lição</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione ou edite a descrição da unidade</p>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -618,7 +618,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="text-left">
                               <h3 className="font-semibold text-slate-900 dark:text-slate-100">Vídeo</h3>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">Gerencie vídeos e materiais da lição</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Gerencie vídeos e materiais da unidade</p>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -677,7 +677,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="text-left">
                               <h3 className="font-semibold text-slate-900 dark:text-slate-100">PDF</h3>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione documentos PDF à lição</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione documentos PDF à unidade</p>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -708,7 +708,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="text-left">
                               <h3 className="font-semibold text-slate-900 dark:text-slate-100">Áudio</h3>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione arquivos de áudio à lição</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione arquivos de áudio à unidade</p>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -739,7 +739,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="text-left">
                               <h3 className="font-semibold text-slate-900 dark:text-slate-100">Material de Apoio</h3>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione materiais complementares à lição</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Adicione materiais complementares à unidade</p>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -798,7 +798,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="text-left">
                               <h3 className="font-semibold text-slate-900 dark:text-slate-100">Questionário</h3>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">Crie avaliações e testes para a lição</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Crie avaliações e testes para a unidade</p>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -827,7 +827,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                 disabled={isSubmitting}
                 variant='primary'
               >
-                {isSubmitting ? 'Excluindo...' : 'Excluir Lição'}
+                {isSubmitting ? 'Excluindo...' : 'Excluir Unidade'}
               </Button>
             </div>
           </CardContent>

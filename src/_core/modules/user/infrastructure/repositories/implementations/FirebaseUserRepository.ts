@@ -39,11 +39,9 @@ export class FirebaseUserRepository implements UserRepository {
     
     // Convert profile object to Profile value object if it exists
     let profile: Profile | undefined;
-    if (data.profile) {
+    if (data.profile?.avatar) {
       profile = Profile.create({
-        bio: data.profile.bio,
-        avatarUrl: data.profile.avatarUrl,
-        linkedinUrl: data.profile.linkedinUrl
+        avatarUrl: data.profile.avatar,
       });
     }
     
@@ -161,11 +159,7 @@ export class FirebaseUserRepository implements UserRepository {
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      profile: user.profile ? {
-        bio: user.profile.bio,
-        avatarUrl: user.profile.avatarUrl,
-        linkedinUrl: user.profile.linkedinUrl
-      } : null
+      profile: user.profile?.avatarUrl ? { avatar: user.profile.avatarUrl } : null
     };
 
     // Check if the user already exists

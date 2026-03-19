@@ -152,7 +152,7 @@ export default function Home() {
         for (const enrollment of enrollmentsResult.enrollments) {
           const course = await courseRepository.findById(enrollment.courseId);
 
-          if (course && course.institutionId === infoUser.currentIdInstitution) {
+          if (course && course.institutionId === infoUser.currentIdInstitution && course.isActive !== false) {
             enrolledCoursesData.push({
               id: course.id,
               title: course.title,
@@ -166,7 +166,7 @@ export default function Home() {
         setEnrolledCourses(enrolledCoursesData);
 
         // Carregar cursos disponíveis (não matriculados)
-        const allInstitutionCourses = await courseRepository.listByInstitution(infoUser.currentIdInstitution);
+        const allInstitutionCourses = await courseRepository.listByInstitution(infoUser.currentIdInstitution, true);
         const enrolledCourseIds = enrolledCoursesData.map(course => course.id);
         const notEnrolledCourses = allInstitutionCourses.filter((course: Course) =>
           !enrolledCourseIds.includes(course.id)

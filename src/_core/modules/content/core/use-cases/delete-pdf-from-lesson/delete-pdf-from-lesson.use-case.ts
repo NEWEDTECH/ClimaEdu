@@ -22,12 +22,12 @@ export class DeletePdfFromLessonUseCase {
     const { lessonId, contentId } = input;
 
     try {
-      // Buscar a lição
+      // Buscar a unidade
       const lesson = await this.lessonRepository.findById(lessonId);
       if (!lesson) {
         return {
           success: false,
-          message: 'Lição não encontrada'
+          message: 'Unidade não encontrada'
         };
       }
 
@@ -36,7 +36,7 @@ export class DeletePdfFromLessonUseCase {
       if (!content) {
         return {
           success: false,
-          message: 'Conteúdo PDF não encontrado nesta lição'
+          message: 'Conteúdo PDF não encontrado nesta unidade'
         };
       }
 
@@ -79,7 +79,7 @@ export class DeletePdfFromLessonUseCase {
         console.warn('Erro ao deletar arquivo do Storage (pode não existir):', error);
       }
 
-      // Remover o conteúdo da lição
+      // Remover o conteúdo da unidade
       lesson.contents = lesson.contents.filter(c => c.id !== contentId);
       await this.lessonRepository.save(lesson);
 

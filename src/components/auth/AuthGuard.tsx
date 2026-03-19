@@ -20,7 +20,7 @@ import { Button } from '@/components/button'
 // Definir mapeamento de rotas e roles permitidas
 const ROUTE_PERMISSIONS: Record<string, string[]> = {
   // Rotas de estudante
-  '/student': ['STUDENT'],
+  '/student': ['STUDENT', 'CONTENT_MANAGER'],
   '/student/activities': ['STUDENT'],
   '/student/tutoring': ['STUDENT'],
   '/student/certificates': ['STUDENT'],
@@ -28,11 +28,10 @@ const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/student/settings': ['STUDENT'],
   
   // Rotas de tutor
-  '/tutor': ['TUTOR', 'CONTENT_MANAGER'],
-  '/tutor/follow-up': ['TUTOR', 'CONTENT_MANAGER'],
-  '/tutor/reports': ['TUTOR', 'CONTENT_MANAGER', 'LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
-  '/tutor/courses': ['TUTOR', 'CONTENT_MANAGER'],
-  '/tutor/tutoring': ['TUTOR', 'CONTENT_MANAGER'],
+  '/tutor': ['TUTOR'],
+  '/tutor/follow-up': ['TUTOR'],
+  '/tutor/reports': ['TUTOR', 'LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/tutor/tutoring': ['TUTOR'],
   
   // Rotas de admin
   '/admin': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
@@ -44,7 +43,7 @@ const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/admin/tutor': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/admin/gestor': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/admin/trails': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
-  '/admin/courses': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/courses': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN', 'CONTENT_MANAGER'],
   '/admin/allusers': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/admin/create-user': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/admin/settings': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
@@ -77,7 +76,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const publicRoutes = ['/', '/login', '/social', '/podcast'];
     if (publicRoutes.includes(currentPath)) return true;
 
-    for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
+    const sortedRoutes = Object.entries(ROUTE_PERMISSIONS).sort(([a], [b]) => b.length - a.length);
+
+    for (const [route, allowedRoles] of sortedRoutes) {
       if (currentPath.startsWith(route)) {
         return allowedRoles.includes(userRole);
       }
@@ -230,13 +231,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           currentRole = (currentInstitutionRole?.roleInstitution || user.role) as UserRole;
         }
       }
-      
+    
       setInfoUser({
         ...infoUser,
         id: user.id,
         name: user.name,
         currentRole: currentRole,
-        currentIdInstitution: currentInstitutionId!
+        currentIdInstitution: currentInstitutionId!,
+        avatarUrl: user.profile?.avatarUrl,
       });
 
       // Passo 7: Salvar esse ID da instituição no localStorage
@@ -284,6 +286,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       name: '',
       currentRole: null,
       currentIdInstitution: '',
+      avatarUrl: undefined,
     });
     setInfoInstitutions({
       institutions: {

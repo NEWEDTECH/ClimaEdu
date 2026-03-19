@@ -42,12 +42,12 @@ export class UploadSupportMaterialToLessonUseCase {
       // Validações
       this.validateInput(file)
 
-      // Verificar se a lição existe
+      // Verificar se a unidade existe
       const lesson = await this.lessonRepository.findById(lessonId)
       if (!lesson) {
         return {
           success: false,
-          message: 'Lição não encontrada'
+          message: 'Unidade não encontrada'
         }
       }
 
@@ -75,7 +75,7 @@ export class UploadSupportMaterialToLessonUseCase {
       // Salvar o conteúdo
       await this.contentRepository.save(content)
 
-      // Adicionar o conteúdo à lição
+      // Adicionar o conteúdo à unidade
       lesson.contents.push(content)
       await this.lessonRepository.save(lesson)
 

@@ -75,7 +75,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         const lesson = await lessonRepository.findById(lessonId)
         
         if (!lesson) {
-          setError('Lição não encontrada')
+          setError('Unidade não encontrada')
           setIsLoading(false)
           return
         }
@@ -167,7 +167,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       const lesson = await lessonRepository.findById(lessonId)
       
       if (!lesson) {
-        throw new Error('Lição não encontrada')
+        throw new Error('Unidade não encontrada')
       }
       
       lesson.contents = lesson.contents.filter(content => content.id !== contentId)
@@ -305,7 +305,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -322,11 +322,11 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold">Editar Conteúdo</h1>
-              <p className="text-gray-500">Lição: {lessonTitle}</p>
+              <p className="text-gray-500">Unidade: {lessonTitle}</p>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
             <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-              <Button className="border border-gray-300 bg-transparent hover:bg-gray-100">Voltar para a Lição</Button>
+              <Button className="border border-gray-300 bg-transparent hover:bg-gray-100">Voltar para a Unidade</Button>
             </Link>
           </div>
 

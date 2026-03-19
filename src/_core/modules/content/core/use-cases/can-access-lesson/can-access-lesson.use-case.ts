@@ -148,7 +148,7 @@ export class CanAccessLessonUseCase {
       console.error('Error checking sequential access:', error);
       return {
         canAccess: false,
-        reason: 'Erro ao verificar acesso à lição',
+        reason: 'Erro ao verificar acesso à unidade',
         isSkippable: false
       };
     }

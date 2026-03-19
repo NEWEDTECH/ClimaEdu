@@ -37,5 +37,5 @@ export interface CourseRepository {
    * @param institutionId Institution id
    * @returns List of courses
    */
-  listByInstitution(institutionId: string): Promise<Course[]>;
+  listByInstitution(institutionId: string, onlyActive?: boolean): Promise<Course[]>;
 }

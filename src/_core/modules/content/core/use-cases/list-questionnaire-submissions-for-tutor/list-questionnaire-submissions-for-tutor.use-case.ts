@@ -93,7 +93,7 @@ export class ListQuestionnaireSubmissionsForTutorUseCase {
         const student = await this.userRepository.findById(submission.userId);
         if (!student) continue;
 
-        // Buscar lição para obter o módulo
+        // Buscar unidade para obter o módulo
         const lesson = await this.lessonRepository.findById(questionnaire.lessonId);
         if (!lesson) continue;
 

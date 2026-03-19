@@ -20,7 +20,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     id: 'default_achievement_first_lesson',
     name: 'Primeiro Passo',
-    description: 'Complete sua primeira lição e inicie sua jornada de aprendizado!',
+    description: 'Complete sua primeira unidade e inicie sua jornada de aprendizado!',
     iconUrl: '/icons/achievements/first-step.svg',
     criteriaType: BadgeCriteriaType.LESSON_COMPLETION,
     criteriaValue: 1,

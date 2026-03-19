@@ -173,7 +173,7 @@ const createClasses = async (courses: Course[], institutionId: string): Promise<
 };
 
 const createModulesAndLessons = async (courses: Course[]) => {
-  console.log('Criando módulos, lições, conteúdos e questionários...');
+  console.log('Criando módulos, unidades, conteúdos e questionários...');
   let batch = firestore.batch();
   let operationCount = 0;
 
@@ -287,7 +287,7 @@ const createModulesAndLessons = async (courses: Course[]) => {
         }
       }
     }
-    console.log(`- ${numModules} módulos e suas lições criados para o curso "${course.title}"`);
+    console.log(`- ${numModules} módulos e suas unidades criados para o curso "${course.title}"`);
 
     if (operationCount > BATCH_LIMIT - 100) {
       await batch.commit();
@@ -366,7 +366,7 @@ const simulateProgress = async (enrollments: Enrollment[]) => {
         if (shouldCompleteLesson) {
           const contentIds = lesson.contents?.map((c: { id: string }) => c.id) || [];
           if (contentIds.length === 0) {
-            console.warn(`Lição ${lesson.id} sem conteúdo, pulando progresso.`);
+            console.warn(` ${lesson.id} sem conteúdo, pulando progresso.`);
             continue;
           }
 

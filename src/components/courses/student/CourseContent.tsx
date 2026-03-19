@@ -326,7 +326,7 @@ export function CourseContent({
                 </h3>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
                   }`}>
-                  Descrição da lição
+                  Descrição da unidade
                 </p>
               </div>
             </div>
@@ -601,7 +601,7 @@ export function CourseContent({
                     Nenhuma atividade disponível
                   </p>
                   <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    Esta lição não possui atividades práticas.
+                    Esta unidade não possui atividades práticas.
                   </p>
                 </div>
               )}
@@ -609,7 +609,7 @@ export function CourseContent({
           ) : (
             <div className="text-center py-8">
               <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                Selecione uma lição para ver as atividades disponíveis.
+                Selecione uma unidade para ver as atividades disponíveis.
               </p>
             </div>
           )}
@@ -744,7 +744,7 @@ export function CourseContent({
                     Nenhum questionário disponível
                   </p>
                   <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    Esta lição não possui questionário.
+                    Esta unidade não possui questionário.
                   </p>
                 </div>
               )}
@@ -752,7 +752,7 @@ export function CourseContent({
           ) : (
             <div className="text-center py-8">
               <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                Selecione uma lição para ver o questionário.
+                Selecione uma unidade para ver o questionário.
               </p>
             </div>
           )}
@@ -809,7 +809,7 @@ export function CourseContent({
               onClick={handlePreviousVideo}
               className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!canNavigatePrevious()}
-              title="Lição anterior"
+              title="Unidade anterior"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -821,7 +821,7 @@ export function CourseContent({
               onClick={handleCompleteLesson}
               className="flex items-center cursor-pointer justify-center px-4 h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!activeLesson}
-              title="Concluir lição"
+              title="Concluir unidade"
             >
               <span className="text-sm font-medium">Concluir</span>
             </Button>
@@ -831,7 +831,7 @@ export function CourseContent({
               onClick={handleNextVideo}
               className="flex items-center cursor-pointer justify-center w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!canNavigateNext()}
-              title="Próxima lição"
+              title="Próxima unidade"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />

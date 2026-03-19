@@ -104,7 +104,7 @@ const mockActivities = [
     courseId: 'c1',
     courseTitle: 'Introdução à Programação',
     type: 'lesson_completion',
-    title: 'Concluiu a lição: Algoritmos de Ordenação',
+    title: 'Concluiu a unidade: Algoritmos de Ordenação',
     timestamp: '2025-04-10T14:30:00'
   },
   {
@@ -482,7 +482,7 @@ export default function AcompanhamentoPage() {
                       <Progress value={course.progress} />
                     </div>
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                      <span>Lições: {course.completedLessons}/{course.totalLessons}</span>
+                      <span>Unidades: {course.completedLessons}/{course.totalLessons}</span>
                       <span>Nota: {course.grade}%</span>
                     </div>
                   </div>
@@ -688,7 +688,7 @@ export default function AcompanhamentoPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Lições Concluídas</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Unidades Concluídas</p>
                   <p className="text-3xl font-bold">{course.completedLessons}/{course.totalLessons}</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
