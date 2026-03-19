@@ -23,7 +23,7 @@ interface AchievementFormProps {
 
 const criteriaTypeOptions = [
   { value: BadgeCriteriaType.COURSE_COMPLETION, label: 'Conclusão de Cursos' },
-  { value: BadgeCriteriaType.LESSON_COMPLETION, label: 'Conclusão de Lições' },
+  { value: BadgeCriteriaType.LESSON_COMPLETION, label: 'Conclusão de Unidades' },
   { value: BadgeCriteriaType.QUESTIONNAIRE_COMPLETION, label: 'Conclusão de Questionários' },
   { value: BadgeCriteriaType.CERTIFICATE_ACHIEVED, label: 'Certificados Obtidos' },
   { value: BadgeCriteriaType.DAILY_LOGIN, label: 'Login Diário' },

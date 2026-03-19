@@ -93,15 +93,15 @@ export default function QuestionnaireCompletedPage({ params }: { params: Promise
             console.log('Questionnaire encontrado:', questionnaire ? questionnaire.id : 'null');
             if (!questionnaire) continue;
 
-            // Buscar lição para obter o título
+            // Buscar unidade para obter o título
             const lessonRepository = container.get<LessonRepository>(
               Register.content.repository.LessonRepository
             );
             const lesson = await lessonRepository.findById(questionnaire.lessonId);
             console.log('Lesson encontrada:', lesson ? lesson.id : 'null');
             
-            // Se não encontrar a lição, usar título padrão
-            const lessonTitle = lesson ? lesson.title : 'Lição não encontrada';
+            // Se não encontrar a unidade, usar título padrão
+            const lessonTitle = lesson ? lesson.title : 'Unidade não encontrada';
 
             console.log('Adicionando submission ao contexto');
             submissionsWithContext.push({
@@ -252,7 +252,7 @@ export default function QuestionnaireCompletedPage({ params }: { params: Promise
                           {submissionData.questionnaire.title}
                         </h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Lição: {submissionData.lessonTitle}
+                          Unidade: {submissionData.lessonTitle}
                         </p>
                       </div>
                       <div className="text-right">

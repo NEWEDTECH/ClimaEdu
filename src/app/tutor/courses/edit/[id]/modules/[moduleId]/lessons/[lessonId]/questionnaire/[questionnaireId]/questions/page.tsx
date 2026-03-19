@@ -84,7 +84,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
         
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
-          setError('Lição não encontrada');
+          setError('unidade não encontrada');
           setIsLoading(false);
           return;
         }
@@ -342,7 +342,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -362,7 +362,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
               Questionário: <span className="font-medium">{questionnaireTitle}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-1">
-              Lição: <span className="font-medium">{lessonTitle}</span>
+              Unidade: <span className="font-medium">{lessonTitle}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Módulo: <span className="font-medium">{moduleName}</span>
@@ -719,7 +719,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                   <div>
                     <p className="font-medium">Teste Conhecimentos Relevantes</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Foque em conceitos importantes da lição, não em detalhes triviais.
+                      Foque em conceitos importantes da unidade, não em detalhes triviais.
                     </p>
                   </div>
                 </div>

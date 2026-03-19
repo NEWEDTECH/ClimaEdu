@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useProfile } from '@/context/zustand/useProfile';
 import { container } from '@/_core/shared/container';
@@ -38,6 +38,7 @@ export default function EditUserPage() {
   const [userRoles, setUserRoles] = useState<UserRoleAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const addingRef = useRef(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [tutorWarningRole, setTutorWarningRole] = useState<UserRoleAssignment | null>(null);
 
@@ -48,13 +49,14 @@ export default function EditUserPage() {
   const hasAccess = ['SUPER_ADMIN', 'SYSTEM_ADMIN', 'LOCAL_ADMIN'].includes(currentRole || '');
 
   useEffect(() => {
+    if (!currentRole) return;
     if (!hasAccess) {
       router.push('/');
       return;
     }
-
     loadData();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, currentRole]);
 
   const loadData = async () => {
     try {
@@ -104,23 +106,25 @@ export default function EditUserPage() {
       return;
     }
 
+    // Guard síncrono para evitar duplo clique antes do estado re-renderizar
+    if (addingRef.current) return;
+    addingRef.current = true;
+    setAdding(true);
+
     try {
-      setAdding(true);
-      
       const userInstitutionRepository = container.get<UserInstitutionRepository>(Register.institution.repository.UserInstitutionRepository);
 
-      // Check if user already has this specific role in this institution
-      const existingRoles = userRoles.filter(
-        r => r.institutionId === newRoleInstitution && r.role === newRoleType
+      // Verificar no banco (não apenas no estado local) para evitar duplicatas
+      const currentAssociations = await userInstitutionRepository.findByUserId(userId);
+      const alreadyExists = currentAssociations.some(
+        a => a.institutionId === newRoleInstitution && a.userRole === newRoleType
       );
 
-      if (existingRoles.length > 0) {
+      if (alreadyExists) {
         alert('Este usuário já possui esta role nesta instituição.');
-        setAdding(false);
         return;
       }
 
-      // Create new user-institution association
       const associationId = await userInstitutionRepository.generateId();
       const newAssociation = UserInstitution.create({
         id: associationId,
@@ -129,21 +133,12 @@ export default function EditUserPage() {
         userRole: newRoleType as UserRole
       });
 
-      console.log('🔵 Salvando nova associação:', {
-        id: newAssociation.id,
-        userId: newAssociation.userId,
-        institutionId: newAssociation.institutionId,
-        userRole: newAssociation.userRole
-      });
-
       await userInstitutionRepository.save(newAssociation);
-      
-      console.log('✅ Associação salva com sucesso!');
 
-      // Add to local state
       const institution = institutions.find(inst => inst.id === newRoleInstitution);
-      setUserRoles([
-        ...userRoles,
+      // Atualização funcional evita stale closure
+      setUserRoles(prev => [
+        ...prev,
         {
           id: associationId,
           institutionId: newRoleInstitution,
@@ -152,7 +147,6 @@ export default function EditUserPage() {
         }
       ]);
 
-      // Reset form
       setNewRoleInstitution('');
       setNewRoleType('');
 
@@ -161,6 +155,7 @@ export default function EditUserPage() {
       console.error('Error adding role:', error);
       alert('Erro ao adicionar role. Tente novamente.');
     } finally {
+      addingRef.current = false;
       setAdding(false);
     }
   };

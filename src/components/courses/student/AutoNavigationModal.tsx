@@ -71,16 +71,16 @@ export function AutoNavigationModal({
               <div className="flex items-center justify-center space-x-2">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Carregando próxima lição...
+                  Carregando próxima unidade...
                 </p>
               </div>
             ) : (
               <>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Parabéns! Você concluiu esta lição com sucesso.
+                  Parabéns! Você concluiu esta unidade com sucesso.
                 </p>
                 <p className="text-lg font-medium text-blue-600 dark:text-blue-400">
-                  Indo para a próxima lição em <span className="text-2xl font-bold">{countdown}</span>s
+                  Indo para a próxima unidade em <span className="text-2xl font-bold">{countdown}</span>s
                 </p>
               </>
             )}

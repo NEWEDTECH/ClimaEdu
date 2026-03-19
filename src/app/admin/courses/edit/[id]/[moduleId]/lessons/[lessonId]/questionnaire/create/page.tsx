@@ -17,6 +17,7 @@ import { LessonRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ModuleRepository } from '@/_core/modules/content/infrastructure/repositories/ModuleRepository';
 import { QuestionnaireRepository } from '@/_core/modules/content/infrastructure/repositories/QuestionnaireRepository';
 import { showToast } from '@/components/toast';
+import { QuestionnairePreview } from '@/components/admin/QuestionnairePreview';
 
 type QuestionFormData = {
   questionText: string;
@@ -60,6 +61,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
   const [error, setError] = useState<string | null>(null);
   const [isEditingQuestion, setIsEditingQuestion] = useState<boolean>(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,7 +82,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
 
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
-          setError('Lição não encontrada');
+          setError('Unidade não encontrada');
           setIsLoading(false);
           return;
         }
@@ -99,14 +101,14 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
 
         // If we're creating, check if the lesson already has a questionnaire
         if (lesson.questionnaire) {
-          setError('Esta lição já possui um questionário');
+          setError('Esta unidade já possui um questionário');
           setIsLoading(false);
           return;
         }
 
         const existingQuestionnaire = await questionnaireRepository.findByLessonId(lessonId);
         if (existingQuestionnaire) {
-          setError('Esta lição já possui um questionário. Volte para a página da lição para visualizá-lo.');
+          setError('Esta unidade já possui um questionário. Volte para a página da unidade para visualizá-lo.');
           setIsLoading(false);
           return;
         }
@@ -341,7 +343,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -360,7 +362,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
               Salvar
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-2">
-              Adicionar questionário à lição <span className="font-medium">{lessonTitle}</span>
+              Adicionar questionário à unidade <span className="font-medium">{lessonTitle}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Módulo: <span className="font-medium">{moduleName}</span>
@@ -650,14 +652,19 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
             {/* Submit Buttons */}
             <div className="flex justify-end space-x-3 mt-6">
               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                
-                <Button
-                  type="button"
-                  variant='secondary'
-                >
+                <Button type="button" variant='secondary'>
                   Cancelar
                 </Button>
               </Link>
+
+              <Button
+                type="button"
+                variant='secondary'
+                disabled={questions.length === 0}
+                onClick={() => setShowPreview(true)}
+              >
+                Visualizar
+              </Button>
 
               <Button
                 type="submit"
@@ -770,7 +777,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                   <div>
                     <p className="font-medium">Teste Conhecimentos Relevantes</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Foque em conceitos importantes da lição, não em detalhes triviais.
+                      Foque em conceitos importantes da unidade, não em detalhes triviais.
                     </p>
                   </div>
                 </div>
@@ -779,6 +786,16 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
           </Card>
         </div>
       </DashboardLayout>
+
+      {showPreview && (
+        <QuestionnairePreview
+          title={questionnaireFormData.title}
+          maxAttempts={questionnaireFormData.maxAttempts}
+          passingScore={questionnaireFormData.passingScore}
+          questions={questions.map(q => ({ questionText: q.questionText, options: q.options }))}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </ProtectedContent>
   );
 }

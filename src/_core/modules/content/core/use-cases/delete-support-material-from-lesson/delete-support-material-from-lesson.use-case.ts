@@ -22,12 +22,12 @@ export class DeleteSupportMaterialFromLessonUseCase {
     const { lessonId, contentId } = input
 
     try {
-      // Buscar a lição
+      // Buscar a unidade
       const lesson = await this.lessonRepository.findById(lessonId)
       if (!lesson) {
         return {
           success: false,
-          message: 'Lição não encontrada'
+          message: 'Unidade não encontrada'
         }
       }
 
@@ -36,7 +36,7 @@ export class DeleteSupportMaterialFromLessonUseCase {
       if (!content) {
         return {
           success: false,
-          message: 'Material de apoio não encontrado nesta lição'
+          message: 'Material de apoio não encontrado nesta unidade'
         }
       }
 
@@ -75,7 +75,7 @@ export class DeleteSupportMaterialFromLessonUseCase {
         }
       }
 
-      // Remover o conteúdo da lição
+      // Remover o conteúdo da unidade
       lesson.contents = lesson.contents.filter(c => c.id !== contentId)
       await this.lessonRepository.save(lesson)
 

@@ -80,7 +80,7 @@ export function CourseTabs({
                       {activeLessonData.title}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Descrição da lição
+                      Descrição da unidade
                     </p>
                   </div>
                 </div>
@@ -126,7 +126,7 @@ export function CourseTabs({
                         </div>
                         <div>
                           <h4 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            Atividade da Lição
+                            Atividade da Unidade
                           </h4>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             Complete a atividade para consolidar seu aprendizado
@@ -239,7 +239,7 @@ export function CourseTabs({
                       Nenhuma atividade disponível
                     </p>
                     <p className="text-gray-400 dark:text-gray-500 text-sm">
-                      Esta lição não possui atividades práticas.
+                      Esta unidade não possui atividades práticas.
                     </p>
                   </div>
                 )}
@@ -252,10 +252,10 @@ export function CourseTabs({
                   </svg>
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">
-                  Selecione uma lição
+                  Selecione uma unidade
                 </p>
                 <p className="text-gray-400 dark:text-gray-500 text-sm">
-                  Escolha uma lição na barra lateral para ver as atividades disponíveis.
+                  Escolha uma unidade na barra lateral para ver as atividades disponíveis.
                 </p>
               </div>
             )}
@@ -366,11 +366,11 @@ export function CourseTabs({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-gray-500">Nenhum questionário disponível para esta lição.</p>
+                  <p className="text-gray-500">Nenhum questionário disponível para esta unidade.</p>
                 )}
               </div>
             ) : (
-              <p className="text-gray-500">Selecione uma lição para ver o questionário.</p>
+              <p className="text-gray-500">Selecione uma unidade para ver o questionário.</p>
             )}
           </div>
         </TabsContent>

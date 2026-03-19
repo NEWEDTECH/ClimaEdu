@@ -218,7 +218,7 @@ export function SupportMaterialUploadForm({
             <span>Upload de Material de Apoio</span>
           </CardTitle>
           <CardDescription>
-            Envie materiais complementares para a lição (PDF, DOC, XLS, PPT, ZIP, Imagens, etc)
+            Envie materiais complementares para a unidade (PDF, DOC, XLS, PPT, ZIP, Imagens, etc)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

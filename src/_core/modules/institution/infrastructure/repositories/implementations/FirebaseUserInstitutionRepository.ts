@@ -152,6 +152,23 @@ export class FirebaseUserInstitutionRepository implements UserInstitutionReposit
   }
 
   /**
+   * List all associations by user role
+   * @param role UserRole to filter by
+   * @returns List of UserInstitution
+   */
+  async listByRole(role: UserRole): Promise<UserInstitution[]> {
+    const q = query(
+      collection(firestore, this.collectionName),
+      where('userRole', '==', role)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return this.mapToEntity({ id: doc.id, ...data });
+    });
+  }
+
+  /**
    * Delete a user-institution association
    * @param id Association id
    * @returns true if deleted, false if not found

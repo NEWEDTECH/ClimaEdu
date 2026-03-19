@@ -23,6 +23,7 @@ import { ListEnrollmentsUseCase } from '@/_core/modules/enrollment/core/use-case
 import type { Course } from '@/_core/modules/content/core/entities/Course'
 import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
+import { useProfile } from '@/context/zustand/useProfile'
 
 
 type CourseWithUIProps = {
@@ -46,6 +47,9 @@ const NAME_COLUMNS = [
 ]
 
 export default function CoursesPage() {
+  const { infoUser, infoInstitutions } = useProfile()
+  const isContentManager = infoUser.currentRole === UserRole.CONTENT_MANAGER
+
   const [courses, setCourses] = useState<CourseWithUIProps[]>([])
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
   const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>('')
@@ -56,6 +60,16 @@ export default function CoursesPage() {
   
 
   useEffect(() => {
+    if (!infoUser.id) return
+
+    if (isContentManager) {
+      if (infoUser.currentIdInstitution) {
+        setSelectedInstitutionId(infoUser.currentIdInstitution)
+      }
+      setLoading(false)
+      return
+    }
+
     const fetchInstitutions = async () => {
       try {
         setLoading(true)
@@ -63,23 +77,23 @@ export default function CoursesPage() {
         const listInstitutionsUseCase = container.get<ListInstitutionsUseCase>(
           Register.institution.useCase.ListInstitutionsUseCase
         )
-        
+
         const result = await listInstitutionsUseCase.execute({})
-        
+
         const institutionsForDropdown = result.institutions.map((institution: Institution) => ({
           id: institution.id,
           name: institution.name
         }))
-        
+
         setInstitutions(institutionsForDropdown)
-        
+
         if (institutionsForDropdown.length > 0) {
           setSelectedInstitutionId(institutionsForDropdown[0].id)
         }
-        
+
         setError(null)
       } catch (err) {
-        console.error('Error fetching institutions:', err)
+        console.error('Erro ao carregar instituições:', err)
         const errorMessage = 'Falha ao carregar instituições. Tente novamente.'
         setError(errorMessage)
         showToast.error(errorMessage)
@@ -87,9 +101,9 @@ export default function CoursesPage() {
         setLoading(false)
       }
     }
-    
+
     fetchInstitutions()
-  }, [])
+  }, [infoUser.id, infoUser.currentIdInstitution, isContentManager])
   
 
   useEffect(() => {
@@ -244,15 +258,21 @@ export default function CoursesPage() {
                 </div>
                 
                 <div className="flex-1">
-                  <SelectComponent
-                    value={selectedInstitutionId}
-                    onChange={(value) => setSelectedInstitutionId(value)}
-                    options={institutions.map(institution => ({
-                      value: institution.id,
-                      label: institution.name
-                    }))}
-                    placeholder="Selecione uma instituição"
-                  />
+                  {isContentManager ? (
+                    <div className="flex h-10 items-center px-3 rounded-md border border-input bg-muted text-sm text-muted-foreground">
+                      {infoInstitutions?.institutions?.nameInstitution || 'Minha instituição'}
+                    </div>
+                  ) : (
+                    <SelectComponent
+                      value={selectedInstitutionId}
+                      onChange={(value) => setSelectedInstitutionId(value)}
+                      options={institutions.map(institution => ({
+                        value: institution.id,
+                        label: institution.name
+                      }))}
+                      placeholder="Selecione uma instituição"
+                    />
+                  )}
                 </div>
                 
                 <div>

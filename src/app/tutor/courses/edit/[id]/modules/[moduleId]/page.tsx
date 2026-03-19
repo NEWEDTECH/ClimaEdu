@@ -241,21 +241,21 @@ export default function TutorEditModulePage({ params }: { params: Promise<{ id: 
                 <Card>
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
-                      <CardTitle>Lições do Módulo</CardTitle>
+                      <CardTitle>Unidades do Módulo</CardTitle>
                       <div className="flex gap-2">
                         <Link href={`/tutor/courses/edit/${courseId}/${moduleId}/lessons/create`}>
-                          <Button className="text-xs px-3 py-1">Adicionar Lição</Button>
+                          <Button className="text-xs px-3 py-1">Adicionar Unidade</Button>
                         </Link>
                       </div>
                     </div>
                     <CardDescription>
-                      Gerencie as lições deste módulo
+                      Gerencie as unidades deste módulo
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {formData.lessons.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        Este módulo ainda não possui lições. Adicione uma lição para começar.
+                        Este módulo ainda não possui unidades. Adicione uma unidade para começar.
                       </div>
                     ) : (
                       <div className="overflow-x-auto">

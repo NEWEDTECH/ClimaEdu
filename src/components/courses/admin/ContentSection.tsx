@@ -50,7 +50,7 @@ export function ContentSection({
             <span>Vídeo Aula</span>
           </CardTitle>
           <div className="flex gap-2">
-            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload`}>
+            <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}/video-upload${videoContent ? `?contentId=${videoContent.id}` : ''}`}>
               <Button variant='primary'>
                 {videoContent ? 'Editar' : 'Adicionar'} Vídeo
               </Button>

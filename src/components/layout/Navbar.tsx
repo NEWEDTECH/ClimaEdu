@@ -13,7 +13,7 @@ import { Button } from '@/components/button'
 
 export function Navbar() {
 
-  const { infoInstitutions } = useProfile();
+  const { infoInstitutions, infoUser } = useProfile();
   const { isDarkMode, toggleTheme } = useThemeStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -75,6 +75,7 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-4">
            <ProfileSelect
+            avatarUrl={infoUser.avatarUrl}
             onLogout={() => console.log('Logout clicked')}
           />
         </div>
@@ -143,6 +144,7 @@ export function Navbar() {
             <div className={`pt-4 ? 'border-t border-white/20' : 'border-t border-gray-300/50'
               }`}>
               <ProfileSelect
+                avatarUrl={infoUser.avatarUrl}
                 onLogout={() => console.log('Logout clicked')}
               />
             </div>

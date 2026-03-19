@@ -187,7 +187,7 @@ export function ScormUploadForm({
 
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.error || 'Falha ao associar SCORM à lição.');
+      throw new Error(data.error || 'Falha ao associar SCORM à unidade.');
     }
 
     router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);

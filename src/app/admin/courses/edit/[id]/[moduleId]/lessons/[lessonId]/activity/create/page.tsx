@@ -61,7 +61,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
 
         const lesson = await lessonRepository.findById(lessonId);
         if (!lesson) {
-          setError('Lição não encontrada');
+          setError('Unidade não encontrada');
           setIsLoading(false);
           return;
         }
@@ -76,7 +76,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
           });
           setInfomationsActivity(lesson.activity.instructions);
         } else if (!isEditMode && lesson.activity) {
-          setError('Esta lição já possui uma atividade');
+          setError('Esta unidade já possui uma atividade');
           setIsLoading(false);
           return;
         } else if (isEditMode && !lesson.activity) {
@@ -214,7 +214,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                 <h2 className="text-xl font-semibold text-red-600 mb-2">Erro</h2>
                 <p className="mb-4">{error}</p>
                 <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                  <Button>Voltar para a Lição</Button>
+                  <Button>Voltar para a Unidade</Button>
                 </Link>
               </CardContent>
             </Card>
@@ -231,9 +231,9 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold mb-2">Atividades da Lição</h1>
+                <h1 className="text-2xl font-bold mb-2">Atividades da Unidade</h1>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  Lição: <span className="font-medium">{lessonTitle}</span>
+                  Unidade: <span className="font-medium">{lessonTitle}</span>
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Módulo: <span className="font-medium">{moduleName}</span>
@@ -253,7 +253,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
               <CardDescription>
                 {isEditMode 
                   ? 'Atualize as informações da atividade'
-                  : 'Crie uma atividade para os alunos realizarem após estudarem o conteúdo da lição'
+                  : 'Crie uma atividade para os alunos realizarem após estudarem o conteúdo da unidade'
                 }
               </CardDescription>
             </CardHeader>
@@ -431,7 +431,7 @@ export default function CreateActivityPage({ params }: { params: Promise<{ id: s
                   <div>
                     <p className="font-medium">Conecte com o Conteúdo</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Certifique-se de que a atividade reforce o aprendizado do conteúdo da lição.
+                      Certifique-se de que a atividade reforce o aprendizado do conteúdo da unidade.
                     </p>
                   </div>
                 </div>

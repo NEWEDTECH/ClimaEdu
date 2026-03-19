@@ -20,6 +20,7 @@ type InfoUser = {
   name: string;
   currentRole: UserRole;
   currentIdInstitution: string;
+  avatarUrl?: string;
 };
 
 type InstitutionInfo = {

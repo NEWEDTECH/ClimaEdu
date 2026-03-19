@@ -43,7 +43,7 @@ export function ProgressDetails({ data }: ProgressDetailsProps) {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <p className="font-medium">Lições Concluídas</p>
+                      <p className="font-medium">Unidades Concluídas</p>
                       <p>{courseProgress.lessonsCompleted} / {courseProgress.totalLessons}</p>
                     </div>
                     <div>
@@ -66,7 +66,7 @@ export function ProgressDetails({ data }: ProgressDetailsProps) {
                       <TableRow>
                         <TableHead>Módulo</TableHead>
                         <TableHead className="w-[150px]">Progresso</TableHead>
-                        <TableHead>Lições</TableHead>
+                        <TableHead>Unidades</TableHead>
                         <TableHead>Tempo Gasto</TableHead>
                       </TableRow>
                     </TableHeader>

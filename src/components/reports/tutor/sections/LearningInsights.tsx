@@ -27,7 +27,7 @@ export function LearningInsights({ data }: LearningInsightsProps) {
           </div>
           <div>
             <p className="font-medium">Velocidade de Aprendizagem</p>
-            <p>{data.learningVelocity} lições/semana</p>
+            <p>{data.learningVelocity} unidades/semana</p>
           </div>
           <div>
             <p className="font-medium">Taxa de Retenção</p>

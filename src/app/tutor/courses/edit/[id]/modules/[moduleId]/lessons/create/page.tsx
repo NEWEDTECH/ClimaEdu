@@ -73,7 +73,7 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
     e.preventDefault()
 
     if (!formData.title.trim()) {
-      alert('O título da lição não pode estar vazio')
+      alert('O título da unidade não pode estar vazio')
       return
     }
 
@@ -115,8 +115,8 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
 
       router.push(`/tutor/courses/edit/${courseId}/modules/${moduleId}`)
     } catch (error) {
-      console.error('Erro ao criar lição:', error)
-      alert(`Falha ao criar lição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      console.error('Erro ao criar unidade:', error)
+      alert(`Falha ao criar unidade: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -160,7 +160,7 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Criar Nova Lição</h1>
+              <h1 className="text-3xl font-bold">Criar Nova Unidade</h1>
               <p className="text-gray-500">Módulo: {moduleName}</p>
             </div>
             <Link href={`/tutor/courses/edit/${courseId}/modules/${moduleId}`}>
@@ -170,34 +170,34 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
 
           <Card>
             <CardHeader>
-              <CardTitle>Informações da Lição</CardTitle>
+              <CardTitle>Informações da Unidade</CardTitle>
               <CardDescription>
-                Preencha os detalhes da nova lição
+                Preencha os detalhes da nova unidade
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormSection onSubmit={handleSubmit} error={error}>
                 <div className="space-y-2">
                   <label htmlFor="title" className="text-sm font-medium">
-                    Título da Lição
+                    Título da Unidade
                   </label>
                   <InputText
                     id="title"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    placeholder="Digite o título da lição"
+                    placeholder="Digite o título da unidade"
                     required
                   />
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
-                  <h3 className="text-sm font-medium mb-2">Dicas para Criar Lições Eficazes</h3>
+                  <h3 className="text-sm font-medium mb-2">Dicas para Criar Unidades Eficazes</h3>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2 list-disc pl-5">
-                    <li>Use títulos claros e descritivos que indiquem o conteúdo da lição</li>
-                    <li>Mantenha as lições focadas em um único tópico ou conceito</li>
-                    <li>Organize as lições em uma sequência lógica de aprendizado</li>
-                    <li>Após criar a lição, adicione conteúdos como vídeos, PDFs ou questionários</li>
+                    <li>Use títulos claros e descritivos que indiquem o conteúdo da unidade</li>
+                    <li>Mantenha as unidades focadas em um único tópico ou conceito</li>
+                    <li>Organize as unidades em uma sequência lógica de aprendizado</li>
+                    <li>Após criar a unidade, adicione conteúdos como vídeos, PDFs ou questionários</li>
                   </ul>
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
@@ -205,7 +205,7 @@ export default function CreateLessonPage({ params }: { params: Promise<{ id: str
                     <Button className="border bg-transparent hover:bg-gray-100" type="button">Cancelar</Button>
                   </Link>
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Criando...' : 'Criar Lição'}
+                    {isSubmitting ? 'Criando...' : 'Criar Unidade'}
                   </Button>
                 </div>
               </FormSection>

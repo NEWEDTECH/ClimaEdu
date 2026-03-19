@@ -1,4 +1,5 @@
 import { UserInstitution } from '../../core/entities/UserInstitution';
+import { UserRole } from '@/_core/modules/user/core/entities/User';
 
 /**
  * Interface for the UserInstitution repository
@@ -46,6 +47,13 @@ export interface UserInstitutionRepository {
    * @returns Saved UserInstitution
    */
   save(userInstitution: UserInstitution): Promise<UserInstitution>;
+
+  /**
+   * List all associations by user role
+   * @param role UserRole to filter by
+   * @returns List of UserInstitution
+   */
+  listByRole(role: UserRole): Promise<UserInstitution[]>;
 
   /**
    * Delete a user-institution association
