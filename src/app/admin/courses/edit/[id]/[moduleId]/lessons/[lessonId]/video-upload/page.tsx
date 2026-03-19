@@ -19,13 +19,19 @@ import { ModuleRepository } from '@/_core/modules/content/infrastructure/reposit
 import { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository';
 import { showToast } from '@/components/toast';
 
-export default function VideoUploadPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
+export default function VideoUploadPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string; moduleId: string; lessonId: string }>;
+  searchParams: Promise<{ contentId?: string }>;
+}) {
   const router = useRouter();
-  const unwrappedParams = use(params);
-  const { id: courseId, moduleId, lessonId } = unwrappedParams;
+  const { id: courseId, moduleId, lessonId } = use(params);
+  const { contentId } = use(searchParams);
+  const isEditing = !!contentId;
 
   const [title, setTitle] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -41,31 +47,43 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
         const lessonRepository = container.get<LessonRepository>(
           Register.content.repository.LessonRepository
         );
-
         const moduleRepository = container.get<ModuleRepository>(
           Register.content.repository.ModuleRepository
         );
 
-        const lesson = await lessonRepository.findById(lessonId);
+        const [lesson, moduleData] = await Promise.all([
+          lessonRepository.findById(lessonId),
+          moduleRepository.findById(moduleId),
+        ]);
+
         if (!lesson) {
           setError('Unidade não encontrada');
           setIsLoading(false);
           return;
         }
-
-        setLessonTitle(lesson.title);
-
-        const moduleData = await moduleRepository.findById(moduleId);
         if (!moduleData) {
           setError('Módulo não encontrado');
           setIsLoading(false);
           return;
         }
 
+        setLessonTitle(lesson.title);
         setModuleName(moduleData.title);
+
+        if (isEditing && contentId) {
+          const contentRepository = container.get<ContentRepository>(
+            Register.content.repository.ContentRepository
+          );
+          const existingContent = await contentRepository.findById(contentId);
+          if (existingContent) {
+            setTitle(existingContent.title);
+            setVideoUrl(existingContent.url);
+          }
+        }
+
         setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      } catch (err) {
+        console.error('Error fetching data:', err);
         const errorMessage = 'Falha ao carregar dados';
         setError(errorMessage);
         showToast.error(errorMessage);
@@ -74,8 +92,7 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
     };
 
     fetchData();
-  }, [lessonId, moduleId]);
-
+  }, [lessonId, moduleId, contentId, isEditing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,89 +101,97 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
       showToast.warning('O título do vídeo não pode estar vazio');
       return;
     }
-
     if (!videoUrl.trim()) {
       showToast.warning('Por favor, insira a URL do vídeo');
       return;
     }
 
     setIsSaving(true);
-
-    // Show loading toast
-    const loadingToastId = showToast.loading('Adicionando vídeo à unidade...');
+    const loadingToastId = showToast.loading(
+      isEditing ? 'Atualizando vídeo...' : 'Adicionando vídeo à unidade...'
+    );
 
     try {
-
       const contentRepository = container.get<ContentRepository>(
         Register.content.repository.ContentRepository
       );
-
       const lessonRepository = container.get<LessonRepository>(
         Register.content.repository.LessonRepository
       );
 
+      if (isEditing && contentId) {
+        const existingContent = await contentRepository.findById(contentId);
+        if (!existingContent) throw new Error('Vídeo não encontrado');
 
-      const contentId = await contentRepository.generateId();
+        existingContent.updateTitle(title);
+        existingContent.updateUrl(videoUrl);
+        await contentRepository.save(existingContent);
 
-      const content = Content.create({
-        id: contentId,
-        lessonId: lessonId,
-        type: ContentType.VIDEO,
-        title,
-        url: videoUrl
-      });
+        const lesson = await lessonRepository.findById(lessonId);
+        if (!lesson) throw new Error('Unidade não encontrada');
 
+        const updatedContents = (lesson.contents || []).map((c) =>
+          c.id === contentId
+            ? { ...c, title, url: videoUrl }
+            : c
+        );
 
-      const savedContent = await contentRepository.save(content);
+        // @ts-expect-error - We're manually updating the contents array
+        lesson.contents = updatedContents;
+        await lessonRepository.save(lesson);
 
-      const lesson = await lessonRepository.findById(lessonId);
+        showToast.update(loadingToastId, {
+          render: 'Vídeo atualizado com sucesso!',
+          type: 'success',
+        });
+      } else {
+        const contentId = await contentRepository.generateId();
+        const content = Content.create({
+          id: contentId,
+          lessonId,
+          type: ContentType.VIDEO,
+          title,
+          url: videoUrl,
+        });
 
-      if (!lesson) {
-        throw new Error('Unidade não encontrada');
+        const savedContent = await contentRepository.save(content);
+        const lesson = await lessonRepository.findById(lessonId);
+        if (!lesson) throw new Error('Unidade não encontrada');
+
+        const contentData = {
+          id: savedContent.id,
+          lessonId: savedContent.lessonId,
+          type: savedContent.type,
+          title: savedContent.title,
+          url: savedContent.url,
+          order: savedContent.order,
+        };
+
+        const updatedContents = [...(lesson.contents || []), contentData];
+
+        // @ts-expect-error - We're manually setting the contents array
+        lesson.contents = updatedContents;
+        await lessonRepository.save(lesson);
+
+        showToast.update(loadingToastId, {
+          render: 'Vídeo adicionado com sucesso à unidade!',
+          type: 'success',
+        });
       }
 
-      const contentData = {
-        id: savedContent.id,
-        lessonId: savedContent.lessonId,
-        type: savedContent.type,
-        title: savedContent.title,
-        url: savedContent.url,
-        order: savedContent.order
-      };
-
-      const currentContents = lesson.contents || [];
-
-      const updatedContents = [...currentContents, contentData];
-
-      // @ts-expect-error - We're manually setting the contents array
-      lesson.contents = updatedContents;
-
-      await lessonRepository.save(lesson);
-
-      // Update loading toast to success
-      showToast.update(loadingToastId, {
-        render: 'Vídeo adicionado com sucesso à unidade!',
-        type: 'success'
-      });
-
-      // Navigate after a short delay to show the success message
       setTimeout(() => {
         router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
       }, 1000);
-    } catch (error) {
-      console.error('Erro ao adicionar vídeo:', error);
-
-      // Update loading toast to error
-      const errorMessage = `Falha ao adicionar vídeo: ${error instanceof Error ? error.message : 'Erro desconhecido'}`;
+    } catch (err) {
+      console.error('Erro ao salvar vídeo:', err);
       showToast.update(loadingToastId, {
-        render: errorMessage,
-        type: 'error'
+        render: `Falha ao salvar vídeo: ${err instanceof Error ? err.message : 'Erro desconhecido'}`,
+        type: 'error',
       });
     } finally {
       setIsSaving(false);
     }
   };
-
 
   const handleCancel = () => {
     router.push(`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`);
@@ -218,16 +243,14 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                 </p>
               </div>
               <Link href={`/admin/courses/edit/${courseId}/${moduleId}/lessons/${lessonId}`}>
-                <Button variant='primary'>
-                  Voltar
-                </Button>
+                <Button variant="primary">Voltar</Button>
               </Link>
             </div>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Novo Vídeo</CardTitle>
+              <CardTitle>{isEditing ? 'Editar Vídeo' : 'Novo Vídeo'}</CardTitle>
             </CardHeader>
             <CardContent>
               <FormSection onSubmit={handleSubmit} className="space-y-6" error={error}>
@@ -242,18 +265,6 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                       value={title}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                       required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Descrição
-                    </label>
-                    <textarea
-                      className="w-full p-3 border rounded-md dark:bg-gray-800 dark:border-gray-700 min-h-[100px]"
-                      placeholder="Digite uma descrição para a vídeo aula"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
                     />
                   </div>
 
@@ -275,19 +286,15 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Button
-                    type="button"
-                    variant='secondary'
-                    onClick={handleCancel}
-                  >
+                  <Button type="button" variant="secondary" onClick={handleCancel}>
                     Cancelar
                   </Button>
-                  <Button
-                    variant='primary'
-                    type="submit"
-                    disabled={isSaving}
-                  >
-                    {isSaving ? 'Salvando...' : 'Salvar Vídeo Aula'}
+                  <Button variant="primary" type="submit" disabled={isSaving}>
+                    {isSaving
+                      ? 'Salvando...'
+                      : isEditing
+                      ? 'Salvar Alterações'
+                      : 'Salvar Vídeo Aula'}
                   </Button>
                 </div>
               </FormSection>
@@ -302,25 +309,9 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-blue-500">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </div>
                   <div>
@@ -333,19 +324,8 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-green-500">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                     </svg>
                   </div>
                   <div>
@@ -358,19 +338,8 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-yellow-500">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </div>
                   <div>
@@ -383,19 +352,8 @@ export default function VideoUploadPage({ params }: { params: Promise<{ id: stri
 
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3 flex-shrink-0 text-purple-500">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                   </div>
                   <div>
