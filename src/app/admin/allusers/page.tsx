@@ -55,13 +55,14 @@ export default function AllUsersPage() {
   const hasAccess = ['SUPER_ADMIN', 'SYSTEM_ADMIN', 'LOCAL_ADMIN'].includes(currentRole || '');
 
   useEffect(() => {
+    if (!currentRole) return;
     if (!hasAccess) {
       router.push('/');
       return;
     }
-
     loadData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRole]);
 
   const loadData = async () => {
     try {
@@ -79,55 +80,55 @@ export default function AllUsersPage() {
       let usersData: UserWithInstitution[] = [];
 
       if (currentRole === 'SUPER_ADMIN' || currentRole === 'SYSTEM_ADMIN') {
-        // Load all users from Firestore
         const allUsers = await loadAllUsers(userRepository);
-        
-        // For each user, load their institution associations
-        const usersWithInstitutions = await Promise.all(
-          allUsers.map(async (user) => {
-            const associations = await userInstitutionRepository.findByUserId(user.id);
-            
-            const roles = await Promise.all(
-              associations.map(async (assoc) => {
-                const institution = allInstitutions.find(inst => inst.id === assoc.institutionId);
-                return {
-                  role: assoc.userRole,
-                  institutionId: assoc.institutionId,
-                  institutionName: institution?.name || 'Instituição desconhecida',
-                  createdAt: assoc.createdAt
-                };
-              })
-            );
 
-            // Sort roles by createdAt DESC (most recent first)
-            roles.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-            // If user is SUPER_ADMIN, add a special role entry
-            if (user.role === UserRole.SUPER_ADMIN) {
-              roles.unshift({
-                role: UserRole.SUPER_ADMIN,
-                institutionId: '',
-                institutionName: 'Todas as instituições',
-                createdAt: user.createdAt
-              });
-            }
-
-            return {
-              id: user.id,
-              name: user.name,
-              email: user.email.value,
-              roles: roles.length > 0 ? roles : [{
-                role: user.role,
-                institutionId: '',
-                institutionName: 'N/A',
-                createdAt: user.createdAt
-              }],
-              createdAt: user.createdAt
-            };
-          })
+        // Carregar todas as associações por instituição (M queries em vez de N por usuário)
+        const allAssociationsNested = await Promise.all(
+          allInstitutions.map(inst => userInstitutionRepository.findByInstitutionId(inst.id))
         );
+        const allAssociations = allAssociationsNested.flat();
 
-        usersData = usersWithInstitutions;
+        // Agrupar por userId para lookup O(1)
+        const associationsByUserId = new Map<string, Array<{ role: UserRole; institutionId: string; institutionName: string; createdAt: Date }>>();
+        for (const assoc of allAssociations) {
+          const institution = allInstitutions.find(inst => inst.id === assoc.institutionId);
+          if (!associationsByUserId.has(assoc.userId)) {
+            associationsByUserId.set(assoc.userId, []);
+          }
+          associationsByUserId.get(assoc.userId)!.push({
+            role: assoc.userRole,
+            institutionId: assoc.institutionId,
+            institutionName: institution?.name || 'Instituição desconhecida',
+            createdAt: assoc.createdAt
+          });
+        }
+
+        usersData = allUsers.map(user => {
+          const roles = (associationsByUserId.get(user.id) || [])
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+          if (user.role === UserRole.SUPER_ADMIN) {
+            roles.unshift({
+              role: UserRole.SUPER_ADMIN,
+              institutionId: '',
+              institutionName: 'Todas as instituições',
+              createdAt: user.createdAt
+            });
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email.value,
+            roles: roles.length > 0 ? roles : [{
+              role: user.role,
+              institutionId: '',
+              institutionName: 'N/A',
+              createdAt: user.createdAt
+            }],
+            createdAt: user.createdAt
+          };
+        });
       } else if (currentRole === 'LOCAL_ADMIN') {
         // Load only users from current institution
         const associations = await userInstitutionRepository.findByInstitutionId(currentInstitutionId);
@@ -250,8 +251,20 @@ export default function AllUsersPage() {
         associations.map(assoc => userInstitutionRepository.delete(assoc.id))
       );
 
-      // Delete user
+      // Delete user from Firestore
       await userRepository.delete(userToDelete.id);
+
+      // Delete user from Firebase Authentication
+      const authDeleteResponse = await fetch('/api/admin/delete-user', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userToDelete.id, email: userToDelete.email }),
+      });
+
+      if (!authDeleteResponse.ok) {
+        const errorData = await authDeleteResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Falha ao excluir usuário da autenticação');
+      }
 
       // Remove from local state
       setUsers(users.filter(u => u.id !== userToDelete.id));
