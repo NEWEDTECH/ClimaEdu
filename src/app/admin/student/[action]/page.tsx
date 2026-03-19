@@ -13,6 +13,7 @@ import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { EnrollInCourseUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-course/enroll-in-course.use-case'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
+import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { Course } from '@/_core/modules/content/core/entities/Course'
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository'
@@ -181,8 +182,13 @@ export default function StudentEnrollmentPage() {
           setSelectedInstitutionId(institutionsForDropdown[0].id)
         }
 
-        // Fetch all students
-        const studentUsers = await userRepository.listByType(UserRole.STUDENT)
+        // Fetch all students from user_institutions collection
+        const userInstitutionRepository = container.get<UserInstitutionRepository>(
+          Register.institution.repository.UserInstitutionRepository
+        )
+        const studentAssociations = await userInstitutionRepository.listByRole(UserRole.STUDENT)
+        const uniqueStudentIds = [...new Set(studentAssociations.map(a => a.userId))]
+        const studentUsers = await userRepository.findByIds(uniqueStudentIds)
         const studentsForDropdown = studentUsers.map(student => ({
           id: student.id,
           name: student.name,
