@@ -130,34 +130,42 @@ export default function AllUsersPage() {
           };
         });
       } else if (currentRole === 'LOCAL_ADMIN') {
-        // Load only users from current institution
         const associations = await userInstitutionRepository.findByInstitutionId(currentInstitutionId);
-        
-        const usersWithInstitutions = await Promise.all(
-          associations.map(async (assoc) => {
-            const user = await userRepository.findById(assoc.userId);
-            if (!user) return null;
 
-            const institution = allInstitutions.find(inst => inst.id === assoc.institutionId);
-            
+        // Agrupar associações por userId para gerar 1 linha por usuário (não por role)
+        const institution = allInstitutions.find(inst => inst.id === currentInstitutionId);
+        const rolesByUserId = new Map<string, Array<{ role: UserRole; institutionId: string; institutionName: string; createdAt: Date }>>();
+
+        for (const assoc of associations) {
+          if (!rolesByUserId.has(assoc.userId)) {
+            rolesByUserId.set(assoc.userId, []);
+          }
+          rolesByUserId.get(assoc.userId)!.push({
+            role: assoc.userRole,
+            institutionId: assoc.institutionId,
+            institutionName: institution?.name || 'Instituição desconhecida',
+            createdAt: assoc.createdAt
+          });
+        }
+
+        const uniqueUserIds = Array.from(rolesByUserId.keys());
+        const usersWithInstitutions = await Promise.all(
+          uniqueUserIds.map(async (uid) => {
+            const user = await userRepository.findById(uid);
+            if (!user) return null;
+            const roles = (rolesByUserId.get(uid) || [])
+              .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
             return {
               id: user.id,
               name: user.name,
               email: user.email.value,
-              roles: [{
-                role: assoc.userRole,
-                institutionId: assoc.institutionId,
-                institutionName: institution?.name || 'Instituição desconhecida',
-                createdAt: assoc.createdAt
-              }],
+              roles,
               createdAt: user.createdAt
             };
           })
         );
 
         usersData = usersWithInstitutions.filter(u => u !== null) as UserWithInstitution[];
-        
-        // Set the institution filter to current institution and disable it
         setSelectedInstitution(currentInstitutionId);
       }
 

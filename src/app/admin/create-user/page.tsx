@@ -14,7 +14,6 @@ import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { CSVUpload } from '@/components/admin/CSVUpload'
 import { container } from '@/_core/shared/container/container'
 import { Register } from '@/_core/shared/container/symbols'
-import { CreateUserUseCase } from '@/_core/modules/user/core/use-cases/create-user/create-user.use-case'
 import { ProcessCSVUsersUseCase } from '@/_core/modules/user/core/use-cases/process-csv-users/process-csv-users.use-case'
 import { AssociateUserToInstitutionUseCase } from '@/_core/modules/institution/core/use-cases/associate-user-to-institution/associate-user-to-institution.use-case'
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case'
@@ -204,70 +203,53 @@ export default function CreateUserPage() {
     setIsSubmitting(true)
 
     try {
-      // Criar o usuário
-      const createUserUseCase = container.get<CreateUserUseCase>(
-        Register.user.useCase.CreateUserUseCase
-      )
-
-      const createUserResult = await createUserUseCase.execute({
-        name: data.name,
-        email: data.email,
-        password: '',
-        type: data.role
+      // Criar o usuário via API server-side (Admin SDK não faz auto-login)
+      const createResponse = await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: data.name, email: data.email, role: data.role }),
       })
 
-      // Associate user to institution based on user role and selected institution
-      if (infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER) {
-        if (infoUser.currentIdInstitution && createUserResult.user) {
-          const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
-            Register.institution.useCase.AssociateUserToInstitutionUseCase
-          )
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json()
+        throw new Error(errorData.error || 'Falha ao criar usuário')
+      }
 
-          await associateUserUseCase.execute({
-            userId: createUserResult.user.id,
-            institutionId: infoUser.currentIdInstitution,
-            userRole: data.role
-          })
-        }
-      } else if ((infoUser.currentRole === UserRole.SUPER_ADMIN || infoUser.currentRole === UserRole.SYSTEM_ADMIN) && data.institutionId && createUserResult.user) {
-        const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
-          Register.institution.useCase.AssociateUserToInstitutionUseCase
-        )
+      const { userId, temporaryPassword } = await createResponse.json()
 
+      // Associar usuário à instituição
+      const associateUserUseCase = container.get<AssociateUserToInstitutionUseCase>(
+        Register.institution.useCase.AssociateUserToInstitutionUseCase
+      )
+
+      const institutionId =
+        infoUser.currentRole === UserRole.LOCAL_ADMIN || infoUser.currentRole === UserRole.CONTENT_MANAGER
+          ? infoUser.currentIdInstitution
+          : data.institutionId
+
+      if (institutionId) {
         await associateUserUseCase.execute({
-          userId: createUserResult.user.id,
-          institutionId: data.institutionId,
+          userId,
+          institutionId,
           userRole: data.role
         })
       }
 
-      // Send temporary password via email
-      if (createUserResult.temporaryPassword) {
+      // Enviar senha temporária por email
+      if (temporaryPassword) {
         try {
           const emailResponse = await fetch('/api/send-password-email', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: data.email,
-              password: createUserResult.temporaryPassword,
-              userName: data.name,
-            }),
-          });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.email, password: temporaryPassword, userName: data.name }),
+          })
 
           if (!emailResponse.ok) {
-            const errorData = await emailResponse.json();
-            console.error('Erro ao enviar email:', errorData.error);
-            // Don't fail user creation if email fails
-            setError(`Usuário criado com sucesso, mas houve um erro ao enviar o email: ${errorData.error || 'Erro desconhecido'}`);
-          } else {
-            console.log('✅ Email com senha enviado com sucesso');
+            const errorData = await emailResponse.json()
+            setError(`Usuário criado com sucesso, mas houve um erro ao enviar o email: ${errorData.error || 'Erro desconhecido'}`)
           }
-        } catch (emailError) {
-          console.error('Erro ao enviar email:', emailError);
-          // Don't fail user creation if email fails
-          setError('Usuário criado com sucesso, mas houve um erro ao enviar o email. Por favor, reenvie a senha manualmente.');
+        } catch {
+          setError('Usuário criado com sucesso, mas houve um erro ao enviar o email.')
         }
       }
 
