@@ -102,7 +102,7 @@ export default function CertificadosPage() {
       isAuthentic: cert.isAuthentic,
       courseTitle: course?.title || 'Curso Não Encontrado',
       institutionName: infoInstitutions?.institutions?.nameInstitution || 'Instituição',
-      instructorName: 'Instrutor do Curso', // TODO: Get from course or instructor data
+      instructorName: 'Tutor do Curso', // TODO: Get from course or instructor data
       hoursCompleted: 40, // TODO: Get from course metadata
       grade: 85, // TODO: Get from enrollment/progress data
       completionDate: cert.issuedAt, // Use issuedAt as completion date for now
@@ -130,7 +130,7 @@ export default function CertificadosPage() {
           isAuthentic: () => false as boolean,
           courseTitle: course.title,
           institutionName: infoInstitutions?.institutions?.nameInstitution || 'Instituição',
-          instructorName: 'Instrutor do Curso', // TODO: Get from course or instructor data
+          instructorName: 'Tutor do Curso', // TODO: Get from course or instructor data
           hoursCompleted: 40, // TODO: Get from course metadata
           grade: 85, // TODO: Get from enrollment/progress data
           completionDate: new Date(), // TODO: Get actual completion date from enrollment

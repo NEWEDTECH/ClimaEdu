@@ -42,7 +42,7 @@ type CourseWithUIProps = {
 const NAME_COLUMNS = [
   'Nome',
   'Descrição',
-  'Instrutor',
+  'Tutor',
   'Gestores',
   'Estudantes',
   'Status',
@@ -162,9 +162,9 @@ export default function CoursesPage() {
           const contentManagers = users.filter(user => user.role === UserRole.CONTENT_MANAGER)
           
           // Determine what to display for instructors (tutors)
-          let instructorDisplay = 'Sem instrutor'
+          let instructorDisplay = 'Sem tutor'
           if (tutors.length === 1) {
-            instructorDisplay = tutors[0]?.email || 'Sem instrutor'
+            instructorDisplay = tutors[0]?.email || 'Sem tutor'
           } else if (tutors.length > 1) {
             const firstTutor = tutors[0]?.email || 'Tutor'
             const additionalCount = tutors.length - 1
@@ -266,7 +266,7 @@ export default function CoursesPage() {
                   <InputText
                     id="search"
                     type="text"
-                    placeholder="Pesquise por nome, descrição ou instrutor..."
+                    placeholder="Pesquise por nome, descrição ou tutor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"
