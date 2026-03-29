@@ -36,7 +36,7 @@ export function QuestionnairePreview({ questions, onClose }: Props) {
           </span>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-yellow-700 hover:bg-yellow-100 dark:text-yellow-300 dark:hover:bg-yellow-800/40 transition-colors"
+            className="cursor-pointer rounded-md p-1 text-yellow-700 hover:bg-yellow-100 dark:text-yellow-300 dark:hover:bg-yellow-800/40 transition-colors"
             aria-label="Fechar visualização"
           >
             <XIcon className="h-5 w-5" />
