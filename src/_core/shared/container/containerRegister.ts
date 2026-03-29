@@ -18,6 +18,8 @@ import { registerNotesModule } from './modules/notes/register';
 import { registerSearchModule } from '@/_core/shared/container/modules/search/register';
 import { registerStorageModule } from '@/_core/shared/container/modules/storage/register';
 import { registerSharedModule } from './modules/shared/register';
+import { registerFaqModule } from './modules/faq/register';
+import { registerNotificationModule } from './modules/notification/register';
 
 // Import initialization function
 import { initializeSubscribers } from './initializeSubscribers';
@@ -46,7 +48,9 @@ export function registerDependencies(): void {
   registerNotesModule(container);
   registerSearchModule(container);
   registerStorageModule(container);
-  
+  registerFaqModule(container);
+  registerNotificationModule(container);
+
   // Initialize event subscribers after all modules are registered
   initializeSubscribers();
 }
