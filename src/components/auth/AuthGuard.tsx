@@ -48,6 +48,7 @@ const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/admin/create-user': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/admin/settings': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/admin/faqs': ['STUDENT', 'TUTOR', 'CONTENT_MANAGER', 'LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
+  '/admin/courses/ns-score': ['LOCAL_ADMIN', 'CONTENT_MANAGER', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
 };
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {

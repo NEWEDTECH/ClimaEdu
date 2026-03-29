@@ -19,9 +19,10 @@ import { SearchSymbols } from '@/_core/shared/container/modules/search/symbols';
 import { StorageSymbols } from '@/_core/shared/container/modules/storage/symbols';
 import { FaqSymbols } from './modules/faq/symbols';
 import { NotificationSymbols } from './modules/notification/symbols';
+import { NSScoreSymbols } from './modules/nsscore/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols, StorageSymbols, FaqSymbols, NotificationSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols, StorageSymbols, FaqSymbols, NotificationSymbols, NSScoreSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -95,5 +96,9 @@ export const Register = {
   notification: {
     repository: NotificationSymbols.repositories,
     useCase: NotificationSymbols.useCases,
+  },
+  nsscore: {
+    repository: NSScoreSymbols.repositories,
+    useCase: NSScoreSymbols.useCases,
   },
 };

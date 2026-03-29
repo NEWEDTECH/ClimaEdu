@@ -20,6 +20,7 @@ import { registerStorageModule } from '@/_core/shared/container/modules/storage/
 import { registerSharedModule } from './modules/shared/register';
 import { registerFaqModule } from './modules/faq/register';
 import { registerNotificationModule } from './modules/notification/register';
+import { registerNSScoreModule } from './modules/nsscore/register';
 
 // Import initialization function
 import { initializeSubscribers } from './initializeSubscribers';
@@ -50,6 +51,7 @@ export function registerDependencies(): void {
   registerStorageModule(container);
   registerFaqModule(container);
   registerNotificationModule(container);
+  registerNSScoreModule(container);
 
   // Initialize event subscribers after all modules are registered
   initializeSubscribers();
