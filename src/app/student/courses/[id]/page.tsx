@@ -8,7 +8,13 @@ import { CourseSidebar, CourseContent } from '@/components/courses/student';
 import { useCourseData } from '@/hooks/content/useCourseData';
 import { useCourseNavigation } from '@/hooks/content/useCourseNavigation';
 import { useAutoNavigation } from '@/hooks/content/useAutoNavigation';
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
+import { container, Register } from '@/_core/shared/container';
+import { ListNSScoreQuestionsUseCase, ListNSScoreQuestionsInput } from '@/_core/modules/nsscore/core/use-cases/list-questions';
+import { CheckNSScoreSubmittedUseCase, CheckNSScoreSubmittedInput } from '@/_core/modules/nsscore/core/use-cases/check-submitted';
+import { SubmitNSScoreResponseUseCase, SubmitNSScoreResponseInput } from '@/_core/modules/nsscore/core/use-cases/submit-response';
+import type { NSScoreQuestion } from '@/_core/modules/nsscore/core/entities/NSScoreQuestion';
+import type { QuestionAnswer } from '@/_core/modules/nsscore/core/entities/NSScoreResponse';
 
 
 export default function CoursePage() {
@@ -18,6 +24,14 @@ export default function CoursePage() {
     const { infoUser } = useProfile();
     const courseId = params.id as string;
     const initialLessonId = searchParams.get('lesson');
+
+    // NS Score modal state
+    const [showNSModal, setShowNSModal] = useState(false);
+    const [nsScore, setNsScore] = useState(10);
+    const [nsQuestions, setNsQuestions] = useState<NSScoreQuestion[]>([]);
+    const [nsAnswers, setNsAnswers] = useState<QuestionAnswer[]>([]);
+    const [nsSubmitting, setNsSubmitting] = useState(false);
+    const nsCheckedRef = useRef(false);
 
     // Use custom hooks for data management and navigation
     const {
@@ -88,10 +102,126 @@ export default function CoursePage() {
         }
     };
 
+    // Detect course completion and show NS Score modal
+    useEffect(() => {
+        if (isLoading || nsCheckedRef.current || !modules.length) return;
+        const allLessons = modules.flatMap(m => m.lessons);
+        if (!allLessons.length || lessonAccess.size === 0) return;
+        const allCompleted = allLessons.every(l => lessonAccess.get(l.id)?.isCompleted === true);
+        if (!allCompleted) return;
+
+        nsCheckedRef.current = true;
+        ;(async () => {
+            try {
+                const checkUseCase = container.get<CheckNSScoreSubmittedUseCase>(Register.nsscore.useCase.CheckNSScoreSubmittedUseCase);
+                const { submitted } = await checkUseCase.execute(new CheckNSScoreSubmittedInput(infoUser.id, courseId));
+                if (submitted) return;
+
+                const listUseCase = container.get<ListNSScoreQuestionsUseCase>(Register.nsscore.useCase.ListNSScoreQuestionsUseCase);
+                const { questions } = await listUseCase.execute(new ListNSScoreQuestionsInput(courseId));
+                setNsQuestions(questions);
+                setNsAnswers(questions.map(q => ({ questionId: q.id, answer: '' })));
+                setShowNSModal(true);
+            } catch { /* fail silently */ }
+        })();
+    }, [modules, lessonAccess, isLoading, courseId, infoUser.id]);
+
+    const handleNSSubmit = async () => {
+        setNsSubmitting(true);
+        try {
+            const useCase = container.get<SubmitNSScoreResponseUseCase>(Register.nsscore.useCase.SubmitNSScoreResponseUseCase);
+            await useCase.execute(new SubmitNSScoreResponseInput(
+                courseId,
+                infoUser.id,
+                infoUser.currentIdInstitution || '',
+                nsScore,
+                nsAnswers
+            ));
+            setShowNSModal(false);
+        } catch { /* fail silently */ } finally {
+            setNsSubmitting(false);
+        }
+    };
+
 
     return (
         <ProtectedContent>
             <DashboardLayout>
+                {/* NS Score completion modal */}
+                {showNSModal && (
+                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                            <div className="text-center">
+                                <div className="text-4xl mb-2">🎉</div>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Parabéns! Você concluiu o curso!</h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Avalie sua experiência</p>
+                            </div>
+
+                            {/* 0-10 rating */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Nota geral do curso: <span className="text-blue-600 font-bold">{nsScore}</span>
+                                </label>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {Array.from({ length: 11 }, (_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setNsScore(i)}
+                                            className={`w-9 h-9 rounded-full text-sm font-bold cursor-pointer transition-colors ${
+                                                nsScore === i
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900'
+                                            }`}
+                                        >
+                                            {i}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* NS Score questions */}
+                            {nsQuestions.length > 0 && (
+                                <div className="space-y-4">
+                                    {nsQuestions.map((q, i) => (
+                                        <div key={q.id}>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                <span
+                                                    className="prose dark:prose-invert text-sm"
+                                                    dangerouslySetInnerHTML={{ __html: `${i + 1}. ${q.text}` }}
+                                                />
+                                            </label>
+                                            <textarea
+                                                rows={2}
+                                                value={nsAnswers.find(a => a.questionId === q.id)?.answer ?? ''}
+                                                onChange={e => setNsAnswers(prev => prev.map(a => a.questionId === q.id ? { ...a, answer: e.target.value } : a))}
+                                                placeholder="Sua resposta..."
+                                                className="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 justify-end pt-2">
+                                <button
+                                    onClick={() => setShowNSModal(false)}
+                                    disabled={nsSubmitting}
+                                    className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50"
+                                >
+                                    Agora não
+                                </button>
+                                <button
+                                    onClick={handleNSSubmit}
+                                    disabled={nsSubmitting}
+                                    className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer disabled:opacity-50"
+                                >
+                                    {nsSubmitting ? 'Enviando...' : 'Enviar avaliação'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex h-[calc(100vh-4rem)]">
                     {/* Main Content Column */}
                     <div className="flex-1 p-4 transition-all duration-300 overflow-auto scrollbar-thin">
