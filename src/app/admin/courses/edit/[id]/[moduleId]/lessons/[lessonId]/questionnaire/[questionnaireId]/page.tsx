@@ -693,7 +693,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                             <div className="flex justify-end space-x-3 pt-2">
                               <Button
                                 type="button"
-                                className="border border-gray-300 bg-transparent dark:text-gray-100"
+                                className="border bg-white dark:text-red-400 text-red-400 hover:bg-gray-200"
                                 onClick={resetFormData}
                               >
                                 Cancelar
@@ -881,7 +881,7 @@ export default function QuestionsManagementPage({ params }: { params: Promise<{ 
                   <div className="flex justify-end space-x-3">
                     <Button
                       type="button"
-                      className="border border-gray-300 bg-transparent dark:text-gray-100"
+                      className="border bg-white dark:text-red-400 text-red-400 hover:bg-gray-200"
                       onClick={resetFormData}
                     >
                       Cancelar

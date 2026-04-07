@@ -5,7 +5,7 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
-import { FiUsers, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus } from "react-icons/fi";
+import { FiUsers, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus, FiHelpCircle } from "react-icons/fi";
 import { MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
@@ -42,18 +42,21 @@ const studentItems: DropdownItem[] = [
   { label: 'Certificados', href: '/student/certificates', icon: <PiCertificate /> },
   { label: 'Conquistas', href: '/student/achievements', icon: <FiAward /> },
   { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> },
+  { label: 'FAQs', href: '/admin/faqs', icon: <FiHelpCircle /> },
 ];
 
 const teacherItems: DropdownItem[] = [
   { label: 'Social', href: '/social', icon: <FiUsers /> },
   { label: 'Acompanhamento', href: '/tutor/follow-up', icon: <FiUserCheck /> },
   { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
-  { label: 'Tutoria', href: '/tutor/tutoring', icon: <FiUserCheck /> }
+  { label: 'Tutoria', href: '/tutor/tutoring', icon: <FiUserCheck /> },
+  { label: 'FAQs', href: '/admin/faqs', icon: <FiHelpCircle /> },
 ];
 
 const content_managerItems: DropdownItem[] = [
   { label: 'Social', href: '/social', icon: <FiUsers /> },
-  { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> }
+  { label: 'Cursos', href: '/admin/courses', icon: <FiBookOpen /> },
+  { label: 'FAQs', href: '/admin/faqs', icon: <FiHelpCircle /> },
 ];
 
 const adminItems: DropdownItem[] = [
@@ -71,6 +74,7 @@ const adminItems: DropdownItem[] = [
   { label: 'Usuários', href: '/admin/allusers', icon: <FiUserPlus /> },
   { label: 'Criar Usuário', href: '/admin/create-user', icon: <FiUserPlus /> },
   { label: 'Configurações', href: '/admin/settings', icon: <FiSettings /> },
+  { label: 'FAQs', href: '/admin/faqs', icon: <FiHelpCircle /> },
 ];
 
 const sections: DropdownSection[] = [

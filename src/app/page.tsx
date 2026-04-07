@@ -231,13 +231,15 @@ export default function Home() {
           sortOrder: 'desc'
         });
 
-        const podcastsData: PodcastDisplayData[] = podcastsResult.podcasts.map(podcast => ({
-          id: podcast.id,
-          title: podcast.title,
-          href: `/podcast/${podcast.id}`,
-          imageUrl: podcast.coverImageUrl || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&h=300&fit=crop',
-          isBlocked: false
-        }));
+        const podcastsData: PodcastDisplayData[] = podcastsResult.podcasts
+          .filter(podcast => podcast.isActive !== false)
+          .map(podcast => ({
+            id: podcast.id,
+            title: podcast.title,
+            href: `/podcast/${podcast.id}`,
+            imageUrl: podcast.coverImageUrl || 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&h=300&fit=crop',
+            isBlocked: false
+          }));
 
         setPodcasts(podcastsData);
         setIsLoading(false);

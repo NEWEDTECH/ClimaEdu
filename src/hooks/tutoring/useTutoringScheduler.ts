@@ -2,8 +2,11 @@
 
 import { useState } from 'react'
 import { container } from '@/_core/shared/container/container'
+import { Register } from '@/_core/shared/container'
 import { TutoringSymbols } from '@/_core/shared/container/modules/tutoring/symbols'
 import { ScheduleTutoringSessionUseCase } from '@/_core/modules/tutoring'
+import { CreateNotificationUseCase, CreateNotificationInput } from '@/_core/modules/notification/core/use-cases/create-notification'
+import { useProfile } from '@/context/zustand/useProfile'
 
 interface UseTutoringSchedulerState {
   loading: boolean
@@ -19,6 +22,8 @@ interface ScheduleSessionData {
 }
 
 export function useTutoringScheduler() {
+  const { infoUser } = useProfile()
+
   const [state, setState] = useState<UseTutoringSchedulerState>({
     loading: false,
     error: null
@@ -39,6 +44,24 @@ export function useTutoringScheduler() {
         duration: data.duration,
         studentQuestion: data.studentQuestion
       })
+
+      // Send notification to tutor
+      try {
+        const createNotification = container.get<CreateNotificationUseCase>(
+          Register.notification.useCase.CreateNotificationUseCase
+        )
+        await createNotification.execute(new CreateNotificationInput(
+          result.session.tutorId,
+          data.studentId,
+          infoUser.name || 'Aluno',
+          'TUTORING_SCHEDULED',
+          'Nova tutoria agendada',
+          data.studentQuestion || 'Sessão de tutoria agendada',
+          result.session.id
+        ))
+      } catch (notifError) {
+        console.error('Failed to send tutoring notification:', notifError)
+      }
 
       setState({ loading: false, error: null })
       return result.session

@@ -52,8 +52,8 @@ export function PodcastTable({ podcasts, loading, onDelete }: PodcastTableProps)
               </td>
               <td className="py-3 px-4">
                 <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                  podcast.mediaType === 'AUDIO' 
-                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+                  podcast.mediaType === 'AUDIO'
+                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                     : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                 }`}>
                   {podcast.mediaType === 'AUDIO' ? 'Áudio' : 'Vídeo'}
@@ -86,9 +86,15 @@ export function PodcastTable({ podcasts, loading, onDelete }: PodcastTableProps)
                 {new Date(podcast.createdAt).toLocaleDateString('pt-BR')}
               </td>
               <td className="py-3 px-4">
-                <span className="inline-block px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Ativo
-                </span>
+                {podcast.isActive !== false ? (
+                  <span className="inline-block px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    Ativo
+                  </span>
+                ) : (
+                  <span className="inline-block px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                    Inativo
+                  </span>
+                )}
               </td>
               <td className="py-3 px-4 text-right">
                 <div className="flex gap-2">
@@ -97,7 +103,7 @@ export function PodcastTable({ podcasts, loading, onDelete }: PodcastTableProps)
                       Editar
                     </Button>
                   </Link>
-                  <Button 
+                  <Button
                     onClick={() => onDelete(podcast.id, podcast.title)}
                     variant='secondary'
                   >
@@ -109,7 +115,7 @@ export function PodcastTable({ podcasts, loading, onDelete }: PodcastTableProps)
           ))}
         </tbody>
       </table>
-      
+
       {podcasts.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           Nenhum podcast encontrado

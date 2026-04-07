@@ -103,7 +103,7 @@ export class PdfGeneratorService {
       .replace(/\{\{studentName\}\}/g, input.studentName)
       .replace(/\{\{courseName\}\}/g, input.courseName)
       .replace(/\{\{institutionName\}\}/g, input.institutionName)
-      .replace(/\{\{instructorName\}\}/g, input.instructorName || 'Instrutor do Curso')
+      .replace(/\{\{instructorName\}\}/g, input.instructorName || 'tutor do Curso')
       .replace(/\{\{hoursCompleted\}\}/g, String(input.hoursCompleted || 40))
       .replace(/\{\{grade\}\}/g, String(input.grade || 85))
       .replace(/\{\{issueDate\}\}/g, input.issueDate)

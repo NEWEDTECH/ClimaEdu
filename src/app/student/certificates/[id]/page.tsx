@@ -72,7 +72,7 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
             isAuthentic: () => false as boolean,
             courseTitle: courseData.title,
             institutionName: infoInstitutions?.institutions?.nameInstitution || 'Instituição',
-            instructorName: 'Instrutor do Curso',
+            instructorName: 'Tutor do Curso',
             hoursCompleted: 40,
             grade: 85,
             completionDate: new Date(),
@@ -98,7 +98,7 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
           isAuthentic: certificate.isAuthentic,
           courseTitle: courseData?.title || 'Curso Não Encontrado',
           institutionName: infoInstitutions?.institutions?.nameInstitution || 'Instituição',
-          instructorName: 'Instrutor do Curso',
+          instructorName: 'Tutor do Curso',
           hoursCompleted: 40,
           grade: 85,
           completionDate: certificate.issuedAt,
@@ -134,7 +134,7 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
         institutionId: infoUser!.currentIdInstitution || '',
         courseName: certificateDetail.courseTitle || 'Curso',
         studentName: infoUser!.name || 'Nome do Estudante',
-        instructorName: certificateDetail.instructorName || 'Instrutor do Curso',
+        instructorName: certificateDetail.instructorName || 'Tutor do Curso',
         hoursCompleted: certificateDetail.hoursCompleted || 40,
         grade: certificateDetail.grade || 85,
       };
@@ -312,7 +312,7 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
                 <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-center">
                     <p className="font-medium">{certificateDetail.instructorName}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Instrutor</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Tutor</p>
                   </div>
                   <div className="text-center">
                     <p className="font-medium">{certificateDetail.issuedAt.toLocaleDateString('pt-BR')}</p>
@@ -359,7 +359,7 @@ export default function CertificateDetailPage({ params }: CertificateDetailPageP
                         <span className="font-medium">{certificateDetail.grade}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Instrutor:</span>
+                        <span className="text-gray-600 dark:text-gray-400">Tutor:</span>
                         <span className="font-medium">{certificateDetail.instructorName}</span>
                       </div>
                       {certificateDetail.hasCertificate && (

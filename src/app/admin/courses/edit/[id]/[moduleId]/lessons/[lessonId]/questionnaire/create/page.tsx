@@ -624,7 +624,7 @@ export default function QuestionnairePage({ params }: { params: Promise<{ id: st
                     {isEditingQuestion && (
                       <Button
                         type="button"
-                        className="border border-gray-300 bg-transparent hover:bg-gray-100"
+                        className="border bg-white dark:text-red-400 text-red-400 hover:bg-gray-200"
                         onClick={() => {
                           setCurrentQuestion({
                             questionText: '',
