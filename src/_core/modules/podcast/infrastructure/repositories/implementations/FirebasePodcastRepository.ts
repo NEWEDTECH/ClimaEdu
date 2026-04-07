@@ -62,7 +62,8 @@ export class FirebasePodcastRepository implements PodcastRepository {
       mediaUrl: data.mediaUrl,
       mediaType: data.mediaType as PodcastMediaType,
       createdAt,
-      updatedAt
+      updatedAt,
+      isActive: data.isActive !== false
     });
   }
 
@@ -102,7 +103,8 @@ export class FirebasePodcastRepository implements PodcastRepository {
       mediaUrl: podcast.mediaUrl,
       mediaType: podcast.mediaType,
       createdAt: podcast.createdAt,
-      updatedAt: podcast.updatedAt
+      updatedAt: podcast.updatedAt,
+      isActive: podcast.isActive
     };
 
     // Check if the podcast already exists

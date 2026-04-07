@@ -23,6 +23,7 @@ import { UpdateLessonDescriptionUseCase } from '@/_core/modules/content/core/use
 import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use-cases/remove-content-from-lesson/remove-content-from-lesson.use-case'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 import { showToast } from '@/components/toast'
+import { getLessonRatingStats } from '@/_core/modules/content/infrastructure/repositories/lessonRatingService'
 
 type LessonFormData = {
   id: string;
@@ -85,6 +86,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [ratingStats, setRatingStats] = useState<{ average: number; count: number } | null>(null)
 
   // Define the order of content sections (will be loaded from lesson)
   const [contentSectionsOrder, setContentSectionsOrder] = useState<string[]>([
@@ -219,6 +221,12 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         if (lesson.contentSectionsOrder && lesson.contentSectionsOrder.length === 8) {
           setContentSectionsOrder(lesson.contentSectionsOrder)
         }
+
+        // Load rating stats
+        try {
+          const stats = await getLessonRatingStats(lessonId)
+          setRatingStats(stats)
+        } catch { /* fail silently */ }
 
         setIsLoading(false)
       } catch (error) {
@@ -539,6 +547,28 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
             <h1 className="text-3xl font-bold">Editar Unidade</h1>
             <p className="text-gray-500">Módulo: {moduleName}</p>
             <p className="text-gray-500">Título da Unidade: {formData.title}</p>
+            {ratingStats && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg
+                      key={star}
+                      className={`w-4 h-4 ${star <= Math.round(ratingStats.average) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {ratingStats.average > 0 ? ratingStats.average.toFixed(1) : '—'}
+                </span>
+                <span className="text-sm text-gray-500">
+                  ({ratingStats.count} {ratingStats.count === 1 ? 'avaliação' : 'avaliações'})
+                </span>
+              </div>
+            )}
           </div>
           <Link href={`/admin/courses/edit/${courseId}`}>
             <Button className="hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3">Voltar</Button>

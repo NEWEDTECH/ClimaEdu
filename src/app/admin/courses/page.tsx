@@ -33,13 +33,16 @@ type CourseWithUIProps = {
   instructorDisplay?: string
   contentManagerDisplay?: string
   enrolledStudents?: number
+  isActive?: boolean
+  isCurrentUserContentManager?: boolean
+  isCurrentUserTutor?: boolean
   status: 'active' | 'inactive'
 }
 
 const NAME_COLUMNS = [
   'Nome',
   'Descrição',
-  'Instrutor',
+  'Tutor',
   'Gestores',
   'Estudantes',
   'Status',
@@ -49,6 +52,7 @@ const NAME_COLUMNS = [
 export default function CoursesPage() {
   const { infoUser, infoInstitutions } = useProfile()
   const isContentManager = infoUser.currentRole === UserRole.CONTENT_MANAGER
+  const isTutor = infoUser.currentRole === UserRole.TUTOR
 
   const [courses, setCourses] = useState<CourseWithUIProps[]>([])
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
@@ -62,7 +66,7 @@ export default function CoursesPage() {
   useEffect(() => {
     if (!infoUser.id) return
 
-    if (isContentManager) {
+    if (isContentManager || isTutor) {
       if (infoUser.currentIdInstitution) {
         setSelectedInstitutionId(infoUser.currentIdInstitution)
       }
@@ -158,9 +162,9 @@ export default function CoursesPage() {
           const contentManagers = users.filter(user => user.role === UserRole.CONTENT_MANAGER)
           
           // Determine what to display for instructors (tutors)
-          let instructorDisplay = 'Sem instrutor'
+          let instructorDisplay = 'Sem tutor'
           if (tutors.length === 1) {
-            instructorDisplay = tutors[0]?.email || 'Sem instrutor'
+            instructorDisplay = tutors[0]?.email || 'Sem tutor'
           } else if (tutors.length > 1) {
             const firstTutor = tutors[0]?.email || 'Tutor'
             const additionalCount = tutors.length - 1
@@ -189,6 +193,9 @@ export default function CoursesPage() {
             console.error('Error fetching enrollments for course:', course.id, error)
           }
           
+          const isCurrentUserContentManager = contentManagers.some(m => m.id === infoUser.id)
+          const isCurrentUserTutor = tutors.some(t => t.id === infoUser.id)
+
           return {
             id: course.id,
             title: course.title,
@@ -196,14 +203,23 @@ export default function CoursesPage() {
             instructorDisplay,
             contentManagerDisplay,
             enrolledStudents,
-            status: 'active' as 'active' | 'inactive'
+            isActive: course.isActive,
+            isCurrentUserContentManager,
+            isCurrentUserTutor,
+            status: course.isActive === false ? 'inactive' : 'active' as 'active' | 'inactive'
           }
         })
-        
+
         // Wait for all courses with details to be processed
         const coursesWithUIProps = await Promise.all(coursesWithDetailsPromises)
-        
-        setCourses(coursesWithUIProps)
+
+        const finalCourses = isContentManager
+          ? coursesWithUIProps.filter(c => c.isCurrentUserContentManager)
+          : isTutor
+            ? coursesWithUIProps.filter(c => c.isCurrentUserTutor)
+            : coursesWithUIProps
+
+        setCourses(finalCourses)
         setError(null)
       } catch (err) {
         console.error('Error fetching courses:', err)
@@ -250,7 +266,7 @@ export default function CoursesPage() {
                   <InputText
                     id="search"
                     type="text"
-                    placeholder="Pesquise por nome, descrição ou instrutor..."
+                    placeholder="Pesquise por nome, descrição ou tutor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"
@@ -317,11 +333,11 @@ export default function CoursesPage() {
                       <td className="py-3 px-4 text-center">{course.enrolledStudents}</td>
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                          course.status === 'active' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                          course.status === 'active'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                         }`}>
-                          {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
+                          {course.status === 'active' ? 'Ativado' : 'Desativado'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right">

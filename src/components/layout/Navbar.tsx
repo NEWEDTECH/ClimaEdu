@@ -9,6 +9,7 @@ import { FiHome, FiUsers, FiSun, FiMoon } from "react-icons/fi";
 import { useProfile } from '@/context/zustand/useProfile';
 import { useThemeStore } from '@/context/zustand/useThemeStore';
 import { Button } from '@/components/button'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 
 export function Navbar() {
@@ -74,6 +75,9 @@ export function Navbar() {
       <div className='flex items-center justify-end'>
 
         <div className="hidden md:flex items-center gap-4">
+          {(infoUser.currentRole === 'STUDENT' || infoUser.currentRole === 'TUTOR') && (
+            <NotificationBell />
+          )}
            <ProfileSelect
             avatarUrl={infoUser.avatarUrl}
             onLogout={() => console.log('Logout clicked')}

@@ -139,7 +139,7 @@ export default function TutorCoursesPage() {
                   <InputText
                     id="search-courses"
                     type="text"
-                    placeholder="Buscar por título, descrição ou instrutor..."
+                    placeholder="Buscar por título, descrição ou tutor..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"

@@ -11,4 +11,5 @@ export interface UpdatePodcastInput {
   coverImageUrl?: string;
   mediaUrl?: string;
   mediaType?: PodcastMediaType;
+  isActive?: boolean;
 }

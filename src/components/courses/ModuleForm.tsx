@@ -11,6 +11,8 @@ import { CreateModuleUseCase } from '@/_core/modules/content/core/use-cases/crea
 import { CreateLessonUseCase } from '@/_core/modules/content/core/use-cases/create-lesson/create-lesson.use-case';
 import { DeleteModuleUseCase, DeleteModuleInput } from '@/_core/modules/content/core/use-cases/delete-module';
 import { ReorderModal } from './ReorderModal';
+import { useProfile } from '@/context/zustand/useProfile';
+import { GetNSScoreStatsUseCase, GetNSScoreStatsInput } from '@/_core/modules/nsscore/core/use-cases/get-stats';
 
 type ModuleData = {
   id: string;
@@ -34,6 +36,9 @@ type ModuleFormProps = {
 }
 
 export function ModuleForm({ courseId }: ModuleFormProps) {
+  const { infoUser } = useProfile();
+  const currentRole = infoUser.currentRole;
+
   const [modules, setModules] = useState<ModuleData[]>([]);
   const [newModuleTitle, setNewModuleTitle] = useState('');
   const [isCreatingModule, setIsCreatingModule] = useState(false);
@@ -46,6 +51,8 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   const [deleteConfirmModuleId, setDeleteConfirmModuleId] = useState<string | null>(null);
   const [isDeletingModule, setIsDeletingModule] = useState(false);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+  const [scorePercentage, setScorePercentage] = useState<number | null>(null);
+  const [scoreLoading, setScoreLoading] = useState(false);
 
   const fetchModules = useCallback(async () => {
     try {
@@ -78,6 +85,25 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
   useEffect(() => {
     fetchModules();
   }, [fetchModules]);
+
+  const canManageNSScore = currentRole === 'LOCAL_ADMIN' || currentRole === 'CONTENT_MANAGER' || currentRole === 'SYSTEM_ADMIN' || currentRole === 'SUPER_ADMIN';
+
+  useEffect(() => {
+    if (!canManageNSScore) return;
+    const fetchScore = async () => {
+      try {
+        setScoreLoading(true);
+        const useCase = container.get<GetNSScoreStatsUseCase>(Register.nsscore.useCase.GetNSScoreStatsUseCase);
+        const result = await useCase.execute(new GetNSScoreStatsInput(courseId));
+        setScorePercentage(result.scorePercentage);
+      } catch {
+        setScorePercentage(null);
+      } finally {
+        setScoreLoading(false);
+      }
+    };
+    fetchScore();
+  }, [courseId, canManageNSScore]);
 
   const fetchLessonsForModule = useCallback(async (moduleId: string) => {
     if (isLoadingLessons[moduleId]) return;
@@ -340,6 +366,39 @@ export function ModuleForm({ courseId }: ModuleFormProps) {
 
       {/* Content area */}
       <div className="flex-1 overflow-y-auto p-4">
+        {/* NS Score section */}
+        {canManageNSScore && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600 shadow-sm">
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center mr-2">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">NS Score</h3>
+            </div>
+            <Link href={`/admin/courses/ns-score/${courseId}`}>
+              <Button
+                type="button"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 rounded-lg shadow-sm transition-all duration-200"
+              >
+                Gerenciar Perguntas
+              </Button>
+            </Link>
+            <Link href={`/admin/courses/ns-score/${courseId}/responses`} className="block mt-2">
+              <Button
+                type="button"
+                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-sm py-2 rounded-lg shadow-sm transition-all duration-200"
+              >
+                Verificar Respostas
+              </Button>
+            </Link>
+            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+              {scoreLoading ? 'Carregando...' : scorePercentage !== null ? `Score atual: ${scorePercentage}%` : 'Sem respostas ainda'}
+            </p>
+          </div>
+        )}
+
         {/* Always visible module creation form */}
         <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-green-100 dark:border-gray-600 shadow-sm">
           <div className="flex items-center mb-3">

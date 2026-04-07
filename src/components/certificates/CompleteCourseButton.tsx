@@ -88,7 +88,7 @@ export function CompleteCourseButton({
         Curso: {courseName}<br/>
         ID: {courseId}<br/>
         Instituição: {institutionId}<br/>
-        {instructorName && <>Instrutor: {instructorName}<br/></>}
+        {instructorName && <>Tutor: {instructorName}<br/></>}
         {grade && <>Nota: {grade}%<br/></>}
         {hoursCompleted && <>Horas: {hoursCompleted}h<br/></>}
       </div>

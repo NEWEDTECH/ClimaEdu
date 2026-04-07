@@ -18,6 +18,7 @@ import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/Enrol
 import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { LoadingSpinner } from '@/components/loader'
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository'
+import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
 import { X } from 'lucide-react'
 
 type StudentWithCourses = {
@@ -71,21 +72,32 @@ export default function StudentPage() {
         const enrollmentRepository = container.get<EnrollmentRepository>(
           Register.enrollment.repository.EnrollmentRepository
         )
-        
+
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         )
-        
+
         const courseRepository = container.get<CourseRepository>(
           Register.content.repository.CourseRepository
         )
-        
-        // Get all students directly
-        const studentUsers = await userRepository.listByType(UserRole.STUDENT)
-        
+
+        const userInstitutionRepository = container.get<UserInstitutionRepository>(
+          Register.institution.repository.UserInstitutionRepository
+        )
+
+        // Busca todos os vínculos com userRole "STUDENT" na user_institutions
+        const studentLinks = await userInstitutionRepository.listByRole(UserRole.STUDENT)
+
+        // Deduplica por userId (um estudante pode estar em mais de uma instituição)
+        const uniqueUserIds = [...new Set(studentLinks.map(l => l.userId))]
+
+        // Busca os dados dos usuários
+        const studentUsersRaw = await Promise.all(uniqueUserIds.map(id => userRepository.findById(id)))
+        const studentUsers = studentUsersRaw.filter((u): u is NonNullable<typeof u> => u !== null)
+
         // For each student, get their enrollments
         const studentsWithCourses: StudentWithCourses[] = []
-        
+
         for (const student of studentUsers) {
           const enrollments = await enrollmentRepository.listByUser(student.id)
           
