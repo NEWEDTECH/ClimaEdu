@@ -15,7 +15,8 @@ export class Podcast {
     private _mediaUrl: string,
     private _mediaType: PodcastMediaType,
     readonly createdAt: Date,
-    private _updatedAt: Date
+    private _updatedAt: Date,
+    public isActive: boolean
   ) {}
 
   /**
@@ -35,6 +36,7 @@ export class Podcast {
     mediaType: PodcastMediaType;
     createdAt?: Date;
     updatedAt?: Date;
+    isActive?: boolean;
   }): Podcast {
     if (!params.institutionId || params.institutionId.trim() === '') {
       throw new Error('Institution ID cannot be empty');
@@ -80,7 +82,8 @@ export class Podcast {
       params.mediaUrl.trim(),
       params.mediaType,
       params.createdAt ?? now,
-      params.updatedAt ?? now
+      params.updatedAt ?? now,
+      params.isActive !== false
     );
   }
 
@@ -197,6 +200,16 @@ export class Podcast {
    */
   public updateMediaType(newMediaType: PodcastMediaType): void {
     this._mediaType = newMediaType;
+    this.touch();
+  }
+
+  public deactivate(): void {
+    this.isActive = false;
+    this.touch();
+  }
+
+  public activate(): void {
+    this.isActive = true;
     this.touch();
   }
 

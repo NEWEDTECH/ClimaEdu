@@ -60,6 +60,8 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [podcast, setPodcast] = useState<Podcast | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false)
+  const [showToggleConfirm, setShowToggleConfirm] = useState<boolean>(false)
+  const [isTogglingStatus, setIsTogglingStatus] = useState<boolean>(false)
 
   const {
     register,
@@ -150,6 +152,22 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
       alert('Erro ao atualizar podcast. Tente novamente.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleToggleStatus = async () => {
+    if (!podcast) return
+    setIsTogglingStatus(true)
+    try {
+      const updatePodcastUseCase = container.get<UpdatePodcastUseCase>(Register.podcast.useCase.UpdatePodcastUseCase)
+      await updatePodcastUseCase.execute({ podcastId: resolvedParams.id, isActive: !podcast.isActive })
+      setPodcast(prev => prev ? { ...prev, isActive: !prev.isActive } as typeof prev : null)
+      setShowToggleConfirm(false)
+    } catch (error) {
+      console.error('Erro ao atualizar status do podcast:', error)
+      alert('Erro ao atualizar status. Tente novamente.')
+    } finally {
+      setIsTogglingStatus(false)
     }
   }
 
@@ -374,17 +392,68 @@ export default function EditPodcastPage({ params }: EditPodcastPageProps) {
                     }
                   </Button>
 
-                  <Button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    variant='secondary'
-                  >
-                    Excluir Podcast
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => setShowToggleConfirm(true)}
+                      className={podcast?.isActive !== false
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                        : 'bg-green-600 hover:bg-green-700 text-white'}
+                    >
+                      {podcast?.isActive !== false ? 'Desativar Podcast' : 'Ativar Podcast'}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      variant='secondary'
+                    >
+                      Excluir Podcast
+                    </Button>
+                  </div>
                 </div>
               </FormSection>
             </CardContent>
           </Card>
+
+          {/* Modal de Confirmação de Status */}
+          {showToggleConfirm && podcast && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <Card className="max-w-md mx-4">
+                <CardHeader>
+                  <CardTitle className={podcast.isActive !== false ? 'text-yellow-600' : 'text-green-600'}>
+                    {podcast.isActive !== false ? '⚠️ Desativar Podcast' : '✅ Ativar Podcast'}
+                  </CardTitle>
+                  <CardDescription>
+                    {podcast.isActive !== false
+                      ? 'O podcast não aparecerá mais para os usuários, mas poderá ser reativado posteriormente.'
+                      : 'O podcast voltará a aparecer para os usuários.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm">
+                      Tem certeza que deseja {podcast.isActive !== false ? 'desativar' : 'ativar'} o podcast <strong>{podcast.title}</strong>?
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleToggleStatus}
+                        disabled={isTogglingStatus}
+                        className={`flex-1 ${podcast.isActive !== false ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-600 hover:bg-green-700'} text-white`}
+                      >
+                        {isTogglingStatus ? 'Aguarde...' : (podcast.isActive !== false ? 'Sim, Desativar' : 'Sim, Ativar')}
+                      </Button>
+                      <Button
+                        onClick={() => setShowToggleConfirm(false)}
+                        className="flex-1 border bg-background hover:bg-accent"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Modal de Confirmação de Exclusão */}
           {showDeleteConfirm && (

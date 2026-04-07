@@ -54,6 +54,12 @@ export class UpdatePodcastUseCase {
       podcast.updateMediaType(input.mediaType);
     }
 
+    if (input.isActive === false) {
+      podcast.deactivate();
+    } else if (input.isActive === true) {
+      podcast.activate();
+    }
+
     // Save the updated podcast
     const savedPodcast = await this.podcastRepository.save(podcast);
 
