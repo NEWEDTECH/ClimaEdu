@@ -101,7 +101,7 @@ export default function NSScoreResponsesPage({ params }: { params: Promise<{ id:
             </div>
           ) : (
             <div className="space-y-4">
-              {responses.map((r, i) => (
+              {responses.map((r) => (
                 <div key={r.id} className="border rounded-xl p-5 bg-white dark:bg-gray-800 space-y-3">
                   {/* Response header */}
                   <div className="flex items-center justify-between flex-wrap gap-2">

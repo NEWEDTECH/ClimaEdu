@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Editor } from 'primereact/editor'
 import 'quill/dist/quill.snow.css'
 import { FiChevronDown, FiChevronUp, FiPlus, FiEdit2, FiTrash2, FiX, FiCheck } from 'react-icons/fi'
