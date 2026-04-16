@@ -1,7 +1,7 @@
 import { injectable } from 'inversify'
 import {
   collection, doc, getDoc, setDoc, deleteDoc,
-  getDocs, query, where, orderBy, DocumentData, Timestamp
+  getDocs, query, where, DocumentData, Timestamp
 } from 'firebase/firestore'
 import { firestore } from '@/_core/shared/firebase/firebase-client'
 import { NSScoreQuestion } from '../../../core/entities/NSScoreQuestion'
@@ -48,10 +48,11 @@ export class FirebaseNSScoreQuestionRepository implements NSScoreQuestionReposit
   async listByCourse(courseId: string): Promise<NSScoreQuestion[]> {
     const q = query(
       collection(firestore, this.col),
-      where('courseId', '==', courseId),
-      orderBy('order', 'asc')
+      where('courseId', '==', courseId)
     )
     const snap = await getDocs(q)
-    return snap.docs.map(d => this.map({ id: d.id, ...d.data() }))
+    return snap.docs
+      .map(d => this.map({ id: d.id, ...d.data() }))
+      .sort((a, b) => a.order - b.order)
   }
 }
