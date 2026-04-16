@@ -23,16 +23,16 @@ export function Navbar() {
     <nav className='h-28 px-4 sm:px-6 lg:px-8 flex items-center justify-between backdrop-blur-md shadow-lg relative z-50 transition-all duration-300 dark:bg-black dark:border-b dark:border-white/10 bg-gray-100/80 border-b border-gray-200/50'>
 
       <div className="flex items-center justify-start">
-        <Link href="/" className="flex items-center space-x-3 group py-4">
+        <Link href="/" className="group block w-[200px] h-[72px] py-2">
           {infoInstitutions?.institutions?.urlImage ? (
             <img
-              className='h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 group-hover:scale-105'
+              className='w-full h-full object-contain transition-transform duration-300 group-hover:scale-105'
               src={infoInstitutions.institutions.urlImage}
               alt="Logo da instituição"
             />
           ) : (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center">
+            <div className="w-full h-full flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-lg">{infoInstitutions.institutions.nameInstitution}</span>
               </div>
             </div>
