@@ -546,7 +546,7 @@ export default function InstitutionPage() {
                           className="mt-4"
                         />
                         <p className="text-red-600 text-xs font-medium mt-1">
-                          Tamanho recomendado: 400x120 pixels (formato PNG ou SVG com fundo transparente)
+                          Tamanho recomendado: 400x120 pixels · Formato: .png (recomendado) ou .svg · Fundo transparente
                         </p>
                         {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
                         {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
