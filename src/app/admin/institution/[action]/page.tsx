@@ -534,6 +534,29 @@ export default function InstitutionPage() {
                     );
                   }
 
+                  if (id === 'logoUrl') {
+                    return (
+                      <div key={id} className="space-y-2">
+                        <ImageUpload
+                          imageType="institution-logo"
+                          institutionId={institutionId || 'temp'}
+                          onUploadSuccess={(url) => { setValue('logoUrl', url) }}
+                          currentImageUrl={value || ''}
+                          label={field.label}
+                          className="mt-4"
+                        />
+                        <p className="text-red-600 text-xs font-medium mt-1">
+                          Tamanho recomendado: 400x120 pixels · Formato: .png (recomendado) ou .svg · Fundo transparente
+                        </p>
+                        {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
+                        {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
+                        <div className="text-xs text-gray-500 mt-2">
+                          {value && <span>✅ URL atual: {value}</span>}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   if (id === 'coverImageUrl') {
                     return (
                       <div key={id} className="space-y-2">

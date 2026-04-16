@@ -74,7 +74,7 @@ export default function NSScoreResponsesPage({ params }: { params: Promise<{ id:
                   <FiArrowLeft className="mr-1" /> Voltar
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">Respostas NS Score</h1>
+              <h1 className="text-2xl font-bold">Respostas NPS Score</h1>
             </div>
           </div>
 
