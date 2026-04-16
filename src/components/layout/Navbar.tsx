@@ -20,19 +20,19 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   return (
-    <nav className='h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between backdrop-blur-md shadow-lg relative z-50 transition-all duration-300 dark:bg-black dark:border-b dark:border-white/10 bg-gray-100/80 border-b border-gray-200/50'>
+    <nav className='h-28 px-4 sm:px-6 lg:px-8 flex items-center justify-between backdrop-blur-md shadow-lg relative z-50 transition-all duration-300 dark:bg-black dark:border-b dark:border-white/10 bg-gray-100/80 border-b border-gray-200/50'>
 
       <div className="flex items-center justify-start">
-        <Link href="/" className="flex items-center space-x-3 group">
+        <Link href="/" className="group block w-[200px] h-[72px] py-2">
           {infoInstitutions?.institutions?.urlImage ? (
             <img
-              className='h-12 w-auto transition-transform duration-300 group-hover:scale-105'
+              className='w-full h-full object-contain transition-transform duration-300 group-hover:scale-105'
               src={infoInstitutions.institutions.urlImage}
               alt="Logo da instituição"
             />
           ) : (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center">
+            <div className="w-full h-full flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-lg">{infoInstitutions.institutions.nameInstitution}</span>
               </div>
             </div>
@@ -102,7 +102,7 @@ export function Navbar() {
 
 
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-20 left-0 right-0 backdrop-blur-md shadow-2xl z-40 dark:g-gray-800/90 dark:border-b dark:border-white/10 bg-gray-100/90 border-b border-gray-200/50">
+        <div className="md:hidden absolute top-28 left-0 right-0 backdrop-blur-md shadow-2xl z-40 dark:g-gray-800/90 dark:border-b dark:border-white/10 bg-gray-100/90 border-b border-gray-200/50">
           <div className="px-4 py-6">
             {/* Navigation buttons - Mobile */}
             <div className="space-y-3 mb-6">

@@ -100,7 +100,7 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
                   <FiArrowLeft className="mr-1" /> Voltar
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">Perguntas NS Score</h1>
+              <h1 className="text-2xl font-bold">Perguntas NPS Score</h1>
             </div>
             {!showForm && (
               <Button variant="primary" onClick={() => setShowForm(true)}>

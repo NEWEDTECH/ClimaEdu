@@ -39,9 +39,10 @@ export class FirebaseUserRepository implements UserRepository {
     
     // Convert profile object to Profile value object if it exists
     let profile: Profile | undefined;
-    if (data.profile?.avatar) {
+    const avatarUrl = data.profile?.avatarUrl || data.profile?.avatar;
+    if (avatarUrl) {
       profile = Profile.create({
-        avatarUrl: data.profile.avatar,
+        avatarUrl,
       });
     }
     

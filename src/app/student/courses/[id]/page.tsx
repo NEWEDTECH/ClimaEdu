@@ -27,7 +27,7 @@ export default function CoursePage() {
     const courseId = params.id as string;
     const initialLessonId = searchParams.get('lesson');
 
-    // NS Score modal state
+    // NPS Score modal state
     const [showNSModal, setShowNSModal] = useState(false);
     const [nsScore, setNsScore] = useState(10);
     const [nsQuestions, setNsQuestions] = useState<NSScoreQuestion[]>([]);
@@ -149,7 +149,7 @@ export default function CoursePage() {
         }
     };
 
-    // Detect course completion and show NS Score modal
+    // Detect course completion and show NPS Score modal
     useEffect(() => {
         if (isLoading || nsCheckedRef.current || !modules.length) return;
         const allLessons = modules.flatMap(m => m.lessons);
@@ -250,7 +250,7 @@ export default function CoursePage() {
                     </div>
                 )}
 
-                {/* NS Score completion modal */}
+                {/* NPS Score completion modal */}
                 {showNSModal && (
                     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
@@ -282,7 +282,7 @@ export default function CoursePage() {
                                 </div>
                             </div>
 
-                            {/* NS Score questions */}
+                            {/* NPS Score questions */}
                             {nsQuestions.length > 0 && (
                                 <div className="space-y-4">
                                     {nsQuestions.map((q, i) => (
