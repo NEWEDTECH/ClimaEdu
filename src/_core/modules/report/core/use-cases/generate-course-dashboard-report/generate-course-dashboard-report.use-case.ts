@@ -16,7 +16,6 @@ import type { UserRepository } from '../../../../user/infrastructure/repositorie
 import type { CourseRepository } from '../../../../content/infrastructure/repositories/CourseRepository';
 import type { EnrollmentRepository } from '../../../../enrollment/infrastructure/repositories/EnrollmentRepository';
 import type { QuestionnaireSubmissionRepository } from '../../../../content/infrastructure/repositories/QuestionnaireSubmissionRepository';
-import type { LessonProgressRepository } from '../../../../content/infrastructure/repositories/LessonProgressRepository';
 import type { InstitutionRepository } from '../../../../institution/infrastructure/repositories/InstitutionRepository';
 import { Register } from '../../../../../shared/container/symbols';
 import { QuestionnaireSubmission } from '../../../../content/core/entities/QuestionnaireSubmission';
@@ -35,9 +34,6 @@ export class GenerateCourseDashboardReportUseCase {
     
     @inject(Register.content.repository.QuestionnaireSubmissionRepository)
     private readonly questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
-    
-    @inject(Register.content.repository.LessonProgressRepository)
-    private readonly lessonProgressRepository: LessonProgressRepository,
     
     @inject(Register.institution.repository.InstitutionRepository)
     private readonly institutionRepository: InstitutionRepository
@@ -444,18 +440,18 @@ export class GenerateCourseDashboardReportUseCase {
       actionableInsights.push({
         type: 'RISK',
         priority: 'HIGH',
-        title: 'Low Completion Rate Courses Identified',
-        description: `${underperformingCourses.length} courses have completion rates below 50%`,
+        title: 'Cursos com Baixa Taxa de Conclusão Identificados',
+        description: `${underperformingCourses.length} cursos possuem taxa de conclusão abaixo de 50%`,
         affectedCourses: underperformingCourses.map(c => c.courseId),
-        potentialImpact: 'Reduced student satisfaction and revenue loss',
+        potentialImpact: 'Redução na satisfação dos alunos e perda de receita',
         recommendedActions: [
-          'Review course content and structure',
-          'Analyze student feedback',
-          'Consider instructor training',
-          'Implement engagement strategies'
+          'Revisar conteúdo e estrutura do curso',
+          'Analisar feedbacks dos alunos',
+          'Considerar treinamento para instrutores',
+          'Implementar estratégias de engajamento'
         ],
         estimatedEffort: 'MEDIUM',
-        expectedOutcome: 'Improved completion rates by 15-20%'
+        expectedOutcome: 'Melhora nas taxas de conclusão entre 15-20%'
       });
     }
 
@@ -502,42 +498,42 @@ export class GenerateCourseDashboardReportUseCase {
     // Generate recommendations based on real insights
     if (insights.underperformingCourses.length > 0) {
       recommendations.courseImprovements.push(
-        'Review and restructure underperforming courses',
-        'Implement interactive elements to increase engagement',
-        'Add more practical exercises and real-world examples'
+        'Revisar e reestruturar cursos com baixo desempenho',
+        'Implementar elementos interativos para aumentar o engajamento',
+        'Adicionar mais exercícios práticos e exemplos do mundo real'
       );
     }
 
     if (insights.keyMetrics.overallCompletionRate < 70) {
       recommendations.studentExperienceEnhancements.push(
-        'Implement progress tracking and milestone celebrations',
-        'Create peer support groups and study communities',
-        'Provide personalized learning paths'
+        'Implementar acompanhamento de progresso e celebração de marcos',
+        'Criar grupos de apoio entre alunos e comunidades de estudo',
+        'Oferecer trilhas de aprendizado personalizadas'
       );
     }
 
     recommendations.operationalOptimizations.push(
-      'Automate routine administrative tasks',
-      'Implement predictive analytics for student success',
-      'Optimize resource allocation based on course performance'
+      'Automatizar tarefas administrativas rotineiras',
+      'Implementar análises preditivas para o sucesso dos alunos',
+      'Otimizar a alocação de recursos com base no desempenho dos cursos'
     );
 
     recommendations.marketingOpportunities.push(
-      'Promote high-rated courses more prominently',
-      'Create testimonials from successful students',
-      'Develop referral programs for satisfied students'
+      'Promover com mais destaque os cursos mais bem avaliados',
+      'Criar depoimentos de alunos de sucesso',
+      'Desenvolver programas de indicação para alunos satisfeitos'
     );
 
     recommendations.instructorDevelopment.push(
-      'Provide training on engagement techniques',
-      'Share best practices from top-performing instructors',
-      'Implement peer mentoring programs'
+      'Oferecer treinamentos sobre técnicas de engajamento',
+      'Compartilhar boas práticas dos instrutores de melhor desempenho',
+      'Implementar programas de mentoria entre pares'
     );
 
     recommendations.revenueEnhancement.push(
-      'Develop pricing strategy for courses',
-      'Create premium course offerings',
-      'Implement subscription models'
+      'Desenvolver estratégia de precificação para os cursos',
+      'Criar ofertas de cursos premium',
+      'Implementar modelos de assinatura'
     );
 
     return recommendations;

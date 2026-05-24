@@ -7,7 +7,8 @@ import { LoadingSpinner } from '@/components/loader'
 import { Button } from '@/components/button'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
-import { TrailForm, CourseManager, InstitutionSelector, StudentManager } from '@/components/trails'
+import { TrailForm, CourseManager, InstitutionSelector } from '@/components/trails'
+import { SelectComponent } from '@/components/select'
 import { container } from '@/_core/shared/container'
 import { Register } from '@/_core/shared/container'
 import { CreateTrailUseCase } from '@/_core/modules/content/core/use-cases/create-trail/create-trail.use-case'
@@ -42,9 +43,7 @@ export default function CreateTrailPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [students, setStudents] = useState<User[]>([])
-  const [filteredStudents, setFilteredStudents] = useState<User[]>([])
-  const [searchStudentTerm, setSearchStudentTerm] = useState<string>('')
-  const [showStudentDropdown, setShowStudentDropdown] = useState<boolean>(false)
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('')
   const [selectedStudents, setSelectedStudents] = useState<Array<{ id: string, name: string, email: string, isEnrolled: boolean }>>([])
 
   useEffect(() => {
@@ -143,7 +142,7 @@ export default function CreateTrailPage() {
         const institutionStudents = allUsers.filter((user): user is User => user !== null)
 
         setStudents(institutionStudents)
-        setFilteredStudents(institutionStudents)
+        setSelectedStudentId('')
         setSelectedStudents([])
       } catch (err) {
         console.error('Error fetching students:', err)
@@ -152,32 +151,6 @@ export default function CreateTrailPage() {
 
     fetchStudents()
   }, [selectedInstitutionId])
-
-  useEffect(() => {
-    if (searchStudentTerm.trim() === '') {
-      setFilteredStudents(students)
-    } else {
-      const filtered = students.filter(student =>
-        student.email.value.toLowerCase().includes(searchStudentTerm.toLowerCase()) ||
-        student.name.toLowerCase().includes(searchStudentTerm.toLowerCase())
-      )
-      setFilteredStudents(filtered)
-    }
-  }, [searchStudentTerm, students])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (!target.closest('#studentSearch') && !target.closest('.student-dropdown')) {
-        setShowStudentDropdown(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
 
   const handleAddCourse = () => {
     if (!selectedCourseId) {
@@ -202,20 +175,21 @@ export default function CreateTrailPage() {
     }
   }
 
-  const handleAddStudent = (student: { id: string; name: string; email: { value: string } }) => {
+  const handleAddStudent = () => {
+    if (!selectedStudentId) return
+    const student = students.find(s => s.id === selectedStudentId)
+    if (!student) return
+    if (selectedStudents.some(s => s.id === student.id)) return
+
     setSelectedStudents(prev => [
       ...prev,
-      {
-        id: student.id,
-        name: student.name,
-        email: student.email.value,
-        isEnrolled: true
-      }
+      { id: student.id, name: student.name, email: student.email.value, isEnrolled: true }
     ])
+    setSelectedStudentId('')
   }
 
   const handleRemoveStudent = (studentId: string) => {
-    setSelectedStudents(prev => prev.filter(student => student.id !== studentId))
+    setSelectedStudents(prev => prev.filter(s => s.id !== studentId))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -363,21 +337,53 @@ export default function CreateTrailPage() {
                     onRemoveCourse={handleRemoveCourse}
                   />
 
-                  <StudentManager
-                    trailStudents={selectedStudents}
-                    filteredStudents={filteredStudents}
-                    searchStudentTerm={searchStudentTerm}
-                    showStudentDropdown={showStudentDropdown}
-                    onSearchChange={(value) => {
-                      setSearchStudentTerm(value)
-                      setShowStudentDropdown(true)
-                    }}
-                    onSearchFocus={() => setShowStudentDropdown(true)}
-                    onRemoveStudent={handleRemoveStudent}
-                    onAddStudent={handleAddStudent}
-                    onClearSearch={() => setSearchStudentTerm('')}
-                    onHideDropdown={() => setShowStudentDropdown(false)}
-                  />
+                  {/* Gerenciar Estudantes */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Gerenciar Estudantes</h3>
+
+                    <div className="flex gap-2">
+                      <SelectComponent
+                        value={selectedStudentId}
+                        onChange={setSelectedStudentId}
+                        options={students
+                          .filter(s => !selectedStudents.some(sel => sel.id === s.id))
+                          .map(s => ({ value: s.id, label: `${s.name} — ${s.email.value}` }))}
+                        placeholder="Selecione um estudante..."
+                        disabled={students.length === 0}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddStudent}
+                        disabled={!selectedStudentId}
+                        variant="primary"
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+
+                    {selectedStudents.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        <h4 className="text-sm font-medium">Estudantes selecionados ({selectedStudents.length})</h4>
+                        <div className={`space-y-2 ${selectedStudents.length >= 5 ? 'max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50' : ''}`}>
+                          {selectedStudents.map(student => (
+                            <div key={student.id} className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{student.name}</div>
+                                <div className="text-sm text-gray-500">{student.email}</div>
+                              </div>
+                              <Button
+                                type="button"
+                                onClick={() => handleRemoveStudent(student.id)}
+                                className="bg-red-500 text-white rounded-md px-3 py-1 hover:bg-red-600 whitespace-nowrap"
+                              >
+                                Remover
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex gap-4 pt-4">
                     <Button

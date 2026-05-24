@@ -126,26 +126,16 @@ export default function EditTrailPage() {
                 const userInstitutionRepository = container.get<UserInstitutionRepository>(
                     Register.institution.repository.UserInstitutionRepository
                 )
-
                 const userRepository = container.get<UserRepository>(
                     Register.user.repository.UserRepository
                 )
 
                 const userInstitutions = await userInstitutionRepository.findByInstitutionId(trail.institutionId)
+                const studentIds = userInstitutions
+                    .filter(assoc => assoc.userRole === UserRole.STUDENT)
+                    .map(assoc => assoc.userId)
 
-                const studentAssociations = userInstitutions.filter(
-                    assoc => assoc.userRole === UserRole.STUDENT
-                )
-
-                const uniqueUserIds = [...new Set(studentAssociations.map(assoc => assoc.userId))]
-
-                const studentPromises = uniqueUserIds.map(async (userId) => {
-                    const user = await userRepository.findById(userId)
-                    return user
-                })
-
-                const allUsers = await Promise.all(studentPromises)
-
+                const allUsers = await Promise.all(studentIds.map(id => userRepository.findById(id)))
                 const institutionStudents = allUsers.filter((user): user is User => user !== null)
 
                 setStudents(institutionStudents)

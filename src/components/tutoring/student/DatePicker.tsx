@@ -20,11 +20,14 @@ export function DatePicker({ selectedDate, onDateChange, error }: DatePickerProp
   maxDate.setMonth(maxDate.getMonth() + 3)
   const maxDateString = maxDate.toISOString().split('T')[0]
 
-  // Check if selected date is a weekend
+  // Check if selected date is a weekend.
+  // YYYY-MM-DD strings parsed with `new Date(str)` are treated as UTC midnight,
+  // which shifts to the previous day in UTC-3 (Brazil) — causing false positives.
+  // Constructing with (year, month, day) uses local time and avoids the shift.
   const isWeekend = (dateString: string) => {
-    const date = new Date(dateString)
-    const day = date.getDay()
-    return day === 0 || day === 6 // Sunday = 0, Saturday = 6
+    const [year, month, day] = dateString.split('-').map(Number)
+    const dow = new Date(year, month - 1, day).getDay()
+    return dow === 0 || dow === 6
   }
 
   const handleDateChange = (dateString: string) => {

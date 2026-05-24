@@ -105,7 +105,11 @@ export function TutoringScheduleForm({ studentId, onSchedule }: TutoringSchedule
     }
 
     try {
-      const searchDate = new Date(watchedDate)
+      // Parse as local midnight to avoid UTC offset shifting the day of week.
+      // new Date("YYYY-MM-DD") is UTC midnight; in Brazil (UTC-3) that's the
+      // previous day at 21:00 — getDay() would return the wrong weekday.
+      const [year, month, day] = watchedDate.split('-').map(Number)
+      const searchDate = new Date(year, month - 1, day)
       await findAvailableSlots({
         courseId: watchedSubjectId,
         date: searchDate,
@@ -241,7 +245,7 @@ export function TutoringScheduleForm({ studentId, onSchedule }: TutoringSchedule
           {showAvailability && (
             <AvailableTimeSlotsList
               availableSlots={availableSlots}
-              selectedDate={new Date(watchedDate)}
+              selectedDate={(() => { const [y, m, d] = watchedDate.split('-').map(Number); return new Date(y, m - 1, d) })()}
               selectedDuration={watchedDuration}
               onTimeSlotSelect={handleTimeSlotSelect}
               loading={searchingSlots}
