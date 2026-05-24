@@ -2,13 +2,15 @@ import { injectable, inject } from 'inversify'
 import { NSScoreSymbols } from '../../../../../shared/container/modules/nsscore/symbols'
 import type { NSScoreQuestionRepository } from '../../../infrastructure/repositories/NSScoreQuestionRepository'
 import { NSScoreQuestion } from '../../entities/NSScoreQuestion'
+import type { NSScoreFieldType } from '../../entities/NSScoreQuestion'
 
 export class CreateNSScoreQuestionInput {
   constructor(
     public readonly courseId: string,
     public readonly institutionId: string,
     public readonly text: string,
-    public readonly order: number
+    public readonly order: number,
+    public readonly fieldType: NSScoreFieldType = 'textarea'
   ) {}
 }
 export class CreateNSScoreQuestionOutput {
@@ -28,7 +30,8 @@ export class CreateNSScoreQuestionUseCase {
       courseId: input.courseId,
       institutionId: input.institutionId,
       text: input.text,
-      order: input.order
+      order: input.order,
+      fieldType: input.fieldType
     })
     const saved = await this.repo.save(question)
     return new CreateNSScoreQuestionOutput(saved)

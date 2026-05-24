@@ -13,6 +13,7 @@ import { SubmitNSScoreResponseUseCase } from '@/_core/modules/nsscore/core/use-c
 import { GetNSScoreStatsUseCase } from '@/_core/modules/nsscore/core/use-cases/get-stats'
 import { CheckNSScoreSubmittedUseCase } from '@/_core/modules/nsscore/core/use-cases/check-submitted'
 import { ListNSScoreResponsesUseCase } from '@/_core/modules/nsscore/core/use-cases/list-responses'
+import { UpdateNSScoreQuestionUseCase } from '@/_core/modules/nsscore/core/use-cases/update-question'
 
 export function registerNSScoreModule(container: Container): void {
   container.bind<NSScoreQuestionRepository>(repositories.NSScoreQuestionRepository).to(FirebaseNSScoreQuestionRepository)
@@ -25,4 +26,5 @@ export function registerNSScoreModule(container: Container): void {
   container.bind(useCases.GetNSScoreStatsUseCase).to(GetNSScoreStatsUseCase)
   container.bind(useCases.CheckNSScoreSubmittedUseCase).to(CheckNSScoreSubmittedUseCase)
   container.bind(useCases.ListNSScoreResponsesUseCase).to(ListNSScoreResponsesUseCase)
+  container.bind(useCases.UpdateNSScoreQuestionUseCase).to(UpdateNSScoreQuestionUseCase)
 }
