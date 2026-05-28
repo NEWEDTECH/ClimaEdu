@@ -128,15 +128,22 @@ export class LessonProgress {
   /**
    * Checks if all contents are completed and updates lesson status accordingly
    */
-  public checkAndUpdateLessonCompletion(): void {
-    const allCompleted = this.contentProgresses.every(cp => cp.isCompleted());
-    
-    if (allCompleted && this.status !== LessonProgressStatus.COMPLETED) {
+  public checkAndUpdateLessonCompletion(prerequisites?: {
+    activityRequired: boolean;
+    activitySubmitted: boolean;
+    questionnaireRequired: boolean;
+    questionnaireApproved: boolean;
+  }): void {
+    const allContentsCompleted = this.contentProgresses.every(cp => cp.isCompleted());
+    const activityOk = !prerequisites?.activityRequired || prerequisites.activitySubmitted;
+    const questionnaireOk = !prerequisites?.questionnaireRequired || prerequisites.questionnaireApproved;
+    const allConditionsMet = allContentsCompleted && activityOk && questionnaireOk;
+
+    if (allConditionsMet && this.status !== LessonProgressStatus.COMPLETED) {
       this.status = LessonProgressStatus.COMPLETED;
       this.completedAt = new Date();
       this.updatedAt = new Date();
-    } else if (!allCompleted && this.status === LessonProgressStatus.COMPLETED) {
-      // If lesson was completed but now some content is not completed, revert status
+    } else if (!allConditionsMet && this.status === LessonProgressStatus.COMPLETED) {
       this.status = LessonProgressStatus.IN_PROGRESS;
       this.completedAt = null;
       this.updatedAt = new Date();
