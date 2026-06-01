@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FeedbackHistory } from '@/_core/modules/report/core/use-cases/generate-individual-student-report/generate-individual-student-report.output';
+import { translateEnum } from '../../shared/translations';
 
 type FeedbackSummaryProps = {
   data: FeedbackHistory;
@@ -36,7 +37,7 @@ export function FeedbackSummary({ data }: FeedbackSummaryProps) {
                 <TableRow key={feedback.feedbackId}>
                   <TableCell>{new Date(feedback.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>{feedback.createdBy}</TableCell>
-                  <TableCell>{feedback.type.replace('_', ' ')}</TableCell>
+                  <TableCell>{translateEnum(feedback.type)}</TableCell>
                   <TableCell>{feedback.content}</TableCell>
                   <TableCell>{feedback.rating ?? 'N/A'}</TableCell>
                 </TableRow>
@@ -61,7 +62,7 @@ export function FeedbackSummary({ data }: FeedbackSummaryProps) {
                 {data.improvementActions.map((action) => (
                   <TableRow key={action.actionId}>
                     <TableCell>{action.description}</TableCell>
-                    <TableCell>{action.status}</TableCell>
+                    <TableCell>{translateEnum(action.status)}</TableCell>
                     <TableCell>{new Date(action.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>{action.dueDate ? new Date(action.dueDate).toLocaleDateString() : 'N/A'}</TableCell>
                   </TableRow>

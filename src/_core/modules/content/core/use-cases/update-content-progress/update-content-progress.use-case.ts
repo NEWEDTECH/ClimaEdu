@@ -6,6 +6,7 @@ import type { QuestionnaireSubmissionRepository } from '../../../infrastructure/
 import type { UpdateContentProgressInput } from './update-content-progress.input';
 import type { UpdateContentProgressOutput } from './update-content-progress.output';
 import { Register } from '@/_core/shared/container';
+import { SyncCourseCompletionUseCase } from '@/_core/modules/content/core/use-cases/sync-course-completion';
 
 @injectable()
 export class UpdateContentProgressUseCase {
@@ -21,6 +22,9 @@ export class UpdateContentProgressUseCase {
 
     @inject(Register.content.repository.QuestionnaireSubmissionRepository)
     private questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
+
+    @inject(Register.content.useCase.SyncCourseCompletionUseCase)
+    private syncCourseCompletionUseCase: SyncCourseCompletionUseCase,
   ) {}
 
   async execute(input: UpdateContentProgressInput): Promise<UpdateContentProgressOutput> {
@@ -97,6 +101,18 @@ export class UpdateContentProgressUseCase {
 
     const contentCompleted = !wasContentCompleted && isContentCompleted;
     const lessonCompleted = !wasLessonCompleted && isLessonCompleted;
+
+    if (lessonCompleted) {
+      try {
+        await this.syncCourseCompletionUseCase.execute({
+          userId: savedProgress.userId,
+          lessonId: savedProgress.lessonId,
+          institutionId: savedProgress.institutionId,
+        });
+      } catch (error) {
+        console.error('Failed to sync course completion:', error);
+      }
+    }
 
     return {
       lessonProgress: savedProgress,

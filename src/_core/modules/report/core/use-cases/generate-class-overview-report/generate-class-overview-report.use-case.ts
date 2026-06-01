@@ -369,10 +369,10 @@ export class GenerateClassOverviewReportUseCase {
   private identifyRiskFactors(progress: number, daysSinceLastAccess: number, averageScore: number): string[] {
     const factors: string[] = [];
     
-    if (daysSinceLastAccess > 7) factors.push('Inactive for more than a week');
-    if (progress < 30) factors.push('Low progress completion');
-    if (averageScore < 70) factors.push('Below average performance');
-    if (daysSinceLastAccess > 14) factors.push('Extended absence');
+    if (daysSinceLastAccess > 7) factors.push('Inativo há mais de uma semana');
+    if (progress < 30) factors.push('Baixo progresso de conclusão');
+    if (averageScore < 70) factors.push('Desempenho abaixo da média');
+    if (daysSinceLastAccess > 14) factors.push('Ausência prolongada');
     
     return factors;
   }
@@ -384,16 +384,16 @@ export class GenerateClassOverviewReportUseCase {
     const actions: string[] = [];
     
     if (riskLevel === 'CRITICAL') {
-      actions.push('Immediate intervention required');
-      actions.push('Contact student directly');
+      actions.push('Intervenção imediata necessária');
+      actions.push('Entrar em contato diretamente com o aluno');
     }
-    
+
     if (daysSinceLastAccess > 7) {
-      actions.push('Send re-engagement email');
+      actions.push('Enviar e-mail de reengajamento');
     }
-    
+
     if (progress < 50) {
-      actions.push('Provide additional support materials');
+      actions.push('Fornecer materiais de apoio adicionais');
     }
     
     return actions;
@@ -449,10 +449,10 @@ export class GenerateClassOverviewReportUseCase {
         alertId: `alert_${Date.now()}`,
         type: 'STUDENT_AT_RISK',
         severity: 'URGENT',
-        title: 'Students at Critical Risk',
-        description: `${criticalStudents.length} students need immediate attention`,
+        title: 'Alunos em Risco Crítico',
+        description: `${criticalStudents.length} aluno(s) precisam de atenção imediata`,
         affectedStudents: criticalStudents.map(s => s.studentId),
-        suggestedActions: ['Contact students immediately', 'Schedule intervention meeting'],
+        suggestedActions: ['Entrar em contato com os alunos imediatamente', 'Agendar reunião de intervenção'],
         createdAt: new Date(),
         isResolved: false
       });
@@ -481,9 +481,9 @@ export class GenerateClassOverviewReportUseCase {
     if (inactiveStudents.length > 0) {
       actions.push({
         priority: 'HIGH',
-        action: 'Contact inactive students',
+        action: 'Entrar em contato com alunos inativos',
         affectedStudents: inactiveStudents.length,
-        estimatedImpact: 'Improve engagement and reduce dropout risk'
+        estimatedImpact: 'Melhorar o engajamento e reduzir o risco de evasão'
       });
     }
     
@@ -515,7 +515,7 @@ export class GenerateClassOverviewReportUseCase {
       .map(s => ({
         studentId: s.studentId,
         studentName: s.studentName,
-        metric: 'Average Score',
+        metric: 'Nota Média',
         value: s.averageScore
       }));
   }
@@ -528,12 +528,12 @@ export class GenerateClassOverviewReportUseCase {
     
     const lowPerformers = students.filter(s => s.averageScore < 70);
     if (lowPerformers.length > 0) {
-      opportunities.push(`${lowPerformers.length} students need academic support (score < 70)`);
+      opportunities.push(`${lowPerformers.length} aluno(s) precisam de apoio acadêmico (nota < 70)`);
     }
 
     const inactiveStudents = students.filter(s => s.daysSinceLastAccess > 7);
     if (inactiveStudents.length > 0) {
-      opportunities.push(`${inactiveStudents.length} students need re-engagement (inactive > 7 days)`);
+      opportunities.push(`${inactiveStudents.length} aluno(s) precisam de reengajamento (inativos > 7 dias)`);
     }
     
     return opportunities;
@@ -556,9 +556,9 @@ export class GenerateClassOverviewReportUseCase {
     const atRiskStudents = students.filter(s => s.riskLevel === 'HIGH' || s.riskLevel === 'CRITICAL');
     if (atRiskStudents.length > 0) {
       interventions.push({
-        intervention: 'Implement targeted academic support program',
+        intervention: 'Implementar programa de apoio acadêmico direcionado',
         targetStudents: atRiskStudents.map(s => s.studentId),
-        expectedOutcome: 'Improve student performance and reduce dropout risk'
+        expectedOutcome: 'Melhorar o desempenho dos alunos e reduzir o risco de evasão'
       });
     }
     

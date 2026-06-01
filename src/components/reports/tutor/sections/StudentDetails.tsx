@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StudentInfo } from '@/_core/modules/report/core/use-cases/generate-individual-student-report/generate-individual-student-report.output';
+import { translateEnum } from '../../shared/translations';
 
 type StudentDetailsProps = {
   data: StudentInfo;
@@ -19,7 +20,7 @@ export function StudentDetails({ data }: StudentDetailsProps) {
         </div>
         <div>
           <p className="font-medium">Status</p>
-          <p>{data.status}</p>
+          <p>{translateEnum(data.status)}</p>
         </div>
         <div>
           <p className="font-medium">Data de Matrícula</p>

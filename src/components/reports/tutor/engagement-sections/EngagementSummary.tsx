@@ -7,6 +7,7 @@ type EngagementSummaryProps = {
 };
 
 import { Badge } from '@/components/ui/badge';
+import { translateEnum } from '../../shared/translations';
 
 export function EngagementSummary({ data }: EngagementSummaryProps) {
   const getHealthVariant = (health: string) => {
@@ -32,7 +33,7 @@ export function EngagementSummary({ data }: EngagementSummaryProps) {
         <div className="flex justify-between items-center">
           <span className="font-medium">Saúde Geral da Turma:</span>
           <Badge variant={getHealthVariant(data.overallHealth)}>
-            {data.overallHealth}
+            {translateEnum(data.overallHealth)}
           </Badge>
         </div>
         

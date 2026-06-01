@@ -7,6 +7,7 @@ type OverviewAlertsProps = {
 };
 
 import { Badge } from '@/components/ui/badge';
+import { translateEnum } from '../../shared/translations';
 
 export function OverviewAlerts({ data }: OverviewAlertsProps) {
   if (!data || data.length === 0) {
@@ -36,7 +37,7 @@ export function OverviewAlerts({ data }: OverviewAlertsProps) {
           <div key={alert.alertId} className="p-3 border rounded-lg">
             <div className="flex justify-between items-center">
               <p className="font-semibold">{alert.title}</p>
-              <Badge variant={getSeverityVariant(alert.severity)}>{alert.severity}</Badge>
+              <Badge variant={getSeverityVariant(alert.severity)}>{translateEnum(alert.severity)}</Badge>
             </div>
             <p className="text-sm text-gray-600">{alert.description}</p>
             <p className="text-sm">Ações Sugeridas: {alert.suggestedActions.join(', ')}</p>

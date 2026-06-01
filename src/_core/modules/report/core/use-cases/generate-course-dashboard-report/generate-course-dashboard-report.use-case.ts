@@ -328,12 +328,17 @@ export class GenerateCourseDashboardReportUseCase {
         allSubmissions = allSubmissions.concat(submissions);
       }
 
-      const courseSubmissions = allSubmissions.filter(s => s.institutionId === institutionId);
+      const courseSubmissions = allSubmissions.filter(
+        s => s.institutionId === institutionId && s.courseId === course.id
+      );
       const averageScore = courseSubmissions.length > 0
         ? courseSubmissions.reduce((sum, s) => sum + s.score, 0) / courseSubmissions.length
         : 0;
       const passRate = courseSubmissions.length > 0
         ? (courseSubmissions.filter(s => s.passed).length / courseSubmissions.length) * 100
+        : 0;
+      const averageAttempts = courseSubmissions.length > 0
+        ? courseSubmissions.reduce((sum, s) => sum + s.attempt, 0) / courseSubmissions.length
         : 0;
 
       const nsStats = this.calcNPSStats(nsScoreMap.get(course.id) ?? []);
@@ -343,16 +348,45 @@ export class GenerateCourseDashboardReportUseCase {
         courseName: course.title,
         averageScore: Math.round(averageScore),
         passRate: Math.round(passRate),
-        averageAttempts: 0,
+        averageAttempts: Math.round(averageAttempts * 10) / 10,
         averageTimeSpent: 0,
-        difficultyRating: 'MEDIUM',
+        difficultyRating: this.computeDifficultyRating(passRate, courseSubmissions.length),
         studentSatisfaction: nsStats.average,
         recommendationRate: nsStats.count > 0 ? Math.max(0, nsStats.npsScore) : 0,
-        improvementTrend: 'STABLE'
+        improvementTrend: this.computeImprovementTrend(courseSubmissions)
       });
     }
 
     return performanceMetrics;
+  }
+
+  private computeDifficultyRating(passRate: number, sampleSize: number): 'EASY' | 'MEDIUM' | 'HARD' {
+    if (sampleSize === 0) return 'MEDIUM';
+    if (passRate < 50) return 'HARD';
+    if (passRate <= 80) return 'MEDIUM';
+    return 'EASY';
+  }
+
+  private computeImprovementTrend(
+    submissions: QuestionnaireSubmission[]
+  ): 'IMPROVING' | 'STABLE' | 'DECLINING' {
+    const dated = submissions
+      .filter(s => s.completedAt)
+      .sort((a, b) => a.completedAt.getTime() - b.completedAt.getTime());
+
+    if (dated.length < 4) return 'STABLE';
+
+    const half = Math.floor(dated.length / 2);
+    const older = dated.slice(0, half);
+    const recent = dated.slice(dated.length - half);
+
+    const avg = (list: QuestionnaireSubmission[]) =>
+      list.reduce((sum, s) => sum + s.score, 0) / list.length;
+
+    const diff = avg(recent) - avg(older);
+    if (diff > 5) return 'IMPROVING';
+    if (diff < -5) return 'DECLINING';
+    return 'STABLE';
   }
 
   private async generateInstructorMetrics(): Promise<InstructorMetrics[]> {

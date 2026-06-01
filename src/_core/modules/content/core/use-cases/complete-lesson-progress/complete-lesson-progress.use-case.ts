@@ -9,6 +9,7 @@ import { Register } from '@/_core/shared/container';
 import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
 import { LessonCompletedEvent } from '@/_core/modules/achievement/core/events/LessonCompletedEvent';
 import { StudySessionEvent } from '@/_core/modules/achievement/core/events/StudySessionEvent';
+import { SyncCourseCompletionUseCase } from '@/_core/modules/content/core/use-cases/sync-course-completion';
 
 @injectable()
 export class CompleteLessonProgressUseCase {
@@ -26,7 +27,10 @@ export class CompleteLessonProgressUseCase {
     private questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
 
     @inject(Register.shared.service.EventBus)
-    private eventBus: EventBus
+    private eventBus: EventBus,
+
+    @inject(Register.content.useCase.SyncCourseCompletionUseCase)
+    private syncCourseCompletionUseCase: SyncCourseCompletionUseCase
   ) {}
 
   async execute(input: CompleteLessonProgressInput): Promise<CompleteLessonProgressOutput> {
@@ -122,6 +126,18 @@ export class CompleteLessonProgressUseCase {
         }
       } catch (error) {
         console.error('Failed to publish events:', error);
+      }
+    }
+
+    if (savedProgress.isCompleted()) {
+      try {
+        await this.syncCourseCompletionUseCase.execute({
+          userId: savedProgress.userId,
+          lessonId: savedProgress.lessonId,
+          institutionId: savedProgress.institutionId,
+        });
+      } catch (error) {
+        console.error('Failed to sync course completion:', error);
       }
     }
 

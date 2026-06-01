@@ -7,6 +7,7 @@ type EngagementAnalysisProps = {
 };
 
 import { Badge } from '@/components/ui/badge';
+import { translateEnum } from '../../shared/translations';
 
 export function EngagementAnalysis({ data }: EngagementAnalysisProps) {
   if (!data) {
@@ -33,11 +34,11 @@ export function EngagementAnalysis({ data }: EngagementAnalysisProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
             <p className="font-medium">Nível de Participação</p>
-            <Badge variant={getRiskVariant(data.participationLevel)}>{data.participationLevel}</Badge>
+            <Badge variant={getRiskVariant(data.participationLevel)}>{translateEnum(data.participationLevel)}</Badge>
           </div>
           <div>
             <p className="font-medium">Risco de Evasão</p>
-            <Badge variant={getRiskVariant(data.riskLevel)}>{data.riskLevel}</Badge>
+            <Badge variant={getRiskVariant(data.riskLevel)}>{translateEnum(data.riskLevel)}</Badge>
           </div>
           <div>
             <p className="font-medium">Sequência de Estudos</p>
