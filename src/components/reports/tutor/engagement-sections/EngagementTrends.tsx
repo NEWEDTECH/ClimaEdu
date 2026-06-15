@@ -8,6 +8,7 @@ type EngagementTrendsProps = {
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { translateEnum } from '../../shared/translations';
 
 export function EngagementTrends({ data }: EngagementTrendsProps) {
   if (!data) {
@@ -23,7 +24,7 @@ export function EngagementTrends({ data }: EngagementTrendsProps) {
         <div className="flex justify-between items-center mb-4">
           <span className="font-medium">Tendência Geral:</span>
           <Badge variant={data.overallTrend === 'IMPROVING' ? 'default' : data.overallTrend === 'DECLINING' ? 'destructive' : 'secondary'}>
-            {data.overallTrend}
+            {translateEnum(data.overallTrend)}
           </Badge>
         </div>
 

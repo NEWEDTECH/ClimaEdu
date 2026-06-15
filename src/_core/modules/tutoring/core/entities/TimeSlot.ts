@@ -214,7 +214,7 @@ export class TimeSlot {
    * Gets the day name as string
    */
   public getDayName(): string {
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
     return dayNames[this.dayOfWeek];
   }
 

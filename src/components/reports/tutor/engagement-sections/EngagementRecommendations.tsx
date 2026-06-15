@@ -8,6 +8,7 @@ type EngagementRecommendationsProps = {
 
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { translateEnum } from '../../shared/translations';
 
 export function EngagementRecommendations({ data }: EngagementRecommendationsProps) {
   if (!data) {
@@ -40,7 +41,7 @@ export function EngagementRecommendations({ data }: EngagementRecommendationsPro
                 <div key={index} className="p-3 bg-red-100 rounded-lg">
                   <div className="flex justify-between items-center">
                     <p className="font-semibold">{action.action}</p>
-                    <Badge variant={getPriorityVariant(action.priority)}>{action.priority}</Badge>
+                    <Badge variant={getPriorityVariant(action.priority)}>{translateEnum(action.priority)}</Badge>
                   </div>
                   <p className="text-sm text-gray-600">{action.reason}</p>
                   <p className="text-sm font-medium">Alunos: {action.studentIds.length}</p>
@@ -64,7 +65,7 @@ export function EngagementRecommendations({ data }: EngagementRecommendationsPro
               {data.preventiveStrategies.map((strategy, index) => (
                 <TableRow key={index}>
                   <TableCell>{strategy.strategy}</TableCell>
-                  <TableCell>{strategy.targetGroup}</TableCell>
+                  <TableCell>{translateEnum(strategy.targetGroup)}</TableCell>
                   <TableCell>{strategy.expectedImpact}</TableCell>
                 </TableRow>
               ))}

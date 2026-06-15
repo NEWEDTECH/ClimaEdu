@@ -1,18 +1,16 @@
 import { injectable, inject } from 'inversify';
 import type { LessonProgressRepository } from '../../../infrastructure/repositories/LessonProgressRepository';
 import type { LessonRepository } from '../../../infrastructure/repositories/LessonRepository';
+import type { ActivitySubmissionRepository } from '../../../infrastructure/repositories/ActivitySubmissionRepository';
+import type { QuestionnaireSubmissionRepository } from '../../../infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { CompleteLessonProgressInput } from './complete-lesson-progress.input';
 import type { CompleteLessonProgressOutput } from './complete-lesson-progress.output';
 import { Register } from '@/_core/shared/container';
 import type { EventBus } from '@/_core/shared/events/interfaces/EventBus';
 import { LessonCompletedEvent } from '@/_core/modules/achievement/core/events/LessonCompletedEvent';
 import { StudySessionEvent } from '@/_core/modules/achievement/core/events/StudySessionEvent';
+import { SyncCourseCompletionUseCase } from '@/_core/modules/content/core/use-cases/sync-course-completion';
 
-/**
- * Use case for forcefully completing lesson progress
- * Marks all contents as completed and sets the lesson as completed
- * Following Clean Architecture principles, this use case is pure and has no dependencies on infrastructure details
- */
 @injectable()
 export class CompleteLessonProgressUseCase {
   constructor(
@@ -22,21 +20,22 @@ export class CompleteLessonProgressUseCase {
     @inject(Register.content.repository.LessonRepository)
     private lessonRepository: LessonRepository,
 
+    @inject(Register.content.repository.ActivitySubmissionRepository)
+    private activitySubmissionRepository: ActivitySubmissionRepository,
+
+    @inject(Register.content.repository.QuestionnaireSubmissionRepository)
+    private questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
+
     @inject(Register.shared.service.EventBus)
-    private eventBus: EventBus
+    private eventBus: EventBus,
+
+    @inject(Register.content.useCase.SyncCourseCompletionUseCase)
+    private syncCourseCompletionUseCase: SyncCourseCompletionUseCase
   ) {}
 
-  /**
-   * Executes the complete lesson progress use case
-   * @param input CompleteLessonProgressInput
-   * @returns CompleteLessonProgressOutput
-   * @throws Error if validation fails or lesson progress is not found
-   */
   async execute(input: CompleteLessonProgressInput): Promise<CompleteLessonProgressOutput> {
-    // Validate input
     this.validateInput(input);
 
-    // Find existing lesson progress
     const lessonProgress = await this.lessonProgressRepository.findByUserAndLesson(
       input.userId,
       input.lessonId
@@ -49,28 +48,51 @@ export class CompleteLessonProgressUseCase {
       );
     }
 
-    // Check if lesson was already completed
     const wasAlreadyCompleted = lessonProgress.isCompleted();
 
-    // Complete the lesson using content-type-specific logic if provided
+    const lesson = await this.lessonRepository.findById(input.lessonId);
+
+    const activityRequired = !!lesson?.activity;
+    const questionnaireRequired = !!lesson?.questionnaire;
+
+    let activitySubmitted = false;
+    let questionnaireApproved = false;
+
+    if (activityRequired && lesson?.activity) {
+      const submissions = await this.activitySubmissionRepository.findByActivityAndStudent(
+        lesson.activity.id,
+        input.userId
+      );
+      activitySubmitted = submissions.length > 0;
+    }
+
+    if (questionnaireRequired && lesson?.questionnaire) {
+      const submissions = await this.questionnaireSubmissionRepository.findByQuestionnaireAndUser(
+        lesson.questionnaire.id,
+        input.userId
+      );
+      questionnaireApproved = submissions.some(s => s.passed);
+    }
+
+    if (activityRequired && !activitySubmitted) {
+      throw new Error('Você precisa submeter a atividade antes de concluir esta unidade.');
+    }
+
+    if (questionnaireRequired && !questionnaireApproved) {
+      throw new Error('Você precisa ser aprovado no questionário antes de concluir esta unidade.');
+    }
+
     if (input.contentTypesMap) {
       lessonProgress.completeWithContentTypeLogic(input.contentTypesMap);
     } else {
-      // Fallback to force complete (marks all contents as 100%)
       lessonProgress.forceComplete();
     }
 
-    // Save the updated lesson progress
     console.log('🔎 Saving completed lesson progress:', lessonProgress);
     const savedProgress = await this.lessonProgressRepository.save(lessonProgress);
 
-    // Publish events if lesson was completed and wasn't already completed
     if (savedProgress.isCompleted() && !wasAlreadyCompleted) {
       try {
-        // Fetch lesson to get moduleId
-        const lesson = await this.lessonRepository.findById(savedProgress.lessonId);
-
-        // Publish LessonCompletedEvent
         const lessonCompletedEvent = LessonCompletedEvent.create({
           userId: savedProgress.userId,
           institutionId: savedProgress.institutionId,
@@ -84,7 +106,6 @@ export class CompleteLessonProgressUseCase {
         await this.eventBus.publish(lessonCompletedEvent);
         console.log('🎯 LessonCompletedEvent published for lesson:', savedProgress.lessonId);
 
-        // Publish StudySessionEvent
         if (lesson) {
           const studySessionEvent = StudySessionEvent.create({
             userId: savedProgress.userId,
@@ -105,7 +126,18 @@ export class CompleteLessonProgressUseCase {
         }
       } catch (error) {
         console.error('Failed to publish events:', error);
-        // Don't fail the use case if event publishing fails
+      }
+    }
+
+    if (savedProgress.isCompleted()) {
+      try {
+        await this.syncCourseCompletionUseCase.execute({
+          userId: savedProgress.userId,
+          lessonId: savedProgress.lessonId,
+          institutionId: savedProgress.institutionId,
+        });
+      } catch (error) {
+        console.error('Failed to sync course completion:', error);
       }
     }
 
@@ -115,11 +147,6 @@ export class CompleteLessonProgressUseCase {
     };
   }
 
-  /**
-   * Validates the input parameters
-   * @param input CompleteLessonProgressInput
-   * @throws Error if validation fails
-   */
   private validateInput(input: CompleteLessonProgressInput): void {
     if (!input.userId || input.userId.trim() === '') {
       throw new Error('User ID is required');

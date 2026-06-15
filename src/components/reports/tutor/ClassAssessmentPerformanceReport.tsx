@@ -13,6 +13,8 @@ import { AssessmentTrends } from './assessment-sections/AssessmentTrends';
 import { AssessmentRecommendations } from './assessment-sections/AssessmentRecommendations';
 import { AssessmentInsights } from './assessment-sections/AssessmentInsights';
 import { AssessmentComparison } from './assessment-sections/AssessmentComparison';
+import { translateEnum } from '../shared/translations';
+import { ReportPlaceholder } from '../shared/ReportPlaceholder';
 
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -82,7 +84,7 @@ export function ClassAssessmentPerformanceReport({ courseId, classId }: ClassAss
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
-      setError('Failed to load report');
+      setError('Falha ao carregar o relatório');
     } finally {
       setLoading(false);
     }
@@ -98,6 +100,10 @@ export function ClassAssessmentPerformanceReport({ courseId, classId }: ClassAss
     };
   }, [fetchReport]);
 
+  if (!courseId || !classId) {
+    return <ReportPlaceholder message="Selecione um curso e uma turma para visualizar o relatório de avaliações." />;
+  }
+
   if (loading) {
     return <div>Carregando...</div>;
   }
@@ -107,7 +113,7 @@ export function ClassAssessmentPerformanceReport({ courseId, classId }: ClassAss
   }
 
   if (!report) {
-    return <div>No data available.</div>;
+    return <div>Nenhum dado disponível.</div>;
   }
 
   return (
@@ -219,7 +225,7 @@ export function ClassAssessmentPerformanceReport({ courseId, classId }: ClassAss
                   <TableCell>{student.averageScore.toFixed(2)}%</TableCell>
                   <TableCell>{student.bestScore.toFixed(2)}%</TableCell>
                   <TableCell>{student.worstScore.toFixed(2)}%</TableCell>
-                  <TableCell>{student.improvementTrend}</TableCell>
+                  <TableCell>{translateEnum(student.improvementTrend)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GenerateIndividualStudentReportOutput } from '@/_core/modules/report/core/use-cases/generate-individual-student-report/generate-individual-student-report.output';
+import { translateEnum } from '../../shared/translations';
 
 type ReportSummaryProps = {
   data: GenerateIndividualStudentReportOutput['summary'];
@@ -45,13 +46,13 @@ export function ReportSummary({ data }: ReportSummaryProps) {
         <div className="flex justify-between items-center">
           <span className="font-medium">Performance Geral:</span>
           <Badge variant={getPerformanceVariant(data.overallPerformance)}>
-            {data.overallPerformance.replace('_', ' ')}
+            {translateEnum(data.overallPerformance)}
           </Badge>
         </div>
         <div className="flex justify-between items-center">
           <span className="font-medium">Risco de Evasão:</span>
           <Badge variant={getRiskVariant(data.riskAssessment)}>
-            {data.riskAssessment.replace('_', ' ')}
+            {translateEnum(data.riskAssessment)}
           </Badge>
         </div>
         <div>

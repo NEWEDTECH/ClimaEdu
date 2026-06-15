@@ -590,12 +590,12 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
       recommendations.push({
         type: 'CONTENT_REVIEW',
         priority: 'HIGH',
-        description: 'Review course content as pass rate is below 60%',
-        expectedImpact: 'Improve overall class performance by 15-20%',
+        description: 'Revisar o conteúdo do curso, pois a taxa de aprovação está abaixo de 60%',
+        expectedImpact: 'Melhorar o desempenho geral da turma em 15-20%',
         implementationSteps: [
-          'Identify topics with lowest scores',
-          'Create additional learning materials',
-          'Schedule review sessions'
+          'Identificar os tópicos com as menores notas',
+          'Criar materiais de aprendizagem adicionais',
+          'Agendar sessões de revisão'
         ]
       });
     }
@@ -606,13 +606,13 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
       recommendations.push({
         type: 'INDIVIDUAL_SUPPORT',
         priority: 'HIGH',
-        description: `Provide individual support to ${highRiskStudents.length} high-risk students`,
+        description: `Fornecer apoio individual a ${highRiskStudents.length} aluno(s) de alto risco`,
         targetStudents: highRiskStudents.map(s => s.studentId),
-        expectedImpact: 'Reduce dropout risk by 30%',
+        expectedImpact: 'Reduzir o risco de evasão em 30%',
         implementationSteps: [
-          'Schedule one-on-one meetings',
-          'Create personalized study plans',
-          'Provide additional resources'
+          'Agendar reuniões individuais',
+          'Criar planos de estudo personalizados',
+          'Fornecer recursos adicionais'
         ]
       });
     }
@@ -623,12 +623,12 @@ export class GenerateClassAssessmentPerformanceReportUseCase {
       recommendations.push({
         type: 'ASSESSMENT_ADJUSTMENT',
         priority: 'MEDIUM',
-        description: `Review and adjust ${difficultAssessments.length} difficult assessments`,
-        expectedImpact: 'Improve assessment completion rate by 10%',
+        description: `Revisar e ajustar ${difficultAssessments.length} avaliação(ões) difícil(eis)`,
+        expectedImpact: 'Melhorar a taxa de conclusão das avaliações em 10%',
         implementationSteps: [
-          'Analyze question difficulty',
-          'Provide clearer instructions',
-          'Consider partial credit options'
+          'Analisar a dificuldade das questões',
+          'Fornecer instruções mais claras',
+          'Considerar opções de pontuação parcial'
         ]
       });
     }

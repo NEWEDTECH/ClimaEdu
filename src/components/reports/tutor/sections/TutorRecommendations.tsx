@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { TutorRecommendations } from '@/_core/modules/report/core/use-cases/generate-individual-student-report/generate-individual-student-report.output';
+import { translateEnum } from '../../shared/translations';
 
 type TutorRecommendationsProps = {
   data: TutorRecommendations;
@@ -33,7 +34,7 @@ export function TutorRecommendations({ data }: TutorRecommendationsProps) {
                 <div key={index} className="p-3 bg-red-100 rounded-lg">
                   <div className="flex justify-between items-center">
                     <p className="font-semibold">{action.action}</p>
-                    <Badge variant={getPriorityVariant(action.priority)}>{action.priority}</Badge>
+                    <Badge variant={getPriorityVariant(action.priority)}>{translateEnum(action.priority)}</Badge>
                   </div>
                   <p className="text-sm text-gray-600">{action.reason}</p>
                   <p className="text-sm font-medium">Resultado Esperado: {action.expectedOutcome}</p>
@@ -70,7 +71,7 @@ export function TutorRecommendations({ data }: TutorRecommendationsProps) {
                 <div key={index} className="p-3 border rounded-lg">
                   <p className="font-semibold">{suggestion.suggestion}</p>
                   <p className="text-sm text-gray-600">
-                    Tipo: {suggestion.type} | Prazo: {suggestion.timeline}
+                    Tipo: {translateEnum(suggestion.type)} | Prazo: {suggestion.timeline}
                   </p>
                   <p className="text-sm">Recursos: {suggestion.resources.join(', ')}</p>
                 </div>

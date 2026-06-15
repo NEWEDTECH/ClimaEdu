@@ -22,6 +22,7 @@ import { RemoveEnrollmentFromClassInput } from '@/_core/modules/enrollment/core/
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { Class } from '@/_core/modules/enrollment/core/entities/Class'
+import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
 
 export default function EditTurmaPage() {
   const router = useRouter()
@@ -79,26 +80,32 @@ export default function EditTurmaPage() {
   useEffect(() => {
     const fetchAvailableStudents = async () => {
       if (!classData?.institutionId) return
-      
+
       try {
+        const userInstitutionRepository = container.get<UserInstitutionRepository>(
+          Register.institution.repository.UserInstitutionRepository
+        )
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         )
-        
-        // List all users with STUDENT role
-        const students = await userRepository.listByType(UserRole.STUDENT)
-        
-        const studentsForSelect = students.map((student: User) => ({
-          id: student.id,
-          email: student.email.value
-        }))
-        
-        setAvailableStudents(studentsForSelect)
+
+        const userInstitutions = await userInstitutionRepository.findByInstitutionId(classData.institutionId)
+        const studentIds = userInstitutions
+          .filter(assoc => assoc.userRole === UserRole.STUDENT)
+          .map(assoc => assoc.userId)
+
+        const users = await Promise.all(studentIds.map(id => userRepository.findById(id)))
+        const students = users.filter((u): u is User => u !== null)
+
+        setAvailableStudents(students.map(s => ({
+          id: s.id,
+          email: s.email.value,
+        })))
       } catch (err) {
         console.error('Error fetching available students:', err)
       }
     }
-    
+
     fetchAvailableStudents()
   }, [classData])
 

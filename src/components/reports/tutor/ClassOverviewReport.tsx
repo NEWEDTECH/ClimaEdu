@@ -12,6 +12,7 @@ import { OverviewAlerts } from './overview-sections/OverviewAlerts';
 import { OverviewTrends } from './overview-sections/OverviewTrends';
 import { OverviewBenchmarks } from './overview-sections/OverviewBenchmarks';
 import { OverviewInsights } from './overview-sections/OverviewInsights';
+import { ReportPlaceholder } from '../shared/ReportPlaceholder';
 
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -78,7 +79,7 @@ export function ClassOverviewReport({ courseId, classId }: ClassOverviewReportPr
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
-      setError('Failed to load report');
+      setError('Falha ao carregar o relatório');
     } finally {
       setLoading(false);
     }
@@ -94,6 +95,10 @@ export function ClassOverviewReport({ courseId, classId }: ClassOverviewReportPr
     };
   }, [fetchReport]);
 
+  if (!courseId) {
+    return <ReportPlaceholder message="Selecione um curso para visualizar a visão geral da turma." />;
+  }
+
   if (loading) {
     return <div>Carregando...</div>;
   }
@@ -103,7 +108,7 @@ export function ClassOverviewReport({ courseId, classId }: ClassOverviewReportPr
   }
 
   if (!report) {
-    return <div>No data available.</div>;
+    return <div>Nenhum dado disponível.</div>;
   }
 
   return (

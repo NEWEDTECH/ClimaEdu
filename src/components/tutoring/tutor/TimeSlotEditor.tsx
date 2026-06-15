@@ -64,6 +64,14 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes
 }
 
+// YYYY-MM-DD strings parsed with `new Date(str)` are treated as UTC midnight,
+// which shifts to the previous day in UTC-3 (Brazil). Use end-of-day local so
+// the slot stays active throughout the entire selected date.
+function parseDateLocal(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, month - 1, day, 23, 59, 59, 999)
+}
+
 interface TimeSlotEditorProps {
   isOpen: boolean
   selectedDay: DayOfWeek | null
@@ -162,7 +170,7 @@ export function TimeSlotEditor({
         dayOfWeek: data.dayOfWeek as DayOfWeek,
         startTime: data.startTime,
         endTime: data.endTime,
-        recurrenceEndDate: data.recurrenceEndDate ? new Date(data.recurrenceEndDate) : undefined
+        recurrenceEndDate: data.recurrenceEndDate ? parseDateLocal(data.recurrenceEndDate) : undefined
       })
       
       reset()

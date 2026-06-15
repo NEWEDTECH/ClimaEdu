@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { Editor } from 'primereact/editor'
 import 'quill/dist/quill.snow.css'
-import { FiPlus, FiTrash2, FiArrowLeft } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiArrowLeft, FiEdit2, FiCheck, FiX } from 'react-icons/fi'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { Button } from '@/components/button'
@@ -12,10 +12,19 @@ import { LoadingSpinner } from '@/components/loader'
 import { showToast } from '@/components/toast'
 import { container, Register } from '@/_core/shared/container'
 import type { NSScoreQuestion } from '@/_core/modules/nsscore/core/entities/NSScoreQuestion'
+import { FIELD_TYPES, FIELD_TYPE_LABELS } from '@/_core/modules/nsscore/core/entities/NSScoreQuestion'
+import type { NSScoreFieldType } from '@/_core/modules/nsscore/core/entities/NSScoreQuestion'
 import { ListNSScoreQuestionsUseCase, ListNSScoreQuestionsInput } from '@/_core/modules/nsscore/core/use-cases/list-questions'
 import { CreateNSScoreQuestionUseCase, CreateNSScoreQuestionInput } from '@/_core/modules/nsscore/core/use-cases/create-question'
 import { DeleteNSScoreQuestionUseCase, DeleteNSScoreQuestionInput } from '@/_core/modules/nsscore/core/use-cases/delete-question'
+import { UpdateNSScoreQuestionUseCase, UpdateNSScoreQuestionInput } from '@/_core/modules/nsscore/core/use-cases/update-question'
 import { useProfile } from '@/context/zustand/useProfile'
+
+type EditingState = {
+  id: string
+  text: string
+  fieldType: NSScoreFieldType
+}
 
 export default function NSScorePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = 'then' in params ? use(params) : params
@@ -24,9 +33,16 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
 
   const [questions, setQuestions] = useState<NSScoreQuestion[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Create form state
   const [showForm, setShowForm] = useState(false)
   const [questionText, setQuestionText] = useState('')
+  const [fieldType, setFieldType] = useState<NSScoreFieldType>('textarea')
   const [submitting, setSubmitting] = useState(false)
+
+  // Edit state
+  const [editing, setEditing] = useState<EditingState | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -61,11 +77,13 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
           courseId,
           infoUser.currentIdInstitution,
           questionText,
-          questions.length
+          questions.length,
+          fieldType
         )
       )
       setQuestions(prev => [...prev, result.question])
       setQuestionText('')
+      setFieldType('textarea')
       setShowForm(false)
       showToast.success('Pergunta criada.')
     } catch {
@@ -89,6 +107,58 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
     }
   }
 
+  const startEdit = (question: NSScoreQuestion) => {
+    setEditing({ id: question.id, text: question.text, fieldType: question.fieldType })
+    setShowForm(false)
+  }
+
+  const cancelEdit = () => setEditing(null)
+
+  const handleUpdate = async () => {
+    if (!editing) return
+    if (!editing.text.trim() || editing.text === '<p><br></p>') {
+      showToast.error('Escreva o texto da pergunta.')
+      return
+    }
+    try {
+      setSaving(true)
+      const useCase = container.get<UpdateNSScoreQuestionUseCase>(
+        Register.nsscore.useCase.UpdateNSScoreQuestionUseCase
+      )
+      const result = await useCase.execute(
+        new UpdateNSScoreQuestionInput(editing.id, editing.text, editing.fieldType)
+      )
+      setQuestions(prev => prev.map(q => q.id === editing.id ? result.question : q))
+      setEditing(null)
+      showToast.success('Pergunta atualizada.')
+    } catch {
+      showToast.error('Erro ao atualizar pergunta.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const FieldTypeSelect = ({
+    value,
+    onChange,
+  }: {
+    value: NSScoreFieldType
+    onChange: (v: NSScoreFieldType) => void
+  }) => (
+    <div>
+      <label className="block text-sm font-medium mb-1">Tipo de resposta</label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as NSScoreFieldType)}
+        className="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+      >
+        {FIELD_TYPES.map(t => (
+          <option key={t} value={t}>{FIELD_TYPE_LABELS[t]}</option>
+        ))}
+      </select>
+    </div>
+  )
+
   return (
     <ProtectedContent>
       <DashboardLayout>
@@ -102,14 +172,14 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
               </Link>
               <h1 className="text-2xl font-bold">Perguntas NPS Score</h1>
             </div>
-            {!showForm && (
+            {!showForm && !editing && (
               <Button variant="primary" onClick={() => setShowForm(true)}>
                 <FiPlus className="mr-1 inline" /> Nova Pergunta
               </Button>
             )}
           </div>
 
-          {/* Form */}
+          {/* Create form */}
           {showForm && (
             <div className="border rounded-xl p-5 space-y-4 bg-gray-50 dark:bg-gray-900">
               <h2 className="font-semibold">Nova Pergunta</h2>
@@ -121,8 +191,9 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
                   style={{ height: '180px' }}
                 />
               </div>
+              <FieldTypeSelect value={fieldType} onChange={setFieldType} />
               <div className="flex gap-2 justify-end pt-2">
-                <Button variant="secondary" onClick={() => { setShowForm(false); setQuestionText('') }} disabled={submitting}>
+                <Button variant="secondary" onClick={() => { setShowForm(false); setQuestionText(''); setFieldType('textarea') }} disabled={submitting}>
                   Cancelar
                 </Button>
                 <Button variant="primary" onClick={handleCreate} disabled={submitting}>
@@ -142,20 +213,65 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
           ) : (
             <div className="space-y-3">
               {questions.map((q, i) => (
-                <div key={q.id} className="flex items-start gap-3 border rounded-lg p-4 bg-white dark:bg-gray-800">
-                  <span className="w-7 h-7 shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center text-sm font-bold">
-                    {i + 1}
-                  </span>
-                  <div
-                    className="flex-1 text-sm prose dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: q.text }}
-                  />
-                  <button
-                    onClick={() => handleDelete(q)}
-                    className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 cursor-pointer"
-                  >
-                    <FiTrash2 className="w-4 h-4 text-red-500" />
-                  </button>
+                <div key={q.id}>
+                  {editing?.id === q.id ? (
+                    /* Edit inline */
+                    <div className="border border-blue-300 rounded-xl p-5 space-y-4 bg-blue-50 dark:bg-gray-900">
+                      <h2 className="font-semibold text-blue-700 dark:text-blue-300">Editar Pergunta</h2>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Texto da pergunta</label>
+                        <Editor
+                          value={editing.text}
+                          onTextChange={e => setEditing(prev => prev ? { ...prev, text: e.htmlValue ?? '' } : prev)}
+                          style={{ height: '180px' }}
+                        />
+                      </div>
+                      <FieldTypeSelect
+                        value={editing.fieldType}
+                        onChange={v => setEditing(prev => prev ? { ...prev, fieldType: v } : prev)}
+                      />
+                      <div className="flex gap-2 justify-end pt-2">
+                        <Button variant="secondary" onClick={cancelEdit} disabled={saving}>
+                          <FiX className="mr-1 inline" /> Cancelar
+                        </Button>
+                        <Button variant="primary" onClick={handleUpdate} disabled={saving}>
+                          <FiCheck className="mr-1 inline" />
+                          {saving ? 'Salvando...' : 'Salvar'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 border rounded-lg p-4 bg-white dark:bg-gray-800">
+                      <span className="w-7 h-7 shrink-0 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center text-sm font-bold">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="text-sm prose dark:prose-invert max-w-none"
+                          dangerouslySetInnerHTML={{ __html: q.text }}
+                        />
+                        <span className="inline-block mt-1 text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 px-2 py-0.5 rounded">
+                          {FIELD_TYPE_LABELS[q.fieldType]}
+                        </span>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <button
+                          onClick={() => startEdit(q)}
+                          className="p-1.5 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer"
+                          title="Editar"
+                        >
+                          <FiEdit2 className="w-4 h-4 text-blue-500" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(q)}
+                          className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 cursor-pointer"
+                          title="Excluir"
+                        >
+                          <FiTrash2 className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

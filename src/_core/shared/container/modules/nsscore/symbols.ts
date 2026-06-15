@@ -11,6 +11,7 @@ export const useCases = {
   GetNSScoreStatsUseCase: Symbol.for('GetNSScoreStatsUseCase'),
   CheckNSScoreSubmittedUseCase: Symbol.for('CheckNSScoreSubmittedUseCase'),
   ListNSScoreResponsesUseCase: Symbol.for('ListNSScoreResponsesUseCase'),
+  UpdateNSScoreQuestionUseCase: Symbol.for('UpdateNSScoreQuestionUseCase'),
 }
 
 export const NSScoreSymbols = { repositories, useCases }

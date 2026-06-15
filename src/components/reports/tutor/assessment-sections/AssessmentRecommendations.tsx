@@ -7,6 +7,7 @@ type AssessmentRecommendationsProps = {
 };
 
 import { Badge } from '@/components/ui/badge';
+import { translateEnum } from '../../shared/translations';
 
 export function AssessmentRecommendations({ data }: AssessmentRecommendationsProps) {
   if (!data || data.length === 0) {
@@ -34,7 +35,7 @@ export function AssessmentRecommendations({ data }: AssessmentRecommendationsPro
           <div key={index} className="p-3 border rounded-lg">
             <div className="flex justify-between items-center">
               <p className="font-semibold">{rec.description}</p>
-              <Badge variant={getPriorityVariant(rec.priority)}>{rec.priority}</Badge>
+              <Badge variant={getPriorityVariant(rec.priority)}>{translateEnum(rec.priority)}</Badge>
             </div>
             <p className="text-sm text-gray-600">Impacto Esperado: {rec.expectedImpact}</p>
             {rec.targetStudents && <p className="text-sm">Alunos Alvo: {rec.targetStudents.length}</p>}

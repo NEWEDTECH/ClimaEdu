@@ -31,6 +31,7 @@ import { Register, ReportSymbols } from '@/_core/shared/container/symbols';
 import { LoadingSpinner } from '@/components/loader';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { translateEnum } from '@/components/reports/shared/translations';
 
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -502,12 +503,18 @@ function DashboardTab({ report, loading }: DashboardTabProps) {
                         <Progress value={perf.passRate} className="w-20" />
                       </div>
                     </TableCell>
-                    <TableCell>{perf.difficultyRating}</TableCell>
-                    <TableCell>{perf.improvementTrend}</TableCell>
+                    <TableCell>{translateEnum(perf.difficultyRating)}</TableCell>
+                    <TableCell>{translateEnum(perf.improvementTrend)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+              <p><strong>Média:</strong> média das notas dos questionários do curso.</p>
+              <p><strong>Taxa de Aprovação:</strong> percentual de submissões aprovadas (nota ≥ nota de corte).</p>
+              <p><strong>Dificuldade:</strong> derivada da taxa de aprovação — Difícil (&lt;50%), Médio (50–80%), Fácil (&gt;80%).</p>
+              <p><strong>Tendência:</strong> compara as notas das submissões mais recentes com as anteriores — Melhorando, Estável ou Em queda.</p>
+            </div>
           </CardContent>
         </Card>
       )}

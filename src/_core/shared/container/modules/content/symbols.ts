@@ -47,6 +47,7 @@ export const useCases = {
   UpdateContentProgressUseCase: Symbol.for('UpdateContentProgressUseCase'),
   GetLessonProgressUseCase: Symbol.for('GetLessonProgressUseCase'),
   CompleteLessonProgressUseCase: Symbol.for('CompleteLessonProgressUseCase'),
+  SyncCourseCompletionUseCase: Symbol.for('SyncCourseCompletionUseCase'),
   CanAccessLessonUseCase: Symbol.for('CanAccessLessonUseCase'),
   UpdateLessonDescriptionUseCase: Symbol.for('UpdateLessonDescriptionUseCase'),
   UpdateLessonContentSectionsOrderUseCase: Symbol.for('UpdateLessonContentSectionsOrderUseCase'),

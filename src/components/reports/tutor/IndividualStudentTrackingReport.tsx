@@ -20,6 +20,7 @@ import { ClassComparison } from './sections/ClassComparison';
 import { LearningInsights } from './sections/LearningInsights';
 import { TutorRecommendations } from './sections/TutorRecommendations';
 import { Button } from '@/components/button'
+import { ReportPlaceholder } from '../shared/ReportPlaceholder';
 
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -126,7 +127,7 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
-      setError('Failed to load report');
+      setError('Falha ao carregar o relatório');
     } finally {
       setLoading(false);
     }
@@ -148,25 +149,36 @@ export function IndividualStudentTrackingReport({ courseId, classId }: Individua
         <CardTitle>Acompanhamento Individual do Aluno</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <Dropdown className="w-[280px]">
-            <Button className="w-full border rounded-md p-2 text-left">
-              {selectedStudent ? students.find(s => s.id === selectedStudent)?.name : "Selecione um aluno"}
-            </Button>
-            <DropdownMenuContent>
-              {students.map((student) => (
-                <DropdownMenuItem key={student.id} onSelect={() => setSelectedStudent(student.id)}>
-                  {student.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </Dropdown>
-        </div>
+        {!classId ? (
+          <ReportPlaceholder message="Selecione uma turma para listar os alunos." />
+        ) : (
+          <>
+            <div className="mb-4">
+              <Dropdown className="w-[280px]">
+                <Button className="w-full border rounded-md p-2 text-left">
+                  {selectedStudent ? students.find(s => s.id === selectedStudent)?.name : "Selecione um aluno"}
+                </Button>
+                <DropdownMenuContent>
+                  {students.map((student) => (
+                    <DropdownMenuItem key={student.id} onSelect={() => setSelectedStudent(student.id)}>
+                      {student.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </Dropdown>
+            </div>
 
-        {loading && <p>Carregando...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-        {!loading && !error && !report && <p>Selecione um aluno para ver o relatório.</p>}
-        
+            {students.length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhum aluno encontrado nesta turma.</p>
+            )}
+            {loading && <p>Carregando...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading && !error && !report && students.length > 0 && (
+              <p>Selecione um aluno para ver o relatório.</p>
+            )}
+          </>
+        )}
+
         {report && (
           <div className="space-y-6">
             {report.summary && <ReportSummary data={report.summary} />}

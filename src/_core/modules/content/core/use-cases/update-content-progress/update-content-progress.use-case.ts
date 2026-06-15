@@ -1,31 +1,35 @@
 import { injectable, inject } from 'inversify';
 import type { LessonProgressRepository } from '../../../infrastructure/repositories/LessonProgressRepository';
+import type { LessonRepository } from '../../../infrastructure/repositories/LessonRepository';
+import type { ActivitySubmissionRepository } from '../../../infrastructure/repositories/ActivitySubmissionRepository';
+import type { QuestionnaireSubmissionRepository } from '../../../infrastructure/repositories/QuestionnaireSubmissionRepository';
 import type { UpdateContentProgressInput } from './update-content-progress.input';
 import type { UpdateContentProgressOutput } from './update-content-progress.output';
 import { Register } from '@/_core/shared/container';
+import { SyncCourseCompletionUseCase } from '@/_core/modules/content/core/use-cases/sync-course-completion';
 
-/**
- * Use case for updating content progress within a lesson
- * Updates the progress of a specific content and automatically updates lesson completion status
- * Following Clean Architecture principles, this use case is pure and has no dependencies on infrastructure details
- */
 @injectable()
 export class UpdateContentProgressUseCase {
   constructor(
-    @inject(Register.content.repository.LessonProgressRepository) private lessonProgressRepository: LessonProgressRepository
+    @inject(Register.content.repository.LessonProgressRepository)
+    private lessonProgressRepository: LessonProgressRepository,
+
+    @inject(Register.content.repository.LessonRepository)
+    private lessonRepository: LessonRepository,
+
+    @inject(Register.content.repository.ActivitySubmissionRepository)
+    private activitySubmissionRepository: ActivitySubmissionRepository,
+
+    @inject(Register.content.repository.QuestionnaireSubmissionRepository)
+    private questionnaireSubmissionRepository: QuestionnaireSubmissionRepository,
+
+    @inject(Register.content.useCase.SyncCourseCompletionUseCase)
+    private syncCourseCompletionUseCase: SyncCourseCompletionUseCase,
   ) {}
 
-  /**
-   * Executes the update content progress use case
-   * @param input UpdateContentProgressInput
-   * @returns UpdateContentProgressOutput
-   * @throws Error if validation fails or lesson progress is not found
-   */
   async execute(input: UpdateContentProgressInput): Promise<UpdateContentProgressOutput> {
-    // Validate input
     this.validateInput(input);
 
-    // Find existing lesson progress
     const lessonProgress = await this.lessonProgressRepository.findByUserAndLesson(
       input.userId,
       input.lessonId
@@ -38,7 +42,6 @@ export class UpdateContentProgressUseCase {
       );
     }
 
-    // Get current content progress to check if it was already completed
     const contentProgress = lessonProgress.getContentProgress(input.contentId);
     if (!contentProgress) {
       throw new Error(
@@ -49,7 +52,6 @@ export class UpdateContentProgressUseCase {
     const wasContentCompleted = contentProgress.isCompleted();
     const wasLessonCompleted = lessonProgress.isCompleted();
 
-    // Update content progress
     lessonProgress.updateContentProgress(
       input.contentId,
       input.progressPercentage,
@@ -57,15 +59,60 @@ export class UpdateContentProgressUseCase {
       input.lastPosition
     );
 
-    // Save the updated lesson progress
+    // If the entity auto-completed the lesson based on content only, verify prerequisites
+    // and revert if they are not yet satisfied.
+    if (lessonProgress.isCompleted() && !wasLessonCompleted) {
+      const lesson = await this.lessonRepository.findById(input.lessonId);
+
+      const activityRequired = !!lesson?.activity;
+      const questionnaireRequired = !!lesson?.questionnaire;
+
+      let activitySubmitted = false;
+      let questionnaireApproved = false;
+
+      if (activityRequired && lesson?.activity) {
+        const submissions = await this.activitySubmissionRepository.findByActivityAndStudent(
+          lesson.activity.id,
+          input.userId
+        );
+        activitySubmitted = submissions.length > 0;
+      }
+
+      if (questionnaireRequired && lesson?.questionnaire) {
+        const submissions = await this.questionnaireSubmissionRepository.findByQuestionnaireAndUser(
+          lesson.questionnaire.id,
+          input.userId
+        );
+        questionnaireApproved = submissions.some(s => s.passed);
+      }
+
+      lessonProgress.checkAndUpdateLessonCompletion({
+        activityRequired,
+        activitySubmitted,
+        questionnaireRequired,
+        questionnaireApproved,
+      });
+    }
+
     const savedProgress = await this.lessonProgressRepository.save(lessonProgress);
 
-    // Check completion status changes
     const isContentCompleted = contentProgress.isCompleted();
     const isLessonCompleted = savedProgress.isCompleted();
 
     const contentCompleted = !wasContentCompleted && isContentCompleted;
     const lessonCompleted = !wasLessonCompleted && isLessonCompleted;
+
+    if (lessonCompleted) {
+      try {
+        await this.syncCourseCompletionUseCase.execute({
+          userId: savedProgress.userId,
+          lessonId: savedProgress.lessonId,
+          institutionId: savedProgress.institutionId,
+        });
+      } catch (error) {
+        console.error('Failed to sync course completion:', error);
+      }
+    }
 
     return {
       lessonProgress: savedProgress,
@@ -74,11 +121,6 @@ export class UpdateContentProgressUseCase {
     };
   }
 
-  /**
-   * Validates the input parameters
-   * @param input UpdateContentProgressInput
-   * @throws Error if validation fails
-   */
   private validateInput(input: UpdateContentProgressInput): void {
     if (!input.userId || input.userId.trim() === '') {
       throw new Error('User ID is required');

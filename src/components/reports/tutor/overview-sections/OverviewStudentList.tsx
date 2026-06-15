@@ -8,6 +8,7 @@ type OverviewStudentListProps = {
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { translateEnum } from '../../shared/translations';
 
 export function OverviewStudentList({ data }: OverviewStudentListProps) {
   if (!data || data.length === 0) {
@@ -50,7 +51,7 @@ export function OverviewStudentList({ data }: OverviewStudentListProps) {
                 <TableCell>{student.averageScore.toFixed(1)}%</TableCell>
                 <TableCell>{student.daysSinceLastAccess} dias atrás</TableCell>
                 <TableCell>
-                  <Badge variant={getRiskVariant(student.riskLevel)}>{student.riskLevel}</Badge>
+                  <Badge variant={getRiskVariant(student.riskLevel)}>{translateEnum(student.riskLevel)}</Badge>
                 </TableCell>
               </TableRow>
             ))}

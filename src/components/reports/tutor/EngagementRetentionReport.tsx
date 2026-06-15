@@ -15,6 +15,8 @@ import { EngagementDropoutRisk } from './engagement-sections/EngagementDropoutRi
 import { EngagementRetentionMetrics } from './engagement-sections/EngagementRetentionMetrics';
 import { EngagementTrends } from './engagement-sections/EngagementTrends';
 import { EngagementRecommendations } from './engagement-sections/EngagementRecommendations';
+import { translateEnum } from '../shared/translations';
+import { ReportPlaceholder } from '../shared/ReportPlaceholder';
 
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -83,7 +85,7 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
-      setError('Failed to load report');
+      setError('Falha ao carregar o relatório');
     } finally {
       setLoading(false);
     }
@@ -99,6 +101,10 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
     };
   }, [fetchReport]);
 
+  if (!courseId || !classId) {
+    return <ReportPlaceholder message="Selecione um curso e uma turma para visualizar o relatório de engajamento." />;
+  }
+
   if (loading) {
     return <div>Carregando...</div>;
   }
@@ -108,7 +114,7 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
   }
 
   if (!report) {
-    return <div>No data available.</div>;
+    return <div>Nenhum dado disponível.</div>;
   }
 
   return (
@@ -141,11 +147,11 @@ export function EngagementRetentionReport({ courseId, classId }: EngagementReten
                     <TableCell>{student.studentName}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span>{student.engagementLevel}</span>
+                        <span>{translateEnum(student.engagementLevel)}</span>
                         <Progress value={student.engagementScore} className="w-24" />
                       </div>
                     </TableCell>
-                    <TableCell>{student.riskLevel}</TableCell>
+                    <TableCell>{translateEnum(student.riskLevel)}</TableCell>
                     <TableCell>{student.daysSinceLastAccess} dias atrás</TableCell>
                   </TableRow>
                 ))}
