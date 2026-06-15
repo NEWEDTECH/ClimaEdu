@@ -278,11 +278,11 @@ export default function Home() {
             
             {/* Cover Image - if exists */}
             {institutionCoverUrl && (
-              <div className="w-full h-[450px] relative overflow-hidden">
-                <img 
-                  src={institutionCoverUrl} 
-                  alt="Capa da instituição" 
-                  className="w-full h-[450px] block"
+              <div className="w-full h-[200px] sm:h-[320px] lg:h-[450px] relative overflow-hidden">
+                <img
+                  src={institutionCoverUrl}
+                  alt="Capa da instituição"
+                  className="w-full h-full object-cover block"
                 />
                 {/* Gradient overlay for better text readability */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"></div>
@@ -301,7 +301,7 @@ export default function Home() {
                 )}
 
                 {/* Quick Stats */}
-                <div className="flex flex-wrap justify-center gap-6 mt-8">
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-6 sm:mt-8">
 
                   <div className="backdrop-blur-sm rounded-lg px-6 py-3 dark:bg-white/10 dark:border dark:border-white/20 bg-white/80 border border-gray-200/50 shadow-sm">
                     <div className="flex items-center space-x-2 dark:text-white text-gray-800">

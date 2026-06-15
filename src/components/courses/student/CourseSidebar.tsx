@@ -194,227 +194,209 @@ export function CourseSidebar({
 }: CourseSidebarProps) {
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('hidden');
 
-  const handleSidebarModeChange = (newMode: SidebarMode) => {
-    setSidebarMode(newMode);
+  const toggleMode = (mode: SidebarMode) => {
+    setSidebarMode((prev) => (prev === mode ? 'hidden' : mode));
   };
 
-  const handleChatClick = () => {
-    if (sidebarMode === 'chat') {
-      handleSidebarModeChange('hidden');
-    } else {
-      handleSidebarModeChange('chat');
+  // Wrap lesson selection so the mobile drawer closes after picking a lesson
+  // (desktop keeps the panel open, preserving the previous behavior)
+  const handleLessonSelectAndClose = (lessonId: string) => {
+    onLessonSelect(lessonId);
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      setSidebarMode('hidden');
     }
   };
 
-  const handleModulesClick = () => {
-    if (sidebarMode === 'modules') {
-      handleSidebarModeChange('hidden');
-    } else {
-      handleSidebarModeChange('modules');
-    }
-  };
-
-  const handleNotesClick = () => {
-    if (sidebarMode === 'notes') {
-      handleSidebarModeChange('hidden');
-    } else {
-      handleSidebarModeChange('notes');
-    }
-  };
-
-  return (
-    <div 
-      className={`flex transition-all duration-300 ${
-        sidebarMode === 'hidden' 
-          ? 'w-20' 
-          : sidebarMode === 'chat' 
-            ? 'w-96' 
-            : sidebarMode === 'notes'
-              ? 'w-[800px]'
-              : 'w-96'
-      }`}
-    >
-      {/* Sidebar Panel - Left side */}
-      {sidebarMode !== 'hidden' && (
-        <div className="flex-1 bg-white dark:bg-gray-900 shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 rounded-lg overflow-hidden">
-          {sidebarMode === 'chat' && (
-            <>
-              <HeaderSideBar
-                title='Chat da Turma'
-                subTitle='Converse com seus colegas'
-                onClose={() => setSidebarMode('hidden')}
-                icon={<MessageSquare className="w-5 h-5 text-white" />}
-              />
-              <div className="flex-1 overflow-hidden">
-                <ChatDropdown
-                  courseId={courseId}
-                  classId={courseId}
-                  userId={userId}
-                  userName={userName}
-                  isEmbedded={true}
-                />
-              </div>
-            </>
-          )}
-
-          {sidebarMode === 'modules' && (
-            <div className="h-full flex flex-col overflow-hidden">
-              <HeaderSideBar
-                title='Conteúdo do Curso'
-                subTitle={`${modules.length} ${modules.length === 1 ? 'módulo' : 'módulos'}`}
-                onClose={() => setSidebarMode('hidden')}
-                icon={
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                }
-              />
-
-              {/* Modules Content */}
-              <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
-                {isLoading ? (
-                  <div className="flex flex-col justify-center items-center h-32 space-y-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Carregando módulos...</p>
-                  </div>
-                ) : error ? (
-                  <div className="text-red-500 text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                    <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-sm">{error}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {modules.map((module, index) => (
-                      <ModuleDropdown
-                        key={module.id}
-                        module={module}
-                        activeLesson={activeLesson}
-                        onLessonSelect={onLessonSelect}
-                        isFirstModule={index === 0}
-                        forceOpen={openModules.has(module.id)}
-                        lessonAccess={lessonAccess}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {sidebarMode === 'notes' && (
-            <>
-              <HeaderSideBar
-                title='Anotações'
-                subTitle='Suas anotações do curso'
-                onClose={() => setSidebarMode('hidden')}
-                icon={
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                }
-              />
-              <div className="flex-1 overflow-hidden">
-                <NotesComponent
-                  courseId={courseId}
-                  userId={userId}
-                  isEmbedded={true}
-                />
-              </div>
-            </>
-          )}
+  // Panel body shared between the desktop inline panel and the mobile drawer
+  const panelBody = (
+    <>
+      {sidebarMode === 'chat' && (
+        <div className="h-full flex flex-col overflow-hidden">
+          <HeaderSideBar
+            title='Chat da Turma'
+            subTitle='Converse com seus colegas'
+            onClose={() => setSidebarMode('hidden')}
+            icon={<MessageSquare className="w-5 h-5 text-white" />}
+          />
+          <div className="flex-1 overflow-hidden">
+            <ChatDropdown
+              courseId={courseId}
+              classId={courseId}
+              userId={userId}
+              userName={userName}
+              isEmbedded={true}
+            />
+          </div>
         </div>
       )}
 
-      {/* Toggle Icons - Right side */}
-      <div className="flex flex-col gap-3 p-4 border-l border-gray-200 dark:border-gray-700 items-center">
-        {/* Chat Icon */}
-        <button
-          onClick={handleChatClick}
-          className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'chat'
-            ? 'bg-blue-600 text-white transform scale-110'
-            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
-            }`}
-          aria-label="Toggle chat"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-        </button>
+      {sidebarMode === 'modules' && (
+        <div className="h-full flex flex-col overflow-hidden">
+          <HeaderSideBar
+            title='Conteúdo do Curso'
+            subTitle={`${modules.length} ${modules.length === 1 ? 'módulo' : 'módulos'}`}
+            onClose={() => setSidebarMode('hidden')}
+            icon={
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+            }
+          />
 
-        {/* Modules Icon */}
-        <button
-          onClick={handleModulesClick}
-          className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'modules'
-            ? 'bg-indigo-600 text-white transform scale-110'
-            : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
-            }`}
-          aria-label="Toggle modules"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-          </svg>
-        </button>
+          {/* Modules Content */}
+          <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
+            {isLoading ? (
+              <div className="flex flex-col justify-center items-center h-32 space-y-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Carregando módulos...</p>
+              </div>
+            ) : error ? (
+              <div className="text-red-500 text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm">{error}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {modules.map((module, index) => (
+                  <ModuleDropdown
+                    key={module.id}
+                    module={module}
+                    activeLesson={activeLesson}
+                    onLessonSelect={handleLessonSelectAndClose}
+                    isFirstModule={index === 0}
+                    forceOpen={openModules.has(module.id)}
+                    lessonAccess={lessonAccess}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-        {/* Notes Icon */}
-        <button
-          onClick={handleNotesClick}
-          className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'notes'
-            ? 'bg-green-600 text-white transform scale-110'
-            : 'bg-white text-green-600 hover:bg-green-50 border border-green-200'
-            }`}
-          aria-label="Toggle notes"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      {sidebarMode === 'notes' && (
+        <div className="h-full flex flex-col overflow-hidden">
+          <HeaderSideBar
+            title='Anotações'
+            subTitle='Suas anotações do curso'
+            onClose={() => setSidebarMode('hidden')}
+            icon={
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            }
+          />
+          <div className="flex-1 overflow-hidden">
+            <NotesComponent
+              courseId={courseId}
+              userId={userId}
+              isEmbedded={true}
             />
-          </svg>
-        </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  // Toggle buttons shared between desktop strip and mobile floating rail
+  const toggleButtons = (
+    <>
+      <button
+        onClick={() => toggleMode('chat')}
+        className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'chat'
+          ? 'bg-blue-600 text-white transform scale-110'
+          : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200'
+          }`}
+        aria-label="Abrir chat"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </button>
+
+      <button
+        onClick={() => toggleMode('modules')}
+        className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'modules'
+          ? 'bg-indigo-600 text-white transform scale-110'
+          : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
+          }`}
+        aria-label="Abrir conteúdo do curso"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      </button>
+
+      <button
+        onClick={() => toggleMode('notes')}
+        className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${sidebarMode === 'notes'
+          ? 'bg-green-600 text-white transform scale-110'
+          : 'bg-white text-green-600 hover:bg-green-50 border border-green-200'
+          }`}
+        aria-label="Abrir anotações"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </button>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop / tablet (lg+): inline panel that pushes the content */}
+      <div
+        className={`hidden lg:flex transition-all duration-300 ${
+          sidebarMode === 'hidden'
+            ? 'w-20'
+            : sidebarMode === 'notes'
+              ? 'w-[800px]'
+              : 'w-96'
+        }`}
+      >
+        {sidebarMode !== 'hidden' && (
+          <div className="flex-1 bg-white dark:bg-gray-900 shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 rounded-lg overflow-hidden">
+            {panelBody}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 p-4 border-l border-gray-200 dark:border-gray-700 items-center">
+          {toggleButtons}
+        </div>
       </div>
-    </div>
+
+      {/* Mobile (< lg): floating rail + full-height drawer overlay */}
+      <div className="lg:hidden">
+        {sidebarMode !== 'hidden' && (
+          <div className="fixed inset-0 z-50 flex">
+            <div
+              className="flex-1 bg-black/50"
+              onClick={() => setSidebarMode('hidden')}
+              aria-hidden="true"
+            />
+            <div className="w-[90vw] max-w-md h-full bg-white dark:bg-gray-900 shadow-xl flex flex-col overflow-hidden">
+              {panelBody}
+            </div>
+          </div>
+        )}
+
+        <div className="fixed right-3 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3">
+          {toggleButtons}
+        </div>
+      </div>
+    </>
   );
 }

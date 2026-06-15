@@ -191,10 +191,10 @@ export default function QuestionnairePage() {
     return (
       <ProtectedContent>
         <DashboardLayout>
-          <div className="max-w-4xl mx-auto p-6 space-y-6">
+          <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
 
             {/* Placar */}
-            <div className={`rounded-2xl p-8 text-center shadow-lg border-2 ${
+            <div className={`rounded-2xl p-5 sm:p-8 text-center shadow-lg border-2 ${
               result.passed
                 ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700'
                 : 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
@@ -209,16 +209,16 @@ export default function QuestionnairePage() {
                   : `Você precisava de ${questionnaire.passingScore}% para passar.`}
               </p>
 
-              <div className="flex justify-center gap-8">
+              <div className="flex justify-center gap-6 sm:gap-8">
                 <div>
-                  <div className={`text-5xl font-bold ${result.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <div className={`text-4xl sm:text-5xl font-bold ${result.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {result.score}%
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pontuação</div>
                 </div>
                 <div className="w-px bg-gray-300 dark:bg-gray-600" />
                 <div>
-                  <div className="text-5xl font-bold text-gray-800 dark:text-gray-200">
+                  <div className="text-4xl sm:text-5xl font-bold text-gray-800 dark:text-gray-200">
                     {correctCount}/{totalCount}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Acertos</div>
@@ -330,7 +330,7 @@ export default function QuestionnairePage() {
   return (
     <ProtectedContent>
       <DashboardLayout>
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl mx-auto p-4 sm:p-6">
           {/* Header */}
           <div className="mb-8">
             <Button onClick={handleBackToCourse} className="flex items-center mb-4 transition-colors">
@@ -452,15 +452,15 @@ export default function QuestionnairePage() {
               )}
 
               {/* Enviar */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     Perguntas respondidas: {answers.filter(a => a.selectedOptionIndex !== null).length} de {questionnaire.questions.length}
                   </div>
                   <Button
                     onClick={handleSubmit}
                     disabled={!isAllQuestionsAnswered() || isSubmitting}
-                    className={`px-8 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    className={`w-full sm:w-auto px-8 py-3 rounded-lg font-medium transition-all duration-200 ${
                       isAllQuestionsAnswered() && !isSubmitting
                         ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                         : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'

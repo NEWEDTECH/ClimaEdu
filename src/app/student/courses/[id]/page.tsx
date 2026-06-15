@@ -267,9 +267,9 @@ export default function CoursePage() {
                     />
                 )}
 
-                <div className="flex h-[calc(100vh-4rem)]">
+                <div className="flex h-full">
                     {/* Main Content Column */}
-                    <div className="flex-1 p-4 transition-all duration-300 overflow-auto scrollbar-thin">
+                    <div className="flex-1 min-w-0 p-3 sm:p-4 transition-all duration-300 overflow-auto scrollbar-thin">
                         {isLoading ? (
                             <div className="flex justify-center items-center h-64">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
