@@ -182,3 +182,77 @@ The application uses Firebase Authentication with email link (passwordless) auth
 ## License
 
 This project is licensed under the MIT License.
+
+---
+
+## Relatórios e Métricas
+
+### Dashboard Institucional
+
+Visão geral da instituição. Consolida dados de cursos, matrículas e NPS.
+
+- Total de cursos e matrículas
+- Taxa de conclusão por curso e geral
+- Tempo médio para concluir um curso
+- Média NPS (0–10) e score NPS por curso
+- Satisfação média dos alunos
+- Alertas automáticos para cursos com baixa conclusão ou baixo NPS
+
+---
+
+### Visão Geral da Turma
+
+Acompanhamento da turma pelo tutor.
+
+- Progresso de cada aluno (%)
+- Lições e avaliações concluídas
+- Tempo de estudo registrado
+- Classificação de risco por aluno (baixo / médio / alto)
+- Alunos em alerta para intervenção
+
+---
+
+### Avaliações
+
+Desempenho nos questionários da turma.
+
+- Média de notas por avaliação
+- Taxa de aprovação
+- Número médio de tentativas
+- Desempenho por questão
+- Comparativo com a média da instituição
+
+---
+
+### Engajamento e Retenção
+
+Análise de acesso e risco de evasão.
+
+- Frequência de acesso e duração média de sessão
+- Índice de engajamento por aluno
+- Classificação de risco de abandono
+- Taxa de retenção por período
+
+---
+
+### Acompanhamento Individual
+
+Visão detalhada de um aluno específico.
+
+- Progresso geral e por módulo
+- Notas e tendência de evolução
+- Horários e padrão de estudo
+- Áreas de dificuldade identificadas
+- Recomendações para o tutor
+
+---
+
+### NPS (Net Promoter Score)
+
+Coletado automaticamente ao concluir um curso. O aluno atribui uma nota de 0 a 10 e responde perguntas customizadas configuradas por curso.
+
+- **Promotores:** notas 9–10
+- **Passivos:** notas 7–8
+- **Detratores:** notas 0–6
+
+As respostas são visíveis em Admin → Cursos → NPS → Respostas e alimentam o Dashboard Institucional.
