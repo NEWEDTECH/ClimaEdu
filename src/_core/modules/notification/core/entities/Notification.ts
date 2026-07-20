@@ -1,4 +1,9 @@
-export type NotificationType = 'TUTORING_SCHEDULED' | 'TUTORING_RESPONDED'
+export type NotificationType =
+  | 'TUTORING_SCHEDULED'
+  | 'TUTORING_RESPONDED'
+  | 'CLASS_SCHEDULED'
+  | 'CLASS_UPDATED'
+  | 'CLASS_CANCELLED'
 
 export class Notification {
   constructor(

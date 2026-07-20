@@ -5,7 +5,7 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSettings } from "react-icons/fi";
 import { PiCertificate } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
-import { FiUsers, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus, FiHelpCircle } from "react-icons/fi";
+import { FiUsers, FiBarChart, FiHome, FiMic, FiUserCheck, FiLayers, FiBookOpen, FiUserPlus, FiHelpCircle, FiCalendar } from "react-icons/fi";
 import { MdSchool } from "react-icons/md";
 //import { MdOutlineSchool } from "react-icons/md";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,7 @@ type DropdownSection = {
 const studentItems: DropdownItem[] = [
   { label: 'Social', href: '/social', icon: <FiUsers /> },
   { label: 'Tutoria', href: '/student/tutoring', icon: <FiUserCheck /> },
+  { label: 'Aulas Agendadas', href: '/student/scheduled-classes', icon: <FiCalendar /> },
   { label: 'Certificados', href: '/student/certificates', icon: <PiCertificate /> },
   { label: 'Conquistas', href: '/student/achievements', icon: <FiAward /> },
   { label: 'Configurações', href: '/student/settings', icon: <FiSettings /> },
@@ -50,6 +51,7 @@ const teacherItems: DropdownItem[] = [
   { label: 'Acompanhamento', href: '/tutor/follow-up', icon: <FiUserCheck /> },
   { label: 'Relatórios', href: '/tutor/reports', icon: <FiBarChart /> },
   { label: 'Tutoria', href: '/tutor/tutoring', icon: <FiUserCheck /> },
+  { label: 'Aulas da Turma', href: '/tutor/scheduled-classes', icon: <FiCalendar /> },
   { label: 'FAQs', href: '/admin/faqs', icon: <FiHelpCircle /> },
 ];
 

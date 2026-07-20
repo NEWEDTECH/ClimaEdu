@@ -16,14 +16,14 @@ import type { TutoringSession } from '@/_core/modules/tutoring'
 export default function TutorTutoringPage() {
   const { infoUser } = useProfile()
   const tutorId = infoUser.id
-  
-  const { 
-    sessions, 
-    loading, 
-    error, 
+
+  const {
+    sessions,
+    loading,
+    error,
     updateSession,
     refetch
-  } = useTutorSessions({ 
+  } = useTutorSessions({
     tutorId: tutorId,
     autoRefresh: true // Auto-refresh every 15 minutes
   })
@@ -102,15 +102,22 @@ export default function TutorTutoringPage() {
     <ProtectedContent>
       <DashboardLayout>
         <div className="container mx-auto p-6 space-y-6">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex items-center justify-between flex-wrap gap-2">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Sessões de Tutoria</h1>
             </div>
-            <Link href="/tutor/availability">
-              <Button className="flex items-center gap-2">
-                Configurar Disponibilidade
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/tutor/scheduled-classes">
+                <Button className="flex items-center gap-2">
+                  Aulas da Turma
+                </Button>
+              </Link>
+              <Link href="/tutor/availability">
+                <Button className="flex items-center gap-2">
+                  Configurar Disponibilidade
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Stats Overview */}

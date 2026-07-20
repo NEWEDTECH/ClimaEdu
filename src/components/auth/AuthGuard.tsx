@@ -23,6 +23,7 @@ const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/student': ['STUDENT', 'CONTENT_MANAGER'],
   '/student/activities': ['STUDENT'],
   '/student/tutoring': ['STUDENT'],
+  '/student/scheduled-classes': ['STUDENT'],
   '/student/certificates': ['STUDENT'],
   '/student/achievements': ['STUDENT'],
   '/student/settings': ['STUDENT'],
@@ -32,6 +33,7 @@ const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/tutor/follow-up': ['TUTOR'],
   '/tutor/reports': ['TUTOR', 'LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
   '/tutor/tutoring': ['TUTOR'],
+  '/tutor/scheduled-classes': ['TUTOR'],
   
   // Rotas de admin
   '/admin': ['LOCAL_ADMIN', 'SYSTEM_ADMIN', 'SUPER_ADMIN'],
