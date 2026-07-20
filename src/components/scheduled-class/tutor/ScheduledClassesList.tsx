@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CalendarIcon, ClockIcon, LinkIcon, UsersIcon, EditIcon, XIcon } from 'lucide-react'
+import { CalendarIcon, LinkIcon, UsersIcon, EditIcon, XIcon } from 'lucide-react'
 import { Pagination } from '@/components/pagination/Pagination'
 import type { ScheduledClass, TutorClassOption } from '@/_core/modules/scheduled-class'
 import {
