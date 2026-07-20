@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/button'
 import { CalendarIcon, ClockIcon, LinkIcon, UsersIcon, EditIcon, XIcon } from 'lucide-react'
+import { Pagination } from '@/components/pagination/Pagination'
 import type { ScheduledClass, TutorClassOption } from '@/_core/modules/scheduled-class'
 import {
   ScheduledClassDateUtils,
@@ -11,6 +11,8 @@ import {
 } from '../shared/scheduled-class-utils'
 
 type TabKey = 'upcoming' | 'past'
+
+const PAGE_SIZE = 5
 
 interface ScheduledClassesListProps {
   scheduledClasses: ScheduledClass[]
@@ -28,6 +30,7 @@ export function ScheduledClassesList({
   saving
 }: ScheduledClassesListProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('upcoming')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const classNameById = new Map(tutorClasses.map(option => [option.classId, option.className]))
 
@@ -40,103 +43,114 @@ export function ScheduledClassesList({
     .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())
 
   const visibleClasses = activeTab === 'upcoming' ? upcomingClasses : pastClasses
+  const totalPages = Math.ceil(visibleClasses.length / PAGE_SIZE)
+  const paginatedClasses = visibleClasses.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  )
+
+  const handleTabChange = (tab: TabKey) => {
+    setActiveTab(tab)
+    setCurrentPage(1)
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Tabs */}
       <div className="flex gap-2 border-b dark:border-gray-700">
         <TabButton
           label={`Próximas (${upcomingClasses.length})`}
           isActive={activeTab === 'upcoming'}
-          onClick={() => setActiveTab('upcoming')}
+          onClick={() => handleTabChange('upcoming')}
         />
         <TabButton
           label={`Realizadas / Canceladas (${pastClasses.length})`}
           isActive={activeTab === 'past'}
-          onClick={() => setActiveTab('past')}
+          onClick={() => handleTabChange('past')}
         />
       </div>
 
       {/* List */}
       {visibleClasses.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">
+        <p className="text-center text-gray-500 py-6 text-sm">
           {activeTab === 'upcoming'
             ? 'Nenhuma aula agendada. Clique em "Agendar Aula" para criar uma.'
             : 'Nenhuma aula realizada ou cancelada ainda.'}
         </p>
       ) : (
-        <ul className="space-y-3">
-          {visibleClasses.map(scheduledClass => (
+        <ul className="divide-y dark:divide-gray-700 border dark:border-gray-700 rounded-lg">
+          {paginatedClasses.map(scheduledClass => (
             <li
               key={scheduledClass.id}
-              className="border dark:border-gray-700 rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+              className="px-3 py-2 flex items-center justify-between gap-3"
             >
-              <div className="space-y-1 min-w-0">
+              <div className="min-w-0 space-y-0.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {scheduledClass.title || 'Aula ao vivo'}
                   </span>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full border ${ScheduledClassStatusUtils.getColor(scheduledClass)}`}
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full border ${ScheduledClassStatusUtils.getColor(scheduledClass)}`}
                   >
                     {ScheduledClassStatusUtils.getLabel(scheduledClass)}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
+                <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
                   <span className="flex items-center gap-1">
-                    <UsersIcon size={14} />
+                    <UsersIcon size={12} />
                     {classNameById.get(scheduledClass.classId) ?? 'Turma'}
                   </span>
-                  <span className="flex items-center gap-1 capitalize">
-                    <CalendarIcon size={14} />
-                    {ScheduledClassDateUtils.formatDate(scheduledClass.scheduledDate)}
-                  </span>
                   <span className="flex items-center gap-1">
-                    <ClockIcon size={14} />
-                    {ScheduledClassDateUtils.formatTime(scheduledClass.scheduledDate)}
+                    <CalendarIcon size={12} />
+                    {ScheduledClassDateUtils.formatDateTime(scheduledClass.scheduledDate)}
                   </span>
+                  <a
+                    href={scheduledClass.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    <LinkIcon size={12} />
+                    {MeetingPlatformUtils.getPlatform(scheduledClass.meetingUrl)}
+                  </a>
                 </div>
 
-                <a
-                  href={scheduledClass.meetingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline break-all"
-                >
-                  <LinkIcon size={14} className="shrink-0" />
-                  {MeetingPlatformUtils.getPlatform(scheduledClass.meetingUrl)}
-                </a>
-
                 {scheduledClass.isCancelled() && scheduledClass.cancelReason && (
-                  <p className="text-sm text-red-600">Motivo: {scheduledClass.cancelReason}</p>
+                  <p className="text-xs text-red-600 truncate">Motivo: {scheduledClass.cancelReason}</p>
                 )}
               </div>
 
               {scheduledClass.isUpcoming() && (
-                <div className="flex gap-2 shrink-0">
-                  <Button
+                <div className="flex gap-1 shrink-0">
+                  <button
                     onClick={() => onEdit(scheduledClass)}
                     disabled={saving}
-                    className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                    icon={<EditIcon size={14} />}
+                    title="Editar aula"
+                    className="p-1.5 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
-                    Editar
-                  </Button>
-                  <Button
+                    <EditIcon size={16} />
+                  </button>
+                  <button
                     onClick={() => onCancel(scheduledClass)}
                     disabled={saving}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    icon={<XIcon size={14} />}
+                    title="Cancelar aula"
+                    className="p-1.5 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
-                    Cancelar
-                  </Button>
+                    <XIcon size={16} />
+                  </button>
                 </div>
               )}
             </li>
           ))}
         </ul>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }
@@ -151,7 +165,7 @@ function TabButton({ label, isActive, onClick }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+      className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
         isActive
           ? 'border-blue-600 text-blue-600'
           : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
