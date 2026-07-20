@@ -20,6 +20,7 @@ import { AddEnrollmentToClassInput } from '@/_core/modules/enrollment/core/use-c
 import { RemoveEnrollmentFromClassUseCase } from '@/_core/modules/enrollment/core/use-cases/remove-enrollment-from-class/remove-enrollment-from-class.use-case'
 import { RemoveEnrollmentFromClassInput } from '@/_core/modules/enrollment/core/use-cases/remove-enrollment-from-class/remove-enrollment-from-class.input'
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
+import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { Class } from '@/_core/modules/enrollment/core/entities/Class'
 import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
@@ -115,18 +116,24 @@ export default function EditTurmaPage() {
         setCurrentEnrollments([])
         return
       }
-      
+
       try {
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         )
-        
-        // For each enrollment ID, we need to find the corresponding user
-        // Since enrollment IDs are user IDs in this case, we can fetch users directly
+        const enrollmentRepository = container.get<EnrollmentRepository>(
+          Register.enrollment.repository.EnrollmentRepository
+        )
+
+        // Resolve each enrollment ID to the enrolled user's email.
+        // Legacy fallback: older classes stored the userId directly, so if no
+        // enrollment is found we treat the ID as a userId.
         const enrollmentsWithEmails = await Promise.all(
           classData.enrollmentIds.map(async (enrollmentId) => {
             try {
-              const user = await userRepository.findById(enrollmentId)
+              const enrollment = await enrollmentRepository.findById(enrollmentId)
+              const userId = enrollment ? enrollment.userId : enrollmentId
+              const user = await userRepository.findById(userId)
               return {
                 id: enrollmentId,
                 userEmail: user?.email.value || 'Email não encontrado'
@@ -140,13 +147,13 @@ export default function EditTurmaPage() {
             }
           })
         )
-        
+
         setCurrentEnrollments(enrollmentsWithEmails)
       } catch (err) {
         console.error('Error fetching current enrollments:', err)
       }
     }
-    
+
     fetchCurrentEnrollments()
   }, [classData?.enrollmentIds])
 
@@ -190,23 +197,43 @@ export default function EditTurmaPage() {
 
   const handleAddEnrollment = async () => {
     if (!newEnrollmentId.trim()) {
-      setError('ID da matrícula é obrigatório')
+      setError('Selecione um estudante')
+      return
+    }
+
+    if (!classData?.courseId) {
+      setError('Esta turma não está vinculada a um curso, não é possível adicionar estudantes.')
       return
     }
 
     try {
       setAddingEnrollment(true)
       setError(null)
-      
+
+      // The select holds the student's userId — resolve the actual enrollment
+      // for the class course, since Class.enrollmentIds must store enrollment IDs
+      const enrollmentRepository = container.get<EnrollmentRepository>(
+        Register.enrollment.repository.EnrollmentRepository
+      )
+      const enrollment = await enrollmentRepository.findByUserAndCourse(
+        newEnrollmentId.trim(),
+        classData.courseId
+      )
+
+      if (!enrollment) {
+        setError('O estudante selecionado não está matriculado no curso desta turma.')
+        return
+      }
+
       const addEnrollmentUseCase = container.get<AddEnrollmentToClassUseCase>(
         Register.enrollment.useCase.AddEnrollmentToClassUseCase
       )
-      
+
       const input = new AddEnrollmentToClassInput(
         classId,
-        newEnrollmentId.trim()
+        enrollment.id
       )
-      
+
       await addEnrollmentUseCase.execute(input)
       
       // Refresh class data

@@ -6,7 +6,6 @@ import type { EnrollmentRepository } from '../../../infrastructure/repositories/
 import type { UserRepository } from '../../../../user/infrastructure/repositories/UserRepository';
 import { Register } from '../../../../../shared/container/symbols';
 import { User } from '../../../../user/core/entities/User';
-import { Enrollment } from '../../entities/Enrollment';
 
 @injectable()
 export class ListClassStudentsUseCase {
@@ -26,14 +25,21 @@ export class ListClassStudentsUseCase {
       return { students: [] };
     }
 
-    const enrollments = await Promise.all(
-      classData.enrollmentIds.map((enrollmentId: string) => this.enrollmentRepository.findById(enrollmentId))
+    // Resolve each ID to a userId.
+    // Legacy fallback: some classes stored the student's userId directly in
+    // enrollmentIds instead of the enrollment ID, so if no enrollment is found
+    // we treat the ID as a userId.
+    const userIds = await Promise.all(
+      classData.enrollmentIds.map(async (enrollmentId: string) => {
+        const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+        return enrollment ? enrollment.userId : enrollmentId;
+      })
     );
 
-    const filteredEnrollments = enrollments.filter((enrollment: Enrollment | null): enrollment is Enrollment => enrollment !== null);
+    const uniqueUserIds = Array.from(new Set(userIds));
 
     const students = await Promise.all(
-      filteredEnrollments.map((enrollment: Enrollment) => this.userRepository.findById(enrollment.userId))
+      uniqueUserIds.map((userId: string) => this.userRepository.findById(userId))
     );
 
     const filteredStudents = students.filter((student: User | null): student is User => student !== null);

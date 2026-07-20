@@ -21,23 +21,23 @@ export function TutorRecommendations({ data }: TutorRecommendationsProps) {
   };
 
   return (
-    <Card className="bg-amber-50 border-amber-200">
+    <Card className="bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
       <CardHeader>
-        <CardTitle>Recomendações e Próximos Passos</CardTitle>
+        <CardTitle className="text-gray-900 dark:text-white">Recomendações e Próximos Passos</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {data.immediateActions.length > 0 && (
           <div>
-            <h4 className="font-bold text-lg mb-2 text-red-700">Ações Imediatas</h4>
+            <h4 className="font-bold text-lg mb-2 text-red-700 dark:text-red-400">Ações Imediatas</h4>
             <div className="space-y-3">
               {data.immediateActions.map((action, index) => (
-                <div key={index} className="p-3 bg-red-100 rounded-lg">
+                <div key={index} className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <p className="font-semibold">{action.action}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{action.action}</p>
                     <Badge variant={getPriorityVariant(action.priority)}>{translateEnum(action.priority)}</Badge>
                   </div>
-                  <p className="text-sm text-gray-600">{action.reason}</p>
-                  <p className="text-sm font-medium">Resultado Esperado: {action.expectedOutcome}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{action.reason}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Resultado Esperado: {action.expectedOutcome}</p>
                 </div>
               ))}
             </div>
@@ -46,16 +46,16 @@ export function TutorRecommendations({ data }: TutorRecommendationsProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-bold text-lg mb-2">Pontos Fortes</h4>
-            <ul className="list-disc list-inside space-y-1 text-green-700">
+            <h4 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Pontos Fortes</h4>
+            <ul className="list-disc list-inside space-y-1 text-green-700 dark:text-green-400">
               {data.strengths.map((strength, index) => (
                 <li key={index}>{strength}</li>
               ))}
             </ul>
           </div>
           <div>
-            <h4 className="font-bold text-lg mb-2">Pontos de Melhoria</h4>
-            <ul className="list-disc list-inside space-y-1 text-yellow-700">
+            <h4 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Pontos de Melhoria</h4>
+            <ul className="list-disc list-inside space-y-1 text-yellow-700 dark:text-yellow-400">
               {data.areasForImprovement.map((area, index) => (
                 <li key={index}>{area}</li>
               ))}
@@ -65,15 +65,15 @@ export function TutorRecommendations({ data }: TutorRecommendationsProps) {
 
         {data.interventionSuggestions.length > 0 && (
           <div>
-            <h4 className="font-bold text-lg mb-2">Sugestões de Intervenção</h4>
+            <h4 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Sugestões de Intervenção</h4>
             <div className="space-y-3">
               {data.interventionSuggestions.map((suggestion, index) => (
-                <div key={index} className="p-3 border rounded-lg">
-                  <p className="font-semibold">{suggestion.suggestion}</p>
-                  <p className="text-sm text-gray-600">
+                <div key={index} className="p-3 border border-amber-200 dark:border-gray-700 rounded-lg">
+                  <p className="font-semibold text-gray-900 dark:text-white">{suggestion.suggestion}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     Tipo: {translateEnum(suggestion.type)} | Prazo: {suggestion.timeline}
                   </p>
-                  <p className="text-sm">Recursos: {suggestion.resources.join(', ')}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-200">Recursos: {suggestion.resources.join(', ')}</p>
                 </div>
               ))}
             </div>
@@ -81,8 +81,8 @@ export function TutorRecommendations({ data }: TutorRecommendationsProps) {
         )}
 
         <div>
-          <h4 className="font-bold text-lg mb-2">Próximos Passos</h4>
-          <ul className="list-disc list-inside space-y-1">
+          <h4 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">Próximos Passos</h4>
+          <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
             {data.nextSteps.map((step, index) => (
               <li key={index}>{step}</li>
             ))}
