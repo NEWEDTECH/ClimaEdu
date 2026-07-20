@@ -20,9 +20,10 @@ import { StorageSymbols } from '@/_core/shared/container/modules/storage/symbols
 import { FaqSymbols } from './modules/faq/symbols';
 import { NotificationSymbols } from './modules/notification/symbols';
 import { NSScoreSymbols } from './modules/nsscore/symbols';
+import { ScheduledClassSymbols } from './modules/scheduled-class/symbols';
 
 // Re-export module-specific symbols
-export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols, StorageSymbols, FaqSymbols, NotificationSymbols, NSScoreSymbols };
+export { InstitutionSymbols, UserSymbols, ContentSymbols, AuthSymbols, EnrollmentSymbols, BadgeSymbols, AchievementSymbols, ChatSymbols, PodcastSymbols, SocialSymbols, ReportSymbols, CertificateSymbols, TutoringSymbols, SharedSymbols, SearchSymbols, StorageSymbols, FaqSymbols, NotificationSymbols, NSScoreSymbols, ScheduledClassSymbols };
 
 // Register object to simplify imports
 export const Register = {
@@ -100,5 +101,9 @@ export const Register = {
   nsscore: {
     repository: NSScoreSymbols.repositories,
     useCase: NSScoreSymbols.useCases,
+  },
+  scheduledClass: {
+    repository: ScheduledClassSymbols.repositories,
+    useCase: ScheduledClassSymbols.useCases,
   },
 };

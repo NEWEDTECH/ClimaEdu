@@ -3,6 +3,9 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { ProtectedContent } from '@/components/auth/ProtectedContent'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card/card'
+import Link from 'next/link'
+import { Button } from '@/components/button'
+import { CalendarIcon } from 'lucide-react'
 import { TutoringScheduleForm } from '@/components/tutoring/student/TutoringScheduleForm'
 import { ScheduledSessionsList } from '@/components/tutoring/student/ScheduledSessionsList'
 import { useStudentSessions } from '@/hooks/tutoring'
@@ -17,11 +20,11 @@ export default function TutoringPage() {
     loading: sessionsLoading, 
     error: sessionsError, 
     refetch: refetchSessions 
-  } = useStudentSessions({ 
+  } = useStudentSessions({
     studentId: studentId,
-    autoRefresh: false 
+    autoRefresh: false
   })
-  
+
   if (!studentId) {
     return (
       <ProtectedContent>
@@ -45,8 +48,13 @@ export default function TutoringPage() {
     <ProtectedContent>
       <DashboardLayout>
         <div className="container mx-auto p-6 space-y-6">
-          <div className="mb-6">
+          <div className="mb-6 flex items-center justify-between flex-wrap gap-2">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendamento de Tutoria</h1>
+            <Link href="/student/scheduled-classes">
+              <Button icon={<CalendarIcon size={16} />}>
+                Aulas Agendadas
+              </Button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

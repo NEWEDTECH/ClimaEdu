@@ -56,6 +56,11 @@ export function NotificationBell() {
     setResponseText('')
   }
 
+  const extractMeetingUrl = (message: string): string | null => {
+    const match = message.match(/https?:\/\/\S+/)
+    return match ? match[0] : null
+  }
+
   const formatTime = (date: Date) => {
     const d = date instanceof Date ? date : new Date(date)
     const diff = Date.now() - d.getTime()
@@ -120,6 +125,19 @@ export function NotificationBell() {
                           Resposta: {notification.response}
                         </p>
                       )}
+                      {(notification.type === 'CLASS_SCHEDULED' || notification.type === 'CLASS_UPDATED') &&
+                        extractMeetingUrl(notification.message) && (
+                          <span
+                            role="link"
+                            onClick={e => {
+                              e.stopPropagation()
+                              window.open(extractMeetingUrl(notification.message) as string, '_blank', 'noopener,noreferrer')
+                            }}
+                            className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium inline-block hover:underline"
+                          >
+                            Entrar na aula →
+                          </span>
+                        )}
                       <p className="text-[10px] text-gray-400 mt-1">
                         {formatTime(notification.createdAt)}
                       </p>
