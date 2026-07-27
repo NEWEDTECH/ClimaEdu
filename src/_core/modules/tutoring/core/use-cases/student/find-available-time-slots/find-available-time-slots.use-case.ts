@@ -92,7 +92,12 @@ export class FindAvailableTimeSlotsUseCase {
         
         for (const startTime of possibleStartTimes) {
           const sessionStart = this.createDateTimeFromTimeString(input.date, startTime);
-          
+
+          // Skip start times that have already passed (relevant when date is today)
+          if (sessionStart <= new Date()) {
+            continue;
+          }
+
           // Check for conflicts with existing sessions
           const conflicts = await this.sessionRepository.findConflictingSessions(
             timeSlot.tutorId,
@@ -136,7 +141,11 @@ export class FindAvailableTimeSlotsUseCase {
       throw new Error('Date is required');
     }
 
-    if (input.date < new Date()) {
+    // Allow today: compare against local midnight, past start times are
+    // filtered out individually when generating available times
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    if (input.date < startOfToday) {
       throw new Error('Date cannot be in the past');
     }
 

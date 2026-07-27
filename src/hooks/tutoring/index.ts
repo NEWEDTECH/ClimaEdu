@@ -1,5 +1,7 @@
 export { useStudentEnrolledCourses } from './useStudentEnrolledCourses'
 export { useTutoringScheduler } from './useTutoringScheduler'
+export { useCourseTutors } from './useCourseTutors'
+export type { CourseTutorOption } from './useCourseTutors'
 export { useStudentSessions } from './useStudentSessions'
 export { useTutorSessions } from './useTutorSessions'
 export { useSessionDetails } from './useSessionDetails'

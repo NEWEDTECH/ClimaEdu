@@ -19,6 +19,7 @@ interface ScheduleSessionData {
   scheduledDate: Date
   duration: number
   studentQuestion: string
+  tutorId?: string
 }
 
 export function useTutoringScheduler() {
@@ -42,7 +43,8 @@ export function useTutoringScheduler() {
         courseId: data.courseId,
         scheduledDate: data.scheduledDate,
         duration: data.duration,
-        studentQuestion: data.studentQuestion
+        studentQuestion: data.studentQuestion,
+        tutorId: data.tutorId
       })
 
       // Send notification to tutor
