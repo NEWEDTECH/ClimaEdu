@@ -20,22 +20,29 @@ interface DurationSelectorProps {
   selectedDuration: number
   onDurationChange: (duration: number) => void
   disabled?: boolean
+  /** Maximum duration (in minutes) that fits in the selected time slot */
+  maxDuration?: number
 }
 
 export function DurationSelector({
   selectedDuration,
   onDurationChange,
-  disabled = false
+  disabled = false,
+  maxDuration
 }: DurationSelectorProps) {
+  const availableOptions = maxDuration
+    ? DURATION_OPTIONS.filter(option => option.value <= maxDuration)
+    : DURATION_OPTIONS
+
   return (
     <div className="space-y-3">
       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white">
         <ClockIcon size={16} />
         Duração da Sessão
       </label>
-      
+
       <div className="grid grid-cols-2 gap-3">
-        {DURATION_OPTIONS.map((option) => (
+        {availableOptions.map((option) => (
           <Button
             key={option.value}
             type="button"
@@ -60,6 +67,12 @@ export function DurationSelector({
           </Button>
         ))}
       </div>
+
+      {maxDuration !== undefined && availableOptions.length < DURATION_OPTIONS.length && (
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Durações maiores não estão disponíveis neste horário (tempo livre do tutor ou fim do expediente).
+        </p>
+      )}
     </div>
   )
 }

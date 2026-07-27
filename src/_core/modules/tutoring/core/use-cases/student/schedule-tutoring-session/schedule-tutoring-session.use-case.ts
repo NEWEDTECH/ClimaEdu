@@ -28,8 +28,9 @@ export class ScheduleTutoringSessionUseCase {
    * @returns Promise<ScheduleTutoringSessionOutput> The result of the operation
    */
   async execute(input: ScheduleTutoringSessionInput): Promise<ScheduleTutoringSessionOutput> {
-    // Find the tutor for the course
-    const tutorId = await this.findTutorByCourseId(input.courseId);
+    // Use the tutor chosen by the student (validated against the course),
+    // or fall back to the first tutor of the course
+    const tutorId = await this.resolveTutor(input.courseId, input.tutorId);
 
     // Check for scheduling conflicts
     await this.checkForConflicts(input, tutorId);
@@ -61,19 +62,27 @@ export class ScheduleTutoringSessionUseCase {
 
 
   /**
-   * Finds the tutor ID for a given course ID
+   * Resolves which tutor the session belongs to
    * @param courseId The course ID
+   * @param requestedTutorId Tutor chosen by the student (optional)
    * @returns The tutor ID
-   * @throws Error if no tutor is found for the course
+   * @throws Error if the course has no tutors or the requested tutor doesn't teach the course
    */
-  private async findTutorByCourseId(courseId: string): Promise<string> {
+  private async resolveTutor(courseId: string, requestedTutorId?: string): Promise<string> {
     const courseTutors = await this.courseTutorRepository.findByCourseId(courseId);
-    
+
     if (courseTutors.length === 0) {
       throw new Error(`No tutor found for course ${courseId}`);
     }
 
-    // Return the first tutor (assuming one tutor per course)
+    if (requestedTutorId) {
+      const isCourseTutor = courseTutors.some(courseTutor => courseTutor.userId === requestedTutorId);
+      if (!isCourseTutor) {
+        throw new Error('O tutor selecionado não atende este curso');
+      }
+      return requestedTutorId;
+    }
+
     return courseTutors[0].userId;
   }
 

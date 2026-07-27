@@ -1,20 +1,17 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/button'
 import type { AvailableTimeSlot } from '@/_core/modules/tutoring'
-import { 
-  ClockIcon, 
-  UserIcon, 
+import {
+  ClockIcon,
   CalendarIcon,
-  CheckCircleIcon,
   AlertCircleIcon
 } from 'lucide-react'
 
 interface AvailableTimeSlotsListProps {
   availableSlots: AvailableTimeSlot[]
   selectedDate: Date
-  selectedDuration: number
+  selectedStartTime: string | null
   onTimeSlotSelect: (slot: AvailableTimeSlot, startTime: string) => void
   loading?: boolean
 }
@@ -22,15 +19,10 @@ interface AvailableTimeSlotsListProps {
 export function AvailableTimeSlotsList({
   availableSlots,
   selectedDate,
-  selectedDuration,
+  selectedStartTime,
   onTimeSlotSelect,
   loading = false
 }: AvailableTimeSlotsListProps) {
-  const [selectedSlot, setSelectedSlot] = useState<{
-    slotId: string
-    startTime: string
-  } | null>(null)
-
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       weekday: 'long',
@@ -38,53 +30,6 @@ export function AvailableTimeSlotsList({
       month: 'long',
       day: 'numeric'
     })
-  }
-
-  const formatDuration = (minutes: number) => {
-    if (minutes >= 60) {
-      const hours = Math.floor(minutes / 60)
-      const remainingMinutes = minutes % 60
-      return remainingMinutes > 0 ? `${hours}h${remainingMinutes}min` : `${hours}h`
-    }
-    return `${minutes}min`
-  }
-
-  const calculateEndTime = (startTime: string, durationMinutes: number) => {
-    const [hours, minutes] = startTime.split(':').map(Number)
-    const startMinutes = hours * 60 + minutes
-    const endMinutes = startMinutes + durationMinutes
-    const endHours = Math.floor(endMinutes / 60)
-    const endMins = endMinutes % 60
-    return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`
-  }
-
-  const handleTimeSlotClick = (slot: AvailableTimeSlot, startTime: string) => {
-    const slotKey = `${slot.timeSlot.id}-${startTime}`
-    
-    if (selectedSlot?.slotId === slotKey) {
-      // Deselect if clicking the same slot
-      setSelectedSlot(null)
-    } else {
-      // Select new slot
-      setSelectedSlot({
-        slotId: slotKey,
-        startTime
-      })
-    }
-  }
-
-  const handleConfirmSelection = () => {
-    if (!selectedSlot) return
-
-    const slot = availableSlots.find(s => 
-      s.availableStartTimes.some(time => 
-        `${s.timeSlot.id}-${time}` === selectedSlot.slotId
-      )
-    )
-
-    if (slot) {
-      onTimeSlotSelect(slot, selectedSlot.startTime)
-    }
   }
 
   if (loading) {
@@ -106,10 +51,10 @@ export function AvailableTimeSlotsList({
           Nenhum horário disponível
         </h3>
         <p className="text-gray-500 mb-4 dark:text-white">
-          Não encontramos tutores disponíveis para a data e duração selecionadas.
+          O tutor não possui horários disponíveis nesta data.
         </p>
         <p className="text-sm text-gray-400 dark:text-white">
-          Tente selecionar uma data diferente ou reduzir a duração da sessão.
+          Tente selecionar uma data diferente.
         </p>
       </div>
     )
@@ -118,90 +63,53 @@ export function AvailableTimeSlotsList({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <CalendarIcon size={16} className="text-blue-600" />
-          <span className="text-sm font-medium text-blue-900">
-            Horários Disponíveis
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+        <div className="flex items-center gap-2 mb-1">
+          <CalendarIcon size={16} className="text-blue-600 dark:text-blue-400" />
+          <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
+            Horários Disponíveis do Tutor
           </span>
         </div>
-        <p className="text-sm text-blue-700">
-          {formatDate(selectedDate)} • Duração: {formatDuration(selectedDuration)}
-        </p>
-        <p className="text-xs text-blue-600 mt-1">
-          {availableSlots.length} tutor{availableSlots.length !== 1 ? 'es' : ''} disponível{availableSlots.length !== 1 ? 'eis' : ''}
+        <p className="text-sm text-blue-700 dark:text-blue-300 capitalize">
+          {formatDate(selectedDate)}
         </p>
       </div>
 
-      {/* Available Slots */}
+      {/* Available start times */}
       <div className="space-y-3">
         {availableSlots.map((slot) => (
           <div
             key={slot.timeSlot.id}
-            className="border border-gray-200 rounded-lg p-4 bg-white"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900"
           >
-            {/* Tutor Info */}
-            <div className="flex items-center gap-2 mb-3">
-              <UserIcon size={16} className="text-gray-600" />
-              <span className="text-sm text-gray-500">
-                • {slot.timeSlot.getDayName()}
-              </span>
-            </div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
+              <ClockIcon size={14} />
+              {slot.timeSlot.startTime} às {slot.timeSlot.endTime}
+            </p>
 
-            {/* Available Times */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <ClockIcon size={14} />
-                Horários disponíveis:
-              </p>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {slot.availableStartTimes.map((startTime) => {
-                  const slotKey = `${slot.timeSlot.id}-${startTime}`
-                  const isSelected = selectedSlot?.slotId === slotKey
-                  const endTime = calculateEndTime(startTime, selectedDuration)
-                  
-                  return (
-                    <Button
-                      key={startTime}
-                      onClick={() => handleTimeSlotClick(slot, startTime)}
-                      className={`p-2 rounded-lg border text-sm transition-all ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50 text-blue-900'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="font-medium">
-                        {startTime} - {endTime}
-                      </div>
-                    </Button>
-                  )
-                })}
-              </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+              {slot.availableStartTimes.map((startTime) => {
+                const isSelected = selectedStartTime === startTime
+
+                return (
+                  <Button
+                    key={startTime}
+                    type="button"
+                    onClick={() => onTimeSlotSelect(slot, startTime)}
+                    className={`p-2 rounded-lg border text-sm transition-all ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-600 text-white'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800'
+                    }`}
+                  >
+                    {startTime}
+                  </Button>
+                )
+              })}
             </div>
           </div>
         ))}
       </div>
-
-      {/* Confirm Selection */}
-      {selectedSlot && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircleIcon size={16} className="text-green-600" />
-              <span className="text-sm font-medium text-green-900">
-                Horário selecionado: {selectedSlot.startTime} - {calculateEndTime(selectedSlot.startTime, selectedDuration)}
-              </span>
-            </div>
-            <Button
-              onClick={handleConfirmSelection}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              Confirmar Agendamento
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
