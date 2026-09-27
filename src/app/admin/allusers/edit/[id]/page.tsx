@@ -43,6 +43,7 @@ export default function EditUserPage() {
   const addingRef = useRef(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [tutorWarningRole, setTutorWarningRole] = useState<UserRoleAssignment | null>(null);
+  const [updatingSystemAdmin, setUpdatingSystemAdmin] = useState(false);
 
   const [newRoleInstitution, setNewRoleInstitution] = useState<string>('');
   const [newRoleType, setNewRoleType] = useState<UserRole | ''>('');
@@ -266,6 +267,39 @@ export default function EditUserPage() {
     }
   };
 
+  /**
+   * Concede ou remove o cargo de administrador do sistema (cargo da plataforma inteira,
+   * guardado no perfil do usuário e não em uma instituição). Só SUPER_ADMIN e SYSTEM_ADMIN podem.
+   */
+  const handleToggleSystemAdmin = async () => {
+    if (!user || !isGlobalAdmin) return;
+
+    const isSystemAdmin = user.role === UserRole.SYSTEM_ADMIN;
+    // Ao remover, o cargo principal volta a ser o do primeiro vínculo com instituição (ou Estudante)
+    const fallbackRole = userRoles[0]?.role ?? UserRole.STUDENT;
+
+    const message = isSystemAdmin
+      ? `Remover o cargo de Administrador do Sistema de "${user.name}"? O cargo principal passará a ser "${getRoleLabel(fallbackRole)}".`
+      : `Tornar "${user.name}" Administrador do Sistema? Ele terá acesso de administrador a todas as instituições.`;
+    if (!confirm(message)) return;
+
+    try {
+      setUpdatingSystemAdmin(true);
+      const userRepository = container.get<UserRepository>(Register.user.repository.UserRepository);
+
+      user.updateRole(isSystemAdmin ? fallbackRole : UserRole.SYSTEM_ADMIN);
+      await userRepository.save(user);
+
+      setUser(await userRepository.findById(userId));
+      alert(isSystemAdmin ? 'Cargo de Administrador do Sistema removido.' : 'Usuário agora é Administrador do Sistema.');
+    } catch (error) {
+      console.error('Error updating system admin role:', error);
+      alert('Erro ao atualizar o cargo. Tente novamente.');
+    } finally {
+      setUpdatingSystemAdmin(false);
+    }
+  };
+
   const getRoleLabel = (role: UserRole): string => {
     const labels: Record<UserRole, string> = {
       SUPER_ADMIN: 'Super Admin',
@@ -362,6 +396,37 @@ export default function EditUserPage() {
           </div>
         </div>
       </div>
+
+      {/* Administrador do Sistema (cargo da plataforma inteira) */}
+      {isGlobalAdmin && user.role !== UserRole.SUPER_ADMIN && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <FiShield className="w-6 h-6 text-purple-600" />
+                Administrador do Sistema
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {user.role === UserRole.SYSTEM_ADMIN
+                  ? 'Este usuário é administrador do sistema e tem acesso a todas as instituições.'
+                  : 'Dá acesso de administrador a todas as instituições. Não depende de vínculo com instituição.'}
+              </p>
+            </div>
+            <Button
+              onClick={handleToggleSystemAdmin}
+              disabled={updatingSystemAdmin || user.id === infoUser.id}
+              variant={user.role === UserRole.SYSTEM_ADMIN ? 'secondary' : 'primary'}
+              title={user.id === infoUser.id ? 'Você não pode alterar o seu próprio cargo' : undefined}
+            >
+              {updatingSystemAdmin
+                ? 'Salvando...'
+                : user.role === UserRole.SYSTEM_ADMIN
+                  ? 'Remover cargo'
+                  : 'Tornar Administrador do Sistema'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Current Roles */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">

@@ -34,6 +34,7 @@ const allowedRoles = [
   UserRole.TUTOR,
   UserRole.LOCAL_ADMIN,
   UserRole.CONTENT_MANAGER,
+  UserRole.SYSTEM_ADMIN,
 ] as const;
 
 const roleLabels: Partial<Record<UserRole, string>> = {
@@ -70,6 +71,7 @@ const getAllowedRolesToCreate = (creatorRole: UserRole): UserRole[] => {
       ];
     case UserRole.SYSTEM_ADMIN:
       return [
+        UserRole.SYSTEM_ADMIN,
         UserRole.LOCAL_ADMIN,
         UserRole.CONTENT_MANAGER,
         UserRole.TUTOR,
@@ -185,6 +187,7 @@ export default function CreateUserPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
     reset
   } = useForm<FormValues>({
@@ -197,6 +200,9 @@ export default function CreateUserPage() {
       role: UserRole.STUDENT
     }
   });
+
+  // Administrador do sistema é um cargo da plataforma inteira: não é vinculado a uma instituição
+  const isSystemAdminSelected = watch('role') === UserRole.SYSTEM_ADMIN;
 
   const onSubmit = async (data: FormValues) => {
     setError(null)
@@ -227,7 +233,7 @@ export default function CreateUserPage() {
           ? infoUser.currentIdInstitution
           : data.institutionId
 
-      if (institutionId) {
+      if (institutionId && data.role !== UserRole.SYSTEM_ADMIN) {
         await associateUserUseCase.execute({
           userId,
           institutionId,
@@ -555,7 +561,13 @@ export default function CreateUserPage() {
                     </select>
                   </div>
 
-                  {(currentUserRole === UserRole.SUPER_ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN) && (
+                  {isSystemAdminSelected && (
+                    <p className="text-xs text-gray-500">
+                      O administrador do sistema tem acesso a todas as instituições, por isso não é vinculado a uma instituição.
+                    </p>
+                  )}
+
+                  {(currentUserRole === UserRole.SUPER_ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN) && !isSystemAdminSelected && (
                     <div className="space-y-2">
                       <label htmlFor="institutionId" className="block text-sm font-medium">
                         Instituição
