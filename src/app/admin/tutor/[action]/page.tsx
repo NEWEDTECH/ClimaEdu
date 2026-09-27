@@ -16,6 +16,8 @@ import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case'
 import { ListUserInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-user-institutions/list-user-institutions.use-case'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
+import { getInstitutionUserIds } from '@/components/institution/resource-institution'
 
 export default function AssociateTutorToCoursePage() {
   const router = useRouter()
@@ -38,8 +40,12 @@ export default function AssociateTutorToCoursePage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  // Admin local: somente tutores, cursos e instituição atuais; SUPER_ADMIN e SYSTEM_ADMIN: todos
+  const { isReady, isGlobalAdmin, currentInstitutionId, canAccessInstitution, filterInstitutions } = useInstitutionScope()
+
   // Fetch tutors and institutions on component mount
   useEffect(() => {
+    if (!isReady) return
     const fetchInitialData = async () => {
       try {
         setLoading(true)
@@ -49,7 +55,9 @@ export default function AssociateTutorToCoursePage() {
           Register.user.repository.UserRepository
         )
 
-        const tutorsList = await userRepository.listByType(UserRole.TUTOR)
+        const allTutors = await userRepository.listByType(UserRole.TUTOR)
+        const institutionUserIds = isGlobalAdmin ? null : await getInstitutionUserIds(currentInstitutionId ?? '')
+        const tutorsList = institutionUserIds ? allTutors.filter(user => institutionUserIds.has(user.id)) : allTutors
 
         const tutorsForDropdown = tutorsList.map(tutor => ({
           id: tutor.id,
@@ -64,7 +72,7 @@ export default function AssociateTutorToCoursePage() {
           Register.institution.repository.InstitutionRepository
         )
 
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
 
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -92,10 +100,8 @@ export default function AssociateTutorToCoursePage() {
 
             let tutorInstitutionId: string | undefined
 
-            // Get the first institution (assuming tutor belongs to one institution)
-            if (userInstitutionsResult.institutions.length > 0) {
-              tutorInstitutionId = userInstitutionsResult.institutions[0].id
-            }
+            // Primeira instituição do tutor que o usuário atual pode gerenciar
+            tutorInstitutionId = userInstitutionsResult.institutions.find(inst => canAccessInstitution(inst.id))?.id
 
             const courseTutorRepository = container.get<CourseTutorRepository>(
               Register.content.repository.CourseTutorRepository
@@ -112,7 +118,7 @@ export default function AssociateTutorToCoursePage() {
               // Get course details for each association
               const courseDetailsPromises = courseTutors.map(async (courseTutor) => {
                 const course = await courseRepository.findById(courseTutor.courseId)
-                if (course) {
+                if (course && canAccessInstitution(course.institutionId)) {
                   // If tutor doesn't have institutionId directly, get it from first course
                   if (!tutorInstitutionId) {
                     tutorInstitutionId = course.institutionId
@@ -173,7 +179,7 @@ export default function AssociateTutorToCoursePage() {
     }
 
     fetchInitialData()
-  }, [tutorId, isEditMode])
+  }, [tutorId, isEditMode, isReady, isGlobalAdmin, currentInstitutionId, canAccessInstitution, filterInstitutions])
 
   // Fetch courses when institution changes
   useEffect(() => {
@@ -265,7 +271,11 @@ export default function AssociateTutorToCoursePage() {
       const coursesToAdd = selectedCourseIds.filter(id => !currentCourseIds.includes(id))
 
       // Courses to remove: in currentCourseIds but not in selectedCourseIds
-      const coursesToRemove = currentCourseTutors.filter(ct => !selectedCourseIds.includes(ct.courseId))
+      // (admin local só remove vínculos com cursos da própria instituição; os de outras instituições são preservados)
+      const manageableCourseIds = new Set(courses.map(course => course.id))
+      const coursesToRemove = currentCourseTutors.filter(ct =>
+        !selectedCourseIds.includes(ct.courseId) && (isGlobalAdmin || manageableCourseIds.has(ct.courseId))
+      )
 
       // Add new associations
       const addPromises = coursesToAdd.map(courseId =>

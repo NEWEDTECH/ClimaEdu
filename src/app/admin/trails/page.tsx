@@ -17,6 +17,7 @@ import { DeleteTrailUseCase } from '@/_core/modules/content/core/use-cases/delet
 import { DeleteTrailInput } from '@/_core/modules/content/core/use-cases/delete-trail/delete-trail.input'
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 type TrailWithUIProps = {
   id: string
@@ -44,7 +45,11 @@ export default function TrailsPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { isReady, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchInstitutions = async () => {
       try {
         setLoading(true)
@@ -53,7 +58,7 @@ export default function TrailsPage() {
           Register.institution.repository.InstitutionRepository
         )
         
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
         
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -63,7 +68,7 @@ export default function TrailsPage() {
         setInstitutions(institutionsForDropdown)
         
         if (institutionsForDropdown.length > 0) {
-          setSelectedInstitutionId(institutionsForDropdown[0].id)
+          setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
         }
         
         setError(null)
@@ -76,7 +81,7 @@ export default function TrailsPage() {
     }
     
     fetchInstitutions()
-  }, [])
+  }, [isReady, filterInstitutions, pickDefaultInstitutionId])
 
   useEffect(() => {
     const fetchTrails = async () => {

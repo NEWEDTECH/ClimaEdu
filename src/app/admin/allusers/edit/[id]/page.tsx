@@ -19,6 +19,8 @@ import { LoadingSpinner } from '@/components/loader';
 import { FiTrash2, FiPlus, FiUser, FiMail, FiShield, FiCheck, FiAlertTriangle } from 'react-icons/fi';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedContent } from '@/components/auth/ProtectedContent';
+import { useInstitutionScope } from '@/hooks/useInstitutionScope';
+import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository';
 
 type UserRoleAssignment = {
   id: string;
@@ -47,6 +49,9 @@ export default function EditUserPage() {
 
   const currentRole = infoUser.currentRole;
   const hasAccess = ['SUPER_ADMIN', 'SYSTEM_ADMIN', 'LOCAL_ADMIN'].includes(currentRole || '');
+  // Admin local só vê e altera papéis na própria instituição; SUPER_ADMIN e SYSTEM_ADMIN: em todas
+  const { isGlobalAdmin, canAccessInstitution, filterInstitutions } = useInstitutionScope();
+  const visibleRoles = userRoles.filter(role => canAccessInstitution(role.institutionId));
 
   useEffect(() => {
     if (!currentRole) return;
@@ -77,7 +82,7 @@ export default function EditUserPage() {
 
       // Load all institutions
       const allInstitutions = await institutionRepository.list();
-      setInstitutions(allInstitutions);
+      setInstitutions(filterInstitutions(allInstitutions));
 
       // Load user's current role assignments
       const associations = await userInstitutionRepository.findByUserId(userId);
@@ -103,6 +108,11 @@ export default function EditUserPage() {
   const handleAddRole = async () => {
     if (!newRoleInstitution || !newRoleType) {
       alert('Por favor, selecione uma instituição e uma role');
+      return;
+    }
+
+    if (!canAccessInstitution(newRoleInstitution)) {
+      alert('Você só pode atribuir roles na sua instituição.');
       return;
     }
 
@@ -161,6 +171,11 @@ export default function EditUserPage() {
   };
 
   const handleRemoveRole = async (roleAssignment: UserRoleAssignment) => {
+    if (!canAccessInstitution(roleAssignment.institutionId)) {
+      alert('Você só pode remover roles da sua instituição.');
+      return;
+    }
+
     if (userRoles.length <= 1) {
       alert('O usuário deve ter pelo menos 1 permissão. Não é possível remover a última role.');
       return;
@@ -178,6 +193,38 @@ export default function EditUserPage() {
     await executeRemoveRole(roleAssignment);
   };
 
+  /**
+   * Remove o papel de tutor numa única instituição: vínculos com os cursos dela e a associação.
+   * Os horários de disponibilidade não têm instituição, então só são apagados quando o
+   * usuário deixa de ser tutor em todas as instituições.
+   */
+  const removeTutorRoleFromInstitution = async (institutionId: string) => {
+    const userInstitutionRepository = container.get<UserInstitutionRepository>(Register.institution.repository.UserInstitutionRepository);
+    const courseTutorRepository = container.get<CourseTutorRepository>(Register.content.repository.CourseTutorRepository);
+    const courseRepository = container.get<CourseRepository>(Register.content.repository.CourseRepository);
+    const timeSlotRepository = container.get<TimeSlotRepository>(Register.tutoring.repository.TimeSlotRepository);
+
+    const courseTutors = await courseTutorRepository.findByUserId(userId);
+    const courses = await Promise.all(courseTutors.map(ct => courseRepository.findById(ct.courseId)));
+    await Promise.all(
+      courseTutors
+        .filter((_, index) => courses[index]?.institutionId === institutionId)
+        .map(ct => courseTutorRepository.delete(ct.id))
+    );
+
+    const allUserInstitutions = await userInstitutionRepository.findByUserId(userId);
+    const tutorAssociations = allUserInstitutions.filter(ui => ui.userRole === UserRole.TUTOR);
+    await Promise.all(
+      tutorAssociations
+        .filter(ui => ui.institutionId === institutionId)
+        .map(ui => userInstitutionRepository.delete(ui.id))
+    );
+
+    if (tutorAssociations.every(ui => ui.institutionId === institutionId)) {
+      await timeSlotRepository.deleteByTutorId(userId);
+    }
+  };
+
   const executeRemoveRole = async (roleAssignment: UserRoleAssignment) => {
     try {
       setRemoving(roleAssignment.id);
@@ -185,7 +232,11 @@ export default function EditUserPage() {
 
       const userInstitutionRepository = container.get<UserInstitutionRepository>(Register.institution.repository.UserInstitutionRepository);
 
-      if (roleAssignment.role === UserRole.TUTOR) {
+      if (roleAssignment.role === UserRole.TUTOR && !isGlobalAdmin) {
+        // Admin local: remove o papel de tutor apenas na própria instituição
+        await removeTutorRoleFromInstitution(roleAssignment.institutionId);
+        setUserRoles(prev => prev.filter(r => !(r.role === UserRole.TUTOR && r.institutionId === roleAssignment.institutionId)));
+      } else if (roleAssignment.role === UserRole.TUTOR) {
         const courseTutorRepository = container.get<CourseTutorRepository>(Register.content.repository.CourseTutorRepository);
         const timeSlotRepository = container.get<TimeSlotRepository>(Register.tutoring.repository.TimeSlotRepository);
 
@@ -305,7 +356,7 @@ export default function EditUserPage() {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Total de Roles</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{userRoles.length}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{visibleRoles.length}</p>
               </div>
             </div>
           </div>
@@ -319,7 +370,7 @@ export default function EditUserPage() {
           Roles Atuais
         </h2>
         
-        {userRoles.length === 0 ? (
+        {visibleRoles.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
             <FiShield className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">Nenhuma role associada ainda.</p>
@@ -327,7 +378,7 @@ export default function EditUserPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {userRoles.map((roleAssignment) => (
+            {visibleRoles.map((roleAssignment) => (
               <div
                 key={roleAssignment.id}
                 className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl hover:shadow-md transition-all"
@@ -426,7 +477,9 @@ export default function EditUserPage() {
                 <strong className="text-red-600">AVISO:</strong> Os vínculos serão removidos e é irreversível. Deseja continuar?
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Serão excluídos: vínculos com cursos, horários de disponibilidade e associações com instituições como tutor.
+                {isGlobalAdmin
+                  ? 'Serão excluídos: vínculos com cursos, horários de disponibilidade e associações com instituições como tutor.'
+                  : 'Serão excluídos: vínculos com os cursos desta instituição e a associação como tutor nesta instituição. Os horários de disponibilidade só são excluídos se ele não for tutor em outra instituição.'}
               </p>
               <div className="flex gap-3 justify-end">
                 <Button

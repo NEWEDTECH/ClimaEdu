@@ -24,6 +24,7 @@ import type { Course } from '@/_core/modules/content/core/entities/Course'
 import { EnrollmentStatus } from '@/_core/modules/enrollment/core/entities/EnrollmentStatus'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { useProfile } from '@/context/zustand/useProfile'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 
 type CourseWithUIProps = {
@@ -53,6 +54,8 @@ export default function CoursesPage() {
   const { infoUser, infoInstitutions } = useProfile()
   const isContentManager = infoUser.currentRole === UserRole.CONTENT_MANAGER
   const isTutor = infoUser.currentRole === UserRole.TUTOR
+  // Admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
 
   const [courses, setCourses] = useState<CourseWithUIProps[]>([])
   const [institutions, setInstitutions] = useState<Array<{ id: string, name: string }>>([])
@@ -84,7 +87,7 @@ export default function CoursesPage() {
 
         const result = await listInstitutionsUseCase.execute({})
 
-        const institutionsForDropdown = result.institutions.map((institution: Institution) => ({
+        const institutionsForDropdown = filterInstitutions(result.institutions).map((institution: Institution) => ({
           id: institution.id,
           name: institution.name
         }))
@@ -92,7 +95,7 @@ export default function CoursesPage() {
         setInstitutions(institutionsForDropdown)
 
         if (institutionsForDropdown.length > 0) {
-          setSelectedInstitutionId(institutionsForDropdown[0].id)
+          setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
         }
 
         setError(null)
@@ -107,7 +110,7 @@ export default function CoursesPage() {
     }
 
     fetchInstitutions()
-  }, [infoUser.id, infoUser.currentIdInstitution, isContentManager])
+  }, [infoUser.id, infoUser.currentIdInstitution, isContentManager, isTutor, filterInstitutions, pickDefaultInstitutionId])
   
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import { showToast } from '@/components/toast';
 import { CourseFormFields, type CourseFormData } from '@/components/courses/CourseFormFields';
 import { CreateCourseUseCase } from '@/_core/modules/content/core/use-cases/create-course/create-course.use-case';
 import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-cases/list-institutions/list-institutions.use-case';
+import { useInstitutionScope } from '@/hooks/useInstitutionScope';
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -31,7 +32,11 @@ export default function CreateCoursePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { isReady, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope();
+
   useEffect(() => {
+    if (!isReady) return;
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -41,7 +46,7 @@ export default function CreateCoursePage() {
           Register.institution.useCase.ListInstitutionsUseCase
         );
         const institutionsResult = await listInstitutionsUseCase.execute({});
-        const institutionsForDropdown = institutionsResult.institutions.map((inst) => ({
+        const institutionsForDropdown = filterInstitutions(institutionsResult.institutions).map((inst) => ({
           id: inst.id,
           name: inst.name,
         }));
@@ -51,7 +56,7 @@ export default function CreateCoursePage() {
         if (institutionsForDropdown.length > 0) {
           setFormData((prev) => ({
             ...prev,
-            institutionId: institutionsForDropdown[0].id,
+            institutionId: pickDefaultInstitutionId(institutionsForDropdown),
           }));
         }
 
@@ -67,7 +72,7 @@ export default function CreateCoursePage() {
     };
 
     fetchData();
-  }, []);
+  }, [isReady, filterInstitutions, pickDefaultInstitutionId]);
 
   const handleFieldChange = (field: keyof CourseFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

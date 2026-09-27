@@ -18,7 +18,7 @@ import { ListNSScoreQuestionsUseCase, ListNSScoreQuestionsInput } from '@/_core/
 import { CreateNSScoreQuestionUseCase, CreateNSScoreQuestionInput } from '@/_core/modules/nsscore/core/use-cases/create-question'
 import { DeleteNSScoreQuestionUseCase, DeleteNSScoreQuestionInput } from '@/_core/modules/nsscore/core/use-cases/delete-question'
 import { UpdateNSScoreQuestionUseCase, UpdateNSScoreQuestionInput } from '@/_core/modules/nsscore/core/use-cases/update-question'
-import { useProfile } from '@/context/zustand/useProfile'
+import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 
 type EditingState = {
   id: string
@@ -29,7 +29,6 @@ type EditingState = {
 export default function NSScorePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = 'then' in params ? use(params) : params
   const courseId = resolvedParams.id
-  const { infoUser } = useProfile()
 
   const [questions, setQuestions] = useState<NSScoreQuestion[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,13 +68,22 @@ export default function NSScorePage({ params }: { params: Promise<{ id: string }
     }
     try {
       setSubmitting(true)
+
+      // A pergunta pertence à instituição dona do curso (e não à instituição do usuário)
+      const courseRepository = container.get<CourseRepository>(Register.content.repository.CourseRepository)
+      const course = await courseRepository.findById(courseId)
+      if (!course) {
+        showToast.error('Curso não encontrado.')
+        return
+      }
+
       const useCase = container.get<CreateNSScoreQuestionUseCase>(
         Register.nsscore.useCase.CreateNSScoreQuestionUseCase
       )
       const result = await useCase.execute(
         new CreateNSScoreQuestionInput(
           courseId,
-          infoUser.currentIdInstitution,
+          course.institutionId,
           questionText,
           questions.length,
           fieldType

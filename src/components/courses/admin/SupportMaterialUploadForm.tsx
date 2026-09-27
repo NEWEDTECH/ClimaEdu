@@ -11,6 +11,7 @@ import { UploadSupportMaterialToLessonUseCase } from '@/_core/modules/content/co
 import { DeleteSupportMaterialFromLessonUseCase } from '@/_core/modules/content/core/use-cases/delete-support-material-from-lesson/delete-support-material-from-lesson.use-case'
 import { AddContentToLessonUseCase } from '@/_core/modules/content/core/use-cases/add-content-to-lesson/add-content-to-lesson.use-case'
 import { LessonRepository } from '@/_core/modules/content/infrastructure/repositories/LessonRepository'
+import type { ContentRepository } from '@/_core/modules/content/infrastructure/repositories/ContentRepository'
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 import { showToast } from '@/components/toast'
 
@@ -131,9 +132,13 @@ export function SupportMaterialUploadForm({
         moduleId,
         file,
         title: title.trim()
-      })
+      }).finally(() => clearInterval(progressInterval))
 
-      clearInterval(progressInterval)
+      // O caso de uso devolve success: false (sem lançar erro) quando o envio falha
+      if (!result.success) {
+        throw new Error(result.message)
+      }
+
       setUploadProgress(100)
 
       // Add to materials list
@@ -151,7 +156,8 @@ export function SupportMaterialUploadForm({
       setUploadProgress(0)
     } catch (error) {
       console.error('Error uploading material:', error)
-      showToast.error('Erro ao enviar material de apoio')
+      showToast.error(error instanceof Error && error.message ? error.message : 'Erro ao enviar material de apoio')
+      setUploadProgress(0)
     } finally {
       setIsUploading(false)
     }
@@ -167,13 +173,16 @@ export function SupportMaterialUploadForm({
         Register.content.useCase.DeleteSupportMaterialFromLessonUseCase
       )
 
-      await deleteUseCase.execute({ lessonId, contentId: materialId })
+      const result = await deleteUseCase.execute({ lessonId, contentId: materialId })
+      if (!result.success) {
+        throw new Error(result.message)
+      }
 
       setMaterials(prev => prev.filter(m => m.id !== materialId))
       showToast.success('Material excluído com sucesso!')
     } catch (error) {
       console.error('Error deleting material:', error)
-      showToast.error('Erro ao excluir material')
+      showToast.error(error instanceof Error && error.message ? error.message : 'Erro ao excluir material')
     }
   }
 
@@ -475,28 +484,33 @@ export function SupportMaterialUploadForm({
                     try {
                       setIsEditing(true)
 
-                      // Delete old content
-                      const deleteUseCase = container.get<DeleteSupportMaterialFromLessonUseCase>(
-                        Register.content.useCase.DeleteSupportMaterialFromLessonUseCase
+                      // Atualiza o conteúdo no lugar. (Antes ele era excluído e recriado, e a exclusão
+                      // apagava o arquivo do Storage — o material editado ficava com o link quebrado.)
+                      const lessonRepository = container.get<LessonRepository>(
+                        Register.content.repository.LessonRepository
                       )
-                      await deleteUseCase.execute({ lessonId, contentId: editingMaterial.id })
-
-                      // Create new content with updated info
-                      const addContentUseCase = container.get<AddContentToLessonUseCase>(
-                        Register.content.useCase.AddContentToLessonUseCase
+                      const contentRepository = container.get<ContentRepository>(
+                        Register.content.repository.ContentRepository
                       )
 
-                      const result = await addContentUseCase.execute({
-                        lessonId,
-                        type: ContentType.SUPPORT_MATERIAL,
-                        title: editTitle.trim(),
-                        url: isLink ? editUrl.trim() : editingMaterial.url
-                      })
+                      const lesson = await lessonRepository.findById(lessonId)
+                      const content = lesson?.contents.find(c => c.id === editingMaterial.id)
+                      if (!lesson || !content) {
+                        throw new Error('Material de apoio não encontrado nesta unidade')
+                      }
+
+                      content.updateTitle(editTitle.trim())
+                      if (isLink) {
+                        content.updateUrl(editUrl.trim())
+                      }
+
+                      await contentRepository.save(content)
+                      await lessonRepository.save(lesson)
 
                       // Update materials list
                       setMaterials(prev => prev.map(m => 
                         m.id === editingMaterial.id 
-                          ? { id: result.content.id, title: editTitle.trim(), url: isLink ? editUrl.trim() : m.url }
+                          ? { ...m, title: content.title, url: content.url }
                           : m
                       ))
 
@@ -508,7 +522,7 @@ export function SupportMaterialUploadForm({
                       setEditUrl('')
                     } catch (error) {
                       console.error('Error updating material:', error)
-                      showToast.error('Erro ao atualizar material')
+                      showToast.error(error instanceof Error && error.message ? error.message : 'Erro ao atualizar material')
                     } finally {
                       setIsEditing(false)
                     }

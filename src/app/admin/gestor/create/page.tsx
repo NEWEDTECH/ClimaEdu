@@ -14,6 +14,8 @@ import { CourseRepository } from '@/_core/modules/content/infrastructure/reposit
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { AssociateTutorToCourseUseCase } from '@/_core/modules/content/core/use-cases/associate-tutor-to-course/associate-tutor-to-course.use-case'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
+import { getInstitutionUserIds } from '@/components/institution/resource-institution'
 
 export default function CreateGestorCoursesPage() {
   const router = useRouter()
@@ -30,8 +32,12 @@ export default function CreateGestorCoursesPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  // Admin local: somente gestores, cursos e instituição atuais; SUPER_ADMIN e SYSTEM_ADMIN: todos
+  const { isReady, isGlobalAdmin, currentInstitutionId, filterInstitutions } = useInstitutionScope()
+
   // Fetch gestores and institutions on component mount
   useEffect(() => {
+    if (!isReady) return
     const fetchInitialData = async () => {
       try {
         setLoading(true)
@@ -41,7 +47,9 @@ export default function CreateGestorCoursesPage() {
           Register.user.repository.UserRepository
         )
 
-        const gestoresList = await userRepository.listByType(UserRole.CONTENT_MANAGER)
+        const allGestores = await userRepository.listByType(UserRole.CONTENT_MANAGER)
+        const institutionUserIds = isGlobalAdmin ? null : await getInstitutionUserIds(currentInstitutionId ?? '')
+        const gestoresList = institutionUserIds ? allGestores.filter(user => institutionUserIds.has(user.id)) : allGestores
 
         const gestoresForDropdown = gestoresList.map(gestor => ({
           id: gestor.id,
@@ -56,7 +64,7 @@ export default function CreateGestorCoursesPage() {
           Register.institution.repository.InstitutionRepository
         )
 
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
 
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -75,7 +83,7 @@ export default function CreateGestorCoursesPage() {
     }
 
     fetchInitialData()
-  }, [])
+  }, [isReady, isGlobalAdmin, currentInstitutionId, filterInstitutions])
 
   // Fetch courses when institution changes
   useEffect(() => {
