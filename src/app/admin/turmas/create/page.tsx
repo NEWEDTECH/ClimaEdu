@@ -17,6 +17,7 @@ import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { ListTrailsUseCase } from '@/_core/modules/content/core/use-cases/list-trails/list-trails.use-case'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 export default function CreateTurmaPage() {
   const router = useRouter()
@@ -34,7 +35,11 @@ export default function CreateTurmaPage() {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { isReady, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchData = async () => {
       try {
         setLoading(true)
@@ -44,7 +49,7 @@ export default function CreateTurmaPage() {
           Register.institution.repository.InstitutionRepository
         )
 
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
 
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -54,7 +59,7 @@ export default function CreateTurmaPage() {
         setInstitutions(institutionsForDropdown)
 
         if (institutionsForDropdown.length > 0) {
-          setFormData(prev => ({ ...prev, institutionId: institutionsForDropdown[0].id }))
+          setFormData(prev => ({ ...prev, institutionId: pickDefaultInstitutionId(institutionsForDropdown) }))
         }
 
         setError(null)
@@ -67,7 +72,7 @@ export default function CreateTurmaPage() {
     }
 
     fetchData()
-  }, [])
+  }, [isReady, filterInstitutions, pickDefaultInstitutionId])
 
   useEffect(() => {
     const fetchCourses = async () => {

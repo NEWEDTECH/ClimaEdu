@@ -14,6 +14,8 @@ import { UserRepository } from '@/_core/modules/user/infrastructure/repositories
 import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
+import { getInstitutionUserIds } from '@/components/institution/resource-institution'
 
 type TutorWithDetails = {
   id: string;
@@ -35,7 +37,10 @@ export default function TutorPage() {
   const [error, setError] = useState<string | null>(null)
   
   // Fetch tutors and their details
+  const { isReady, isGlobalAdmin, currentInstitutionId, canAccessInstitution } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchTutors = async () => {
       try {
         setLoading(true)
@@ -54,7 +59,10 @@ export default function TutorPage() {
         )
         
         // Fetch all tutors
-        const tutorsList = await userRepository.listByType(UserRole.TUTOR)
+        const allTutors = await userRepository.listByType(UserRole.TUTOR)
+        // Admin local: somente usuários vinculados à instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todos
+        const institutionUserIds = isGlobalAdmin ? null : await getInstitutionUserIds(currentInstitutionId ?? '')
+        const tutorsList = institutionUserIds ? allTutors.filter(user => institutionUserIds.has(user.id)) : allTutors
         
         // For each tutor, get their courses
         const tutorsWithDetails = await Promise.all(
@@ -72,7 +80,7 @@ export default function TutorPage() {
               // Get course details for each association
               const courseDetailsPromises = courseTutors.map(async (courseTutor) => {
                 const course = await courseRepository.findById(courseTutor.courseId)
-                if (course) {
+                if (course && canAccessInstitution(course.institutionId)) {
                   return {
                     id: course.id,
                     title: course.title
@@ -117,7 +125,7 @@ export default function TutorPage() {
     }
     
     fetchTutors()
-  }, [])
+  }, [isReady, isGlobalAdmin, currentInstitutionId, canAccessInstitution])
   
   // Filter tutors based on search term and status
   const filteredTutors = tutors.filter(tutor => {

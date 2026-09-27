@@ -21,6 +21,7 @@ import { UserInstitutionRepository } from '@/_core/modules/institution/infrastru
 import { UserRepository } from '@/_core/modules/user/infrastructure/repositories/UserRepository'
 import { User, UserRole } from '@/_core/modules/user/core/entities/User'
 import { EnrollInTrailUseCase } from '@/_core/modules/enrollment/core/use-cases/enroll-in-trail/enroll-in-trail.use-case'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 type CourseInfo = {
   id: string
@@ -46,7 +47,11 @@ export default function CreateTrailPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('')
   const [selectedStudents, setSelectedStudents] = useState<Array<{ id: string, name: string, email: string, isEnrolled: boolean }>>([])
 
+  // Admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { isReady, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchInstitutions = async () => {
       try {
         setInstitutionsLoading(true)
@@ -55,7 +60,7 @@ export default function CreateTrailPage() {
           Register.institution.repository.InstitutionRepository
         )
 
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
 
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -65,7 +70,7 @@ export default function CreateTrailPage() {
         setInstitutions(institutionsForDropdown)
 
         if (institutionsForDropdown.length > 0) {
-          setSelectedInstitutionId(institutionsForDropdown[0].id)
+          setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
         }
 
         setError(null)
@@ -78,7 +83,7 @@ export default function CreateTrailPage() {
     }
 
     fetchInstitutions()
-  }, [])
+  }, [isReady, filterInstitutions, pickDefaultInstitutionId])
 
   useEffect(() => {
     const fetchCourses = async () => {

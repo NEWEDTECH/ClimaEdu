@@ -3,7 +3,6 @@
 import React, { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useProfile } from '@/context/zustand/useProfile'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/button'
@@ -24,6 +23,7 @@ import { RemoveContentFromLessonUseCase } from '@/_core/modules/content/core/use
 import { ContentType } from '@/_core/modules/content/core/entities/ContentType'
 import { showToast } from '@/components/toast'
 import { getLessonRatingStats } from '@/_core/modules/content/infrastructure/repositories/lessonRatingService'
+import type { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 
 type LessonFormData = {
   id: string;
@@ -68,7 +68,6 @@ type QuestionData = {
 
 export default function EditLessonPage({ params }: { params: Promise<{ id: string, moduleId: string, lessonId: string }> }) {
   const router = useRouter()
-  const { infoUser } = useProfile()
 
   const resolvedParams = 'then' in params ? use(params) : params
   const { id: courseId, moduleId, lessonId } = resolvedParams
@@ -87,6 +86,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [ratingStats, setRatingStats] = useState<{ average: number; count: number } | null>(null)
+  // Instituição dona do curso: os arquivos enviados nesta aula pertencem a ela (e não à instituição do usuário)
+  const [courseInstitutionId, setCourseInstitutionId] = useState<string>('')
 
   // Define the order of content sections (will be loaded from lesson)
   const [contentSectionsOrder, setContentSectionsOrder] = useState<string[]>([
@@ -140,6 +141,12 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
         }
 
         setModuleName(moduleData.title)
+
+        const courseRepository = container.get<CourseRepository>(
+          Register.content.repository.CourseRepository
+        )
+        const course = await courseRepository.findById(courseId)
+        setCourseInstitutionId(course?.institutionId ?? '')
 
         const contentsData: ContentData[] = lesson.contents
           .map(content => ({
@@ -239,7 +246,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     }
 
     fetchLessonData()
-  }, [lessonId, moduleId])
+  }, [lessonId, moduleId, courseId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -687,7 +694,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             courseId={courseId}
                             moduleId={moduleId}
                             lessonId={lessonId}
-                            institutionId={infoUser?.currentIdInstitution}
+                            institutionId={courseInstitutionId}
                             onDeleteContent={handleDeleteContent}
                             isSubmitting={isSubmitting}
                           />
@@ -717,7 +724,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             courseId={courseId}
                             moduleId={moduleId}
                             lessonId={lessonId}
-                            institutionId={infoUser?.currentIdInstitution}
+                            institutionId={courseInstitutionId}
                             onDeleteContent={handleDeleteContent}
                             onContentAdded={() => window.location.reload()}
                             isSubmitting={isSubmitting}
@@ -748,7 +755,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             courseId={courseId}
                             moduleId={moduleId}
                             lessonId={lessonId}
-                            institutionId={infoUser?.currentIdInstitution}
+                            institutionId={courseInstitutionId}
                             onDeleteContent={handleDeleteContent}
                             onContentAdded={() => window.location.reload()}
                             isSubmitting={isSubmitting}
@@ -779,7 +786,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             courseId={courseId}
                             moduleId={moduleId}
                             lessonId={lessonId}
-                            institutionId={infoUser?.currentIdInstitution}
+                            institutionId={courseInstitutionId}
                             onDeleteContent={handleDeleteContent}
                             isSubmitting={isSubmitting}
                           />

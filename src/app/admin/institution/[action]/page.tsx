@@ -33,8 +33,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
-import { isValidDomain, normalizeDomain, PLATFORM_DOMAIN } from '@/_core/shared/domain/domain.utils';
+import { isPlatformHost, isValidDomain, normalizeDomain } from '@/_core/shared/domain/domain.utils';
 import { syncInstitutionDomain } from '@/components/institution/institution-domain.api';
+import { InstitutionDomainStatus } from '@/components/institution/InstitutionDomainStatus';
+import { getInstitutionUserIds } from '@/components/institution/resource-institution';
+import { useInstitutionScope } from '@/hooks/useInstitutionScope';
 import { showToast } from '@/components/toast';
 
 type InputFieldMeta = {
@@ -63,9 +66,6 @@ const formSchema = z.object({
     .transform(normalizeDomain)
     .refine(isValidDomain, {
       message: 'Formato de domínio inválido (ex: escola.com.br ou portal.escola.com.br)',
-    })
-    .refine(domain => domain !== PLATFORM_DOMAIN, {
-      message: 'Este é o domínio principal da plataforma e não pode ser usado por uma instituição',
     }),
   logoUrl: z.string().url({ message: 'URL inválida' }).optional().or(z.literal('')),
   coverImageUrl: z.string().url({ message: 'URL inválida' }).optional().or(z.literal('')),
@@ -94,7 +94,7 @@ const inputFields: Record<keyof InstitutionFormFields, InputFieldMeta> = {
   domain: {
     label: "Domínio *",
     placeholder: "escola.com.br",
-    description: "Domínio ou subdomínio pelo qual a instituição será acessada (ex: escola.com.br ou portal.escola.com.br), sem https:// e sem barra. Ao salvar, ele é registrado na Vercel; depois a instituição precisa configurar o DNS (veja o status na lista de instituições).",
+    description: "Domínio ou subdomínio pelo qual a instituição será acessada (ex: escola.com.br ou portal.escola.com.br), sem https:// e sem barra. Ao salvar, ele é registrado na Vercel; depois é preciso configurar o DNS conforme indicado abaixo.",
   },
   logoUrl: {
     label: "URL do Logo",
@@ -139,12 +139,16 @@ export default function InstitutionPage() {
   const [selectedAdministrators, setSelectedAdministrators] = useState<Array<{ id: string, email: string }>>([]);
   const [originalAdministrators, setOriginalAdministrators] = useState<Array<{ id: string, email: string }>>([]);
   const [advancedSettings, setAdvancedSettings] = useState<Partial<GlobalSettings['settings']>>({});
+  // Domínio já salvo (base para o status de DNS) e gatilho para recarregar o status após salvar
+  const [savedDomain, setSavedDomain] = useState<string>('');
+  const [domainStatusKey, setDomainStatusKey] = useState<number>(0);
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    setError: setFieldError,
     formState: { errors },
     reset
   } = useForm<FormValues>({
@@ -159,15 +163,23 @@ export default function InstitutionPage() {
     },
   });
 
+  // Admin local: só enxerga os administradores vinculados à própria instituição
+  const { isReady, isGlobalAdmin, currentInstitutionId } = useInstitutionScope();
+
   // Load administrators
   useEffect(() => {
+    if (!isReady) return;
     const fetchAdministrators = async () => {
       try {
         const userRepository = container.get<UserRepository>(
           Register.user.repository.UserRepository
         );
 
-        const adminUsers = await userRepository.listByType(UserRole.LOCAL_ADMIN);
+        const allAdminUsers = await userRepository.listByType(UserRole.LOCAL_ADMIN);
+        const institutionUserIds = isGlobalAdmin ? null : await getInstitutionUserIds(currentInstitutionId ?? '');
+        const adminUsers = institutionUserIds
+          ? allAdminUsers.filter(admin => institutionUserIds.has(admin.id))
+          : allAdminUsers;
         setAdministrators(adminUsers);
         setFilteredAdministrators(adminUsers);
       } catch (err) {
@@ -176,7 +188,7 @@ export default function InstitutionPage() {
     };
 
     fetchAdministrators();
-  }, []);
+  }, [isReady, isGlobalAdmin, currentInstitutionId]);
 
   // Filter administrators based on search term
   useEffect(() => {
@@ -210,6 +222,7 @@ export default function InstitutionPage() {
           }
 
           setInstitution(fetchedInstitution);
+          setSavedDomain(fetchedInstitution.domain);
 
           reset({
             name: fetchedInstitution.name,
@@ -269,6 +282,14 @@ export default function InstitutionPage() {
       setError(null);
 
       let newInstitutionId = '';
+
+      // O domínio principal só é aceito na instituição que já o utiliza (cadastrada fora do sistema)
+      if (isPlatformHost(data.domain) && !(isEditMode && normalizeDomain(savedDomain) === data.domain)) {
+        setFieldError('domain', {
+          message: 'Este é o domínio principal da plataforma e não pode ser usado por uma instituição',
+        });
+        return;
+      }
 
       if (isEditMode && institution) {
 
@@ -431,23 +452,36 @@ export default function InstitutionPage() {
         }
       }
 
-      // Registra o domínio na Vercel e atualiza o white label (cache de domínio/marca)
-      try {
-        const domainStatus = await syncInstitutionDomain(
-          newInstitutionId,
-          isEditMode ? institution?.domain : undefined
-        );
-        if (domainStatus.configured && domainStatus.verified) {
-          showToast.success('Instituição salva. Domínio ativo.');
-        } else {
-          showToast.success('Instituição salva e domínio registrado na Vercel. Falta a instituição configurar o DNS (veja o status na lista de instituições).');
+      // Registra o domínio na Vercel e atualiza o white label (cache de domínio/marca).
+      // O domínio da plataforma é configurado fora do sistema.
+      if (isPlatformHost(data.domain)) {
+        showToast.success('Instituição salva.');
+      } else {
+        try {
+          const domainStatus = await syncInstitutionDomain(
+            newInstitutionId,
+            isEditMode ? savedDomain : undefined
+          );
+          if (domainStatus.configured && domainStatus.verified) {
+            showToast.success('Instituição salva. Domínio ativo.');
+          } else {
+            showToast.success('Instituição salva e domínio registrado na Vercel. Falta configurar o DNS (veja abaixo do campo Domínio).');
+          }
+        } catch (domainErr) {
+          console.error('Error registering institution domain:', domainErr);
+          const message = domainErr instanceof Error ? domainErr.message : '';
+          showToast.warning(`Instituição salva, mas o domínio não foi registrado na Vercel. ${message}`);
         }
-      } catch (domainErr) {
-        console.error('Error registering institution domain:', domainErr);
-        const message = domainErr instanceof Error ? domainErr.message : '';
-        showToast.warning(`Instituição salva, mas o domínio não foi registrado na Vercel. ${message}`);
       }
 
+      if (!isEditMode) {
+        // Abre a edição da instituição criada, onde aparecem as instruções de DNS
+        router.push(`/admin/institution/create-edit/${newInstitutionId}`);
+        return;
+      }
+
+      setSavedDomain(data.domain);
+      setDomainStatusKey(key => key + 1);
       router.refresh()
     } catch (err: unknown) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} institution:`, err);
@@ -625,6 +659,13 @@ export default function InstitutionPage() {
                       />
                       {hasError && <p className="text-red-500 text-xs mt-1">{String(errorMessage)}</p>}
                       {field.description && <p className="text-gray-500 text-xs">{field.description}</p>}
+                      {id === 'domain' && isEditMode && savedDomain && (
+                        <InstitutionDomainStatus
+                          institutionId={institutionId}
+                          domain={savedDomain}
+                          refreshKey={domainStatusKey}
+                        />
+                      )}
                     </div>
                   );
                 })}

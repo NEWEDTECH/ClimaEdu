@@ -12,13 +12,12 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/button';
 import { LoadingSpinner } from '@/components/loader';
 import { InputText } from '@/components/input';
-import { InstitutionDomainStatus } from '@/components/institution/InstitutionDomainStatus';
+import { useInstitutionScope } from '@/hooks/useInstitutionScope';
 
 
 const NAME_COLUMNS = [
   'Nome',
   'Domínio',
-  'Status do domínio',
   'Criado em',
   'Atualizado em',
   'Ações'
@@ -29,8 +28,12 @@ export default function InstitutionsPage() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // Admin local só enxerga (e configura) a própria instituição
+  const { isReady, isGlobalAdmin, filterInstitutions } = useInstitutionScope();
 
   useEffect(() => {
+    if (!isReady) return;
+
     const fetchInstitutions = async () => {
       try {
         setLoading(true);
@@ -40,7 +43,7 @@ export default function InstitutionsPage() {
         );
 
         const institutionsList = await institutionRepository.list();
-        setInstitutions(institutionsList);
+        setInstitutions(filterInstitutions(institutionsList));
         setError(null);
       } catch (err) {
         console.error('Error fetching institutions:', err);
@@ -51,7 +54,7 @@ export default function InstitutionsPage() {
     };
 
     fetchInstitutions();
-  }, []);
+  }, [isReady, filterInstitutions]);
 
   const filteredInstitutions = institutions.filter(institution => {
     const matchesSearch = 
@@ -80,11 +83,13 @@ export default function InstitutionsPage() {
         <div className="container mx-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Instituições</h1>
-            <Link href="/admin/institution/create-edit">
-              <Button variant='primary'>
-                Criar nova instituição
-              </Button>
-            </Link>
+            {isGlobalAdmin && (
+              <Link href="/admin/institution/create-edit">
+                <Button variant='primary'>
+                  Criar nova instituição
+                </Button>
+              </Link>
+            )}
           </div>
 
           <Card>
@@ -134,9 +139,6 @@ export default function InstitutionsPage() {
                         <tr key={institution.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
                           <td className="py-3 px-4 font-medium">{institution.name}</td>
                           <td className="py-3 px-4">{institution.domain}</td>
-                          <td className="py-3 px-4">
-                            <InstitutionDomainStatus institutionId={institution.id} />
-                          </td>
                           <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                             {formatDate(institution.createdAt)}
                           </td>

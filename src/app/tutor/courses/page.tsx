@@ -14,6 +14,7 @@ import { Register } from '@/_core/shared/container'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 type CourseWithUIProps = {
   id: string
@@ -34,7 +35,11 @@ export default function TutorCoursesPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Tutor / admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { isReady, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchInstitutions = async () => {
       try {
         setLoading(true)
@@ -43,7 +48,7 @@ export default function TutorCoursesPage() {
           Register.institution.repository.InstitutionRepository
         )
 
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
 
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -53,7 +58,7 @@ export default function TutorCoursesPage() {
         setInstitutions(institutionsForDropdown)
 
         if (institutionsForDropdown.length > 0) {
-          setSelectedInstitutionId(institutionsForDropdown[0].id)
+          setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
         }
 
         setError(null)
@@ -66,7 +71,7 @@ export default function TutorCoursesPage() {
     }
 
     fetchInstitutions()
-  }, [])
+  }, [isReady, filterInstitutions, pickDefaultInstitutionId])
 
 
   useEffect(() => {

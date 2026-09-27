@@ -14,6 +14,8 @@ import { UserRepository } from '@/_core/modules/user/infrastructure/repositories
 import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { CourseTutorRepository } from '@/_core/modules/content/infrastructure/repositories/CourseTutorRepository'
 import { CourseRepository } from '@/_core/modules/content/infrastructure/repositories/CourseRepository'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
+import { getInstitutionUserIds } from '@/components/institution/resource-institution'
 
 type GestorWithDetails = {
   id: string;
@@ -35,7 +37,10 @@ export default function GestorPage() {
   const [error, setError] = useState<string | null>(null)
   
   // Fetch content managers and their details
+  const { isReady, isGlobalAdmin, currentInstitutionId, canAccessInstitution } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchGestores = async () => {
       try {
         setLoading(true)
@@ -54,7 +59,10 @@ export default function GestorPage() {
         )
         
         // Fetch all content managers
-        const gestoresList = await userRepository.listByType(UserRole.CONTENT_MANAGER)
+        const allGestores = await userRepository.listByType(UserRole.CONTENT_MANAGER)
+        // Admin local: somente usuários vinculados à instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todos
+        const institutionUserIds = isGlobalAdmin ? null : await getInstitutionUserIds(currentInstitutionId ?? '')
+        const gestoresList = institutionUserIds ? allGestores.filter(user => institutionUserIds.has(user.id)) : allGestores
         
         // For each gestor, get their courses
         const gestoresWithDetails = await Promise.all(
@@ -72,7 +80,7 @@ export default function GestorPage() {
               // Get course details for each association
               const courseDetailsPromises = courseTutors.map(async (courseTutor) => {
                 const course = await courseRepository.findById(courseTutor.courseId)
-                if (course) {
+                if (course && canAccessInstitution(course.institutionId)) {
                   return {
                     id: course.id,
                     title: course.title
@@ -117,7 +125,7 @@ export default function GestorPage() {
     }
     
     fetchGestores()
-  }, [])
+  }, [isReady, isGlobalAdmin, currentInstitutionId, canAccessInstitution])
   
   // Filter gestores based on search term and status
   const filteredGestores = gestores.filter(gestor => {

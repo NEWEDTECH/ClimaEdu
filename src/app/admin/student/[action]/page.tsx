@@ -22,6 +22,7 @@ import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { LoadingSpinner } from '@/components/loader'
 import { EnrollmentRepository } from '@/_core/modules/enrollment/infrastructure/repositories/EnrollmentRepository'
 import { Enrollment } from '@/_core/modules/enrollment/core/entities/Enrollment'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 export default function StudentEnrollmentPage() {
   const router = useRouter()
@@ -61,9 +62,12 @@ export default function StudentEnrollmentPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const [studentEnrollments, setStudentEnrollments] = useState<Enrollment[]>([])
+  // Admin local: somente alunos, cursos e matrículas da instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todos
+  const { isReady, isGlobalAdmin, canAccessInstitution, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
 
   // Fetch students, courses, institutions, and student data (if editing) on component mount
   useEffect(() => {
+    if (!isReady) return
     const fetchData = async () => {
       try {
         setLoading(true)
@@ -86,7 +90,7 @@ export default function StudentEnrollmentPage() {
         )
 
         // Fetch institutions
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
           name: institution.name
@@ -122,7 +126,11 @@ export default function StudentEnrollmentPage() {
             })
 
             // Fetch student enrollments
-            const enrollments = await enrollmentRepository.listByUser(student.id)
+            // (admin local só vê/altera matrículas em cursos da própria instituição — as demais
+            // não entram na comparação ao salvar e, portanto, nunca são removidas)
+            const enrollments = (await enrollmentRepository.listByUser(student.id)).filter(
+              enrollment => isGlobalAdmin || coursesForDropdown.some(c => c.id === enrollment.courseId)
+            )
             setStudentEnrollments(enrollments)
 
             // Set selected student ID
@@ -147,7 +155,7 @@ export default function StudentEnrollmentPage() {
               setSelectedInstitutionId(institutionId)
             } else if (institutionsForDropdown.length > 0) {
               // Default to first institution if no enrollments
-              setSelectedInstitutionId(institutionsForDropdown[0].id)
+              setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
             }
           } else {
             // Not a student ID, check if it's an enrollment ID
@@ -179,14 +187,15 @@ export default function StudentEnrollmentPage() {
           }
         } else if (institutionsForDropdown.length > 0) {
           // No ID, set default institution
-          setSelectedInstitutionId(institutionsForDropdown[0].id)
+          setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
         }
 
         // Fetch all students from user_institutions collection
         const userInstitutionRepository = container.get<UserInstitutionRepository>(
           Register.institution.repository.UserInstitutionRepository
         )
-        const studentAssociations = await userInstitutionRepository.listByRole(UserRole.STUDENT)
+        const studentAssociations = (await userInstitutionRepository.listByRole(UserRole.STUDENT))
+          .filter(association => canAccessInstitution(association.institutionId))
         const uniqueStudentIds = [...new Set(studentAssociations.map(a => a.userId))]
         const studentUsers = await userRepository.findByIds(uniqueStudentIds)
         const studentsForDropdown = studentUsers.map(student => ({
@@ -206,7 +215,7 @@ export default function StudentEnrollmentPage() {
     }
 
     fetchData()
-  }, [id])
+  }, [id, isReady, isGlobalAdmin, canAccessInstitution, filterInstitutions, pickDefaultInstitutionId])
 
   // Filter courses, institutions, and students based on search terms
 

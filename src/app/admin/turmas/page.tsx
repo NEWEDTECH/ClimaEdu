@@ -18,6 +18,7 @@ import { DeleteClassInput } from '@/_core/modules/enrollment/core/use-cases/dele
 import { InstitutionRepository } from '@/_core/modules/institution'
 import { Institution } from '@/_core/modules/institution'
 import { Class } from '@/_core/modules/enrollment/core/entities/Class'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 type ClassWithUIProps = {
   id: string
@@ -47,7 +48,11 @@ export default function TurmasPage() {
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
+  // Admin local / gestor: somente a instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todas
+  const { isReady, filterInstitutions, pickDefaultInstitutionId } = useInstitutionScope()
+
   useEffect(() => {
+    if (!isReady) return
     const fetchInstitutions = async () => {
       try {
         setLoading(true)
@@ -56,7 +61,7 @@ export default function TurmasPage() {
           Register.institution.repository.InstitutionRepository
         )
         
-        const institutionsList = await institutionRepository.list()
+        const institutionsList = filterInstitutions(await institutionRepository.list())
         
         const institutionsForDropdown = institutionsList.map((institution: Institution) => ({
           id: institution.id,
@@ -66,7 +71,7 @@ export default function TurmasPage() {
         setInstitutions(institutionsForDropdown)
         
         if (institutionsForDropdown.length > 0) {
-          setSelectedInstitutionId(institutionsForDropdown[0].id)
+          setSelectedInstitutionId(pickDefaultInstitutionId(institutionsForDropdown))
         }
         
         setError(null)
@@ -79,7 +84,7 @@ export default function TurmasPage() {
     }
     
     fetchInstitutions()
-  }, [])
+  }, [isReady, filterInstitutions, pickDefaultInstitutionId])
 
   useEffect(() => {
     const fetchClasses = async () => {

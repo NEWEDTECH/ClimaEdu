@@ -20,6 +20,7 @@ import { LoadingSpinner } from '@/components/loader'
 import { InstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/InstitutionRepository'
 import { UserInstitutionRepository } from '@/_core/modules/institution/infrastructure/repositories/UserInstitutionRepository'
 import { X } from 'lucide-react'
+import { useInstitutionScope } from '@/hooks/useInstitutionScope'
 
 type StudentWithCourses = {
   id: string;
@@ -62,9 +63,12 @@ export default function StudentPage() {
   const [students, setStudents] = useState<StudentWithCourses[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Admin local: somente alunos e cursos da instituição atual; SUPER_ADMIN e SYSTEM_ADMIN: todos
+  const { isReady, isGlobalAdmin, canAccessInstitution, filterInstitutions } = useInstitutionScope()
   
   // Fetch all enrollments and group by student
   useEffect(() => {
+    if (!isReady) return
     const fetchData = async () => {
       try {
         setLoading(true)
@@ -86,7 +90,8 @@ export default function StudentPage() {
         )
 
         // Busca todos os vínculos com userRole "STUDENT" na user_institutions
-        const studentLinks = await userInstitutionRepository.listByRole(UserRole.STUDENT)
+        const studentLinks = (await userInstitutionRepository.listByRole(UserRole.STUDENT))
+          .filter(link => canAccessInstitution(link.institutionId))
 
         // Deduplica por userId (um estudante pode estar em mais de uma instituição)
         const uniqueUserIds = [...new Set(studentLinks.map(l => l.userId))]
@@ -99,15 +104,20 @@ export default function StudentPage() {
         const studentsWithCourses: StudentWithCourses[] = []
 
         for (const student of studentUsers) {
-          const enrollments = await enrollmentRepository.listByUser(student.id)
+          const allEnrollments = await enrollmentRepository.listByUser(student.id)
+          const enrollmentCourses = await Promise.all(
+            allEnrollments.map(enrollment => courseRepository.findById(enrollment.courseId))
+          )
+          // Admin local só enxerga as matrículas em cursos da própria instituição
+          const visibleEnrollments = allEnrollments
+            .map((enrollment, index) => ({ enrollment, course: enrollmentCourses[index] }))
+            .filter(({ course }) => isGlobalAdmin || (!!course && canAccessInstitution(course.institutionId)))
+          const enrollments = visibleEnrollments.map(({ enrollment }) => enrollment)
           
           if (enrollments.length > 0) {
-            const coursesPromises = enrollments.map(async (enrollment) => {
-              const course = await courseRepository.findById(enrollment.courseId)
-              return course ? { id: course.id, title: course.title } : null
-            })
-            
-            const courses = (await Promise.all(coursesPromises)).filter(Boolean) as Array<{id: string, title: string}>
+            const courses = visibleEnrollments
+              .filter(({ course }) => !!course)
+              .map(({ course }) => ({ id: course!.id, title: course!.title }))
             
             // Get the earliest enrollment date for this student
             const earliestEnrollment = enrollments.reduce((earliest, current) => {
@@ -147,10 +157,11 @@ export default function StudentPage() {
     }
     
     fetchData()
-  }, [])
+  }, [isReady, isGlobalAdmin, canAccessInstitution])
   
   // Load filter options
   useEffect(() => {
+    if (!isReady) return
     const loadFilterOptions = async () => {
       try {
         // Load course options
@@ -163,7 +174,7 @@ export default function StudentPage() {
         )
         
         // Load institutions
-        const institutions = await institutionRepository.list()
+        const institutions = filterInstitutions(await institutionRepository.list())
         setInstitutionOptions(institutions.map((institution: Intitutions) => ({
           id: institution.id,
           name: institution.name
@@ -187,7 +198,7 @@ export default function StudentPage() {
     }
     
     loadFilterOptions()
-  }, [])
+  }, [isReady, filterInstitutions])
   
   // Filter students based on all filters
   const filteredStudents = students.filter(student => {
