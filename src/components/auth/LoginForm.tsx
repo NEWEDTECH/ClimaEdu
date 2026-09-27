@@ -9,6 +9,7 @@ import { SignInWithPasswordUseCase } from '@/_core/modules/auth/core/use-cases/s
 import { SendPasswordResetEmailUseCase } from '@/_core/modules/auth/core/use-cases/send-password-reset-email/send-password-reset-email.use-case';
 import { Button } from '@/components/button'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { useHostInstitution } from '@/components/institution/HostInstitutionProvider'
 
 export function LoginForm() {
   const router = useRouter();
@@ -18,6 +19,11 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const { institution: hostInstitution } = useHostInstitution();
+  // White label: substitui o gradiente padrão pelas cores da instituição do domínio
+  const brandStyle = hostInstitution?.primaryColor
+    ? { background: hostInstitution.primaryColor, color: hostInstitution.secondaryColor || '#FFFFFF' }
+    : undefined;
 
   const handleForgotPassword = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -170,7 +176,15 @@ export function LoginForm() {
         <div className="relative z-10 p-8 sm:p-10">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg transform transition-transform hover:scale-105">
+            {hostInstitution?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={hostInstitution.logoUrl}
+                alt={hostInstitution.name}
+                className="mx-auto mb-4 max-h-16 max-w-[240px] object-contain"
+              />
+            ) : (
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg transform transition-transform hover:scale-105" style={brandStyle}>
               <svg 
                 className="w-8 h-8 text-white" 
                 fill="none" 
@@ -185,9 +199,13 @@ export function LoginForm() {
                 />
               </svg>
             </div>
+            )}
             <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2">
               Bem-vindo de volta
             </h2>
+            {hostInstitution && (
+              <p className="text-gray-600 dark:text-gray-400">{hostInstitution.name}</p>
+            )}
           </div>
           
           {/* Form */}
@@ -312,6 +330,7 @@ export function LoginForm() {
               type="submit"
               disabled={isLoading}
               className="w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
+              style={brandStyle}
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 {isLoading ? (

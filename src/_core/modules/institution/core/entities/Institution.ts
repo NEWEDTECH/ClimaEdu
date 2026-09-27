@@ -1,4 +1,5 @@
 import { InstitutionSettings } from './InstitutionSettings';
+import { isValidDomain } from '@/_core/shared/domain/domain.utils';
 
 /**
  * Institution entity representing an organization in the system
@@ -60,9 +61,7 @@ export class Institution {
    * @returns True if the domain format is valid, false otherwise
    */
   private static isValidDomain(domain: string): boolean {
-    // Simple domain validation (can be enhanced as needed)
-    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
-    return domainRegex.test(domain);
+    return isValidDomain(domain);
   }
 
   /**
