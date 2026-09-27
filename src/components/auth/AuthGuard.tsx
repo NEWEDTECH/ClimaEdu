@@ -123,6 +123,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // console.log('✅ AuthGuard: User found:', user.name);
 
       let currentInstitutionId: string | null = null;
+      // SUPER_ADMIN e SYSTEM_ADMIN são cargos da plataforma inteira: não dependem de vínculo com instituição
+      const isPlatformAdmin = user.role === 'SUPER_ADMIN' || user.role === 'SYSTEM_ADMIN';
       let institutionsRoleData: Array<{
         idInstitution: string;
         nameInstitution: string;
@@ -132,7 +134,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         secondary_color: string;
       }> = [];
 
-      if (user.role !== 'SUPER_ADMIN') {
+      if (!isPlatformAdmin) {
         // Passo 2: Listar todas as instituições que o usuário pertence
         const getUserAssociationsUseCase = container.get<GetUserAssociationsUseCase>(
           Register.user.useCase.GetUserAssociationsUseCase
@@ -244,7 +246,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // Passo 6: Salvar os dados do usuário com a role correta da instituição selecionada
       let currentRole = user.role;
       
-      if (user.role !== 'SUPER_ADMIN') {
+      if (!isPlatformAdmin) {
         const savedRole = localStorage.getItem('last-selected-role');
         
         // Tentar usar a role salva se existir e for válida para esta instituição
