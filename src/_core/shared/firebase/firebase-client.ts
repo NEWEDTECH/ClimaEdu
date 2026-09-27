@@ -23,7 +23,11 @@ const storage = getStorage(app);
 // Connect to emulators in development mode
 if (process.env.NODE_ENV === 'development') {
   // Check if we're not already connected to emulators
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  // "<dominio>.localhost" simula o domínio de uma instituição (white label) em desenvolvimento
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname.endsWith('.localhost'))
+  ) {
     console.log('Using Firebase emulators in development mode');
     
     // Auth emulator

@@ -5,6 +5,7 @@ import { CreateInstitutionInput } from './create-institution.input';
 import { CreateInstitutionOutput } from './create-institution.output';
 import { Institution } from '../../entities/Institution';
 import { InstitutionSettings } from '../../entities/InstitutionSettings';
+import { normalizeDomain } from '@/_core/shared/domain/domain.utils';
 
 /**
  * Use case for creating an institution with basic settings
@@ -24,10 +25,12 @@ export class CreateInstitutionUseCase {
    * @throws Error if validation fails
    */
   async execute(input: CreateInstitutionInput): Promise<CreateInstitutionOutput> {
+    const domain = normalizeDomain(input.domain);
+
     // Check if an institution with the same domain already exists
-    const existingInstitution = await this.institutionRepository.findByDomain(input.domain);
+    const existingInstitution = await this.institutionRepository.findByDomain(domain);
     if (existingInstitution) {
-      throw new Error(`Institution with domain ${input.domain} already exists`);
+      throw new Error(`Institution with domain ${domain} already exists`);
     }
 
     // Generate ID and create institution entity
@@ -46,7 +49,7 @@ export class CreateInstitutionUseCase {
     const institution = Institution.create({
       id,
       name: input.name,
-      domain: input.domain,
+      domain,
       settings,
     });
 

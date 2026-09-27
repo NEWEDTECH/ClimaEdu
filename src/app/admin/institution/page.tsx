@@ -12,11 +12,13 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/button';
 import { LoadingSpinner } from '@/components/loader';
 import { InputText } from '@/components/input';
+import { InstitutionDomainStatus } from '@/components/institution/InstitutionDomainStatus';
 
 
 const NAME_COLUMNS = [
   'Nome',
   'Domínio',
+  'Status do domínio',
   'Criado em',
   'Atualizado em',
   'Ações'
@@ -132,6 +134,9 @@ export default function InstitutionsPage() {
                         <tr key={institution.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
                           <td className="py-3 px-4 font-medium">{institution.name}</td>
                           <td className="py-3 px-4">{institution.domain}</td>
+                          <td className="py-3 px-4">
+                            <InstitutionDomainStatus institutionId={institution.id} />
+                          </td>
                           <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                             {formatDate(institution.createdAt)}
                           </td>

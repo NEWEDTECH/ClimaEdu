@@ -33,6 +33,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { InstitutionSettings as GlobalSettings } from '@/_core/shared/config/settings.config';
+import { isValidDomain, normalizeDomain, PLATFORM_DOMAIN } from '@/_core/shared/domain/domain.utils';
+import { syncInstitutionDomain } from '@/components/institution/institution-domain.api';
+import { showToast } from '@/components/toast';
 
 type InputFieldMeta = {
   label: string;
@@ -57,8 +60,12 @@ const formSchema = z.object({
   domain: z
     .string()
     .min(1, { message: 'O domínio da instituição é obrigatório' })
-    .regex(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/, {
-      message: 'Formato de domínio inválido (ex: exemplo.com)',
+    .transform(normalizeDomain)
+    .refine(isValidDomain, {
+      message: 'Formato de domínio inválido (ex: escola.com.br ou portal.escola.com.br)',
+    })
+    .refine(domain => domain !== PLATFORM_DOMAIN, {
+      message: 'Este é o domínio principal da plataforma e não pode ser usado por uma instituição',
     }),
   logoUrl: z.string().url({ message: 'URL inválida' }).optional().or(z.literal('')),
   coverImageUrl: z.string().url({ message: 'URL inválida' }).optional().or(z.literal('')),
@@ -86,8 +93,8 @@ const inputFields: Record<keyof InstitutionFormFields, InputFieldMeta> = {
   },
   domain: {
     label: "Domínio *",
-    placeholder: "exemplo.com",
-    description: "O domínio deve estar no formato: exemplo.com",
+    placeholder: "escola.com.br",
+    description: "Domínio ou subdomínio pelo qual a instituição será acessada (ex: escola.com.br ou portal.escola.com.br), sem https:// e sem barra. Ao salvar, ele é registrado na Vercel; depois a instituição precisa configurar o DNS (veja o status na lista de instituições).",
   },
   logoUrl: {
     label: "URL do Logo",
@@ -273,6 +280,13 @@ export default function InstitutionPage() {
           Register.institution.useCase.UpdateInstitutionSettingsUseCase
         );
 
+        if (data.domain !== institution.domain) {
+          const existing = await institutionRepository.findByDomain(data.domain);
+          if (existing && existing.id !== institution.id) {
+            throw new Error(`Já existe uma instituição com o domínio ${data.domain}`);
+          }
+        }
+
         if (data.name !== institution.name || data.domain !== institution.domain) {
 
           const updatedInstitution = Institution.create({
@@ -415,6 +429,23 @@ export default function InstitutionPage() {
         } catch (associateErr) {
           console.error(`Error associating administrator:`, associateErr);
         }
+      }
+
+      // Registra o domínio na Vercel e atualiza o white label (cache de domínio/marca)
+      try {
+        const domainStatus = await syncInstitutionDomain(
+          newInstitutionId,
+          isEditMode ? institution?.domain : undefined
+        );
+        if (domainStatus.configured && domainStatus.verified) {
+          showToast.success('Instituição salva. Domínio ativo.');
+        } else {
+          showToast.success('Instituição salva e domínio registrado na Vercel. Falta a instituição configurar o DNS (veja o status na lista de instituições).');
+        }
+      } catch (domainErr) {
+        console.error('Error registering institution domain:', domainErr);
+        const message = domainErr instanceof Error ? domainErr.message : '';
+        showToast.warning(`Instituição salva, mas o domínio não foi registrado na Vercel. ${message}`);
       }
 
       router.refresh()

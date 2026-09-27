@@ -16,6 +16,19 @@ import { UserInstitutionRepository } from '@/_core/modules/institution/infrastru
 import { UserRole } from '@/_core/modules/user/core/entities/User';
 import { LoadingSpinner } from '@/components/loader';
 import { Button } from '@/components/button'
+import { useHostInstitution } from '@/components/institution/HostInstitutionProvider';
+import { buildInstitutionUrl, normalizeDomain } from '@/_core/shared/domain/domain.utils';
+
+/** URL of the institution domain; in local development keeps using "<domain>.localhost" */
+function getInstitutionLoginUrl(domain: string | null | undefined): string {
+  const { hostname, port, protocol } = window.location;
+  if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+    const target = normalizeDomain(domain);
+    const host = target ? `${target}.localhost` : 'localhost';
+    return `${protocol}//${host}${port ? `:${port}` : ''}/login`;
+  }
+  return buildInstitutionUrl(domain, '/login');
+}
 
 // Definir mapeamento de rotas e roles permitidas
 const ROUTE_PERMISSIONS: Record<string, string[]> = {
@@ -59,6 +72,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const { institution: hostInstitution } = useHostInstitution();
   
   const {
     infoUser,
@@ -148,6 +163,26 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             secondary_color: association.settings.secondaryColor!,
           };
         }).filter((item): item is NonNullable<typeof item> => item !== null);
+
+        // White label: no domínio de uma instituição, só vale a instituição do domínio
+        if (hostInstitution) {
+          const hostRoles = institutionsRoleData.filter(
+            inst => inst.idInstitution === hostInstitution.id
+          );
+
+          if (hostRoles.length === 0 && institutionsRoleData.length > 0) {
+            // Usuário pertence a outra instituição: redireciona para o domínio dela
+            const target = userAssociations.find(
+              ua => ua.id === institutionsRoleData[0].idInstitution
+            );
+            setIsRedirecting(true);
+            await auth.signOut();
+            window.location.replace(getInstitutionLoginUrl(target?.domain));
+            return;
+          }
+
+          institutionsRoleData = hostRoles;
+        }
 
         // Salvar no context/zustand: infoInstitutionsRole
         setInfoInstitutionsRole(institutionsRoleData);
@@ -281,7 +316,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hostInstitution]);
 
   const clearUserData = useCallback(() => {
     // console.log('🧹 AuthGuard: Clearing user data on logout');
@@ -368,7 +403,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [isInitialized, infoUser.currentRole, pathname, checkRouteAccess, router]);
 
   // Mostrar loading durante a inicialização
-  if (isLoading) {
+  if (isLoading || isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
