@@ -9,7 +9,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   DocumentData,
   Timestamp
 } from 'firebase/firestore';
@@ -81,12 +80,15 @@ export class FirebaseFAQRepository implements FAQRepository {
   }
 
   async listByInstitution(institutionId: string): Promise<FAQ[]> {
+    // Ordenação feita em memória: where + orderBy em campos diferentes exige índice composto
+    // no Firestore, que não existe no projeto — em produção a consulta falhava e a lista vinha vazia.
     const q = query(
       collection(firestore, this.collectionName),
-      where('institutionId', '==', institutionId),
-      orderBy('createdAt', 'desc')
+      where('institutionId', '==', institutionId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => this.mapToEntity({ id: d.id, ...d.data() }));
+    return snap.docs
+      .map(d => this.mapToEntity({ id: d.id, ...d.data() }))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
