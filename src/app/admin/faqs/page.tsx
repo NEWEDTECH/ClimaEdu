@@ -10,6 +10,7 @@ import { Button } from '@/components/button'
 import { InputText } from '@/components/input'
 import { SelectComponent } from '@/components/select/select'
 import { LoadingSpinner } from '@/components/loader'
+import { Pagination } from '@/components/pagination/Pagination'
 import { showToast } from '@/components/toast'
 import { container, Register } from '@/_core/shared/container'
 import { useProfile } from '@/context/zustand/useProfile'
@@ -29,6 +30,11 @@ type FormState = {
 
 const EMPTY_FORM: FormState = { title: '', content: '' }
 
+const FAQS_PER_PAGE = 15
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
+
 export default function FaqsPage() {
   const { infoUser } = useProfile()
   const isSystemAdmin = infoUser.currentRole === UserRole.SYSTEM_ADMIN || infoUser.currentRole === 'SUPER_ADMIN' as UserRole
@@ -40,6 +46,7 @@ export default function FaqsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Form state
   const [showForm, setShowForm] = useState(false)
@@ -82,6 +89,7 @@ export default function FaqsPage() {
         )
         const result = await useCase.execute(new ListFaqsByInstitutionInput(selectedInstitutionId))
         setFaqs(result.faqs)
+        setCurrentPage(1)
       } catch {
         showToast.error('Falha ao carregar FAQs.')
       } finally {
@@ -129,6 +137,7 @@ export default function FaqsPage() {
         const useCase = container.get<CreateFaqUseCase>(Register.faq.useCase.CreateFaqUseCase)
         const result = await useCase.execute(new CreateFaqInput(selectedInstitutionId, form.title, form.content))
         setFaqs(prev => [result.faq, ...prev])
+        setCurrentPage(1)
         showToast.success('FAQ criada.')
       }
 
@@ -151,6 +160,18 @@ export default function FaqsPage() {
     } catch {
       showToast.error('Erro ao excluir FAQ.')
     }
+  }
+
+  // Lista já vem do mais recente para o mais antigo; a página é limitada ao total
+  // (ex.: ao excluir a última FAQ da última página)
+  const totalPages = Math.max(1, Math.ceil(faqs.length / FAQS_PER_PAGE))
+  const page = Math.min(currentPage, totalPages)
+  const pagedFaqs = faqs.slice((page - 1) * FAQS_PER_PAGE, page * FAQS_PER_PAGE)
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    setExpandedId(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const toggleExpand = (id: string) => {
@@ -231,7 +252,10 @@ export default function FaqsPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {faqs.map(faq => (
+              <p className="text-sm text-gray-500">
+                {faqs.length} {faqs.length === 1 ? 'FAQ' : 'FAQs'} · mais recentes primeiro
+              </p>
+              {pagedFaqs.map(faq => (
                 <div
                   key={faq.id}
                   className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800"
@@ -240,7 +264,10 @@ export default function FaqsPage() {
                     className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     onClick={() => toggleExpand(faq.id)}
                   >
-                    <span className="font-medium">{faq.title}</span>
+                    <span className="flex flex-col">
+                      <span className="font-medium">{faq.title}</span>
+                      <span className="text-xs text-gray-500">{formatDate(faq.createdAt)}</span>
+                    </span>
                     <div className="flex items-center gap-2 ml-2 shrink-0">
                       {isLocalAdmin && (
                         <>
@@ -279,6 +306,10 @@ export default function FaqsPage() {
                   )}
                 </div>
               ))}
+
+              <div className="pt-4">
+                <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+              </div>
             </div>
           )}
         </div>

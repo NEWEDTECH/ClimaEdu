@@ -71,7 +71,7 @@ export default async function RootLayout({
               <ThemeProvider>
                 <AuthGuard>
                   <ToastProvider>
-                    <main className=" overflow-y-auto min-h-screen">
+                    <main className="min-h-screen">
                       {children}
                     </main>
                     <footer className="bg-white dark:bg-gray-900 border-t py-6">
