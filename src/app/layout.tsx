@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { HostInstitutionProvider } from "@/components/institution/HostInstitutionProvider";
 import { InstitutionNotFound } from "@/components/institution/InstitutionNotFound";
 import { getHostContext, type HostInstitution } from "@/_core/modules/institution/infrastructure/server/host-institution";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +86,7 @@ export default async function RootLayout({
             </ContainerProvider>
           </HostInstitutionProvider>
         )}
+        <SpeedInsights />
       </body>
     </html>
   );
