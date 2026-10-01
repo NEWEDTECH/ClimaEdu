@@ -90,6 +90,10 @@ const sections: DropdownSection[] = [
 
 export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
   const { infoUser, infoInstitutionsRole, setInfoUser, setInfoInstitutions } = useProfile();
+  // Só os cargos da instituição atual: para usar cargos de outra instituição, o usuário entra pelo domínio dela
+  const currentInstitutionRoles = infoInstitutionsRole.filter(
+    inst => inst.idInstitution === infoUser.currentIdInstitution
+  );
   const { setLastInstitutionId } = useInstitutionStorage();
 
   const handleInstitutionChange = (value: string) => {
@@ -195,21 +199,21 @@ export function ProfileSelect({ avatarUrl }: ProfileSelectProps) {
           "w-56"
         )}
       >
-        {/* Role Switcher - Only show if user has multiple roles */}
-        {infoInstitutionsRole.length > 1 && (
+        {/* Role Switcher - só aparece se o usuário tiver mais de um cargo na instituição atual */}
+        {currentInstitutionRoles.length > 1 && (
           <>
             <div className="px-2 py-1.5">
               <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                Trocar Instituição/Role
+                Trocar perfil
               </div>
               <select
                 value={`${infoUser.currentIdInstitution}|${infoUser.currentRole}`}
                 onChange={(e) => handleInstitutionChange(e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {infoInstitutionsRole.map((inst) => (
+                {currentInstitutionRoles.map((inst) => (
                   <option key={`${inst.idInstitution}|${inst.roleInstitution}`} value={`${inst.idInstitution}|${inst.roleInstitution}`}>
-                    {getRoleText(inst.roleInstitution)} - {inst.nameInstitution}
+                    {getRoleText(inst.roleInstitution)}
                   </option>
                 ))}
               </select>
