@@ -8,7 +8,6 @@ import {
   deleteDoc, 
   query, 
   where, 
-  orderBy, 
   writeBatch,
   Timestamp,
   DocumentData
@@ -66,32 +65,34 @@ export class FirebaseTimeSlotRepository implements TimeSlotRepository {
     return this.fromFirestoreData(docSnap.id, docSnap.data());
   }
 
+  /*
+   * Consultas sem índice composto: combinar filtros/ordenação em campos diferentes
+   * exigia índices que não existem em produção (a busca de horários do agendamento falhava).
+   * As buscas usam um único campo de igualdade; dia, status e ordenação ficam em memória.
+   */
+
+  /** Busca os horários por um único campo de igualdade */
+  private async findAllBy(field: 'tutorId' | 'isAvailable', value: string | boolean): Promise<TimeSlot[]> {
+    const q = query(collection(firestore, this.collectionName), where(field, '==', value));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => this.fromFirestoreData(doc.id, doc.data()));
+  }
+
+  /** Ordena por tutor, dia da semana e horário de início */
+  private sortSlots(timeSlots: TimeSlot[]): TimeSlot[] {
+    return timeSlots.sort((a, b) =>
+      a.tutorId.localeCompare(b.tutorId) ||
+      a.dayOfWeek - b.dayOfWeek ||
+      a.startTime.localeCompare(b.startTime)
+    );
+  }
+
   /**
    * Finds all time slots for a specific tutor
    */
   async findByTutorId(tutorId: string, activeOnly = false): Promise<TimeSlot[]> {
-    let q = query(
-      collection(firestore, this.collectionName),
-      where('tutorId', '==', tutorId),
-      orderBy('dayOfWeek'),
-      orderBy('startTime')
-    );
-
-    if (activeOnly) {
-      q = query(q, where('isAvailable', '==', true));
-    }
-
-    const querySnapshot = await getDocs(q);
-    const timeSlots: TimeSlot[] = [];
-
-    querySnapshot.forEach((doc) => {
-      const timeSlot = this.fromFirestoreData(doc.id, doc.data());
-      if (!activeOnly || timeSlot.isCurrentlyActive()) {
-        timeSlots.push(timeSlot);
-      }
-    });
-
-    return timeSlots;
+    const timeSlots = await this.findAllBy('tutorId', tutorId);
+    return this.sortSlots(timeSlots.filter(slot => !activeOnly || slot.isCurrentlyActive()));
   }
 
   /**
@@ -102,28 +103,10 @@ export class FirebaseTimeSlotRepository implements TimeSlotRepository {
     dayOfWeek: DayOfWeek,
     activeOnly = false
   ): Promise<TimeSlot[]> {
-    let q = query(
-      collection(firestore, this.collectionName),
-      where('tutorId', '==', tutorId),
-      where('dayOfWeek', '==', dayOfWeek),
-      orderBy('startTime')
-    );
-
-    if (activeOnly) {
-      q = query(q, where('isAvailable', '==', true));
-    }
-
-    const querySnapshot = await getDocs(q);
-    const timeSlots: TimeSlot[] = [];
-
-    querySnapshot.forEach((doc) => {
-      const timeSlot = this.fromFirestoreData(doc.id, doc.data());
-      if (!activeOnly || timeSlot.isCurrentlyActive()) {
-        timeSlots.push(timeSlot);
-      }
-    });
-
-    return timeSlots;
+    const timeSlots = await this.findAllBy('tutorId', tutorId);
+    return this.sortSlots(timeSlots.filter(slot =>
+      slot.dayOfWeek === dayOfWeek && (!activeOnly || slot.isCurrentlyActive())
+    ));
   }
 
   /**
@@ -177,28 +160,10 @@ export class FirebaseTimeSlotRepository implements TimeSlotRepository {
    * Finds all active time slots across all tutors
    */
   async findAllActive(dayOfWeek?: DayOfWeek): Promise<TimeSlot[]> {
-    let q = query(
-      collection(firestore, this.collectionName),
-      where('isAvailable', '==', true)
-    );
-
-    if (dayOfWeek !== undefined) {
-      q = query(q, where('dayOfWeek', '==', dayOfWeek));
-    }
-
-    q = query(q, orderBy('tutorId'), orderBy('dayOfWeek'), orderBy('startTime'));
-
-    const querySnapshot = await getDocs(q);
-    const timeSlots: TimeSlot[] = [];
-
-    querySnapshot.forEach((doc) => {
-      const timeSlot = this.fromFirestoreData(doc.id, doc.data());
-      if (timeSlot.isCurrentlyActive()) {
-        timeSlots.push(timeSlot);
-      }
-    });
-
-    return timeSlots;
+    const timeSlots = await this.findAllBy('isAvailable', true);
+    return this.sortSlots(timeSlots.filter(slot =>
+      (dayOfWeek === undefined || slot.dayOfWeek === dayOfWeek) && slot.isCurrentlyActive()
+    ));
   }
 
   /**

@@ -9,8 +9,6 @@ import {
   deleteDoc, 
   query, 
   where, 
-  orderBy, 
-  limit, 
   DocumentData, 
   Timestamp
 } from 'firebase/firestore';
@@ -141,6 +139,34 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     return this.mapToEntity({ id, ...data });
   }
 
+  /*
+   * Consultas sem índice composto: o Firestore de produção só tem os índices
+   * automáticos de campo único, e combinar filtros/ordenação em campos diferentes
+   * fazia as consultas falharem ("requires an index") — o agendamento nunca funcionou.
+   * Cada busca usa um único campo de igualdade e o restante é filtrado/ordenado em memória
+   * (o volume por tutor/aluno/curso é pequeno).
+   */
+
+  /** Busca as sessões por um único campo de igualdade */
+  private async findAllBy(
+    field: 'studentId' | 'tutorId' | 'courseId' | 'status',
+    value: string
+  ): Promise<TutoringSession[]> {
+    const q = query(collection(firestore, this.collectionName), where(field, '==', value));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => this.mapToEntity({ id: doc.id, ...doc.data() }));
+  }
+
+  private sortByScheduledDate(sessions: TutoringSession[], direction: 'asc' | 'desc'): TutoringSession[] {
+    const factor = direction === 'asc' ? 1 : -1;
+    return sessions.sort((a, b) => factor * (a.scheduledDate.getTime() - b.scheduledDate.getTime()));
+  }
+
+  private isWithin(session: TutoringSession, startDate?: Date, endDate?: Date): boolean {
+    const time = session.scheduledDate.getTime();
+    return (!startDate || time >= startDate.getTime()) && (!endDate || time <= endDate.getTime());
+  }
+
   /**
    * Finds all tutoring sessions for a specific student
    * @param studentId The student's ID
@@ -148,27 +174,8 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
    * @returns Promise<TutoringSession[]> Array of sessions
    */
   async findByStudentId(studentId: string, status?: TutoringSessionStatus): Promise<TutoringSession[]> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(
-      sessionsRef, 
-      where('studentId', '==', studentId),
-      orderBy('scheduledDate', 'desc')
-    );
-
-    if (status) {
-      q = query(
-        sessionsRef,
-        where('studentId', '==', studentId),
-        where('status', '==', status),
-        orderBy('scheduledDate', 'desc')
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    const sessions = await this.findAllBy('studentId', studentId);
+    return this.sortByScheduledDate(sessions.filter(s => !status || s.status === status), 'desc');
   }
 
   /**
@@ -178,29 +185,9 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
    * @returns Promise<TutoringSession[]> Array of sessions
    */
   async findByTutorId(tutorId: string, status?: TutoringSessionStatus): Promise<TutoringSession[]> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(
-      sessionsRef, 
-      where('tutorId', '==', tutorId),
-      orderBy('scheduledDate', 'desc')
-    );
-
-    if (status) {
-      q = query(
-        sessionsRef,
-        where('tutorId', '==', tutorId),
-        where('status', '==', status),
-        orderBy('scheduledDate', 'desc')
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    const sessions = await this.findAllBy('tutorId', tutorId);
+    return this.sortByScheduledDate(sessions.filter(s => !status || s.status === status), 'desc');
   }
-
 
   /**
    * Finds all tutoring sessions for a specific course
@@ -209,27 +196,8 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
    * @returns Promise<TutoringSession[]> Array of sessions
    */
   async findByCourseId(courseId: string, status?: TutoringSessionStatus): Promise<TutoringSession[]> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(
-      sessionsRef, 
-      where('courseId', '==', courseId),
-      orderBy('scheduledDate', 'desc')
-    );
-
-    if (status) {
-      q = query(
-        sessionsRef,
-        where('courseId', '==', courseId),
-        where('status', '==', status),
-        orderBy('scheduledDate', 'desc')
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    const sessions = await this.findAllBy('courseId', courseId);
+    return this.sortByScheduledDate(sessions.filter(s => !status || s.status === status), 'desc');
   }
 
   /**
@@ -246,37 +214,24 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     tutorId?: string,
     studentId?: string
   ): Promise<TutoringSession[]> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(
-      sessionsRef,
-      where('scheduledDate', '>=', startDate),
-      where('scheduledDate', '<=', endDate),
-      orderBy('scheduledDate', 'asc')
-    );
+    let sessions: TutoringSession[];
 
     if (tutorId) {
-      q = query(
-        sessionsRef,
-        where('tutorId', '==', tutorId),
-        where('scheduledDate', '>=', startDate),
-        where('scheduledDate', '<=', endDate),
-        orderBy('scheduledDate', 'asc')
-      );
+      sessions = await this.findAllBy('tutorId', tutorId);
     } else if (studentId) {
-      q = query(
-        sessionsRef,
-        where('studentId', '==', studentId),
+      sessions = await this.findAllBy('studentId', studentId);
+    } else {
+      // Intervalo em um único campo não exige índice composto
+      const q = query(
+        collection(firestore, this.collectionName),
         where('scheduledDate', '>=', startDate),
-        where('scheduledDate', '<=', endDate),
-        orderBy('scheduledDate', 'asc')
+        where('scheduledDate', '<=', endDate)
       );
+      const querySnapshot = await getDocs(q);
+      sessions = querySnapshot.docs.map(doc => this.mapToEntity({ id: doc.id, ...doc.data() }));
     }
 
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    return this.sortByScheduledDate(sessions.filter(s => this.isWithin(s, startDate, endDate)), 'asc');
   }
 
   /**
@@ -291,43 +246,18 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     studentId?: string,
     limitCount?: number
   ): Promise<TutoringSession[]> {
-    const now = new Date();
-    const sessionsRef = collection(firestore, this.collectionName);
-    
-    let q = query(
-      sessionsRef,
-      where('scheduledDate', '>', now),
-      where('status', 'in', [TutoringSessionStatus.SCHEDULED]),
-      orderBy('scheduledDate', 'asc')
+    const now = Date.now();
+    const sessions = tutorId
+      ? await this.findAllBy('tutorId', tutorId)
+      : studentId
+        ? await this.findAllBy('studentId', studentId)
+        : await this.findAllBy('status', TutoringSessionStatus.SCHEDULED);
+
+    const upcoming = this.sortByScheduledDate(
+      sessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED && s.scheduledDate.getTime() > now),
+      'asc'
     );
-
-    if (tutorId) {
-      q = query(
-        sessionsRef,
-        where('tutorId', '==', tutorId),
-        where('scheduledDate', '>', now),
-        where('status', 'in', [TutoringSessionStatus.SCHEDULED]),
-        orderBy('scheduledDate', 'asc')
-      );
-    } else if (studentId) {
-      q = query(
-        sessionsRef,
-        where('studentId', '==', studentId),
-        where('scheduledDate', '>', now),
-        where('status', 'in', [TutoringSessionStatus.SCHEDULED]),
-        orderBy('scheduledDate', 'asc')
-      );
-    }
-
-    if (limitCount) {
-      q = query(q, limit(limitCount));
-    }
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
+    return limitCount ? upcoming.slice(0, limitCount) : upcoming;
   }
 
   /**
@@ -336,31 +266,15 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
    * @returns Promise<TutoringSession[]> Array of overdue sessions
    */
   async findOverdue(tutorId?: string): Promise<TutoringSession[]> {
-    const now = new Date();
-    const sessionsRef = collection(firestore, this.collectionName);
-    
-    let q = query(
-      sessionsRef,
-      where('scheduledDate', '<', now),
-      where('status', '==', TutoringSessionStatus.SCHEDULED),
-      orderBy('scheduledDate', 'desc')
+    const now = Date.now();
+    const sessions = tutorId
+      ? await this.findAllBy('tutorId', tutorId)
+      : await this.findAllBy('status', TutoringSessionStatus.SCHEDULED);
+
+    return this.sortByScheduledDate(
+      sessions.filter(s => s.status === TutoringSessionStatus.SCHEDULED && s.scheduledDate.getTime() < now),
+      'desc'
     );
-
-    if (tutorId) {
-      q = query(
-        sessionsRef,
-        where('tutorId', '==', tutorId),
-        where('scheduledDate', '<', now),
-        where('status', '==', TutoringSessionStatus.SCHEDULED),
-        orderBy('scheduledDate', 'desc')
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
   }
 
   /**
@@ -375,42 +289,34 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     scheduledDate: Date,
     duration: number
   ): Promise<TutoringSession[]> {
-    const sessionStart = scheduledDate;
-    const sessionEnd = new Date(scheduledDate.getTime() + (duration * 60000));
-    
-    // Find sessions that might conflict (broader range)
-    const dayStart = new Date(scheduledDate);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(scheduledDate);
-    dayEnd.setHours(23, 59, 59, 999);
+    const requestedStart = scheduledDate.getTime();
+    const requestedEnd = requestedStart + (duration * 60000);
+    const activeStatuses = [TutoringSessionStatus.SCHEDULED, TutoringSessionStatus.IN_PROGRESS];
 
-    const sessionsRef = collection(firestore, this.collectionName);
-    const q = query(
-      sessionsRef,
-      where('tutorId', '==', tutorId),
-      where('scheduledDate', '>=', dayStart),
-      where('scheduledDate', '<=', dayEnd),
-      where('status', 'in', [
-        TutoringSessionStatus.SCHEDULED,
-        TutoringSessionStatus.IN_PROGRESS
-      ])
-    );
+    const sessions = await this.findAllBy('tutorId', tutorId);
 
-    const querySnapshot = await getDocs(q);
-    const sessions = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
-
-    // Filter for actual conflicts
     return sessions.filter(session => {
+      if (!activeStatuses.includes(session.status)) {
+        return false;
+      }
       const existingStart = session.scheduledDate.getTime();
       const existingEnd = existingStart + (session.duration * 60000);
-      const requestedStart = sessionStart.getTime();
-      const requestedEnd = sessionEnd.getTime();
-
       return (requestedStart < existingEnd && existingStart < requestedEnd);
     });
+  }
+
+  private buildStats(sessions: TutoringSession[]): SessionStats {
+    return {
+      totalSessions: sessions.length,
+      completedSessions: sessions.filter(s => s.status === TutoringSessionStatus.COMPLETED).length,
+      cancelledSessions: sessions.filter(s => s.status === TutoringSessionStatus.CANCELLED).length,
+      noShowSessions: sessions.filter(s => s.status === TutoringSessionStatus.NO_SHOW).length,
+      totalHours: sessions.reduce((total, session) => total + (session.duration / 60), 0),
+      upcomingSessions: sessions.filter(s =>
+        s.status === TutoringSessionStatus.SCHEDULED &&
+        s.scheduledDate > new Date()
+      ).length
+    };
   }
 
   /**
@@ -425,37 +331,9 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     startDate?: Date,
     endDate?: Date
   ): Promise<SessionStats> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(sessionsRef, where('tutorId', '==', tutorId));
-
-    if (startDate && endDate) {
-      q = query(
-        sessionsRef,
-        where('tutorId', '==', tutorId),
-        where('scheduledDate', '>=', startDate),
-        where('scheduledDate', '<=', endDate)
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    const sessions = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
-
-    const stats: SessionStats = {
-      totalSessions: sessions.length,
-      completedSessions: sessions.filter(s => s.status === TutoringSessionStatus.COMPLETED).length,
-      cancelledSessions: sessions.filter(s => s.status === TutoringSessionStatus.CANCELLED).length,
-      noShowSessions: sessions.filter(s => s.status === TutoringSessionStatus.NO_SHOW).length,
-      totalHours: sessions.reduce((total, session) => total + (session.duration / 60), 0),
-      upcomingSessions: sessions.filter(s => 
-        s.status === TutoringSessionStatus.SCHEDULED && 
-        s.scheduledDate > new Date()
-      ).length
-    };
-
-    return stats;
+    const sessions = await this.findAllBy('tutorId', tutorId);
+    const inPeriod = startDate && endDate ? sessions.filter(s => this.isWithin(s, startDate, endDate)) : sessions;
+    return this.buildStats(inPeriod);
   }
 
   /**
@@ -470,37 +348,9 @@ export class FirebaseTutoringSessionRepository implements TutoringSessionReposit
     startDate?: Date,
     endDate?: Date
   ): Promise<SessionStats> {
-    const sessionsRef = collection(firestore, this.collectionName);
-    let q = query(sessionsRef, where('studentId', '==', studentId));
-
-    if (startDate && endDate) {
-      q = query(
-        sessionsRef,
-        where('studentId', '==', studentId),
-        where('scheduledDate', '>=', startDate),
-        where('scheduledDate', '<=', endDate)
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    const sessions = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return this.mapToEntity({ id: doc.id, ...data });
-    });
-
-    const stats: SessionStats = {
-      totalSessions: sessions.length,
-      completedSessions: sessions.filter(s => s.status === TutoringSessionStatus.COMPLETED).length,
-      cancelledSessions: sessions.filter(s => s.status === TutoringSessionStatus.CANCELLED).length,
-      noShowSessions: sessions.filter(s => s.status === TutoringSessionStatus.NO_SHOW).length,
-      totalHours: sessions.reduce((total, session) => total + (session.duration / 60), 0),
-      upcomingSessions: sessions.filter(s => 
-        s.status === TutoringSessionStatus.SCHEDULED && 
-        s.scheduledDate > new Date()
-      ).length
-    };
-
-    return stats;
+    const sessions = await this.findAllBy('studentId', studentId);
+    const inPeriod = startDate && endDate ? sessions.filter(s => this.isWithin(s, startDate, endDate)) : sessions;
+    return this.buildStats(inPeriod);
   }
 
   /**
