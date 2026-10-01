@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ContainerProvider } from "@/shared/container/ContainerProvider";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -85,6 +86,7 @@ export default async function RootLayout({
             </ContainerProvider>
           </HostInstitutionProvider>
         )}
+        <SpeedInsights />
       </body>
     </html>
   );
