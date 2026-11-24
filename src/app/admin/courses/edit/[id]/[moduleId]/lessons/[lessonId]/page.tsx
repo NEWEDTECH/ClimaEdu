@@ -248,6 +248,32 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
     fetchLessonData()
   }, [lessonId, moduleId, courseId])
 
+  // Recarrega apenas os conteúdos da unidade (após upload), sem recarregar a página inteira
+  const refreshContents = async () => {
+    try {
+      const lessonRepository = container.get<LessonRepository>(
+        Register.content.repository.LessonRepository
+      )
+      const lesson = await lessonRepository.findById(lessonId)
+      if (!lesson) return
+
+      const contentsData: ContentData[] = lesson.contents
+        .map(content => ({
+          id: content.id,
+          title: content.title,
+          type: content.type,
+          url: content.url,
+          order: content.order
+        }))
+        .sort((a, b) => a.order - b.order)
+
+      setFormData(prev => ({ ...prev, contents: contentsData }))
+    } catch (error) {
+      console.error('Error refreshing lesson contents:', error)
+      showToast.error('Conteúdo enviado, mas não foi possível atualizar a lista. Recarregue a página.')
+    }
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -726,7 +752,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             lessonId={lessonId}
                             institutionId={courseInstitutionId}
                             onDeleteContent={handleDeleteContent}
-                            onContentAdded={() => window.location.reload()}
+                            onContentAdded={refreshContents}
                             isSubmitting={isSubmitting}
                           />
                         </AccordionContent>
@@ -757,7 +783,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ id: strin
                             lessonId={lessonId}
                             institutionId={courseInstitutionId}
                             onDeleteContent={handleDeleteContent}
-                            onContentAdded={() => window.location.reload()}
+                            onContentAdded={refreshContents}
                             isSubmitting={isSubmitting}
                           />
                         </AccordionContent>
