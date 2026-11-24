@@ -13,7 +13,7 @@
 export const POLITICA_DE_PRIVACIDADE = `
 # Política de Privacidade
 
-POLÍTICA DE PRIVACIDADE DA PLATAFORMA CLIMAE
+POLÍTICA DE PRIVACIDADE DA PLATAFORMA NEW EDTECH
 
 1. QUEM É O CONTROLADOR DOS DADOS
 1.1. O controlador dos dados pessoais tratados na plataforma é a NEW TECNOLOGIA E INOVAÇÃO EDUCACIONAL LTDA (“NEW EDTECH”), inscrita no CNPJ sob o nº 50.443.417/0001-05, com sede na Rua Munique, nº 51, Córrego Grande, CEP 88.037-360, Florianópolis/SC.
