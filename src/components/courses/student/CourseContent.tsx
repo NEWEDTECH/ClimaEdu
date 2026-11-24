@@ -159,6 +159,32 @@ export function CourseContent({
     );
   };
 
+  // Render function for audio (MP3) only
+  const renderAudio = () => {
+    if (!activeLessonData || !activeLessonData.contents) return null;
+
+    const audioContents = activeLessonData.contents.filter(content => content.type === 'AUDIO');
+
+    if (audioContents.length === 0) return null;
+
+    return (
+      <>
+        {audioContents.map((content) => (
+          <div key={content.id}>
+            {content.title && (
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <span className="text-2xl">🎵</span>
+                {content.title}
+              </h3>
+            )}
+            <ContentRenderer content={content} />
+            <div className="border-t dark:border-gray-700 border-gray-300 mt-6"></div>
+          </div>
+        ))}
+      </>
+    );
+  };
+
   // Render function for SCORM only
   const renderScorm = () => {
     if (!activeLessonData || !activeLessonData.contents) return null;
@@ -766,6 +792,7 @@ export function CourseContent({
     video: renderVideo,
     pdf: renderPDF,
     scorm: renderScorm,
+    audio: renderAudio,
     supportmaterial: renderSupportMaterial,
     description: renderDescription,
     activity: renderActivity,
@@ -782,6 +809,7 @@ export function CourseContent({
           {renderDescription()}
           {renderPDF()}
           {renderScorm()}
+          {renderAudio()}
           {renderSupportMaterial()}
           {renderActivity()}
           {renderQuestionnaire()}
