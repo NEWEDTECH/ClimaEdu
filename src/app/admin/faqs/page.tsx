@@ -17,6 +17,13 @@ import { useProfile } from '@/context/zustand/useProfile'
 import { UserRole } from '@/_core/modules/user/core/entities/User'
 import { Institution } from '@/_core/modules/institution'
 import type { FAQ } from '@/_core/modules/faq/core/entities/FAQ'
+import {
+  FAQType,
+  FAQ_TYPES,
+  FAQ_TYPE_LABELS,
+  canSeeAllFAQTypes,
+  getVisibleFAQTypes,
+} from '@/_core/modules/faq/core/entities/FAQType'
 import { ListFaqsByInstitutionUseCase, ListFaqsByInstitutionInput } from '@/_core/modules/faq/core/use-cases/list-faqs-by-institution'
 import { CreateFaqUseCase, CreateFaqInput } from '@/_core/modules/faq/core/use-cases/create-faq'
 import { UpdateFaqUseCase, UpdateFaqInput } from '@/_core/modules/faq/core/use-cases/update-faq'
@@ -26,9 +33,18 @@ import { ListInstitutionsUseCase } from '@/_core/modules/institution/core/use-ca
 type FormState = {
   title: string
   content: string
+  type: FAQType
 }
 
-const EMPTY_FORM: FormState = { title: '', content: '' }
+const EMPTY_FORM: FormState = { title: '', content: '', type: FAQType.GENERAL }
+
+const FAQ_TYPE_BADGE_CLASSES: Record<FAQType, string> = {
+  [FAQType.GENERAL]: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+  [FAQType.STUDENT]: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  [FAQType.TUTOR]: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  [FAQType.CONTENT_MANAGER]: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  [FAQType.ADMIN]: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+}
 
 const FAQS_PER_PAGE = 15
 
@@ -39,6 +55,10 @@ export default function FaqsPage() {
   const { infoUser } = useProfile()
   const isSystemAdmin = infoUser.currentRole === UserRole.SYSTEM_ADMIN || infoUser.currentRole === 'SUPER_ADMIN' as UserRole
   const isLocalAdmin = infoUser.currentRole === UserRole.LOCAL_ADMIN
+  // Admins gerenciam as FAQs e veem todos os tipos (com filtro); os demais perfis veem só os seus
+  const seesAllTypes = canSeeAllFAQTypes(infoUser.currentRole)
+  const visibleTypes = getVisibleFAQTypes(infoUser.currentRole)
+  const [typeFilter, setTypeFilter] = useState<string>('')
 
   const [faqs, setFaqs] = useState<FAQ[]>([])
   const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([])
@@ -108,7 +128,7 @@ export default function FaqsPage() {
 
   const openEdit = (faq: FAQ) => {
     setEditingId(faq.id)
-    setForm({ title: faq.title, content: faq.content })
+    setForm({ title: faq.title, content: faq.content, type: faq.type })
     setShowForm(true)
     setExpandedId(null)
   }
@@ -130,12 +150,12 @@ export default function FaqsPage() {
 
       if (editingId) {
         const useCase = container.get<UpdateFaqUseCase>(Register.faq.useCase.UpdateFaqUseCase)
-        const result = await useCase.execute(new UpdateFaqInput(editingId, form.title, form.content))
+        const result = await useCase.execute(new UpdateFaqInput(editingId, form.title, form.content, form.type))
         setFaqs(prev => prev.map(f => f.id === editingId ? result.faq : f))
         showToast.success('FAQ atualizada.')
       } else {
         const useCase = container.get<CreateFaqUseCase>(Register.faq.useCase.CreateFaqUseCase)
-        const result = await useCase.execute(new CreateFaqInput(selectedInstitutionId, form.title, form.content))
+        const result = await useCase.execute(new CreateFaqInput(selectedInstitutionId, form.title, form.content, form.type))
         setFaqs(prev => [result.faq, ...prev])
         setCurrentPage(1)
         showToast.success('FAQ criada.')
@@ -164,9 +184,18 @@ export default function FaqsPage() {
 
   // Lista já vem do mais recente para o mais antigo; a página é limitada ao total
   // (ex.: ao excluir a última FAQ da última página)
-  const totalPages = Math.max(1, Math.ceil(faqs.length / FAQS_PER_PAGE))
+  const filteredFaqs = faqs.filter(f =>
+    visibleTypes.includes(f.type) && (!typeFilter || f.type === typeFilter)
+  )
+  const totalPages = Math.max(1, Math.ceil(filteredFaqs.length / FAQS_PER_PAGE))
   const page = Math.min(currentPage, totalPages)
-  const pagedFaqs = faqs.slice((page - 1) * FAQS_PER_PAGE, page * FAQS_PER_PAGE)
+  const pagedFaqs = filteredFaqs.slice((page - 1) * FAQS_PER_PAGE, page * FAQS_PER_PAGE)
+
+  const handleTypeFilterChange = (value: string) => {
+    setTypeFilter(value)
+    setCurrentPage(1)
+    setExpandedId(null)
+  }
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
@@ -202,6 +231,16 @@ export default function FaqsPage() {
             />
           )}
 
+          {/* Filtro por tipo (somente admins, que veem todos os tipos) */}
+          {seesAllTypes && (
+            <SelectComponent
+              value={typeFilter}
+              onChange={handleTypeFilterChange}
+              options={FAQ_TYPES.map(t => ({ value: t, label: FAQ_TYPE_LABELS[t] }))}
+              placeholder="Todos os tipos"
+            />
+          )}
+
           {/* Formulário criar/editar */}
           {showForm && isLocalAdmin && (
             <div className="border rounded-lg p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
@@ -219,6 +258,20 @@ export default function FaqsPage() {
                   onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
                   className="w-full"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="faq-type" className="block text-sm font-medium mb-1">Tipo (quem verá esta FAQ)</label>
+                <select
+                  id="faq-type"
+                  value={form.type}
+                  onChange={e => setForm(prev => ({ ...prev, type: e.target.value as FAQType }))}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
+                >
+                  {FAQ_TYPES.map(t => (
+                    <option key={t} value={t}>{FAQ_TYPE_LABELS[t]}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -246,14 +299,14 @@ export default function FaqsPage() {
           {/* Lista de FAQs */}
           {loading ? (
             <LoadingSpinner />
-          ) : faqs.length === 0 ? (
+          ) : filteredFaqs.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               Nenhuma FAQ encontrada.
             </div>
           ) : (
             <div className="space-y-2">
               <p className="text-sm text-gray-500">
-                {faqs.length} {faqs.length === 1 ? 'FAQ' : 'FAQs'} · mais recentes primeiro
+                {filteredFaqs.length} {filteredFaqs.length === 1 ? 'FAQ' : 'FAQs'} · mais recentes primeiro
               </p>
               {pagedFaqs.map(faq => (
                 <div
@@ -266,7 +319,14 @@ export default function FaqsPage() {
                   >
                     <span className="flex flex-col">
                       <span className="font-medium">{faq.title}</span>
-                      <span className="text-xs text-gray-500">{formatDate(faq.createdAt)}</span>
+                      <span className="flex items-center gap-2 text-xs text-gray-500">
+                        {formatDate(faq.createdAt)}
+                        {seesAllTypes && (
+                          <span className={`px-2 py-0.5 rounded-full font-medium ${FAQ_TYPE_BADGE_CLASSES[faq.type]}`}>
+                            {FAQ_TYPE_LABELS[faq.type]}
+                          </span>
+                        )}
+                      </span>
                     </span>
                     <div className="flex items-center gap-2 ml-2 shrink-0">
                       {isLocalAdmin && (

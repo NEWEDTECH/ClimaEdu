@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { firestore } from '@/_core/shared/firebase/firebase-client';
 import { FAQ } from '../../../core/entities/FAQ';
+import { parseFAQType } from '../../../core/entities/FAQType';
 import type { FAQRepository } from '../FAQRepository';
 import { nanoid } from 'nanoid';
 
@@ -39,6 +40,7 @@ export class FirebaseFAQRepository implements FAQRepository {
       institutionId: data.institutionId,
       title: data.title,
       content: data.content ?? '',
+      type: parseFAQType(data.type),
       createdAt,
       updatedAt
     });
@@ -58,6 +60,7 @@ export class FirebaseFAQRepository implements FAQRepository {
       institutionId: faq.institutionId,
       title: faq.title,
       content: faq.content,
+      type: faq.type,
       createdAt: faq.createdAt,
       updatedAt: faq.updatedAt
     };

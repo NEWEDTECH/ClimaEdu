@@ -18,7 +18,8 @@ export class CreateFaqUseCase {
       id,
       institutionId: input.institutionId,
       title: input.title,
-      content: input.content
+      content: input.content,
+      type: input.type
     });
     const saved = await this.faqRepository.save(faq);
     return new CreateFaqOutput(saved);
