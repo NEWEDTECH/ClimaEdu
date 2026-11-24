@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/_core/shared/firebase/firebase-client';
+import { hasAcceptedTerms, roleRequiresTeacherTerms } from '@/_core/modules/user/infrastructure/repositories/termsAcceptanceService';
+import { useProfile } from '@/context/zustand/useProfile';
+import { TERMS_VERSION } from '@/content/legal';
+import { TermsAcceptanceModal } from './TermsAcceptanceModal';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,6 +18,30 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [needsTermsAcceptance, setNeedsTermsAcceptance] = useState<boolean>(false);
+  const currentRole = useProfile(state => state.infoUser.currentRole);
+  const requireTeacherTerms = roleRequiresTeacherTerms(currentRole);
+
+  // Verifica se o usuário já aceitou a versão atual dos termos
+  useEffect(() => {
+    if (!userId) {
+      setNeedsTermsAcceptance(false);
+      return;
+    }
+    let cancelled = false;
+    hasAcceptedTerms(userId, TERMS_VERSION, requireTeacherTerms)
+      .then(accepted => {
+        if (!cancelled) setNeedsTermsAcceptance(!accepted);
+      })
+      .catch(error => {
+        // Em caso de falha na consulta, não bloqueia o acesso
+        console.error('Error checking terms acceptance:', error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, requireTeacherTerms]);
 
   useEffect(() => {
 
@@ -26,6 +54,7 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
       }
       
       setIsAuthenticated(authenticated);
+      setUserId(user?.uid ?? null);
       setIsLoading(false);
       
       // Redirect to login if not authenticated and no fallback is provided
@@ -61,7 +90,19 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
 
   // Show children if authenticated
   if (isAuthenticated) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        {needsTermsAcceptance && userId && (
+          <TermsAcceptanceModal
+            userId={userId}
+            role={currentRole}
+            requireTeacherTerms={requireTeacherTerms}
+            onAccepted={() => setNeedsTermsAcceptance(false)}
+          />
+        )}
+      </>
+    );
   }
 
   // Show fallback if provided, otherwise this should not be rendered as we redirect in the useEffect

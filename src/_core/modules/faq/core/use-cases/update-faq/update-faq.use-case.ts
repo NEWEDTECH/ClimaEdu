@@ -17,6 +17,7 @@ export class UpdateFaqUseCase {
 
     faq.updateTitle(input.title);
     faq.updateContent(input.content);
+    faq.updateType(input.type);
 
     const saved = await this.faqRepository.save(faq);
     return new UpdateFaqOutput(saved);

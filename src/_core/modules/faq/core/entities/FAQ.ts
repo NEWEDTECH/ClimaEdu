@@ -1,9 +1,12 @@
+import { FAQType } from './FAQType';
+
 export class FAQ {
   private constructor(
     readonly id: string,
     readonly institutionId: string,
     private _title: string,
     private _content: string,
+    private _type: FAQType,
     readonly createdAt: Date,
     private _updatedAt: Date
   ) {}
@@ -13,6 +16,7 @@ export class FAQ {
     institutionId: string;
     title: string;
     content: string;
+    type?: FAQType;
     createdAt?: Date;
     updatedAt?: Date;
   }): FAQ {
@@ -29,6 +33,7 @@ export class FAQ {
       params.institutionId,
       params.title.trim(),
       params.content ?? '',
+      params.type ?? FAQType.GENERAL,
       params.createdAt ?? now,
       params.updatedAt ?? now
     );
@@ -36,6 +41,7 @@ export class FAQ {
 
   public get title(): string { return this._title; }
   public get content(): string { return this._content; }
+  public get type(): FAQType { return this._type; }
   public get updatedAt(): Date { return this._updatedAt; }
 
   public updateTitle(newTitle: string): void {
@@ -48,6 +54,11 @@ export class FAQ {
 
   public updateContent(newContent: string): void {
     this._content = newContent;
+    this.touch();
+  }
+
+  public updateType(newType: FAQType): void {
+    this._type = newType;
     this.touch();
   }
 
